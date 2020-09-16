@@ -6,7 +6,7 @@ message GameEntry {
   string id = 1;
   string title = 2;
 
-  string steam_id = 3;
+  int32 steam_id = 3;
 }
 
 message GameList {
