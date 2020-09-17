@@ -18,7 +18,6 @@ GameList SteamParser::ParseGetOwnedGames(std::string_view json_response) const {
 
   int i = 0;
   for (const auto& game : json_obj["response"]["games"]) {
-    LOG(INFO) << game;
     auto* entry = game_list.add_game();
 
     auto it = game.find("name");

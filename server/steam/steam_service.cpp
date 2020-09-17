@@ -13,7 +13,7 @@
 
 namespace espy {
 
-constexpr char kSteamHostname[] = "api.steampowered.com";
+constexpr char kSteamHostname[] = "https://api.steampowered.com";
 constexpr char kGetOwnedGamesService[] = "/IPlayerService/GetOwnedGames/v0001/";
 
 GameList SteamService::GetOwnedGames() const {
@@ -25,8 +25,8 @@ GameList SteamService::GetOwnedGames() const {
   curlpp::Cleanup cleaner;
   curlpp::Easy request;
 
-  const auto url = curlpp::options::Url(absl::StrCat(host, "/", target));
-  LOG(INFO) << absl::StrCat(host, "/", target);
+  const auto url = curlpp::options::Url(absl::StrCat(host, target));
+  LOG(INFO) << absl::StrCat(host, target);
   request.setOpt(url);
 
   std::ostringstream response;

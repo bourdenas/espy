@@ -1,14 +1,12 @@
 project(steam)
 
-set(SOURCES
-  "steam_parser.cpp"
+add_library(steam_service
+  "steam_service.hpp"
   "steam_service.cpp"
 )
-
-add_library(steam ${SOURCES})
-
-target_link_libraries(steam PRIVATE
+target_link_libraries(steam_service PRIVATE
   espy_proto
+  steam_parser
   
   absl::strings
   glog::glog
@@ -16,9 +14,22 @@ target_link_libraries(steam PRIVATE
   unofficial::curlpp::curlpp
 )
 
+add_library(steam_parser
+  "steam_parser.hpp"
+  "steam_parser.cpp"
+)
+target_link_libraries(steam_parser PRIVATE
+  espy_proto
+  
+  absl::strings
+  glog::glog
+  nlohmann_json::nlohmann_json
+  protobuf::libprotobuf-lite
+)
+
 add_executable(steam_parser_test "steam_parser_test.cpp")
 target_link_libraries(steam_parser_test PRIVATE
-  steam
+  steam_parser
   Catch2::Catch2
 )
 catch_discover_tests(steam_parser_test)
