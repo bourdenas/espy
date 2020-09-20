@@ -5,7 +5,7 @@ add_library(steam_service
   "steam_service.cpp"
 )
 target_link_libraries(steam_service PRIVATE
-  espy_proto
+  game_entry_proto
   steam_parser
   
   absl::strings
@@ -19,7 +19,7 @@ add_library(steam_parser
   "steam_parser.cpp"
 )
 target_link_libraries(steam_parser PRIVATE
-  espy_proto
+  game_entry_proto
   
   absl::strings
   glog::glog
