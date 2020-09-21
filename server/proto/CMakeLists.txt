@@ -9,3 +9,24 @@ add_library(game_entry_proto
 target_link_libraries(game_entry_proto
   ${PROTOBUF_LIBRARY}
 )
+
+protobuf_generate_cpp(SEARCH_RESULT_PROTO_SRC SEARCH_RESULT_HEADER
+  "search_result.proto"
+)
+add_library(search_result_proto
+  ${SEARCH_RESULT_HEADER} ${SEARCH_RESULT_PROTO_SRC}
+)
+target_link_libraries(search_result_proto
+  ${PROTOBUF_LIBRARY}
+)
+
+protobuf_generate_cpp(STEAM_ENTRY_PROTO_SRC STEAM_ENTRY_HEADER
+  "steam_entry.proto"
+)
+add_library(steam_entry_proto
+  ${STEAM_ENTRY_HEADER} ${STEAM_ENTRY_PROTO_SRC}
+)
+target_link_libraries(steam_entry_proto
+  ${PROTOBUF_LIBRARY}
+)
+

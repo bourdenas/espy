@@ -16,7 +16,7 @@ namespace espy {
 constexpr char kSteamHostname[] = "https://api.steampowered.com";
 constexpr char kGetOwnedGamesService[] = "/IPlayerService/GetOwnedGames/v0001/";
 
-absl::StatusOr<GameList> SteamService::GetOwnedGames() const {
+absl::StatusOr<SteamList> SteamService::GetOwnedGames() const {
   const auto host = kSteamHostname;
   const auto target = absl::StrCat(kGetOwnedGamesService, "?",
                                    "key=", steam_key_, "&steamid=", user_id_,

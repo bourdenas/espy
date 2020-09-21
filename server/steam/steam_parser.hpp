@@ -5,13 +5,13 @@
 
 #include <absl/status/statusor.h>
 
-#include "proto/game_entry.pb.h"
+#include "proto/steam_entry.pb.h"
 
 namespace espy {
 
 class SteamParser {
  public:
-  absl::StatusOr<GameList> ParseGetOwnedGames(
+  absl::StatusOr<SteamList> ParseGetOwnedGames(
       std::string_view json_response) const;
 };
 

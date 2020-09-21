@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package espy.igdb;
+
+message SearchResult {
+  string id = 1;
+  string title = 2;
+}
+
+message ResultList {
+  repeated SearchResult result = 1;
+}

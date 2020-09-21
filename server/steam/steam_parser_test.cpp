@@ -26,10 +26,10 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
 
     auto result = parser.ParseGetOwnedGames(obj.dump());
     REQUIRE(result.ok());
-    REQUIRE_THAT(*result, test::EqualsProto(test::ParseProto<GameList>(R"(
+    REQUIRE_THAT(*result, test::EqualsProto(test::ParseProto<SteamList>(R"(
                   game {
+                    id: 1234
                     title: 'Foo'
-                    steam_id: 1234
                   })")));
   }
 
@@ -47,18 +47,18 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
 
     auto result = parser.ParseGetOwnedGames(obj.dump());
     REQUIRE(result.ok());
-    REQUIRE_THAT(*result, test::EqualsProto(test::ParseProto<GameList>(R"(
+    REQUIRE_THAT(*result, test::EqualsProto(test::ParseProto<SteamList>(R"(
                   game {
+                    id: 1234
                     title: 'Foo'
-                    steam_id: 1234
                   }
                   game {
+                    id: 2345
                     title: 'Bar'
-                    steam_id: 2345
                   }
                   game {
+                    id: 3456
                     title: 'Yak'
-                    steam_id: 3456
                   })")));
   }
 
@@ -70,7 +70,7 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
 
     auto result = parser.ParseGetOwnedGames(obj.dump());
     REQUIRE(result.ok());
-    REQUIRE_THAT(*result, test::EqualsProto(GameList()));
+    REQUIRE_THAT(*result, test::EqualsProto(SteamList()));
   }
 
   SECTION("Empty response") {
@@ -78,7 +78,7 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
 
     auto result = parser.ParseGetOwnedGames(obj.dump());
     REQUIRE(result.ok());
-    REQUIRE_THAT(*result, test::EqualsProto(GameList()));
+    REQUIRE_THAT(*result, test::EqualsProto(SteamList()));
   }
 
   SECTION("Malformed response") {
