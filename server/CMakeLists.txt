@@ -10,6 +10,9 @@ add_compile_options(/wd4146)
 add_compile_options(/wd4251)
 add_compile_options(/wd4996)
 
+# Needed for MSVC until abseil becomes compatible with C++20.
+add_definitions(-D_HAS_DEPRECATED_RESULT_OF)
+
 project(espy)
 
 include_directories(".")

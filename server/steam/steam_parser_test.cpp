@@ -23,8 +23,10 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
                                 {{"appid", 1234}, {"name", "Foo"}},
                             },
                         }}}};
-    REQUIRE_THAT(parser.ParseGetOwnedGames(obj.dump()),
-                 test::EqualsProto(test::ParseProto<GameList>(R"(
+
+    auto result = parser.ParseGetOwnedGames(obj.dump());
+    REQUIRE(result.ok());
+    REQUIRE_THAT(*result, test::EqualsProto(test::ParseProto<GameList>(R"(
                   game {
                     title: 'Foo'
                     steam_id: 1234
@@ -42,8 +44,10 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
                                 {{"appid", 3456}, {"name", "Yak"}},
                             },
                         }}}};
-    REQUIRE_THAT(parser.ParseGetOwnedGames(obj.dump()),
-                 test::EqualsProto(test::ParseProto<GameList>(R"(
+
+    auto result = parser.ParseGetOwnedGames(obj.dump());
+    REQUIRE(result.ok());
+    REQUIRE_THAT(*result, test::EqualsProto(test::ParseProto<GameList>(R"(
                   game {
                     title: 'Foo'
                     steam_id: 1234
@@ -63,14 +67,18 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
                        {
                            {"game_count", 0},
                        }}};
-    REQUIRE_THAT(parser.ParseGetOwnedGames(obj.dump()),
-                 test::EqualsProto(GameList()));
+
+    auto result = parser.ParseGetOwnedGames(obj.dump());
+    REQUIRE(result.ok());
+    REQUIRE_THAT(*result, test::EqualsProto(GameList()));
   }
 
   SECTION("Empty response") {
     const json obj = {};
-    REQUIRE_THAT(parser.ParseGetOwnedGames(obj.dump()),
-                 test::EqualsProto(GameList()));
+
+    auto result = parser.ParseGetOwnedGames(obj.dump());
+    REQUIRE(result.ok());
+    REQUIRE_THAT(*result, test::EqualsProto(GameList()));
   }
 
   SECTION("Malformed response") {
@@ -83,8 +91,9 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
         }]
       }
     })";
-    REQUIRE_THAT(parser.ParseGetOwnedGames(malformed_response),
-                 test::EqualsProto(GameList()));
+
+    auto result = parser.ParseGetOwnedGames(malformed_response);
+    REQUIRE(absl::IsInvalidArgument(result.status()));
   }
 
   SECTION("Missing fields response") {
@@ -96,8 +105,9 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
                           {{"appid", 1234}},
                       },
                   }}}};
-    REQUIRE_THAT(parser.ParseGetOwnedGames(obj.dump()),
-                 test::EqualsProto(test::ParseProto<GameList>("game {}")));
+
+    auto result = parser.ParseGetOwnedGames(obj.dump());
+    REQUIRE(absl::IsInvalidArgument(result.status()));
 
     obj = {{"response",
             {{"game_count", 1},
@@ -107,10 +117,9 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
                      {{"name", "Foo"}},
                  },
              }}}};
-    REQUIRE_THAT(parser.ParseGetOwnedGames(obj.dump()),
-                 test::EqualsProto(test::ParseProto<GameList>(R"(game {
-                   title: 'Foo'
-                 })")));
+
+    result = parser.ParseGetOwnedGames(obj.dump());
+    REQUIRE(absl::IsInvalidArgument(result.status()));
   }
 
   SECTION("Bad field type response") {
@@ -122,16 +131,18 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
                           {{"appid", "1234"}, {"name", {}}},
                       },
                   }}}};
-    REQUIRE_THAT(parser.ParseGetOwnedGames(obj.dump()),
-                 test::EqualsProto(test::ParseProto<GameList>("game {}")));
+
+    auto result = parser.ParseGetOwnedGames(obj.dump());
+    REQUIRE(absl::IsInvalidArgument(result.status()));
 
     obj = {{"response",
             {
                 {"game_count", 1},
                 {"games", 3},
             }}};
-    REQUIRE_THAT(parser.ParseGetOwnedGames(obj.dump()),
-                 test::EqualsProto(test::ParseProto<GameList>("game {}")));
+
+    result = parser.ParseGetOwnedGames(obj.dump());
+    REQUIRE(absl::IsInvalidArgument(result.status()));
   }
 }
 

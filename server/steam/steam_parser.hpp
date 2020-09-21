@@ -3,13 +3,16 @@
 
 #include <string_view>
 
+#include <absl/status/statusor.h>
+
 #include "proto/game_entry.pb.h"
 
 namespace espy {
 
 class SteamParser {
  public:
-  GameList ParseGetOwnedGames(std::string_view json_response) const;
+  absl::StatusOr<GameList> ParseGetOwnedGames(
+      std::string_view json_response) const;
 };
 
 }  // namespace espy

@@ -21,6 +21,7 @@ add_library(steam_parser
 target_link_libraries(steam_parser PRIVATE
   game_entry_proto
   
+  absl::status
   absl::strings
   glog::glog
   nlohmann_json::nlohmann_json

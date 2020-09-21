@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include <absl/status/statusor.h>
+
 #include "proto/game_entry.pb.h"
 
 namespace espy {
@@ -12,7 +14,7 @@ class SteamService {
   SteamService(std::string steam_key, std::string user_id)
       : steam_key_(std::move(steam_key)), user_id_(std::move(user_id)) {}
 
-  GameList GetOwnedGames() const;
+  absl::StatusOr<GameList> GetOwnedGames() const;
 
  private:
   std::string steam_key_;
