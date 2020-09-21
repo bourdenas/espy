@@ -22,16 +22,15 @@ absl::StatusOr<GameList> SteamService::GetOwnedGames() const {
                                    "key=", steam_key_, "&steamid=", user_id_,
                                    "&include_appinfo=true", "&format=json");
 
-  curlpp::Cleanup cleaner;
-  curlpp::Easy request;
-
   const auto url = curlpp::options::Url(absl::StrCat(host, target));
   LOG(INFO) << absl::StrCat(host, target);
-  request.setOpt(url);
+
+  curlpp::Easy handle;
+  handle.setOpt(url);
 
   std::ostringstream response;
-  request.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
-  request.perform();
+  handle.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
+  handle.perform();
 
   return SteamParser().ParseGetOwnedGames(response.str());
 }

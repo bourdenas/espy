@@ -18,9 +18,6 @@ std::string IgdbService::SearchGame(std::string_view title) const {
   const auto host = kIgdbHostname;
   const auto target = kGamesEndpoint;
 
-  curlpp::Cleanup cleaner;
-  curlpp::Easy request;
-
   const auto url = curlpp::options::Url(absl::StrCat(host, target));
   LOG(INFO) << absl::StrCat(host, target);
 
@@ -28,17 +25,19 @@ std::string IgdbService::SearchGame(std::string_view title) const {
       absl::StrCat("user-key: ", key_),
   };
   const std::string body =
-      absl::StrCat("search \"", std::string(title), "\"; fields name;");
+      absl::StrCat("search \"", std::string(title),
+                   "\"; fields name; where platforms = (6);");
 
-  request.setOpt(url);
-  request.setOpt(std::make_unique<curlpp::options::HttpHeader>(header));
-  request.setOpt(std::make_unique<curlpp::options::PostFields>(body));
-  request.setOpt(std::make_unique<curlpp::options::PostFieldSize>(
+  curlpp::Easy handle;
+  handle.setOpt(url);
+  handle.setOpt(std::make_unique<curlpp::options::HttpHeader>(header));
+  handle.setOpt(std::make_unique<curlpp::options::PostFields>(body));
+  handle.setOpt(std::make_unique<curlpp::options::PostFieldSize>(
       static_cast<int>(body.length())));
 
   std::ostringstream response;
-  request.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
-  request.perform();
+  handle.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
+  handle.perform();
 
   return response.str();
 }
