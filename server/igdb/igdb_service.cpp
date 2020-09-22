@@ -9,12 +9,15 @@
 #include <curlpp/Options.hpp>
 #include <glog/logging.h>
 
+#include "igdb/igdb_parser.hpp"
+
 namespace espy {
 
 constexpr char kIgdbHostname[] = "https://api-v3.igdb.com";
 constexpr char kGamesEndpoint[] = "/games/";
 
-std::string IgdbService::SearchGame(std::string_view title) const {
+absl::StatusOr<igdb::SearchResultList> IgdbService::SearchByTitle(
+    std::string_view title) const {
   const auto host = kIgdbHostname;
   const auto target = kGamesEndpoint;
 
@@ -39,7 +42,7 @@ std::string IgdbService::SearchGame(std::string_view title) const {
   handle.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
   handle.perform();
 
-  return response.str();
+  return IgdbParser().ParseSearchByTitleResponse(response.str());
 }
 
 }  // namespace espy

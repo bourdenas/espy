@@ -4,14 +4,20 @@
 #include <string>
 #include <string_view>
 
+#include <absl/status/statusor.h>
+
+#include "proto/search_result.pb.h"
+
 namespace espy {
 
 class IgdbService {
  public:
   IgdbService(std::string key) : key_(std::move(key)) {}
 
-  // Returns JSON response from IGDB server with entries that match input title.
-  std::string SearchGame(std::string_view title) const;
+  // Returns search result candidates from IGDB server with entries that match
+  // input title.
+  absl::StatusOr<igdb::SearchResultList> SearchByTitle(
+      std::string_view title) const;
 
  private:
   std::string key_;
