@@ -3,7 +3,7 @@ syntax = "proto3";
 package espy;
 
 message SteamEntry {
-  int32 id = 1;
+  int64 id = 1;
   string title = 2;
 }
 

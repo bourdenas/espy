@@ -10,6 +10,16 @@ target_link_libraries(game_entry_proto
   ${PROTOBUF_LIBRARY}
 )
 
+protobuf_generate_cpp(RECONCILIATION_TASK_PROTO_SRC RECONCILIATION_TASK_HEADER
+  "reconciliation_task.proto"
+)
+add_library(reconciliation_task_proto
+  ${RECONCILIATION_TASK_HEADER} ${RECONCILIATION_TASK_PROTO_SRC}
+)
+target_link_libraries(reconciliation_task_proto
+  ${PROTOBUF_LIBRARY}
+)
+
 protobuf_generate_cpp(SEARCH_RESULT_PROTO_SRC SEARCH_RESULT_HEADER
   "search_result.proto"
 )
@@ -29,4 +39,3 @@ add_library(steam_entry_proto
 target_link_libraries(steam_entry_proto
   ${PROTOBUF_LIBRARY}
 )
-

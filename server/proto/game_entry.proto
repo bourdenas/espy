@@ -3,10 +3,10 @@ syntax = "proto3";
 package espy;
 
 message GameEntry {
-  string id = 1;
+  int64 id = 1;
   string title = 2;
 
-  int32 steam_id = 3;
+  int64 steam_id = 3;
 }
 
 message GameList {
