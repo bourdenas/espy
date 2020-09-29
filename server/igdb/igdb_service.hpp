@@ -13,10 +13,11 @@ namespace espy {
 class IgdbService {
  public:
   IgdbService(std::string key) : key_(std::move(key)) {}
+  virtual ~IgdbService() = default;
 
-  // Returns search result candidates from IGDB server with entries that match
-  // input title.
-  absl::StatusOr<igdb::SearchResultList> SearchByTitle(
+  // Returns search result candidates from IGDB server with entries that
+  // match input title.
+  virtual absl::StatusOr<igdb::SearchResultList> SearchByTitle(
       std::string_view title) const;
 
  private:
