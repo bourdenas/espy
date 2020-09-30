@@ -9,12 +9,14 @@
 
 namespace espy {
 
+// Espy frontend of the Steam Web API.
 class SteamService {
  public:
   SteamService(std::string steam_key, std::string user_id)
       : steam_key_(std::move(steam_key)), user_id_(std::move(user_id)) {}
+  virtual ~SteamService() {}
 
-  absl::StatusOr<SteamList> GetOwnedGames() const;
+  virtual absl::StatusOr<SteamList> GetOwnedGames() const;
 
  private:
   std::string steam_key_;
