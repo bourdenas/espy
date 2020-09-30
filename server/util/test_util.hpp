@@ -50,8 +50,13 @@ class ProtoMatcher : public Catch::MatcherBase<Message> {
 };
 
 template <typename Message>
-ProtoMatcher<Message> EqualsProto(Message&& expected) {
+ProtoMatcher<Message> EqualsProto(Message expected) {
   return ProtoMatcher<Message>(std::move(expected));
+}
+template <>
+ProtoMatcher<google::protobuf::Message&&> EqualsProto(
+    google::protobuf::Message&& expected) {
+  return ProtoMatcher<google::protobuf::Message&&>(std::move(expected));
 }
 
 }  // namespace test

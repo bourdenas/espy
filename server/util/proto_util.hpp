@@ -23,9 +23,10 @@ absl::StatusOr<Message> LoadProto(const std::string& path) {
 }
 
 // Saves a protobuf message on disk. Produces a binary files and a
-// human-readable text file for debug purposes.
+// human-readable text file for debug purposes. If |filename_base| empty this
+// function is a noop.
 void SaveProto(const google::protobuf::Message& message,
-               const std::string& filename_base);
+               const std::string& filename_base, bool debug = true);
 
 }  // namespace util
 }  // namespace espy
