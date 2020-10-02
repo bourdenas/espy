@@ -58,6 +58,8 @@ absl::Status SteamLibrary::Sync() {
   game_list_.mutable_game()->MergeFrom(result->game_list.game());
 
   util::SaveProto(game_list_, espy_user_id_);
+  util::SaveProto(result->unreconciled,
+                  absl::StrCat(espy_user_id_, ".unreconciled"));
 
   return absl::OkStatus();
 }

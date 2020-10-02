@@ -23,15 +23,17 @@ absl::StatusOr<igdb::SearchResultList> IgdbParser::ParseSearchByTitleResponse(
 
     auto it = game.find("id");
     if (it == game.end() || !it->is_number_integer()) {
-      return absl::InvalidArgumentError(
-          "Game in response has no 'id' field or has unexpected type.");
+      return absl::InvalidArgumentError(absl::StrCat(
+          "Game in response has no 'id' field or has unexpected type.\n",
+          std::string(json_response)));
     }
     result->set_id(it->get<int>());
 
     it = game.find("name");
     if (it == game.end() || !it->is_string()) {
-      return absl::InvalidArgumentError(
-          "Game in response has no 'title' field or has unexpected type.");
+      return absl::InvalidArgumentError(absl::StrCat(
+          "Game in response has no 'title' field or has unexpected type.\n",
+          std::string(json_response)));
     }
     result->set_title(*it);
   }

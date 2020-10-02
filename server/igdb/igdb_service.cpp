@@ -28,8 +28,7 @@ absl::StatusOr<igdb::SearchResultList> IgdbService::SearchByTitle(
       absl::StrCat("user-key: ", key_),
   };
   const std::string body =
-      absl::StrCat("search \"", std::string(title),
-                   "\"; fields name; where platforms = (6);");
+      absl::StrCat("search \"", std::string(title), "\"; fields name;");
 
   curlpp::Easy handle;
   handle.setOpt(url);
