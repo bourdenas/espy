@@ -13,7 +13,7 @@ namespace {
 // Poor man's mocking.
 class MockIgdbService : public IgdbService {
  public:
-  MockIgdbService() : IgdbService("") {}
+  MockIgdbService() : IgdbService("", "") {}
 
   absl::StatusOr<igdb::SearchResultList> SearchByTitle(
       std::string_view title) const override {

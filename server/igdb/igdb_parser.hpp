@@ -11,6 +11,9 @@ namespace espy {
 
 class IgdbParser {
  public:
+  absl::StatusOr<std::string> ParseOAuthResponse(
+      std::string_view json_response) const;
+
   absl::StatusOr<igdb::SearchResultList> ParseSearchByTitleResponse(
       std::string_view json_response) const;
 };

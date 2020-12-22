@@ -8,6 +8,24 @@ namespace espy {
 
 using json = nlohmann::json;
 
+absl::StatusOr<std::string> IgdbParser::ParseOAuthResponse(
+    std::string_view json_response) const {
+  auto json_obj = json::parse(json_response, nullptr, false);
+  if (json_obj.is_discarded()) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("Failed to parse JSON response from Twitch.OAuth2\n",
+                     std::string(json_response)));
+  }
+
+  auto it = json_obj.find("access_token");
+  if (it == json_obj.end() || !it->is_string()) {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Response is missing 'access_token' field or has an unexpected type.\n",
+        std::string(json_response)));
+  }
+  return it->get<std::string>();
+}
+
 absl::StatusOr<igdb::SearchResultList> IgdbParser::ParseSearchByTitleResponse(
     std::string_view json_response) const {
   igdb::SearchResultList search_result_list;
@@ -15,7 +33,8 @@ absl::StatusOr<igdb::SearchResultList> IgdbParser::ParseSearchByTitleResponse(
   auto json_obj = json::parse(json_response, nullptr, false);
   if (json_obj.is_discarded()) {
     return absl::InvalidArgumentError(
-        "Failed to parse JSON response from IGDB.SearchByTitle.");
+        absl::StrCat("Failed to parse JSON response from IGDB.SearchByTitle\n",
+                     std::string(json_response)));
   }
 
   for (const auto& game : json_obj) {

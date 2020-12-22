@@ -12,7 +12,8 @@ namespace espy {
 
 class IgdbService {
  public:
-  IgdbService(std::string key) : key_(std::move(key)) {}
+  IgdbService(std::string client_id, std::string secret)
+      : client_id_(std::move(client_id)), secret_(secret) {}
   virtual ~IgdbService() = default;
 
   // Returns search result candidates from IGDB server with entries that
@@ -21,7 +22,10 @@ class IgdbService {
       std::string_view title) const;
 
  private:
-  std::string key_;
+  const std::string client_id_;
+  const std::string secret_;
+
+  mutable std::string oauth_token_;
 };
 
 }  // namespace espy
