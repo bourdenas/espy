@@ -25,14 +25,20 @@ absl::StatusOr<SteamList> SteamService::GetOwnedGames() const {
   const auto url = curlpp::options::Url(absl::StrCat(host, target));
   LOG(INFO) << absl::StrCat(host, target);
 
-  curlpp::Easy handle;
-  handle.setOpt(url);
+  try {
+    curlpp::Easy handle;
+    handle.setOpt(url);
 
-  std::ostringstream response;
-  handle.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
-  handle.perform();
+    std::ostringstream response;
+    handle.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
+    handle.perform();
 
-  return SteamParser().ParseGetOwnedGames(response.str());
-}
+    return SteamParser().ParseGetOwnedGames(response.str());
+  } catch (std::exception& e) {
+    LOG(ERROR) << "Failed to reach remote endpoint: " << e.what();
+  }
+
+  return absl::InternalError("Failed to reach Steam.");
+}  // namespace espy
 
 }  // namespace espy

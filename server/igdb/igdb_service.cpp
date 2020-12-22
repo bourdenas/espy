@@ -30,18 +30,23 @@ absl::StatusOr<igdb::SearchResultList> IgdbService::SearchByTitle(
   const std::string body =
       absl::StrCat("search \"", std::string(title), "\"; fields name;");
 
-  curlpp::Easy handle;
-  handle.setOpt(url);
-  handle.setOpt(std::make_unique<curlpp::options::HttpHeader>(header));
-  handle.setOpt(std::make_unique<curlpp::options::PostFields>(body));
-  handle.setOpt(std::make_unique<curlpp::options::PostFieldSize>(
-      static_cast<int>(body.length())));
+  try {
+    curlpp::Easy handle;
+    handle.setOpt(url);
+    handle.setOpt(std::make_unique<curlpp::options::HttpHeader>(header));
+    handle.setOpt(std::make_unique<curlpp::options::PostFields>(body));
+    handle.setOpt(std::make_unique<curlpp::options::PostFieldSize>(
+        static_cast<int>(body.length())));
 
-  std::ostringstream response;
-  handle.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
-  handle.perform();
+    std::ostringstream response;
+    handle.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
+    handle.perform();
 
-  return IgdbParser().ParseSearchByTitleResponse(response.str());
+    return IgdbParser().ParseSearchByTitleResponse(response.str());
+  } catch (std::exception& e) {
+    LOG(ERROR) << "Failed to reach remote endpoint: " << e.what();
+  }
+  return absl::InternalError("Failed to reach IGDB.");
 }
 
 }  // namespace espy
