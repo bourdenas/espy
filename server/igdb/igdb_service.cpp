@@ -14,15 +14,12 @@
 
 namespace espy {
 
-namespace {
 constexpr char kTwitchOAuthUrl[] = "https://id.twitch.tv/oauth2/token?";
 
-// Returns OAuth token for Twitch API service.
-absl::StatusOr<std::string> Authenticate(std::string client_id,
-                                         std::string secret) {
+absl::Status IgdbService::Authenticate() {
   const std::string params =
-      absl::StrJoin({absl::StrCat("client_id=", client_id),
-                     absl::StrCat("client_secret=", secret),
+      absl::StrJoin({absl::StrCat("client_id=", client_id_),
+                     absl::StrCat("client_secret=", secret_),
                      std::string("grant_type=client_credentials")},
                     "&");
   const auto url_string = absl::StrCat(kTwitchOAuthUrl, params);
@@ -42,13 +39,18 @@ absl::StatusOr<std::string> Authenticate(std::string client_id,
     handle.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
     handle.perform();
 
-    return IgdbParser().ParseOAuthResponse(response.str());
+    const auto result = IgdbParser().ParseOAuthResponse(response.str());
+    if (!result.ok()) {
+      return result.status();
+    }
+
+    oauth_token_ = *result;
+    return absl::OkStatus();
   } catch (std::exception& e) {
     LOG(ERROR) << "Failed to reach remote endpoint: " << e.what();
   }
   return absl::InternalError("Failed to reach Twitch OAuth server.");
 }
-}  // namespace
 
 constexpr char kIgdbUrl[] = "https://api.igdb.com/v4";
 constexpr char kGamesEndpoint[] = "games";
@@ -56,11 +58,9 @@ constexpr char kGamesEndpoint[] = "games";
 absl::StatusOr<igdb::SearchResultList> IgdbService::SearchByTitle(
     std::string_view title) const {
   if (oauth_token_.empty()) {
-    const auto result = Authenticate(client_id_, secret_);
-    if (!result.ok()) {
-      return result.status();
-    }
-    oauth_token_ = *result;
+    return absl::FailedPreconditionError(
+        "Need to call IgdbService::Authenticate() successfully before using "
+        "the service.");
   }
 
   const auto host = kIgdbUrl;

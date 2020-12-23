@@ -16,6 +16,10 @@ class IgdbService {
       : client_id_(std::move(client_id)), secret_(secret) {}
   virtual ~IgdbService() = default;
 
+  // Need to Authenticate to the service before doing any other operation.
+  // Returns a status error if authentication failed.
+  absl::Status Authenticate();
+
   // Returns search result candidates from IGDB server with entries that
   // match input title.
   virtual absl::StatusOr<igdb::SearchResultList> SearchByTitle(
@@ -25,7 +29,7 @@ class IgdbService {
   const std::string client_id_;
   const std::string secret_;
 
-  mutable std::string oauth_token_;
+  std::string oauth_token_;
 };
 
 }  // namespace espy
