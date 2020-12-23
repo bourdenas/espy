@@ -35,6 +35,7 @@ add_library(reconciliation_service
 target_link_libraries(reconciliation_service PRIVATE
   game_entry_proto
   igdb_service
+  qps_rate_limiter
   reconciliation_task_proto
   search_result_proto
   steam_entry_proto

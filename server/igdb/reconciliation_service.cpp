@@ -5,6 +5,8 @@
 
 #include <glog/logging.h>
 
+#include "util/qps_rate_limiter.hpp"
+
 namespace espy {
 
 namespace {
@@ -36,14 +38,22 @@ int EditDistance(std::string_view a, std::string_view b) {
   }
   return matrix.back();
 }
+
+constexpr int kIgdbQps = 4;
+
 }  // namespace
 
 absl::StatusOr<ReconciliationResult> ReconciliationService::Reconcile(
     std::vector<SteamEntry> entries) const {
+  // IGDB API imposes a QPS limit.
+  QpsRateLimiter qps_rate(kIgdbQps);
+
   std::vector<ReconciliationTask> reconciliation_tasks(entries.size());
   std::transform(
       std::execution::par, entries.begin(), entries.end(),
-      reconciliation_tasks.begin(), [this](SteamEntry& entry) {
+      reconciliation_tasks.begin(), [this, &qps_rate](SteamEntry& entry) {
+        qps_rate.Wait();
+        DLOG(INFO) << "Reconciling '" << entry.title() << "'...";
         auto result = igdb_service_->SearchByTitle(entry.title());
 
         ReconciliationTask task;
