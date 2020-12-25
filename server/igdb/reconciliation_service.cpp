@@ -94,9 +94,13 @@ absl::StatusOr<ReconciliationResult> ReconciliationService::Reconcile(
       [](const ReconciliationTask& task) { return task.candidate_size() > 0; });
 
   ReconciliationResult result;
-  std::transform(reconciliation_tasks.begin(), it,
-                 google::protobuf::RepeatedFieldBackInserter(
-                     result.game_list.mutable_game()),
+  // Acrobatics to resize protobuf repeated field for parallel execution.
+  const auto result_size = std::distance(reconciliation_tasks.begin(), it);
+  result.game_list.mutable_game()->Reserve(result_size);
+  for (int i = 0; i < result_size; ++i) result.game_list.add_game();
+
+  std::transform(std::execution::par, reconciliation_tasks.begin(), it,
+                 result.game_list.mutable_game()->begin(),
                  [this, &qps_rate](const ReconciliationTask& task) {
                    const auto& top_result = task.candidate(0).result();
 
