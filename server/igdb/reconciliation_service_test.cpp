@@ -40,6 +40,10 @@ class MockIgdbService : public IgdbService {
         absl::StrCat("Unexpected call to MockIgdbService::SearchByTitle('",
                      std::string(title), "')"));
   }
+
+  absl::StatusOr<std::string> GetCover(int cover_id) const override {
+    return absl::UnimplementedError("not yet");
+  }
 };
 }  // namespace
 

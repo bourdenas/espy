@@ -53,7 +53,7 @@ absl::StatusOr<ReconciliationResult> ReconciliationService::Reconcile(
       std::execution::par, entries.begin(), entries.end(),
       reconciliation_tasks.begin(), [this, &qps_rate](SteamEntry& entry) {
         qps_rate.Wait();
-        DLOG(INFO) << "Reconciling '" << entry.title() << "'...";
+        DLOG(INFO) << "Reconciling '" << entry.title() << "'";
         auto result = igdb_service_->SearchByTitle(entry.title());
 
         ReconciliationTask task;
@@ -97,13 +97,22 @@ absl::StatusOr<ReconciliationResult> ReconciliationService::Reconcile(
   std::transform(reconciliation_tasks.begin(), it,
                  google::protobuf::RepeatedFieldBackInserter(
                      result.game_list.mutable_game()),
-                 [](const ReconciliationTask& task) {
+                 [this, &qps_rate](const ReconciliationTask& task) {
                    const auto& top_result = task.candidate(0).result();
 
                    GameEntry entry;
                    entry.set_id(top_result.id());
                    entry.set_title(top_result.title());
                    entry.set_steam_id(task.steam_entry().id());
+
+                   if (top_result.cover_id() > 0) {
+                     qps_rate.Wait();
+                     auto result =
+                         igdb_service_->GetCover(top_result.cover_id());
+                     if (result.ok()) {
+                       entry.set_cover_image_id(std::move(*result));
+                     }
+                   }
                    return entry;
                  });
   std::move(it, reconciliation_tasks.end(),

@@ -52,29 +52,25 @@ absl::Status IgdbService::Authenticate() {
   return absl::InternalError("Failed to reach Twitch OAuth server.");
 }
 
-constexpr char kIgdbUrl[] = "https://api.igdb.com/v4";
-constexpr char kGamesEndpoint[] = "games";
-
-absl::StatusOr<igdb::SearchResultList> IgdbService::SearchByTitle(
-    std::string_view title) const {
-  if (oauth_token_.empty()) {
+namespace {
+absl::StatusOr<std::string> Post(const std::string& host,
+                                 const std::string& endpoint,
+                                 const std::string& body,
+                                 const std::string& client_id,
+                                 const std::string& oauth_token) {
+  if (oauth_token.empty()) {
     return absl::FailedPreconditionError(
         "Need to call IgdbService::Authenticate() successfully before using "
         "the service.");
   }
 
-  const auto host = kIgdbUrl;
-  const auto target = kGamesEndpoint;
-
-  const auto url_string = absl::StrCat(host, "/", target, "/");
+  const auto url_string = absl::StrCat(host, "/", endpoint, "/");
   const auto url = curlpp::options::Url(url_string);
 
   const std::list<std::string> header = {
-      absl::StrCat("Client-ID: ", client_id_),
-      absl::StrCat("Authorization: ", "Bearer ", oauth_token_),
+      absl::StrCat("Client-ID: ", client_id),
+      absl::StrCat("Authorization: ", "Bearer ", oauth_token),
   };
-  const std::string body =
-      absl::StrCat("search \"", std::string(title), "\"; fields name;");
 
   try {
     curlpp::Easy handle;
@@ -87,12 +83,36 @@ absl::StatusOr<igdb::SearchResultList> IgdbService::SearchByTitle(
     std::ostringstream response;
     handle.setOpt(std::make_unique<curlpp::options::WriteStream>(&response));
     handle.perform();
-
-    return IgdbParser().ParseSearchByTitleResponse(response.str());
+    return response.str();
   } catch (std::exception& e) {
-    LOG(ERROR) << "Failed to reach remote endpoint: " << e.what();
+    return absl::InternalError(
+        absl::StrCat("Failed to reach IGDB endpoint.\n", e.what()));
   }
-  return absl::InternalError("Failed to reach IGDB.");
+}
+
+constexpr char kIgdbUrl[] = "https://api.igdb.com/v4";
+constexpr char kGamesEndpoint[] = "games";
+constexpr char kCoverEndpoint[] = "covers";
+}  // namespace
+
+absl::StatusOr<igdb::SearchResultList> IgdbService::SearchByTitle(
+    std::string_view title) const {
+  const std::string query =
+      absl::StrCat("search \"", std::string(title), "\"; fields name, cover;");
+
+  auto result = Post(kIgdbUrl, kGamesEndpoint, query, client_id_, oauth_token_);
+  return result.ok() ? IgdbParser().ParseSearchByTitleResponse(*result)
+                     : result.status();
+}
+
+absl::StatusOr<std::string> IgdbService::GetCover(int cover_id) const {
+  const std::string query =
+      absl::StrCat("fields image_id; where id = ", cover_id, ";");
+  DLOG(INFO) << "Query on covers: " << query;
+
+  auto result = Post(kIgdbUrl, kCoverEndpoint, query, client_id_, oauth_token_);
+  return result.ok() ? IgdbParser().ParseGetCoverResponse(*result)
+                     : result.status();
 }
 
 }  // namespace espy

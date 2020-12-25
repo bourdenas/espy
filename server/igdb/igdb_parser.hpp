@@ -16,6 +16,9 @@ class IgdbParser {
 
   absl::StatusOr<igdb::SearchResultList> ParseSearchByTitleResponse(
       std::string_view json_response) const;
+
+  absl::StatusOr<std::string> ParseGetCoverResponse(
+      std::string_view json_response) const;
 };
 
 }  // namespace espy

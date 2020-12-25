@@ -25,6 +25,10 @@ class IgdbService {
   virtual absl::StatusOr<igdb::SearchResultList> SearchByTitle(
       std::string_view title) const;
 
+  // Returns game cover hash for constructing image URL from a cover id in
+  // IGDB's cover endpoint.
+  virtual absl::StatusOr<std::string> GetCover(int cover_id) const;
+
  private:
   const std::string client_id_;
   const std::string secret_;

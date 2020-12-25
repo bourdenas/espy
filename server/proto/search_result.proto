@@ -5,6 +5,7 @@ package espy.igdb;
 message SearchResult {
   int64 id = 1;
   string title = 2;
+  int64 cover_id = 3;
 }
 
 message SearchResultList {
