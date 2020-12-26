@@ -5,6 +5,7 @@ add_library(igdb_parser
   "igdb_parser.cpp"
 )
 target_link_libraries(igdb_parser PRIVATE
+  game_entry_proto
   search_result_proto
   
   absl::status
@@ -19,6 +20,7 @@ add_library(igdb_service
   "igdb_service.cpp"
 )
 target_link_libraries(igdb_service PRIVATE
+  game_entry_proto
   igdb_parser
   search_result_proto
 

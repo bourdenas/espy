@@ -92,27 +92,61 @@ absl::StatusOr<std::string> Post(const std::string& host,
 
 constexpr char kIgdbUrl[] = "https://api.igdb.com/v4";
 constexpr char kGamesEndpoint[] = "games";
-constexpr char kCoverEndpoint[] = "covers";
+constexpr char kCoversEndpoint[] = "covers";
+constexpr char kFranchisesEndpoint[] = "franchises";
+constexpr char kCollectionsEndpoint[] = "collections";
 }  // namespace
 
 absl::StatusOr<igdb::SearchResultList> IgdbService::SearchByTitle(
     std::string_view title) const {
   const std::string query =
-      absl::StrCat("search \"", std::string(title), "\"; fields name, cover;");
+      absl::StrCat("search \"", std::string(title), "\"; fields *;");
 
   auto result = Post(kIgdbUrl, kGamesEndpoint, query, client_id_, oauth_token_);
   return result.ok() ? IgdbParser().ParseSearchByTitleResponse(*result)
                      : result.status();
 }
 
-absl::StatusOr<std::string> IgdbService::GetCover(int cover_id) const {
+absl::StatusOr<std::string> IgdbService::GetCover(int64_t cover_id) const {
   const std::string query =
       absl::StrCat("fields image_id; where id = ", cover_id, ";");
   DLOG(INFO) << "Query on covers: " << query;
 
-  auto result = Post(kIgdbUrl, kCoverEndpoint, query, client_id_, oauth_token_);
+  auto result =
+      Post(kIgdbUrl, kCoversEndpoint, query, client_id_, oauth_token_);
   return result.ok() ? IgdbParser().ParseGetCoverResponse(*result)
                      : result.status();
+}
+
+absl::StatusOr<std::vector<Franchise>> IgdbService::GetFranchises(
+    const std::vector<int64_t>& franchise_ids) const {
+  const std::string query =
+      absl::StrCat("fields id, name, url; where id = (",
+                   absl::StrJoin(franchise_ids, ","), ");");
+  DLOG(INFO) << "Query on franchise: " << query;
+
+  auto result =
+      Post(kIgdbUrl, kFranchisesEndpoint, query, client_id_, oauth_token_);
+  return result.ok() ? IgdbParser().ParseGetFranchiseResponse(*result)
+                     : result.status();
+}
+
+absl::StatusOr<Franchise> IgdbService::GetSeries(int64_t collection_id) const {
+  const std::string query =
+      absl::StrCat("fields id, name, url; where id = ", collection_id, ";");
+  DLOG(INFO) << "Query on franchise: " << query;
+
+  auto result =
+      Post(kIgdbUrl, kCollectionsEndpoint, query, client_id_, oauth_token_);
+  if (!result.ok()) {
+    return result.status();
+  }
+
+  auto parsed_result = IgdbParser().ParseGetFranchiseResponse(*result);
+  if (!parsed_result.ok()) {
+    return parsed_result.status();
+  }
+  return parsed_result->front();
 }
 
 }  // namespace espy

@@ -6,6 +6,7 @@
 
 #include <absl/status/statusor.h>
 
+#include "proto/game_entry.pb.h"
 #include "proto/search_result.pb.h"
 
 namespace espy {
@@ -27,7 +28,12 @@ class IgdbService {
 
   // Returns game cover hash for constructing image URL from a cover id in
   // IGDB's cover endpoint.
-  virtual absl::StatusOr<std::string> GetCover(int cover_id) const;
+  virtual absl::StatusOr<std::string> GetCover(int64_t cover_id) const;
+
+  virtual absl::StatusOr<std::vector<Franchise>> GetFranchises(
+      const std::vector<int64_t>& franchise_ids) const;
+
+  virtual absl::StatusOr<Franchise> GetSeries(int64_t collection_id) const;
 
  private:
   const std::string client_id_;

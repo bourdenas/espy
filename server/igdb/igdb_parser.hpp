@@ -2,9 +2,11 @@
 #define ESPY_SERVER_IGDB_IGDB_PARSER_HPP_
 
 #include <string_view>
+#include <vector>
 
 #include <absl/status/statusor.h>
 
+#include "proto/game_entry.pb.h"
 #include "proto/search_result.pb.h"
 
 namespace espy {
@@ -18,6 +20,9 @@ class IgdbParser {
       std::string_view json_response) const;
 
   absl::StatusOr<std::string> ParseGetCoverResponse(
+      std::string_view json_response) const;
+
+  absl::StatusOr<std::vector<Franchise>> ParseGetFranchiseResponse(
       std::string_view json_response) const;
 };
 

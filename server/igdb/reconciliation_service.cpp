@@ -99,26 +99,52 @@ absl::StatusOr<ReconciliationResult> ReconciliationService::Reconcile(
   result.game_list.mutable_game()->Reserve(result_size);
   for (int i = 0; i < result_size; ++i) result.game_list.add_game();
 
-  std::transform(std::execution::par, reconciliation_tasks.begin(), it,
-                 result.game_list.mutable_game()->begin(),
-                 [this, &qps_rate](const ReconciliationTask& task) {
-                   const auto& top_result = task.candidate(0).result();
+  std::transform(
+      std::execution::par, reconciliation_tasks.begin(), it,
+      result.game_list.mutable_game()->begin(),
+      [this, &qps_rate](const ReconciliationTask& task) {
+        const auto& top_result = task.candidate(0).result();
 
-                   GameEntry entry;
-                   entry.set_id(top_result.id());
-                   entry.set_title(top_result.title());
-                   entry.set_steam_id(task.steam_entry().id());
+        GameEntry entry;
+        entry.set_id(top_result.id());
+        entry.set_title(top_result.title());
+        entry.set_url(top_result.url());
+        entry.set_release_date(top_result.release_date());
 
-                   if (top_result.cover_id() > 0) {
-                     qps_rate.Wait();
-                     auto result =
-                         igdb_service_->GetCover(top_result.cover_id());
-                     if (result.ok()) {
-                       entry.set_cover_image_id(std::move(*result));
-                     }
-                   }
-                   return entry;
-                 });
+        auto* storefront = entry.add_storefront();
+        storefront->set_type(GameEntry::Storefront::STEAM);
+        storefront->set_id(task.steam_entry().id());
+
+        if (top_result.cover_id() > 0) {
+          qps_rate.Wait();
+          auto result = igdb_service_->GetCover(top_result.cover_id());
+          if (result.ok()) {
+            entry.set_cover_image_id(std::move(*result));
+          }
+        }
+
+        if (top_result.franchise_id_size() > 0) {
+          qps_rate.Wait();
+          std::vector<int64_t> franchise_ids(top_result.franchise_id_size());
+          std::copy(top_result.franchise_id().begin(),
+                    top_result.franchise_id().end(), franchise_ids.begin());
+          auto result = igdb_service_->GetFranchises(franchise_ids);
+          if (result.ok()) {
+            std::move(result->begin(), result->end(),
+                      google::protobuf::RepeatedFieldBackInserter(
+                          entry.mutable_franchise()));
+          }
+        }
+
+        if (top_result.collection_id() > 0) {
+          qps_rate.Wait();
+          auto result = igdb_service_->GetSeries(top_result.collection_id());
+          if (result.ok()) {
+            *entry.mutable_series() = std::move(*result);
+          }
+        }
+        return entry;
+      });
   std::move(it, reconciliation_tasks.end(),
             google::protobuf::RepeatedFieldBackInserter(
                 result.unreconciled.mutable_task()));

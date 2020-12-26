@@ -41,7 +41,16 @@ class MockIgdbService : public IgdbService {
                      std::string(title), "')"));
   }
 
-  absl::StatusOr<std::string> GetCover(int cover_id) const override {
+  absl::StatusOr<std::string> GetCover(int64_t cover_id) const override {
+    return absl::UnimplementedError("not yet");
+  }
+
+  absl::StatusOr<std::vector<Franchise>> GetFranchises(
+      const std::vector<int64_t>& franchise_ids) const override {
+    return absl::UnimplementedError("not yet");
+  }
+
+  absl::StatusOr<Franchise> GetSeries(int64_t collection_id) const override {
     return absl::UnimplementedError("not yet");
   }
 };
