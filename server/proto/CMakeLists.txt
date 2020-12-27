@@ -10,6 +10,16 @@ target_link_libraries(game_entry_proto
   ${PROTOBUF_LIBRARY}
 )
 
+protobuf_generate_cpp(IGDB_API_PROTO_SRC IGDB_API_HEADER
+  "igdbapi.proto"
+)
+add_library(igdb_api_proto
+  ${IGDB_API_HEADER} ${IGDB_API_PROTO_SRC}
+)
+target_link_libraries(igdb_api_proto
+  ${PROTOBUF_LIBRARY}
+)
+
 protobuf_generate_cpp(RECONCILIATION_TASK_PROTO_SRC RECONCILIATION_TASK_HEADER
   "reconciliation_task.proto"
 )
