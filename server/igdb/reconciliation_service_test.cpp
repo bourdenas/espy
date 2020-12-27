@@ -15,25 +15,25 @@ class MockIgdbService : public IgdbService {
  public:
   MockIgdbService() : IgdbService("", "") {}
 
-  absl::StatusOr<igdb::SearchResultList> SearchByTitle(
+  absl::StatusOr<igdb::GameResult> SearchByTitle(
       std::string_view title) const override {
     if (title == "") {
       return absl::NotFoundError("blah");
     } else if (title == "Diablo") {
-      return test::ParseProto<igdb::SearchResultList>(R"(
-        result {
+      return test::ParseProto<igdb::GameResult>(R"(
+        games {
           id: 1210
-          title: 'Diablo'
+          name: 'Diablo'
         }
-        result {
+        games {
           id: 1212
-          title: 'Diablo II'
+          name: 'Diablo II'
         })");
     } else if (title == "Diablo 2") {
-      return test::ParseProto<igdb::SearchResultList>(R"(
-        result {
+      return test::ParseProto<igdb::GameResult>(R"(
+        games {
           id: 1212
-          title: 'Diablo II'
+          name: 'Diablo II'
         })");
     }
     return absl::InvalidArgumentError(
@@ -41,16 +41,17 @@ class MockIgdbService : public IgdbService {
                      std::string(title), "')"));
   }
 
-  absl::StatusOr<std::string> GetCover(int64_t cover_id) const override {
+  absl::StatusOr<igdb::Cover> GetCover(int64_t cover_id) const override {
     return absl::UnimplementedError("not yet");
   }
 
-  absl::StatusOr<std::vector<Franchise>> GetFranchises(
+  absl::StatusOr<igdb::FranchiseResult> GetFranchises(
       const std::vector<int64_t>& franchise_ids) const override {
     return absl::UnimplementedError("not yet");
   }
 
-  absl::StatusOr<Franchise> GetSeries(int64_t collection_id) const override {
+  absl::StatusOr<igdb::Collection> GetCollection(
+      int64_t collection_id) const override {
     return absl::UnimplementedError("not yet");
   }
 };
@@ -69,17 +70,20 @@ TEST_CASE("[ReconciliationService] Reconcile games by title using IgdbService.",
         )"),
     };
 
-    auto result = reconciler.Reconcile(entries);
-    REQUIRE(result.ok());
+    auto library = reconciler.Reconcile(entries);
+    REQUIRE(library.ok());
 
-    REQUIRE_THAT(result->game_list,
-                 test::EqualsProto(test::ParseProto<GameList>(R"(
-                  game {
-                    id: 1212
-                    title: 'Diablo II'
-                    steam_id: 1234
-                  })")));
-    REQUIRE(result->unreconciled.task().empty());
+    REQUIRE_THAT(*library, test::EqualsProto(test::ParseProto<Library>(R"(
+                              entry {
+                                game {
+                                  id: 1212
+                                  name: 'Diablo II'
+                                }
+                                store_owned {
+                                  game_id: 1234
+                                  store_id: 1
+                                }
+                              })")));
   }
 
   SECTION("Multiple matches") {
@@ -90,17 +94,20 @@ TEST_CASE("[ReconciliationService] Reconcile games by title using IgdbService.",
         )"),
     };
 
-    auto result = reconciler.Reconcile(entries);
-    REQUIRE(result.ok());
+    auto library = reconciler.Reconcile(entries);
+    REQUIRE(library.ok());
 
-    REQUIRE_THAT(result->game_list,
-                 test::EqualsProto(test::ParseProto<GameList>(R"(
-                  game {
-                    id: 1210
-                    title: 'Diablo'
-                    steam_id: 123
-                  })")));
-    REQUIRE(result->unreconciled.task().empty());
+    REQUIRE_THAT(*library, test::EqualsProto(test::ParseProto<Library>(R"(
+                              entry {
+                                game {
+                                  id: 1210
+                                  name: 'Diablo'
+                                }
+                                store_owned {
+                                  game_id: 123
+                                  store_id: 1
+                                }
+                              })")));
   }
 
   SECTION("Multiple game entries") {
@@ -119,29 +126,34 @@ TEST_CASE("[ReconciliationService] Reconcile games by title using IgdbService.",
         )"),
     };
 
-    auto result = reconciler.Reconcile(entries);
-    REQUIRE(result.ok());
+    auto library = reconciler.Reconcile(entries);
+    REQUIRE(library.ok());
 
-    REQUIRE_THAT(result->game_list,
-                 test::EqualsProto(test::ParseProto<GameList>(R"(
-                  game {
-                    id: 1210
-                    title: 'Diablo'
-                    steam_id: 123
-                  }
-                  game {
-                    id: 1212
-                    title: 'Diablo II'
-                    steam_id: 125
-                  })")));
-    REQUIRE_THAT(result->unreconciled,
-                 test::EqualsProto(test::ParseProto<ReconciliationTaskList>(R"(
-                  task {
-                    steam_entry {
-                      id: 127
-                      title: 'Diablo 4'
-                    }
-                  })")));
+    REQUIRE_THAT(*library, test::EqualsProto(test::ParseProto<Library>(R"(
+                              entry {
+                                game {
+                                  id: 1210
+                                  name: 'Diablo'
+                                }
+                                store_owned {
+                                  game_id: 123
+                                  store_id: 1
+                                }
+                              }
+                              entry {
+                                game {
+                                  id: 1212
+                                  name: 'Diablo II'
+                                }
+                                store_owned {
+                                  game_id: 125
+                                  store_id: 1
+                                }
+                              }
+                              unreconciled_steam_game {
+                                id: 127
+                                title: 'Diablo 4'
+                              })")));
   }
 
   SECTION("No matches") {
@@ -156,30 +168,23 @@ TEST_CASE("[ReconciliationService] Reconcile games by title using IgdbService.",
         )"),
     };
 
-    auto result = reconciler.Reconcile(entries);
-    REQUIRE(result.ok());
-    REQUIRE(result->game_list.game().empty());
-    REQUIRE_THAT(result->unreconciled,
-                 test::EqualsProto(test::ParseProto<ReconciliationTaskList>(R"(
-                  task {
-                    steam_entry {
-                      id: 12345
-                      title: ''
-                    }
+    auto library = reconciler.Reconcile(entries);
+    REQUIRE(library.ok());
+    REQUIRE_THAT(*library, test::EqualsProto(test::ParseProto<Library>(R"(
+                  unreconciled_steam_game {
+                    id: 12345
+                    title: ''
                   }
-                  task {
-                    steam_entry {
-                      id: 123
-                      title: 'foo'
-                    }
+                  unreconciled_steam_game {
+                    id: 123
+                    title: 'foo'
                   })")));
   }
 
   SECTION("No input entries") {
-    auto result = reconciler.Reconcile({});
-    REQUIRE(result.ok());
-    REQUIRE(result->game_list.game().empty());
-    REQUIRE(result->unreconciled.task().empty());
+    auto library = reconciler.Reconcile({});
+    REQUIRE(library.ok());
+    REQUIRE_THAT(*library, test::EqualsProto(test::ParseProto<Library>("")));
   }
 }
 

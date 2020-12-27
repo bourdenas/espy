@@ -17,10 +17,10 @@ absl::StatusOr<SteamLibrary> SteamLibrary::Create(
   auto lib = SteamLibrary(std::move(espy_user_id), steam_service,
                           reconciliation_service);
 
-  auto result = espy::util::LoadProto<espy::GameList>(
-      absl::StrCat(lib.espy_user_id_, ".bin"));
+  auto result =
+      util::LoadProto<Library>(absl::StrCat(lib.espy_user_id_, ".bin"));
   if (result.ok()) {
-    lib.game_list_ = std::move(result.value());
+    lib.library_ = std::move(result.value());
   }
 
   return lib;
@@ -30,10 +30,22 @@ absl::Status SteamLibrary::Sync() {
   auto promise = std::async(
       std::launch::async, [this]() { return steam_service_->GetOwnedGames(); });
 
-  std::unordered_set<int64_t> steam_ids;
-  for (const auto& entry : game_list_.game()) {
-    steam_ids.insert(entry.steam_id());
-  }
+  auto ids_range = library_.entry() |
+                   std::views::filter([](const GameEntry& entry) {
+                     for (const auto& store : entry.store_owned()) {
+                       if (store.store_id() == GameEntry::Store::STEAM)
+                         return true;
+                     }
+                     return false;
+                   }) |
+                   std::views::transform([](const GameEntry& entry) {
+                     for (const auto& store : entry.store_owned()) {
+                       if (store.store_id() == GameEntry::Store::STEAM)
+                         return store.game_id();
+                     }
+                     return static_cast<int64_t>(0);
+                   });
+  std::unordered_set<int64_t> steam_ids(ids_range.begin(), ids_range.end());
 
   auto steam_response = promise.get();
   if (!steam_response.ok()) {
@@ -49,17 +61,19 @@ absl::Status SteamLibrary::Sync() {
   std::move(unreconciled_range.begin(), unreconciled_range.end(),
             std::back_inserter(unreconciled));
 
-  if (unreconciled.empty()) return absl::OkStatus();
-
-  auto result = reconciler_->Reconcile(unreconciled);
-  if (!result.ok()) {
-    return result.status();
+  if (unreconciled.empty()) {
+    return absl::OkStatus();
   }
-  game_list_.mutable_game()->MergeFrom(result->game_list.game());
 
-  util::SaveProto(game_list_, espy_user_id_);
-  util::SaveProto(result->unreconciled,
-                  absl::StrCat(espy_user_id_, ".unreconciled"));
+  auto library = reconciler_->Reconcile(unreconciled);
+  if (!library.ok()) {
+    return library.status();
+  }
+  library_.mutable_entry()->MergeFrom(library->entry());
+  *library_.mutable_unreconciled_steam_game() = {
+      library->unreconciled_steam_game().begin(),
+      library->unreconciled_steam_game().end()};
+  util::SaveProto(library_, espy_user_id_);
 
   return absl::OkStatus();
 }

@@ -5,7 +5,7 @@
 
 #include <absl/status/status.h>
 
-#include "proto/game_entry.pb.h"
+#include "proto/library.pb.h"
 #include "steam/steam_service.hpp"
 #include "igdb/reconciliation_service.hpp"
 
@@ -25,7 +25,7 @@ class SteamLibrary {
   // NOTE: Ignores Steam entries that fails to retrieve IGDB listings for now.
   absl::Status Sync();
 
-  const GameList& games() const { return game_list_; }
+  const Library& games() const { return library_; }
 
  private:
   SteamLibrary(std::string espy_user_id, const SteamService* steam_service,
@@ -38,7 +38,7 @@ class SteamLibrary {
   const SteamService* steam_service_;
   const ReconciliationService* reconciler_;
 
-  GameList game_list_;
+  Library library_;
 };
 
 }  // namespace espy

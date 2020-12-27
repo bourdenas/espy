@@ -1,15 +1,5 @@
 project(proto)
 
-protobuf_generate_cpp(GAME_ENTRY_PROTO_SRC GAME_ENTRY_HEADER
-  "game_entry.proto"
-)
-add_library(game_entry_proto
-  ${GAME_ENTRY_HEADER} ${GAME_ENTRY_PROTO_SRC}
-)
-target_link_libraries(game_entry_proto
-  ${PROTOBUF_LIBRARY}
-)
-
 protobuf_generate_cpp(IGDB_API_PROTO_SRC IGDB_API_HEADER
   "igdbapi.proto"
 )
@@ -20,6 +10,16 @@ target_link_libraries(igdb_api_proto
   ${PROTOBUF_LIBRARY}
 )
 
+protobuf_generate_cpp(LIBRARY_PROTO_SRC LIBRARY_HEADER
+  "library.proto"
+)
+add_library(library_proto
+  ${LIBRARY_HEADER} ${LIBRARY_PROTO_SRC}
+)
+target_link_libraries(library_proto
+  ${PROTOBUF_LIBRARY}
+)
+
 protobuf_generate_cpp(RECONCILIATION_TASK_PROTO_SRC RECONCILIATION_TASK_HEADER
   "reconciliation_task.proto"
 )
@@ -27,16 +27,6 @@ add_library(reconciliation_task_proto
   ${RECONCILIATION_TASK_HEADER} ${RECONCILIATION_TASK_PROTO_SRC}
 )
 target_link_libraries(reconciliation_task_proto
-  ${PROTOBUF_LIBRARY}
-)
-
-protobuf_generate_cpp(SEARCH_RESULT_PROTO_SRC SEARCH_RESULT_HEADER
-  "search_result.proto"
-)
-add_library(search_result_proto
-  ${SEARCH_RESULT_HEADER} ${SEARCH_RESULT_PROTO_SRC}
-)
-target_link_libraries(search_result_proto
   ${PROTOBUF_LIBRARY}
 )
 

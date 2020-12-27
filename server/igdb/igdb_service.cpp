@@ -53,18 +53,23 @@ absl::Status IgdbService::Authenticate() {
 }
 
 namespace {
-absl::StatusOr<std::string> Post(const std::string& host,
-                                 const std::string& endpoint,
-                                 const std::string& body,
-                                 const std::string& client_id,
-                                 const std::string& oauth_token) {
+constexpr char kIgdbUrl[] = "https://api.igdb.com/v4";
+constexpr char kGamesEndpoint[] = "games.pb";
+constexpr char kCoversEndpoint[] = "covers.pb";
+constexpr char kFranchisesEndpoint[] = "franchises.pb";
+constexpr char kCollectionsEndpoint[] = "collections.pb";
+
+absl::StatusOr<std::string> IgdbPost(const std::string& endpoint,
+                                     const std::string& body,
+                                     const std::string& client_id,
+                                     const std::string& oauth_token) {
   if (oauth_token.empty()) {
     return absl::FailedPreconditionError(
         "Need to call IgdbService::Authenticate() successfully before using "
         "the service.");
   }
 
-  const auto url_string = absl::StrCat(host, "/", endpoint, "/");
+  const auto url_string = absl::StrCat(kIgdbUrl, "/", endpoint, "/");
   const auto url = curlpp::options::Url(url_string);
 
   const std::list<std::string> header = {
@@ -89,64 +94,90 @@ absl::StatusOr<std::string> Post(const std::string& host,
         absl::StrCat("Failed to reach IGDB endpoint.\n", e.what()));
   }
 }
-
-constexpr char kIgdbUrl[] = "https://api.igdb.com/v4";
-constexpr char kGamesEndpoint[] = "games";
-constexpr char kCoversEndpoint[] = "covers";
-constexpr char kFranchisesEndpoint[] = "franchises";
-constexpr char kCollectionsEndpoint[] = "collections";
 }  // namespace
 
-absl::StatusOr<igdb::SearchResultList> IgdbService::SearchByTitle(
+absl::StatusOr<igdb::GameResult> IgdbService::SearchByTitle(
     std::string_view title) const {
   const std::string query =
       absl::StrCat("search \"", std::string(title), "\"; fields *;");
 
-  auto result = Post(kIgdbUrl, kGamesEndpoint, query, client_id_, oauth_token_);
-  return result.ok() ? IgdbParser().ParseSearchByTitleResponse(*result)
-                     : result.status();
+  auto response = IgdbPost(kGamesEndpoint, query, client_id_, oauth_token_);
+  if (!response.ok()) {
+    return response.status();
+  }
+
+  igdb::GameResult game_result;
+  if (!game_result.ParseFromString(*response)) {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Failed to parse igdb.GameResult for '", std::string(title), "'"));
+  }
+  return game_result;
 }
 
-absl::StatusOr<std::string> IgdbService::GetCover(int64_t cover_id) const {
+absl::StatusOr<igdb::Cover> IgdbService::GetCover(int64_t cover_id) const {
   const std::string query =
       absl::StrCat("fields image_id; where id = ", cover_id, ";");
   DLOG(INFO) << "Query on covers: " << query;
 
-  auto result =
-      Post(kIgdbUrl, kCoversEndpoint, query, client_id_, oauth_token_);
-  return result.ok() ? IgdbParser().ParseGetCoverResponse(*result)
-                     : result.status();
+  auto response = IgdbPost(kCoversEndpoint, query, client_id_, oauth_token_);
+  if (!response.ok()) {
+    return response.status();
+  }
+
+  igdb::CoverResult cover_result;
+  if (!cover_result.ParseFromString(*response)) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("Failed to parse igdb.CoverResult for '", cover_id, "'"));
+  }
+  if (cover_result.covers().empty()) {
+    absl::NotFoundError(absl::StrCat("cover id: ", cover_id));
+  }
+  return cover_result.covers(0);
 }
 
-absl::StatusOr<std::vector<Franchise>> IgdbService::GetFranchises(
+absl::StatusOr<igdb::FranchiseResult> IgdbService::GetFranchises(
     const std::vector<int64_t>& franchise_ids) const {
   const std::string query =
       absl::StrCat("fields id, name, url; where id = (",
                    absl::StrJoin(franchise_ids, ","), ");");
   DLOG(INFO) << "Query on franchise: " << query;
 
-  auto result =
-      Post(kIgdbUrl, kFranchisesEndpoint, query, client_id_, oauth_token_);
-  return result.ok() ? IgdbParser().ParseGetFranchiseResponse(*result)
-                     : result.status();
+  auto response =
+      IgdbPost(kFranchisesEndpoint, query, client_id_, oauth_token_);
+  if (!response.ok()) {
+    return response.status();
+  }
+
+  igdb::FranchiseResult franchise_result;
+  if (!franchise_result.ParseFromString(*response)) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("Failed to parse igdb.FranchiseResult for '",
+                     absl::StrJoin(franchise_ids, ","), "'"));
+  }
+  return franchise_result;
 }
 
-absl::StatusOr<Franchise> IgdbService::GetSeries(int64_t collection_id) const {
+absl::StatusOr<igdb::Collection> IgdbService::GetCollection(
+    int64_t collection_id) const {
   const std::string query =
       absl::StrCat("fields id, name, url; where id = ", collection_id, ";");
-  DLOG(INFO) << "Query on franchise: " << query;
+  DLOG(INFO) << "Query on collections: " << query;
 
-  auto result =
-      Post(kIgdbUrl, kCollectionsEndpoint, query, client_id_, oauth_token_);
-  if (!result.ok()) {
-    return result.status();
+  auto response =
+      IgdbPost(kCollectionsEndpoint, query, client_id_, oauth_token_);
+  if (!response.ok()) {
+    return response.status();
   }
 
-  auto parsed_result = IgdbParser().ParseGetFranchiseResponse(*result);
-  if (!parsed_result.ok()) {
-    return parsed_result.status();
+  igdb::CollectionResult collection_result;
+  if (!collection_result.ParseFromString(*response)) {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Failed to parse igdb.CollectionResult for '", collection_id, "'"));
   }
-  return parsed_result->front();
+  if (collection_result.collections().empty()) {
+    absl::NotFoundError(absl::StrCat("collection id: ", collection_id));
+  }
+  return collection_result.collections(0);
 }
 
 }  // namespace espy

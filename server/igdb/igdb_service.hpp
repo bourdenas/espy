@@ -6,8 +6,8 @@
 
 #include <absl/status/statusor.h>
 
-#include "proto/game_entry.pb.h"
-#include "proto/search_result.pb.h"
+#include "proto/igdbapi.pb.h"
+#include "proto/library.pb.h"
 
 namespace espy {
 
@@ -23,17 +23,18 @@ class IgdbService {
 
   // Returns search result candidates from IGDB server with entries that
   // match input title.
-  virtual absl::StatusOr<igdb::SearchResultList> SearchByTitle(
+  virtual absl::StatusOr<igdb::GameResult> SearchByTitle(
       std::string_view title) const;
 
-  // Returns game cover hash for constructing image URL from a cover id in
+  // Returns game cover info for constructing image URL from a cover id in
   // IGDB's cover endpoint.
-  virtual absl::StatusOr<std::string> GetCover(int64_t cover_id) const;
+  virtual absl::StatusOr<igdb::Cover> GetCover(int64_t cover_id) const;
 
-  virtual absl::StatusOr<std::vector<Franchise>> GetFranchises(
+  virtual absl::StatusOr<igdb::FranchiseResult> GetFranchises(
       const std::vector<int64_t>& franchise_ids) const;
 
-  virtual absl::StatusOr<Franchise> GetSeries(int64_t collection_id) const;
+  virtual absl::StatusOr<igdb::Collection> GetCollection(
+      int64_t collection_id) const;
 
  private:
   const std::string client_id_;

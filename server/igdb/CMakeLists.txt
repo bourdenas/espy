@@ -5,8 +5,7 @@ add_library(igdb_parser
   "igdb_parser.cpp"
 )
 target_link_libraries(igdb_parser PRIVATE
-  game_entry_proto
-  search_result_proto
+  library_proto
   
   absl::status
   absl::strings
@@ -20,9 +19,9 @@ add_library(igdb_service
   "igdb_service.cpp"
 )
 target_link_libraries(igdb_service PRIVATE
-  game_entry_proto
+  igdb_api_proto
   igdb_parser
-  search_result_proto
+  library_proto
 
   absl::strings
   glog::glog
@@ -35,11 +34,10 @@ add_library(reconciliation_service
   "reconciliation_service.cpp"
 )
 target_link_libraries(reconciliation_service PRIVATE
-  game_entry_proto
   igdb_service
+  library_proto
   qps_rate_limiter
   reconciliation_task_proto
-  search_result_proto
   steam_entry_proto
 
   absl::strings

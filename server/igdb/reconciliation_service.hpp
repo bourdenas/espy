@@ -6,16 +6,11 @@
 #include <absl/status/statusor.h>
 
 #include "igdb/igdb_service.hpp"
-#include "proto/game_entry.pb.h"
+#include "proto/library.pb.h"
 #include "proto/reconciliation_task.pb.h"
 #include "proto/steam_entry.pb.h"
 
 namespace espy {
-
-struct ReconciliationResult {
-  GameList game_list;
-  ReconciliationTaskList unreconciled;
-};
 
 // Reconciles game entries from different platforms to a uniquely identifiable
 // IGDB entry.
@@ -27,7 +22,7 @@ class ReconciliationService {
 
   // Reconcile steam game entries and separate successfully reconciled
   // entries from those failed.
-  virtual absl::StatusOr<ReconciliationResult> Reconcile(
+  virtual absl::StatusOr<Library> Reconcile(
       std::vector<SteamEntry> entries) const;
 
  private:

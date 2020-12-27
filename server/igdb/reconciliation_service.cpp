@@ -43,7 +43,7 @@ constexpr int kIgdbQps = 4;
 
 }  // namespace
 
-absl::StatusOr<ReconciliationResult> ReconciliationService::Reconcile(
+absl::StatusOr<Library> ReconciliationService::Reconcile(
     std::vector<SteamEntry> entries) const {
   // IGDB API imposes a QPS limit.
   QpsRateLimiter qps_rate(kIgdbQps);
@@ -52,37 +52,38 @@ absl::StatusOr<ReconciliationResult> ReconciliationService::Reconcile(
   std::transform(
       std::execution::par, entries.begin(), entries.end(),
       reconciliation_tasks.begin(), [this, &qps_rate](SteamEntry& entry) {
-        qps_rate.Wait();
         DLOG(INFO) << "Reconciling '" << entry.title() << "'";
-        auto result = igdb_service_->SearchByTitle(entry.title());
 
         ReconciliationTask task;
         *task.mutable_steam_entry() = std::move(entry);
 
-        if (!result.ok()) {
+        qps_rate.Wait();
+        auto game_result =
+            igdb_service_->SearchByTitle(task.steam_entry().title());
+        if (!game_result.ok()) {
           DLOG(WARNING) << "Failed to retrieve info for\n"
                         << task.steam_entry().DebugString()
-                        << "Error: " << result.status();
+                        << "Error: " << game_result.status();
           return task;
         }
 
-        std::transform(result->mutable_result()->begin(),
-                       result->mutable_result()->end(),
-                       google::protobuf::RepeatedFieldBackInserter(
-                           task.mutable_candidate()),
-                       [](igdb::SearchResult& search_result) {
-                         Candidate candidate;
-                         *candidate.mutable_result() = std::move(search_result);
-                         return candidate;
-                       });
+        std::transform(
+            game_result->mutable_games()->begin(),
+            game_result->mutable_games()->end(),
+            google::protobuf::RepeatedFieldBackInserter(
+                task.mutable_candidate()),
+            [&task](igdb::Game& game) {
+              ReconciliationCandidate candidate;
+              *candidate.mutable_game() = std::move(game);
+              candidate.set_score(EditDistance(task.steam_entry().title(),
+                                               candidate.game().name()));
+              return candidate;
+            });
 
-        for (auto& candidate : *task.mutable_candidate()) {
-          candidate.set_score(EditDistance(task.steam_entry().title(),
-                                           candidate.result().title()));
-        }
         std::sort(task.mutable_candidate()->begin(),
                   task.mutable_candidate()->end(),
-                  [](const Candidate& left, const Candidate& right) {
+                  [](const ReconciliationCandidate& left,
+                     const ReconciliationCandidate& right) {
                     return left.score() < right.score();
                   });
 
@@ -93,63 +94,66 @@ absl::StatusOr<ReconciliationResult> ReconciliationService::Reconcile(
       reconciliation_tasks.begin(), reconciliation_tasks.end(),
       [](const ReconciliationTask& task) { return task.candidate_size() > 0; });
 
-  ReconciliationResult result;
   // Acrobatics to resize protobuf repeated field for parallel execution.
-  const auto result_size = std::distance(reconciliation_tasks.begin(), it);
-  result.game_list.mutable_game()->Reserve(result_size);
-  for (int i = 0; i < result_size; ++i) result.game_list.add_game();
+  const auto library_size = std::distance(reconciliation_tasks.begin(), it);
+  Library library;
+  library.mutable_entry()->Reserve(static_cast<int>(library_size));
+  for (int i = 0; i < library_size; ++i) library.add_entry();
 
   std::transform(
       std::execution::par, reconciliation_tasks.begin(), it,
-      result.game_list.mutable_game()->begin(),
-      [this, &qps_rate](const ReconciliationTask& task) {
-        const auto& top_result = task.candidate(0).result();
+      library.mutable_entry()->begin(),
+      [this, &qps_rate](ReconciliationTask& task) {
+        const igdb::Game& top_result = task.candidate(0).game();
 
         GameEntry entry;
-        entry.set_id(top_result.id());
-        entry.set_title(top_result.title());
-        entry.set_url(top_result.url());
-        entry.set_release_date(top_result.release_date());
+        *entry.mutable_game() =
+            std::move(*task.mutable_candidate(0)->mutable_game());
+        auto* store = entry.add_store_owned();
+        store->set_game_id(task.steam_entry().id());
+        store->set_store_id(GameEntry::Store::STEAM);
 
-        auto* storefront = entry.add_storefront();
-        storefront->set_type(GameEntry::Storefront::STEAM);
-        storefront->set_id(task.steam_entry().id());
-
-        if (top_result.cover_id() > 0) {
+        if (entry.game().cover().id() > 0) {
           qps_rate.Wait();
-          auto result = igdb_service_->GetCover(top_result.cover_id());
-          if (result.ok()) {
-            entry.set_cover_image_id(std::move(*result));
+          auto cover_result =
+              igdb_service_->GetCover(entry.game().cover().id());
+          if (cover_result.ok()) {
+            *entry.mutable_game()->mutable_cover() = std::move(*cover_result);
           }
         }
 
-        if (top_result.franchise_id_size() > 0) {
+        if (!entry.game().franchises().empty()) {
           qps_rate.Wait();
-          std::vector<int64_t> franchise_ids(top_result.franchise_id_size());
-          std::copy(top_result.franchise_id().begin(),
-                    top_result.franchise_id().end(), franchise_ids.begin());
-          auto result = igdb_service_->GetFranchises(franchise_ids);
-          if (result.ok()) {
-            std::move(result->begin(), result->end(),
-                      google::protobuf::RepeatedFieldBackInserter(
-                          entry.mutable_franchise()));
+          std::vector<int64_t> franchise_ids;
+          for (const auto& franchise : entry.game().franchises()) {
+            franchise_ids.push_back(franchise.id());
+          }
+
+          auto franchise_result = igdb_service_->GetFranchises(franchise_ids);
+          if (franchise_result.ok()) {
+            *entry.mutable_game()->mutable_franchises() =
+                std::move(*franchise_result->mutable_franchises());
           }
         }
 
-        if (top_result.collection_id() > 0) {
+        if (entry.game().collection().id() > 0) {
           qps_rate.Wait();
-          auto result = igdb_service_->GetSeries(top_result.collection_id());
-          if (result.ok()) {
-            *entry.mutable_series() = std::move(*result);
+          auto collection_result =
+              igdb_service_->GetCollection(entry.game().collection().id());
+          if (collection_result.ok()) {
+            *entry.mutable_game()->mutable_collection() =
+                std::move(*collection_result);
           }
         }
         return entry;
       });
-  std::move(it, reconciliation_tasks.end(),
-            google::protobuf::RepeatedFieldBackInserter(
-                result.unreconciled.mutable_task()));
+  std::transform(
+      it, reconciliation_tasks.end(),
+      google::protobuf::RepeatedFieldBackInserter(
+          library.mutable_unreconciled_steam_game()),
+      [](const ReconciliationTask& task) { return task.steam_entry(); });
 
-  return result;
+  return library;
 }
 
 }  // namespace espy

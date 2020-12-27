@@ -5,7 +5,7 @@ add_library(steam_library
   "steam_library.cpp"
 )
 target_link_libraries(steam_library PRIVATE
-  game_entry_proto
+  library_proto
   proto_util
   reconciliation_service
   steam_service  

@@ -1,20 +1,20 @@
 syntax = "proto3";
 
-import "search_result.proto";
+import "igdbapi.proto";
 import "steam_entry.proto";
 
 package espy;
 
-message ReconciliationTask {
-  SteamEntry steam_entry = 1;
-  repeated Candidate candidate = 2;
-}
-
-message Candidate {
-  igdb.SearchResult result = 1;
-  int32 score = 2;
-}
-
 message ReconciliationTaskList {
   repeated ReconciliationTask task = 1;
+}
+
+message ReconciliationTask {
+  SteamEntry steam_entry = 1;
+  repeated ReconciliationCandidate candidate = 2;
+}
+
+message ReconciliationCandidate {
+  igdb.Game game = 1;
+  int32 score = 2;
 }
