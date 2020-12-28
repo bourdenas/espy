@@ -1,4 +1,4 @@
-#include "steam/steam_parser.hpp"
+#include "json/steam_parser.hpp"
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
@@ -107,7 +107,7 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
                   }}}};
 
     auto result = parser.ParseGetOwnedGames(obj.dump());
-    REQUIRE(absl::IsInvalidArgument(result.status()));
+    REQUIRE(absl::IsNotFound(result.status()));
 
     obj = {{"response",
             {{"game_count", 1},
@@ -119,7 +119,7 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
              }}}};
 
     result = parser.ParseGetOwnedGames(obj.dump());
-    REQUIRE(absl::IsInvalidArgument(result.status()));
+    REQUIRE(absl::IsNotFound(result.status()));
   }
 
   SECTION("Bad field type response") {
@@ -133,7 +133,7 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
                   }}}};
 
     auto result = parser.ParseGetOwnedGames(obj.dump());
-    REQUIRE(absl::IsInvalidArgument(result.status()));
+    REQUIRE(absl::IsNotFound(result.status()));
 
     obj = {{"response",
             {
@@ -142,7 +142,7 @@ TEST_CASE("[SteamParser] GetOwnedGames parsing responses from Steam API.",
             }}};
 
     result = parser.ParseGetOwnedGames(obj.dump());
-    REQUIRE(absl::IsInvalidArgument(result.status()));
+    REQUIRE(absl::IsNotFound(result.status()));
   }
 }
 

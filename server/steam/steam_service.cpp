@@ -9,7 +9,7 @@
 #include <curlpp/Options.hpp>
 #include <glog/logging.h>
 
-#include "steam/steam_parser.hpp"
+#include "json/steam_parser.hpp"
 
 namespace espy {
 

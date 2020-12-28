@@ -1,5 +1,5 @@
-#ifndef ESPY_SERVER_IGDB_IGDB_PARSER_HPP_
-#define ESPY_SERVER_IGDB_IGDB_PARSER_HPP_
+#ifndef ESPY_SERVER_JSON_IGDB_PARSER_HPP_
+#define ESPY_SERVER_JSON_IGDB_PARSER_HPP_
 
 #include <string>
 #include <string_view>
@@ -17,4 +17,4 @@ class IgdbParser {
 
 }  // namespace espy
 
-#endif  // ESPY_SERVER_IGDB_IGDB_PARSER_HPP_
+#endif  // ESPY_SERVER_JSON_IGDB_PARSER_HPP_

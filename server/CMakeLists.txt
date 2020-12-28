@@ -32,5 +32,6 @@ include(Catch)
 
 add_subdirectory(proto)
 add_subdirectory(igdb)
+add_subdirectory(json)
 add_subdirectory(steam)
 add_subdirectory(util)

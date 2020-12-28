@@ -10,7 +10,7 @@
 #include <curlpp/Options.hpp>
 #include <glog/logging.h>
 
-#include "igdb/igdb_parser.hpp"
+#include "json/igdb_parser.hpp"
 
 namespace espy {
 

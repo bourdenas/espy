@@ -1,4 +1,4 @@
-#include "igdb/igdb_parser.hpp"
+#include "json/igdb_parser.hpp"
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
