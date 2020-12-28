@@ -16,3 +16,5 @@ vsbuild/
 server/build/
 server/out/
 
+
+server/keys.json
