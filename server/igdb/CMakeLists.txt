@@ -9,6 +9,7 @@ target_link_libraries(igdb_service PRIVATE
   igdb_parser
   library_proto
 
+  absl::statusor
   absl::strings
   glog::glog
   protobuf::libprotobuf-lite
@@ -26,9 +27,10 @@ target_link_libraries(reconciliation_service PRIVATE
   reconciliation_task_proto
   steam_entry_proto
 
+  absl::statusor
   absl::strings
-  absl::status
   glog::glog
+  TBB::tbb
 )
 
 

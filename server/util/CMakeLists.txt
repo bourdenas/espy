@@ -20,8 +20,8 @@ add_library(test_file_util
   "test_file_util.cpp"
 )
 target_link_libraries(test_file_util PRIVATE
+  absl::statusor
   absl::strings
-  absl::status
   protobuf::libprotobuf-lite
 )
 
@@ -30,5 +30,6 @@ add_executable(qps_rate_limiter_test "qps_rate_limiter_test.cpp")
 target_link_libraries(qps_rate_limiter_test PRIVATE
   qps_rate_limiter
   Catch2::Catch2
+  TBB::tbb
 )
 catch_discover_tests(qps_rate_limiter_test)

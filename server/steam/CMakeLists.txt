@@ -10,7 +10,7 @@ target_link_libraries(steam_library PRIVATE
   reconciliation_service
   steam_service  
 
-  absl::status
+  absl::statusor
   absl::strings
   glog::glog
   protobuf::libprotobuf-lite

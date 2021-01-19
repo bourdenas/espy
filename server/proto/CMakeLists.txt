@@ -18,6 +18,8 @@ add_library(library_proto
 )
 target_link_libraries(library_proto
   ${PROTOBUF_LIBRARY}
+  igdb_api_proto
+  steam_entry_proto
 )
 
 protobuf_generate_cpp(RECONCILIATION_TASK_PROTO_SRC RECONCILIATION_TASK_HEADER
@@ -28,6 +30,8 @@ add_library(reconciliation_task_proto
 )
 target_link_libraries(reconciliation_task_proto
   ${PROTOBUF_LIBRARY}
+  igdb_api_proto
+  steam_entry_proto
 )
 
 protobuf_generate_cpp(STEAM_ENTRY_PROTO_SRC STEAM_ENTRY_HEADER

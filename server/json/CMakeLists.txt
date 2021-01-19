@@ -8,7 +8,7 @@ target_link_libraries(igdb_parser PRIVATE
   json_util
   library_proto
     
-  absl::status
+  absl::statusor
   absl::strings
   glog::glog
   nlohmann_json::nlohmann_json
@@ -20,7 +20,7 @@ add_library(json_util
   "json_util.cpp"
 )
 target_link_libraries(json_util PRIVATE
-  absl::status
+  absl::statusor
   absl::strings
   nlohmann_json::nlohmann_json
 )
@@ -32,7 +32,7 @@ add_library(key_parser
 target_link_libraries(key_parser PRIVATE
   json_util
 
-  absl::status
+  absl::statusor
   absl::strings
   glog::glog
   nlohmann_json::nlohmann_json
@@ -46,7 +46,7 @@ target_link_libraries(steam_parser PRIVATE
   json_util
   steam_entry_proto
   
-  absl::status
+  absl::statusor
   absl::strings
   glog::glog
   nlohmann_json::nlohmann_json
