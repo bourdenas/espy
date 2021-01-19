@@ -93,7 +93,7 @@ TEST_CASE("[SteamLibrary] Load a new Steam library.", "[SteamLibrary]") {
       })");
     mock_reconciler.ExpectInputSize(2).library() = library;
 
-    steam_library->Sync();
+    REQUIRE(steam_library->Sync().ok());
     REQUIRE_THAT(steam_library->games(), test::EqualsProto(library));
   }
 
@@ -134,7 +134,7 @@ TEST_CASE("[SteamLibrary] Load a new Steam library.", "[SteamLibrary]") {
         })");
     mock_reconciler.ExpectInputSize(3).library() = library;
 
-    steam_library->Sync();
+    REQUIRE(steam_library->Sync().ok());
     REQUIRE_THAT(steam_library->games(), test::EqualsProto(library));
   }
 
@@ -147,7 +147,7 @@ TEST_CASE("[SteamLibrary] Load a new Steam library.", "[SteamLibrary]") {
     Library library;
     mock_reconciler.ExpectInputSize(1).library() = library;
 
-    steam_library->Sync();
+    REQUIRE(steam_library->Sync().ok());
     REQUIRE_THAT(steam_library->games(), test::EqualsProto(library));
   }
 
@@ -158,7 +158,7 @@ TEST_CASE("[SteamLibrary] Load a new Steam library.", "[SteamLibrary]") {
     // input size would always trigger an assertion if called.
     mock_reconciler.ExpectInputSize(-1);
 
-    steam_library->Sync();
+    REQUIRE(steam_library->Sync().ok());
     REQUIRE_THAT(steam_library->games(), test::EqualsProto(library));
   }
 }
@@ -168,18 +168,19 @@ TEST_CASE("[SteamLibrary] Load & sync an existing Steam library.",
   constexpr char kTestLibraryFile[] = "test_library";
 
   test::TestFiles test_files;
-  test_files.SaveProtoTestFile(test::ParseProto<Library>(R"(
-                                  entry {
-                                    game {
-                                      id: 123
-                                      name: 'Diablo'
-                                    }
-                                    store_owned {
-                                      game_id: 1
-                                      store_id: 1
-                                    }
-                                  })"),
-                               kTestLibraryFile);
+  auto status = test_files.SaveProtoTestFile(test::ParseProto<Library>(R"(
+      entry {
+        game {
+          id: 123
+          name: 'Diablo'
+        }
+        store_owned {
+          game_id: 1
+          store_id: 1
+        }
+      })"),
+    kTestLibraryFile);
+  REQUIRE(status.ok());
 
   MockSteamService mock_steam_service;
   MockReconciliationService mock_reconciler;
@@ -210,7 +211,7 @@ TEST_CASE("[SteamLibrary] Load & sync an existing Steam library.",
             }
           })");
 
-    steam_library->Sync();
+    REQUIRE(steam_library->Sync().ok());
     REQUIRE_THAT(steam_library->games(),
                  test::EqualsProto(test::ParseProto<Library>(R"(
                     entry {
@@ -261,7 +262,7 @@ TEST_CASE("[SteamLibrary] Load & sync an existing Steam library.",
             }
           })");
 
-    steam_library->Sync();
+    REQUIRE(steam_library->Sync().ok());
     REQUIRE_THAT(steam_library->games(),
                  test::EqualsProto(test::ParseProto<Library>(R"(
                    entry {
@@ -297,7 +298,7 @@ TEST_CASE("[SteamLibrary] Load & sync an existing Steam library.",
     // input size would always trigger an assertion if called.
     mock_reconciler.ExpectInputSize(-1);
 
-    steam_library->Sync();
+    REQUIRE(steam_library->Sync().ok());
     REQUIRE_THAT(steam_library->games(),
                  test::EqualsProto(test::ParseProto<Library>(R"(
                     entry {
@@ -320,7 +321,7 @@ TEST_CASE("[SteamLibrary] Load & sync an existing Steam library.",
         })");
     mock_reconciler.ExpectInputSize(1).library() = Library();
 
-    steam_library->Sync();
+    REQUIRE(steam_library->Sync().ok());
     REQUIRE_THAT(steam_library->games(),
                  test::EqualsProto(test::ParseProto<Library>(R"(
                     entry {
@@ -341,7 +342,7 @@ TEST_CASE("[SteamLibrary] Load & sync an existing Steam library.",
     // input size would always trigger an assertion if called.
     mock_reconciler.ExpectInputSize(-1);
 
-    steam_library->Sync();
+    REQUIRE(steam_library->Sync().ok());
     REQUIRE_THAT(steam_library->games(),
                  test::EqualsProto(test::ParseProto<Library>(R"(
                     entry {

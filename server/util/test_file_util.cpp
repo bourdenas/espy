@@ -26,6 +26,7 @@ absl::Status TestFiles::SaveProtoTestFile(
 
   const std::string full_path = absl::StrCat(kBaseTestFilesPath, filename);
   espy::util::SaveProto(message, full_path, /*debug=*/false);
+  return absl::OkStatus();
 }
 
 std::string TestFiles::GetFullPath(const std::string& filename) const {
