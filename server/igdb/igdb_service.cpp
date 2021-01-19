@@ -130,7 +130,7 @@ absl::StatusOr<igdb::Cover> IgdbService::GetCover(int64_t cover_id) const {
         absl::StrCat("Failed to parse igdb.CoverResult for '", cover_id, "'"));
   }
   if (cover_result.covers().empty()) {
-    absl::NotFoundError(absl::StrCat("cover id: ", cover_id));
+    return absl::NotFoundError(absl::StrCat("cover id: ", cover_id));
   }
   return cover_result.covers(0);
 }
@@ -175,7 +175,7 @@ absl::StatusOr<igdb::Collection> IgdbService::GetCollection(
         "Failed to parse igdb.CollectionResult for '", collection_id, "'"));
   }
   if (collection_result.collections().empty()) {
-    absl::NotFoundError(absl::StrCat("collection id: ", collection_id));
+    return absl::NotFoundError(absl::StrCat("collection id: ", collection_id));
   }
   return collection_result.collections(0);
 }
