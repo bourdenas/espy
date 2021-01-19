@@ -2,7 +2,6 @@
 
 #include <execution>
 #include <future>
-#include <ranges>
 #include <unordered_set>
 
 #include <glog/logging.h>
@@ -30,22 +29,17 @@ absl::Status SteamLibrary::Sync() {
   auto promise = std::async(
       std::launch::async, [this]() { return steam_service_->GetOwnedGames(); });
 
-  auto ids_range = library_.entry() |
-                   std::views::filter([](const GameEntry& entry) {
-                     for (const auto& store : entry.store_owned()) {
-                       if (store.store_id() == GameEntry::Store::STEAM)
-                         return true;
+  std::unordered_set<int64_t> steam_ids;
+  std::transform(library_.entry().begin(), library_.entry().end(),
+                 std::inserter(steam_ids, steam_ids.begin()),
+                 [](const GameEntry& entry) {
+                   for (const auto& store : entry.store_owned()) {
+                     if (store.store_id() == GameEntry::Store::STEAM) {
+                       return store.game_id();
                      }
-                     return false;
-                   }) |
-                   std::views::transform([](const GameEntry& entry) {
-                     for (const auto& store : entry.store_owned()) {
-                       if (store.store_id() == GameEntry::Store::STEAM)
-                         return store.game_id();
-                     }
-                     return static_cast<int64_t>(0);
-                   });
-  std::unordered_set<int64_t> steam_ids(ids_range.begin(), ids_range.end());
+                   }
+                   return static_cast<int64_t>(0);
+                 });
 
   auto steam_response = promise.get();
   if (!steam_response.ok()) {
@@ -53,13 +47,12 @@ absl::Status SteamLibrary::Sync() {
   }
 
   SteamList& games = steam_response.value();
-  auto&& unreconciled_range =
-      games.game() | std::views::filter([&steam_ids](const SteamEntry& entry) {
-        return !steam_ids.contains(entry.id());
-      });
   std::vector<SteamEntry> unreconciled;
-  std::move(unreconciled_range.begin(), unreconciled_range.end(),
-            std::back_inserter(unreconciled));
+  std::copy_if(games.game().begin(), games.game().end(),
+               std::back_inserter(unreconciled),
+               [&steam_ids](const SteamEntry& entry) {
+                 return !steam_ids.contains(entry.id());
+               });
 
   if (unreconciled.empty()) {
     return absl::OkStatus();
