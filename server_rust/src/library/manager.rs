@@ -26,6 +26,27 @@ impl LibraryManager {
         }
     }
 
+    // Async construction of LibraryManager.
+    pub async fn new_async(user_id: &str) -> LibraryManager {
+        let path = format!("target/{}.bin", user_id);
+        let lib_future = tokio::spawn(async move {
+            match LibraryManager::load(&path) {
+                Ok(lib) => lib,
+                Err(_) => {
+                    eprintln!("Local library not found:'{}'", path);
+                    Library {
+                        ..Default::default()
+                    }
+                }
+            }
+        });
+
+        LibraryManager {
+            library: lib_future.await.unwrap(),
+            user_id: String::from(user_id),
+        }
+    }
+
     /// Loads a proto message from file.
     fn load<T: Message + Default>(path: &str) -> Result<T, Box<dyn std::error::Error>> {
         let msg = Bytes::from(fs::read(path)?);

@@ -10,7 +10,8 @@ mod library;
 
 static TEST_USER: &'static str = "testing";
 
-fn main() {
-    let mgr = library::manager::LibraryManager::new(TEST_USER);
+#[tokio::main]
+async fn main() {
+    let mgr = library::manager::LibraryManager::new_async(TEST_USER).await;
     println!("espy\n{:#?}", mgr.library.unreconciled_steam_game);
 }
