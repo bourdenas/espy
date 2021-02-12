@@ -6,6 +6,7 @@ mod igdb {
     include!(concat!(env!("OUT_DIR"), "/igdb.rs"));
 }
 
+mod igdb_service;
 mod library;
 mod steam;
 mod util;
@@ -26,6 +27,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let steam = steam::api::SteamApi::new(&keys.steam.client_key, &keys.steam.user_id);
     let steam_list = steam.get_owned_games().await?;
     println!("steam_list: {}", steam_list.game.len());
+
+    let mut igdb = igdb_service::api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
+    igdb.connect().await?;
 
     Ok(())
 }
