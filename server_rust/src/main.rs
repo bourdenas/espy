@@ -21,7 +21,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         mgr.library.unreconciled_steam_game.len()
     );
 
-    let keys = util::keys::Keys::from_file("target/keys.json").unwrap();
+    let keys = util::keys::Keys::from_file("../server/keys.json").unwrap();
 
     let steam = steam::api::SteamApi::new(&keys.steam.client_key, &keys.steam.user_id);
     let steam_list = steam.get_owned_games().await?;

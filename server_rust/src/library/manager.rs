@@ -1,11 +1,9 @@
-use crate::espy::Library;
-use prost::bytes::Bytes;
-use prost::Message;
-use std::fs;
+use crate::espy;
+use crate::util;
 
 #[derive(Debug)]
 pub struct LibraryManager {
-    pub library: Library,
+    pub library: espy::Library,
     user_id: String,
 }
 
@@ -13,11 +11,11 @@ impl LibraryManager {
     // Creates a LibraryManager instance for a unique user_id id.
     pub fn new(user_id: &str) -> LibraryManager {
         LibraryManager {
-            library: match LibraryManager::load(&format!("target/{}.bin", user_id)) {
+            library: match util::proto::load(&format!("target/{}.bin", user_id)) {
                 Ok(lib) => lib,
                 Err(_) => {
                     eprintln!("No local library found for user_id:'{}'", user_id);
-                    Library {
+                    espy::Library {
                         ..Default::default()
                     }
                 }
@@ -30,11 +28,11 @@ impl LibraryManager {
     pub async fn new_async(user_id: &str) -> LibraryManager {
         let path = format!("target/{}.bin", user_id);
         let lib_future = tokio::spawn(async move {
-            match LibraryManager::load(&path) {
+            match util::proto::load(&path) {
                 Ok(lib) => lib,
                 Err(_) => {
                     eprintln!("Local library not found:'{}'", path);
-                    Library {
+                    espy::Library {
                         ..Default::default()
                     }
                 }
@@ -45,11 +43,5 @@ impl LibraryManager {
             library: lib_future.await.unwrap(),
             user_id: String::from(user_id),
         }
-    }
-
-    /// Loads a proto message from file.
-    fn load<T: Message + Default>(path: &str) -> Result<T, Box<dyn std::error::Error>> {
-        let msg = Bytes::from(fs::read(path)?);
-        Ok(T::decode(msg)?)
     }
 }
