@@ -7,11 +7,25 @@ mod igdb {
 }
 
 mod library;
+mod steam;
+mod util;
 
 static TEST_USER: &'static str = "testing";
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mgr = library::manager::LibraryManager::new_async(TEST_USER).await;
-    println!("espy\n{:#?}", mgr.library.unreconciled_steam_game);
+    println!(
+        "entries: {}\nunreconciled entries: {}",
+        mgr.library.entry.len(),
+        mgr.library.unreconciled_steam_game.len()
+    );
+
+    let keys = util::keys::Keys::from_file("target/keys.json").unwrap();
+
+    let steam = steam::api::SteamApi::new(&keys.steam.client_key, &keys.steam.user_id);
+    let steam_list = steam.get_owned_games().await?;
+    println!("steam_list: {}", steam_list.game.len());
+
+    Ok(())
 }
