@@ -5,9 +5,6 @@ pub struct SteamApi {
   steam_user_id: String,
 }
 
-static STEAM_HOST: &'static str = "http://api.steampowered.com";
-static STEAM_GETOWNEDGAMES_SERVICE: &'static str = "/IPlayerService/GetOwnedGames/v0001/";
-
 impl SteamApi {
   pub fn new(steam_key: &str, steam_user_id: &str) -> SteamApi {
     SteamApi {
@@ -63,3 +60,6 @@ struct GameEntry {
   img_icon_url: String,
   img_logo_url: String,
 }
+
+const STEAM_HOST: &str = "http://api.steampowered.com";
+const STEAM_GETOWNEDGAMES_SERVICE: &str = "/IPlayerService/GetOwnedGames/v0001/";
