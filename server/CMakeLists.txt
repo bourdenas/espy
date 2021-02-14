@@ -41,3 +41,18 @@ add_subdirectory(igdb)
 add_subdirectory(json)
 add_subdirectory(steam)
 add_subdirectory(util)
+
+add_executable(espy "main.cpp")
+target_link_libraries(espy PRIVATE
+  igdb_api_proto
+  igdb_service
+  key_parser
+  library_proto
+  proto_util
+  reconciliation_task_proto
+  steam_library
+  steam_service
+
+  absl::flags_parse
+  TBB::tbb
+)
