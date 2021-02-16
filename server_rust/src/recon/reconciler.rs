@@ -23,13 +23,16 @@ impl Reconciler {
 
         for entry in steam_entries.iter() {
             match self.recon_entry(entry).await {
-                Ok(game) => lib.entry.push(espy::GameEntry {
-                    game: Some(game),
-                    store_owned: vec![espy::game_entry::Store {
-                        game_id: entry.id,
-                        store_id: espy::game_entry::store::StoreId::Steam as i32,
-                    }],
-                }),
+                Ok(game) => match game {
+                    Some(game) => lib.entry.push(espy::GameEntry {
+                        game: Some(game),
+                        store_owned: vec![espy::game_entry::Store {
+                            game_id: entry.id,
+                            store_id: espy::game_entry::store::StoreId::Steam as i32,
+                        }],
+                    }),
+                    None => lib.unreconciled_steam_game.push(entry.clone()),
+                },
                 Err(_) => lib.unreconciled_steam_game.push(entry.clone()),
             }
         }
@@ -40,7 +43,8 @@ impl Reconciler {
     async fn recon_entry(
         &self,
         entry: &espy::SteamEntry,
-    ) -> Result<igdb::Game, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
+        println!("recon '{}'", entry.title);
         let result = match self.igdb.search_by_title(&entry.title).await {
             Ok(r) => r,
             Err(e) => {
@@ -61,13 +65,19 @@ impl Reconciler {
             .collect::<Vec<Candidate>>();
         candidates.sort_by(|a, b| a.score.cmp(&b.score));
 
-        // TODO: Return Err if there are no candidates.
+        if candidates.len() == 0 {
+            return Ok(None);
+        }
+
         let mut game = candidates.pop().unwrap().game;
         if let Some(cover) = game.cover {
-            game.cover = Some(Box::new(self.igdb.get_cover(cover.id).await?));
+            game.cover = match self.igdb.get_cover(cover.id).await? {
+                Some(cover) => Some(Box::new(cover)),
+                None => None,
+            };
         }
         if let Some(collection) = game.collection {
-            game.collection = Some(self.igdb.get_collection(collection.id).await?);
+            game.collection = self.igdb.get_collection(collection.id).await?;
         }
         if game.franchises.len() > 0 {
             game.franchises = self
@@ -77,7 +87,7 @@ impl Reconciler {
                 .franchises;
         }
 
-        Ok(game)
+        Ok(Some(game))
     }
 }
 

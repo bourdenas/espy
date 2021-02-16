@@ -52,7 +52,7 @@ impl IgdbApi {
     pub async fn get_cover(
         &self,
         cover_id: u64,
-    ) -> Result<igdb::Cover, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Option<igdb::Cover>, Box<dyn std::error::Error + Send + Sync>> {
         let mut result: igdb::CoverResult = self
             .post(
                 COVERS_ENDPOINT,
@@ -60,15 +60,17 @@ impl IgdbApi {
             )
             .await?;
 
-        // TODO: Return Err if vec::len() == 0.
-        Ok(result.covers.remove(0))
+        match result.covers.is_empty() {
+            false => Ok(Some(result.covers.remove(0))),
+            true => Ok(None),
+        }
     }
 
     // Returns game collection based on id from the igdb/collections endpoint.
     pub async fn get_collection(
         &self,
         collection_id: u64,
-    ) -> Result<igdb::Collection, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Option<igdb::Collection>, Box<dyn std::error::Error + Send + Sync>> {
         let mut result: igdb::CollectionResult = self
             .post(
                 COLLECTIONS_ENDPOINT,
@@ -76,8 +78,10 @@ impl IgdbApi {
             )
             .await?;
 
-        // TODO: Return Err if vec::len() == 0.
-        Ok(result.collections.remove(0))
+        match result.collections.is_empty() {
+            false => Ok(Some(result.collections.remove(0))),
+            true => Ok(None),
+        }
     }
 
     // Returns game franchices based on id from the igdb/frachises endpoint.
