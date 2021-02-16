@@ -15,13 +15,13 @@ impl Reconciler {
     // IGDB info.
     pub async fn reconcile(
         &self,
-        steam_entries: &Vec<espy::SteamEntry>,
+        steam_entries: &[espy::SteamEntry],
     ) -> Result<espy::Library, Box<dyn std::error::Error + Send + Sync>> {
         let mut lib = espy::Library {
             ..Default::default()
         };
 
-        for entry in steam_entries.iter() {
+        for entry in steam_entries {
             match self.recon_entry(entry).await {
                 Ok(game) => match game {
                     Some(game) => lib.entry.push(espy::GameEntry {
@@ -82,7 +82,7 @@ impl Reconciler {
         if game.franchises.len() > 0 {
             game.franchises = self
                 .igdb
-                .get_franchises(&game.franchises.iter().map(|f| f.id).collect())
+                .get_franchises(&game.franchises.iter().map(|f| f.id).collect::<Vec<_>>())
                 .await?
                 .franchises;
         }

@@ -87,7 +87,7 @@ impl IgdbApi {
     // Returns game franchices based on id from the igdb/frachises endpoint.
     pub async fn get_franchises(
         &self,
-        franchise_ids: &Vec<u64>,
+        franchise_ids: &[u64],
     ) -> Result<igdb::FranchiseResult, Box<dyn std::error::Error + Send + Sync>> {
         Ok(self
             .post(
