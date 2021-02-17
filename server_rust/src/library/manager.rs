@@ -7,20 +7,20 @@ use std::collections::HashSet;
 pub struct LibraryManager {
     pub library: espy::Library,
     user_id: String,
+    recon_service: recon::reconciler::Reconciler,
     steam_api: Option<steam::api::SteamApi>,
-    recon_service: Option<recon::reconciler::Reconciler>,
 }
 
 impl LibraryManager {
     // Creates a LibraryManager instance for a unique user_id id.
-    pub fn new(user_id: &str) -> LibraryManager {
+    pub fn new(user_id: &str, recon_service: recon::reconciler::Reconciler) -> LibraryManager {
         LibraryManager {
             library: espy::Library {
                 ..Default::default()
             },
             user_id: String::from(user_id),
+            recon_service: recon_service,
             steam_api: None,
-            recon_service: None,
         }
     }
 
@@ -29,10 +29,8 @@ impl LibraryManager {
     pub async fn build(
         &mut self,
         steam_api: steam::api::SteamApi,
-        recon_service: recon::reconciler::Reconciler,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.steam_api = Some(steam_api);
-        self.recon_service = Some(recon_service);
 
         let path = format!("target/{}.bin", self.user_id);
         let lib_future = tokio::spawn(async move {
@@ -59,19 +57,14 @@ impl LibraryManager {
         let non_lib_entries = self.get_non_library_entries(steam_entries);
         println!("non_lib_entries: {:?}", non_lib_entries);
 
-        let lib_update = match &self.recon_service {
-            Some(api) => Some(api.reconcile(&non_lib_entries).await?),
-            None => None,
-        };
-
-        if let Some(update) = lib_update {
-            self.library.unreconciled_steam_game = update.unreconciled_steam_game;
-            if !update.entry.is_empty() {
-                self.library.entry.extend(update.entry);
-            }
-            util::proto::save(&format!("target/{}.bin.new", self.user_id), &self.library)?;
-            util::proto::save_text(&format!("target/{}.asciipb", self.user_id), &self.library)?;
+        let update = self.recon_service.reconcile(&non_lib_entries).await?;
+        self.library.unreconciled_steam_game = update.unreconciled_steam_game;
+        if !update.entry.is_empty() {
+            self.library.entry.extend(update.entry);
         }
+
+        util::proto::save(&format!("target/{}.bin.new", self.user_id), &self.library)?;
+        util::proto::save_text(&format!("target/{}.asciipb", self.user_id), &self.library)?;
 
         Ok(())
     }

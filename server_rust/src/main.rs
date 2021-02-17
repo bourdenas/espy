@@ -30,11 +30,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         return Ok(());
     }
 
-    let mut mgr = library::manager::LibraryManager::new(&opts.user);
-    mgr.build(
-        steam::api::SteamApi::new(&keys.steam.client_key, &keys.steam.user_id),
-        recon::reconciler::Reconciler::new(igdb),
-    )
+    let mut mgr =
+        library::manager::LibraryManager::new(&opts.user, recon::reconciler::Reconciler::new(igdb));
+    mgr.build(steam::api::SteamApi::new(
+        &keys.steam.client_key,
+        &keys.steam.user_id,
+    ))
     .await?;
 
     render_html(&opts.user, &mgr.library)?;
