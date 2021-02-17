@@ -1,16 +1,4 @@
-// Declare the modules created from protbufs.
-mod espy {
-    include!(concat!(env!("OUT_DIR"), "/espy.rs"));
-}
-mod igdb {
-    include!(concat!(env!("OUT_DIR"), "/igdb.rs"));
-}
-
-mod igdb_service;
-mod library;
-mod recon;
-mod steam;
-mod util;
+use server_rust::*;
 
 const TEST_USER: &str = "testing";
 
