@@ -16,6 +16,5 @@ vsbuild/
 
 server/build/
 server/out/
+server/target/
 server/keys.json
-
-server_rust/target/
