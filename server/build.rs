@@ -1,11 +1,11 @@
 fn main() {
     prost_build::compile_protos(
         &[
-            "../server/proto/igdbapi.proto",
-            "../server/proto/library.proto",
-            "../server/proto/steam_entry.proto",
+            "proto/igdbapi.proto",
+            "proto/library.proto",
+            "proto/steam_entry.proto",
         ],
-        &["../server/proto/"],
+        &["proto/"],
     )
     .unwrap();
 }
