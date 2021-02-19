@@ -32,6 +32,7 @@ endif()
 
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
+find_package(gRPC CONFIG REQUIRED)
 
 include(CTest)
 include(Catch)
@@ -39,6 +40,7 @@ include(Catch)
 add_subdirectory(proto)
 add_subdirectory(igdb)
 add_subdirectory(json)
+add_subdirectory(service)
 add_subdirectory(steam)
 add_subdirectory(util)
 
@@ -52,6 +54,7 @@ target_link_libraries(espy PRIVATE
   reconciliation_task_proto
   steam_library
   steam_service
+  espy_service
 
   absl::flags_parse
   TBB::tbb
