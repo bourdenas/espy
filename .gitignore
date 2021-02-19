@@ -13,8 +13,9 @@ _deps
 
 .vscode/
 vsbuild/
+
 server/build/
 server/out/
-
-
 server/keys.json
+
+server_rust/target/
