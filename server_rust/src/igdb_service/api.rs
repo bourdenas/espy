@@ -1,4 +1,5 @@
 use crate::igdb;
+use crate::util::rate_limiter::RateLimiter;
 use prost::Message;
 use serde::{Deserialize, Serialize};
 
@@ -6,6 +7,7 @@ pub struct IgdbApi {
     client_id: String,
     secret: String,
     oauth_token: Option<String>,
+    qps: RateLimiter,
 }
 
 impl IgdbApi {
@@ -14,6 +16,7 @@ impl IgdbApi {
             client_id: String::from(client_id),
             secret: String::from(secret),
             oauth_token: None,
+            qps: RateLimiter::new(3),
         }
     }
 
@@ -116,6 +119,7 @@ impl IgdbApi {
             .as_ref()
             .ok_or(String::from("IgdbApi endpoint is not connected."))?;
 
+        self.qps.wait();
         let uri = format!("{}/{}/", IGDB_SERVICE_URL, endpoint);
         let bytes = reqwest::Client::new()
             .post(&uri)
