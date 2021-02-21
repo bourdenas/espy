@@ -13,6 +13,10 @@ struct Opts {
     /// JSON file that contains application keys for espy service.
     #[clap(long, default_value = "../server/keys.json")]
     key_store: String,
+    /// Steam user id used for building the library. If set, it overrides the
+    /// user id stored in --key_store JSON file.
+    #[clap(long)]
+    steam_user: Option<String>,
 }
 
 #[tokio::main]
@@ -34,7 +38,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         library::manager::LibraryManager::new(&opts.user, recon::reconciler::Reconciler::new(igdb));
     mgr.build(Some(steam::api::SteamApi::new(
         &keys.steam.client_key,
-        &keys.steam.user_id,
+        match &opts.steam_user {
+            Some(user_id) => user_id,
+            None => &keys.steam.user_id,
+        },
     )))
     .await?;
 
