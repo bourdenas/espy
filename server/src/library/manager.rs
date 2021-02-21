@@ -16,9 +16,7 @@ impl LibraryManager {
     // Creates a LibraryManager instance for a unique user_id id.
     pub fn new(user_id: &str, recon_service: recon::reconciler::Reconciler) -> LibraryManager {
         LibraryManager {
-            library: espy::Library {
-                ..Default::default()
-            },
+            library: espy::Library::default(),
             user_id: String::from(user_id),
             recon_service: recon_service,
             steam_api: None,
@@ -107,9 +105,7 @@ fn load_local_library(path: &str) -> espy::Library {
         Ok(lib) => lib,
         Err(_) => {
             eprintln!("Local library '{}' not found.\nStarting a new one.", path);
-            espy::Library {
-                ..Default::default()
-            }
+            espy::Library::default()
         }
     }
 }

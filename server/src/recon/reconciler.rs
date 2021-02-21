@@ -47,9 +47,7 @@ impl Reconciler {
         // floods with errors for large slices.
         let results = future::join_all(handles).await;
 
-        let mut lib = espy::Library {
-            ..Default::default()
-        };
+        let mut lib = espy::Library::default();
         for result in results {
             let result = result?;
             match result {
@@ -71,9 +69,7 @@ async fn recon(
         Ok(r) => r,
         Err(e) => {
             println!("Failed to recon '{}': {}", &entry.title, e);
-            igdb::GameResult {
-                ..Default::default()
-            }
+            igdb::GameResult::default()
         }
     };
 
