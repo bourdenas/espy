@@ -1,5 +1,5 @@
 use clap::Clap;
-use server_rust::*;
+use espy_server::*;
 
 /// Espy server util for testing functionality of the backend.
 #[derive(Clap)]
@@ -11,7 +11,7 @@ struct Opts {
     #[clap(short, long, default_value = "testing")]
     user: String,
     /// JSON file that contains application keys for espy service.
-    #[clap(long, default_value = "../server/keys.json")]
+    #[clap(long, default_value = "keys.json")]
     key_store: String,
     /// Steam user id used for building the library. If set, it overrides the
     /// user id stored in --key_store JSON file.

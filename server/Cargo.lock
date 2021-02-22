@@ -155,6 +155,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "espy_server"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "futures",
+ "prost",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tonic",
+ "tonic-build",
+]
+
+[[package]]
 name = "fixedbitset"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1025,21 +1040,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "server_rust"
-version = "0.1.0"
-dependencies = [
- "clap",
- "futures",
- "prost",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "tonic",
- "tonic-build",
 ]
 
 [[package]]
