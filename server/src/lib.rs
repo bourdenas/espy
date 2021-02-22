@@ -1,9 +1,9 @@
 // Declare the modules created from protbufs.
 pub mod espy {
-    include!(concat!(env!("OUT_DIR"), "/espy.rs"));
+    tonic::include_proto!("espy");
 }
 mod igdb {
-    include!(concat!(env!("OUT_DIR"), "/igdb.rs"));
+    tonic::include_proto!("igdb");
 }
 
 pub mod igdb_service;

@@ -1,11 +1,4 @@
-fn main() {
-    prost_build::compile_protos(
-        &[
-            "proto/igdbapi.proto",
-            "proto/library.proto",
-            "proto/steam_entry.proto",
-        ],
-        &["proto/"],
-    )
-    .unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tonic_build::compile_protos("proto/espy.proto")?;
+    Ok(())
 }
