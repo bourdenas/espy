@@ -1,4 +1,5 @@
 use clap::Clap;
+use espy::espy_server::EspyServer;
 use espy_server::*;
 
 /// Espy server util for testing functionality of the backend.
@@ -20,32 +21,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     println!("starting the server...");
     tonic::transport::Server::builder()
-        .add_service(EspyServer::new(EspyImpl::new(keys)))
+        .add_service(EspyServer::new(handler::espy::EspyImpl::build(keys).await?))
         .serve(format!("[::1]:{}", opts.port).parse()?)
         .await?;
 
     Ok(())
-}
-
-use espy::espy_server::{Espy, EspyServer};
-
-pub struct EspyImpl {
-    keys: util::keys::Keys,
-}
-
-impl EspyImpl {
-    fn new(keys: util::keys::Keys) -> EspyImpl {
-        EspyImpl { keys }
-    }
-}
-
-#[tonic::async_trait]
-impl Espy for EspyImpl {
-    async fn get_library(
-        &self,
-        request: tonic::Request<espy::LibraryRequest>,
-    ) -> Result<tonic::Response<espy::LibraryResponse>, tonic::Status> {
-        println!("Request: {:?}", request.get_ref());
-        Ok(tonic::Response::new(espy::LibraryResponse::default()))
-    }
 }

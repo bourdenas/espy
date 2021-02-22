@@ -9,10 +9,8 @@ pub struct Reconciler {
 }
 
 impl Reconciler {
-    pub fn new(igdb: igdb_service::api::IgdbApi) -> Reconciler {
-        Reconciler {
-            igdb: Arc::new(igdb),
-        }
+    pub fn new(igdb: Arc<igdb_service::api::IgdbApi>) -> Reconciler {
+        Reconciler { igdb }
     }
 
     // Retrieve data from IGDB for Steam entries and create a Library based on

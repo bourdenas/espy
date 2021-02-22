@@ -6,6 +6,7 @@ mod igdb {
     tonic::include_proto!("igdb");
 }
 
+pub mod handler;
 pub mod igdb_service;
 pub mod library;
 pub mod recon;

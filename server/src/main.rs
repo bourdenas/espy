@@ -1,5 +1,6 @@
 use clap::Clap;
 use espy_server::*;
+use std::sync::Arc;
 
 /// Espy server util for testing functionality of the backend.
 #[derive(Clap)]
@@ -46,15 +47,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
         let response = client
             .get_library(tonic::Request::new(espy::LibraryRequest {
-                user_id: opts.user,
+                user_id: opts.user.clone(),
             }))
             .await?;
-        println!("Respone: {:?}", response.get_ref());
+        println!(
+            "User has {} entries.",
+            response.get_ref().library.as_ref().unwrap().entry.len()
+        );
+        render_html(&opts.user, response.get_ref().library.as_ref().unwrap())?;
         return Ok(());
     }
 
-    let mut mgr =
-        library::manager::LibraryManager::new(&opts.user, recon::reconciler::Reconciler::new(igdb));
+    let mut mgr = library::manager::LibraryManager::new(
+        &opts.user,
+        recon::reconciler::Reconciler::new(Arc::new(igdb)),
+    );
     mgr.build(Some(steam::api::SteamApi::new(
         &keys.steam.client_key,
         match &opts.steam_user {
