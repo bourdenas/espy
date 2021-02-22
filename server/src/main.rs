@@ -7,6 +7,13 @@ struct Opts {
     /// Search for a game in IGDB by title.
     #[clap(short, long)]
     search: Option<String>,
+    /// If set to true, it tries to connect to a local gRPC server for
+    /// retrieving the library.
+    #[clap(long)]
+    over_grpc: bool,
+    /// Port number of the gRPC server to connect to if --over_grpc is true.
+    #[clap(long, default_value = "6235")]
+    grpc_port: u16,
     /// Espy user name for managing a game library.
     #[clap(short, long, default_value = "testing")]
     user: String,
@@ -31,6 +38,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     if let Some(title) = &opts.search {
         let result = igdb.search_by_title(title).await?;
         println!("{:?}", result);
+        return Ok(());
+    } else if opts.over_grpc {
+        let mut client =
+            espy::espy_client::EspyClient::connect(format!("http://[::1]:{}", opts.grpc_port))
+                .await?;
+
+        let response = client
+            .get_library(tonic::Request::new(espy::LibraryRequest {
+                user_id: opts.user,
+            }))
+            .await?;
+        println!("Respone: {:?}", response.get_ref());
         return Ok(());
     }
 
