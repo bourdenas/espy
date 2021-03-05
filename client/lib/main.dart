@@ -1,4 +1,7 @@
+import 'package:espy/proto/igdbapi.pb.dart';
+import 'package:espy/proto/library.pb.dart';
 import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
+import 'package:espy/widgets/espy_game_grid.dart';
 import 'package:espy/widgets/espy_navigation_rail.dart' show EspyNavigationRail;
 import 'package:flutter/material.dart';
 
@@ -49,16 +52,11 @@ class _HomePageState extends State<HomePage> {
             VerticalDivider(thickness: 1, width: 1)
           ],
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('You have selected:'),
-                Text(
-                  '$_selectedIndex',
-                  style: Theme.of(context).textTheme.headline4,
-                ),
-              ],
-            ),
+            child: EspyGameGrid([
+              GameEntry()..game = (Game()..name = 'XCOM 2'),
+              GameEntry()..game = (Game()..name = 'Baldur\'s Gate 3'),
+              GameEntry()..game = (Game()..name = 'Europa Universalis 4'),
+            ]),
           ),
         ]),
       );
