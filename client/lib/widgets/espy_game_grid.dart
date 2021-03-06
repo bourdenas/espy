@@ -1,11 +1,10 @@
-import 'package:espy/proto/library.pb.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/game_card.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class EspyGameGrid extends StatelessWidget {
-  const EspyGameGrid(this.gameEntries);
-
-  final List<GameEntry> gameEntries;
+  const EspyGameGrid({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +15,9 @@ class EspyGameGrid extends StatelessWidget {
       crossAxisSpacing: 16,
       padding: const EdgeInsets.all(16),
       childAspectRatio: .75,
-      children: gameEntries
+      children: context
+          .watch<GameLibraryModel>()
+          .games
           .map((entry) => GameCard(
                 game: entry.game,
               ))
