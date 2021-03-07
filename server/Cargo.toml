@@ -5,8 +5,8 @@ authors = ["bourdenas"]
 edition = "2018"
 
 [[bin]] 
-name = "espy_server"
-path = "src/server.rs"
+name = "grpc_server"
+path = "src/grpc_server.rs"
 
 [[bin]] 
 name = "http_server"

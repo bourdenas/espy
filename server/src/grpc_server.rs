@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
 
-    println!("starting the server...");
+    println!("starting the gRPC server...");
     tonic::transport::Server::builder()
         .add_service(EspyServer::new(handler::espy::EspyImpl::build(keys).await?))
         .serve(format!("[::1]:{}", opts.port).parse()?)
