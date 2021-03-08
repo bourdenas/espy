@@ -6,7 +6,11 @@ import 'package:provider/provider.dart';
 void main() {
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
-      create: (_) => GameLibraryModel(),
+      create: (_context) {
+        final model = GameLibraryModel();
+        model.fetch();
+        return model;
+      },
     )
   ], child: const EspyApp()));
 }

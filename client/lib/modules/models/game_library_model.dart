@@ -1,39 +1,25 @@
 import 'dart:collection';
 
-import 'package:espy/proto/igdbapi.pb.dart';
 import 'package:espy/proto/library.pb.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 
 class GameLibraryModel extends ChangeNotifier {
-  /// Internal, private state of the cart.
-  final List<GameEntry> _entries = [
-    GameEntry()
-      ..game = (Game()
-        ..name = 'XCOM 2'
-        ..cover = (Cover(imageId: 'co1mvj'))),
-    GameEntry()
-      ..game = (Game()
-        ..name = 'Stellaris'
-        ..cover = (Cover(imageId: 'co1r75'))),
-    GameEntry()
-      ..game = (Game()
-        ..name = 'Heroes 3 HD'
-        ..cover = (Cover(imageId: 'co1hv2'))),
-    GameEntry()
-      ..game = (Game()
-        ..name = 'Skyrim'
-        ..cover = (Cover(imageId: 'co1vco'))),
-    GameEntry()
-      ..game = (Game()
-        ..name = 'Divinity: Original Sin'
-        ..cover = (Cover(imageId: 'co2axn'))),
-    GameEntry()
-      ..game = (Game()
-        ..name = 'Monkey Island 2'
-        ..cover = (Cover(imageId: 'co2562'))),
-  ];
+  final List<GameEntry> _entries = [];
 
   UnmodifiableListView<GameEntry> get games => UnmodifiableListView(_entries);
+
+  void fetch() async {
+    final response =
+        await http.get(Uri.parse('http://localhost:3030/library/testing'));
+
+    if (response.statusCode == 200) {
+      final lib = Library.fromBuffer(response.bodyBytes);
+      update(lib);
+    } else {
+      throw Exception('Failed to load album');
+    }
+  }
 
   /// Updates the model with new entries from input [Library].
   void update(Library lib) {
