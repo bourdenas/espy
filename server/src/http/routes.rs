@@ -8,7 +8,7 @@ use warp::{self, Filter};
 pub fn routes(
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    get_library(igdb)
+    get_library(igdb).with(warp::cors().allow_any_origin())
 }
 
 /// GET /library/{user_id}
