@@ -110,33 +110,37 @@ struct Candidate {
     score: i32,
 }
 
-// Returns edit distance between two strings. It does not support UTF-8 strings.
+// Returns edit distance between two strings.
 fn edit_distance(a: &str, b: &str) -> i32 {
-    let mut matrix: Vec<i32> = vec![0; (a.len() + 1) * (b.len() + 1)];
-    let row_size = b.len() + 1;
+    let a_len = a.chars().count();
+    let b_len = b.chars().count();
+
+    let mut matrix: Vec<i32> = vec![0; (a_len + 1) * (b_len + 1)];
+    let row_size = b_len + 1;
 
     // Closure to translate 2d coordinates to a single-dimensional array.
     let xy = |x, y| x * row_size + y;
 
-    for i in 1..(a.len() + 1) {
+    for i in 1..(a_len + 1) {
         matrix[xy(i, 0)] = i as i32;
     }
-    for i in 1..(b.len() + 1) {
+    for i in 1..(b_len + 1) {
         matrix[xy(0, i)] = i as i32;
     }
 
-    for i in 1..(a.len() + 1) {
-        for j in 1..(b.len() + 1) {
-            let cost = match a[(i - 1)..i] == b[(j - 1)..j] {
+    for (i, a) in a.chars().enumerate() {
+        for (j, b) in b.chars().enumerate() {
+            let cost = match a == b {
                 true => 0,
                 false => 1,
             };
-            matrix[xy(i, j)] = std::cmp::min(
-                std::cmp::min(matrix[xy(i - 1, j)] + 1, matrix[xy(i, j - 1)] + 1),
-                matrix[xy(i - 1, j - 1)] + cost,
+            matrix[xy(i + 1, j + 1)] = std::cmp::min(
+                std::cmp::min(matrix[xy(i, j + 1)] + 1, matrix[xy(i + 1, j)] + 1),
+                matrix[xy(i, j)] + cost,
             );
         }
     }
+
     *matrix.last().unwrap()
 }
 
@@ -165,9 +169,10 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "byte index 1 is not a char boundary; it is inside")]
     fn edit_distance_emoji() {
-        assert_eq!(edit_distance("😊", ""), 4);
-        assert_eq!(edit_distance("😊", "❤️"), 4);
+        assert_eq!(edit_distance("😊", ""), 1);
+        assert_eq!(edit_distance("😊", "😊😊"), 1);
+        assert_eq!(edit_distance("😊❤️", "❤️😊❤️"), 2);
+        assert_eq!(edit_distance("😊❤️", "😊❤️"), 0);
     }
 }
