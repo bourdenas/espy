@@ -1,11 +1,18 @@
 use crate::espy;
 use crate::igdb;
 use crate::igdb_service;
-use futures::future;
+use futures::stream::{self, StreamExt};
 use std::sync::Arc;
+use tokio::sync::mpsc;
 
 pub struct Reconciler {
     igdb: Arc<igdb_service::api::IgdbApi>,
+}
+
+struct Task<'a> {
+    entry: &'a espy::SteamEntry,
+    igdb: Arc<igdb_service::api::IgdbApi>,
+    tx: mpsc::Sender<Result<espy::GameEntry, espy::SteamEntry>>,
 }
 
 impl Reconciler {
@@ -19,42 +26,51 @@ impl Reconciler {
         &self,
         steam_entries: &[espy::SteamEntry],
     ) -> Result<espy::Library, Box<dyn std::error::Error + Send + Sync>> {
-        let handles = steam_entries.iter().map(|entry| {
-            let igdb = Arc::clone(&self.igdb);
-            let entry = entry.clone();
-            tokio::spawn(async move {
-                match recon(&igdb, &entry).await {
-                    Ok(game) => match game {
-                        Some(game) => Ok(espy::GameEntry {
-                            game: Some(game),
-                            store_owned: vec![espy::game_entry::Store {
-                                game_id: entry.id,
-                                store_id: espy::game_entry::store::StoreId::Steam as i32,
-                            }],
-                        }),
-                        None => Err(entry),
-                    },
-                    Err(_) => {
-                        println!("failed recon request '{}'", entry.title);
-                        Err(entry)
-                    }
+        let (tx, mut rx) = mpsc::channel(32);
+
+        let fut = stream::iter(steam_entries.iter().map(|entry| Task {
+            entry,
+            igdb: Arc::clone(&self.igdb),
+            tx: tx.clone(),
+        }))
+        .for_each_concurrent(8, |task| async move {
+            let resp = match recon(&task.igdb, task.entry).await {
+                Ok(game) => match game {
+                    Some(game) => Ok(espy::GameEntry {
+                        game: Some(game),
+                        store_owned: vec![espy::game_entry::Store {
+                            game_id: task.entry.id,
+                            store_id: espy::game_entry::store::StoreId::Steam as i32,
+                        }],
+                    }),
+                    None => Err(task.entry.clone()),
+                },
+                Err(_) => {
+                    println!("failed recon request '{}'", task.entry.title);
+                    Err(task.entry.clone())
                 }
-            })
-        });
-        // TODO: This currently does not respect IGDB's free-tier 4 QPS and
-        // floods with errors for large slices.
-        let results = future::join_all(handles).await;
-
-        let mut lib = espy::Library::default();
-        for result in results {
-            let result = result?;
-            match result {
-                Ok(game) => lib.entry.push(game),
-                Err(entry) => lib.unreconciled_steam_game.push(entry),
             };
-        }
 
-        Ok(lib)
+            if let Err(e) = task.tx.send(resp).await {
+                println!("{:?}", e);
+            }
+        });
+
+        let handle = tokio::spawn(async move {
+            let mut lib = espy::Library::default();
+            while let Some(resp) = rx.recv().await {
+                match resp {
+                    Ok(game) => lib.entry.push(game),
+                    Err(entry) => lib.unreconciled_steam_game.push(entry),
+                };
+            }
+            return lib;
+        });
+
+        fut.await;
+        drop(tx);
+
+        Ok(handle.await?)
     }
 }
 
@@ -63,6 +79,7 @@ async fn recon(
     igdb: &igdb_service::api::IgdbApi,
     entry: &espy::SteamEntry,
 ) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
+    println!("Resolving '{}'", &entry.title);
     let result = match igdb.search_by_title(&entry.title).await {
         Ok(r) => r,
         Err(e) => {
@@ -100,6 +117,12 @@ async fn recon(
             .get_franchises(&game.franchises.iter().map(|f| f.id).collect::<Vec<_>>())
             .await?
             .franchises;
+    }
+    if game.screenshots.len() > 0 {
+        game.screenshots = igdb
+            .get_screenshots(&game.screenshots.iter().map(|f| f.id).collect::<Vec<_>>())
+            .await?
+            .screenshots;
     }
 
     Ok(Some(game))
