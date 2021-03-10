@@ -9,8 +9,8 @@ pub struct Reconciler {
     igdb: Arc<igdb_service::api::IgdbApi>,
 }
 
-struct Task<'a> {
-    entry: &'a espy::SteamEntry,
+struct Task {
+    entry: espy::SteamEntry,
     igdb: Arc<igdb_service::api::IgdbApi>,
     tx: mpsc::Sender<Result<espy::GameEntry, espy::SteamEntry>>,
 }
@@ -29,25 +29,22 @@ impl Reconciler {
         let (tx, mut rx) = mpsc::channel(32);
 
         let fut = stream::iter(steam_entries.iter().map(|entry| Task {
-            entry,
+            entry: entry.clone(),
             igdb: Arc::clone(&self.igdb),
             tx: tx.clone(),
         }))
         .for_each_concurrent(8, |task| async move {
-            let resp = match recon(&task.igdb, task.entry).await {
+            let resp = match recon(&task.igdb, &task.entry).await {
                 Ok(game) => match game {
                     Some(game) => Ok(espy::GameEntry {
                         game: Some(game),
-                        store_owned: vec![espy::game_entry::Store {
-                            game_id: task.entry.id,
-                            store_id: espy::game_entry::store::StoreId::Steam as i32,
-                        }],
+                        steam_entry: Some(task.entry),
                     }),
-                    None => Err(task.entry.clone()),
+                    None => Err(task.entry),
                 },
                 Err(_) => {
                     println!("failed recon request '{}'", task.entry.title);
-                    Err(task.entry.clone())
+                    Err(task.entry)
                 }
             };
 
