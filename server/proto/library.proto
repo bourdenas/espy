@@ -13,16 +13,5 @@ message Library {
 message GameEntry {
   igdb.Game game = 1;
 
-  message Store {
-    int64 game_id = 1;
-
-    enum StoreId {
-      UNKNOWN = 0;
-      STEAM = 1;
-      GOG = 2;
-      EPIC = 3;
-    }
-    StoreId store_id = 2;
-  }
-  repeated Store store_owned = 2;
+  SteamEntry steam_entry = 3;
 }

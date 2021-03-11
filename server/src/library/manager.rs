@@ -79,16 +79,9 @@ fn get_unreconciled_entries(
     let lib_ids = library
         .entry
         .iter()
-        .filter_map(|e| {
-            // Find Steam entry in stores owned and returns the game's steam id.
-            match e
-                .store_owned
-                .iter()
-                .find(|store| store.store_id == espy::game_entry::store::StoreId::Steam as i32)
-            {
-                Some(store) => Some(store.game_id),
-                None => None,
-            }
+        .filter_map(|e| match &e.steam_entry {
+            Some(store) => Some(store.id),
+            None => None,
         })
         .collect::<HashSet<i64>>();
 

@@ -1,5 +1,6 @@
 use clap::Clap;
 use espy_server::*;
+use prost::Message;
 use std::sync::Arc;
 
 /// Espy server util for testing functionality of the backend.
@@ -12,6 +13,10 @@ struct Opts {
     /// retrieving the library.
     #[clap(long)]
     over_grpc: bool,
+    /// If set to true, it tries to connect to a local HTTP server for
+    /// retrieving the library.
+    #[clap(long)]
+    over_http: bool,
     /// Port number of the gRPC server to connect to if --over_grpc is true.
     #[clap(long, default_value = "6235")]
     grpc_port: u16,
@@ -37,8 +42,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     igdb.connect().await?;
 
     if let Some(title) = &opts.search {
-        let result = igdb.search_by_title(title).await?;
-        println!("{:?}", result);
+        let candidates = recon::reconciler::get_candidates(&igdb, title).await?;
+        for candidate in candidates {
+            println!("{}", candidate);
+        }
         return Ok(());
     } else if opts.over_grpc {
         let mut client =
@@ -55,6 +62,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             response.get_ref().library.as_ref().unwrap().entry.len()
         );
         render_html(&opts.user, response.get_ref().library.as_ref().unwrap())?;
+        return Ok(());
+    } else if opts.over_http {
+        let uri = format!("http://127.0.0.1:3030/library/{}", &opts.user);
+        let bytes = reqwest::Client::new()
+            .get(&uri)
+            .send()
+            .await?
+            .bytes()
+            .await?;
+        let library = espy::Library::decode(bytes)?;
+        println!("User has {} entries.", library.entry.len());
+        render_html(&opts.user, &library)?;
         return Ok(());
     }
 

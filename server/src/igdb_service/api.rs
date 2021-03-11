@@ -16,7 +16,7 @@ impl IgdbApi {
             client_id: String::from(client_id),
             secret: String::from(secret),
             oauth_token: None,
-            qps: RateLimiter::new(3),
+            qps: RateLimiter::new(4),
         }
     }
 
@@ -59,7 +59,7 @@ impl IgdbApi {
         let mut result: igdb::CoverResult = self
             .post(
                 COVERS_ENDPOINT,
-                &format!("fields image_id; where id={};", cover_id),
+                &format!("fields *; where id={};", cover_id),
             )
             .await?;
 
@@ -77,7 +77,7 @@ impl IgdbApi {
         let mut result: igdb::CollectionResult = self
             .post(
                 COLLECTIONS_ENDPOINT,
-                &format!("fields id, name, url; where id={};", collection_id),
+                &format!("fields *; where id={};", collection_id),
             )
             .await?;
 
@@ -85,6 +85,26 @@ impl IgdbApi {
             false => Ok(Some(result.collections.remove(0))),
             true => Ok(None),
         }
+    }
+
+    // Returns game screenshots based on id from the igdb/screenshots endpoint.
+    pub async fn get_screenshots(
+        &self,
+        screenshot_ids: &[u64],
+    ) -> Result<igdb::ScreenshotResult, Box<dyn std::error::Error + Send + Sync>> {
+        Ok(self
+            .post(
+                SCREENSHOTS_ENDPOINT,
+                &format!(
+                    "fields *; where id = ({});",
+                    screenshot_ids
+                        .iter()
+                        .map(|id| id.to_string())
+                        .collect::<Vec<String>>()
+                        .join(",")
+                ),
+            )
+            .await?)
     }
 
     // Returns game franchices based on id from the igdb/frachises endpoint.
@@ -96,7 +116,7 @@ impl IgdbApi {
             .post(
                 FRANCHISES_ENDPOINT,
                 &format!(
-                    "fields id, name, url; where id = ({});",
+                    "fields *; where id = ({});",
                     franchise_ids
                         .iter()
                         .map(|id| id.to_string())
@@ -140,6 +160,7 @@ const GAMES_ENDPOINT: &str = "games.pb";
 const COVERS_ENDPOINT: &str = "covers.pb";
 const FRANCHISES_ENDPOINT: &str = "franchises.pb";
 const COLLECTIONS_ENDPOINT: &str = "collections.pb";
+const SCREENSHOTS_ENDPOINT: &str = "screenshots.pb";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct TwitchOAuthResponse {

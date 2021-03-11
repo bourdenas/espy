@@ -1,8 +1,9 @@
 use crate::espy;
 use crate::igdb;
 use crate::igdb_service;
-use futures::future;
+use futures::stream::{self, StreamExt};
 use std::sync::Arc;
+use tokio::sync::mpsc;
 
 pub struct Reconciler {
     igdb: Arc<igdb_service::api::IgdbApi>,
@@ -19,54 +20,60 @@ impl Reconciler {
         &self,
         steam_entries: &[espy::SteamEntry],
     ) -> Result<espy::Library, Box<dyn std::error::Error + Send + Sync>> {
-        let handles = steam_entries.iter().map(|entry| {
-            let igdb = Arc::clone(&self.igdb);
-            let entry = entry.clone();
-            tokio::spawn(async move {
-                match recon(&igdb, &entry).await {
-                    Ok(game) => match game {
-                        Some(game) => Ok(espy::GameEntry {
-                            game: Some(game),
-                            store_owned: vec![espy::game_entry::Store {
-                                game_id: entry.id,
-                                store_id: espy::game_entry::store::StoreId::Steam as i32,
-                            }],
-                        }),
-                        None => Err(entry),
-                    },
-                    Err(_) => {
-                        println!("failed recon request '{}'", entry.title);
-                        Err(entry)
-                    }
+        let (tx, mut rx) = mpsc::channel(32);
+
+        let fut = stream::iter(steam_entries.iter().map(|entry| Task {
+            entry: entry.clone(),
+            igdb: Arc::clone(&self.igdb),
+            tx: tx.clone(),
+        }))
+        .for_each_concurrent(8, |task| async move {
+            let resp = match recon(&task.igdb, &task.entry).await {
+                Ok(game) => match game {
+                    Some(game) => Ok(espy::GameEntry {
+                        game: Some(game),
+                        steam_entry: Some(task.entry),
+                    }),
+                    None => Err(task.entry),
+                },
+                Err(_) => {
+                    println!("failed recon request '{}'", task.entry.title);
+                    Err(task.entry)
                 }
-            })
-        });
-        // TODO: This currently does not respect IGDB's free-tier 4 QPS and
-        // floods with errors for large slices.
-        let results = future::join_all(handles).await;
-
-        let mut lib = espy::Library::default();
-        for result in results {
-            let result = result?;
-            match result {
-                Ok(game) => lib.entry.push(game),
-                Err(entry) => lib.unreconciled_steam_game.push(entry),
             };
-        }
 
-        Ok(lib)
+            if let Err(e) = task.tx.send(resp).await {
+                println!("{:?}", e);
+            }
+        });
+
+        let handle = tokio::spawn(async move {
+            let mut lib = espy::Library::default();
+            while let Some(resp) = rx.recv().await {
+                match resp {
+                    Ok(game) => lib.entry.push(game),
+                    Err(entry) => lib.unreconciled_steam_game.push(entry),
+                };
+            }
+            return lib;
+        });
+
+        fut.await;
+        drop(tx);
+
+        Ok(handle.await?)
     }
 }
 
-/// Returns a Game entry from IGDB that matches the input Steam entry.
-async fn recon(
+/// Returns scored Candidates of igdb.Game entries that match the input title.
+pub async fn get_candidates(
     igdb: &igdb_service::api::IgdbApi,
-    entry: &espy::SteamEntry,
-) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
-    let result = match igdb.search_by_title(&entry.title).await {
+    title: &str,
+) -> Result<Vec<Candidate>, Box<dyn std::error::Error + Send + Sync>> {
+    let result = match igdb.search_by_title(title).await {
         Ok(r) => r,
         Err(e) => {
-            println!("Failed to recon '{}': {}", &entry.title, e);
+            println!("Failed to recon '{}': {}", title, e);
             igdb::GameResult::default()
         }
     };
@@ -75,17 +82,33 @@ async fn recon(
         .games
         .into_iter()
         .map(|e| Candidate {
-            score: edit_distance(&entry.title, &e.name),
+            score: edit_distance(title, &e.name),
             game: e,
         })
         .collect::<Vec<Candidate>>();
     candidates.sort_by(|a, b| a.score.cmp(&b.score));
 
+    Ok(candidates)
+}
+
+struct Task {
+    entry: espy::SteamEntry,
+    igdb: Arc<igdb_service::api::IgdbApi>,
+    tx: mpsc::Sender<Result<espy::GameEntry, espy::SteamEntry>>,
+}
+
+/// Returns a Game entry from IGDB that matches the input Steam entry.
+async fn recon(
+    igdb: &igdb_service::api::IgdbApi,
+    entry: &espy::SteamEntry,
+) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
+    println!("Resolving '{}'", &entry.title);
+    let candidates = get_candidates(igdb, &entry.title).await?;
     if candidates.len() == 0 {
         return Ok(None);
     }
 
-    let mut game = candidates.pop().unwrap().game;
+    let mut game = candidates[0].game.clone();
     if let Some(cover) = game.cover {
         game.cover = match igdb.get_cover(cover.id).await? {
             Some(cover) => Some(Box::new(cover)),
@@ -101,42 +124,60 @@ async fn recon(
             .await?
             .franchises;
     }
+    if game.screenshots.len() > 0 {
+        game.screenshots = igdb
+            .get_screenshots(&game.screenshots.iter().map(|f| f.id).collect::<Vec<_>>())
+            .await?
+            .screenshots;
+    }
 
     Ok(Some(game))
 }
 
-struct Candidate {
+// Internal struct that is only exposed for debug reasons (search by title) in
+// the command line tool.
+pub struct Candidate {
     game: igdb::Game,
     score: i32,
 }
 
-// Returns edit distance between two strings. It does not support UTF-8 strings.
+impl std::fmt::Display for Candidate {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{} ({})", self.game.name, self.score)
+    }
+}
+
+// Returns edit distance between two strings.
 fn edit_distance(a: &str, b: &str) -> i32 {
-    let mut matrix: Vec<i32> = vec![0; (a.len() + 1) * (b.len() + 1)];
-    let row_size = b.len() + 1;
+    let a_len = a.chars().count();
+    let b_len = b.chars().count();
+
+    let mut matrix: Vec<i32> = vec![0; (a_len + 1) * (b_len + 1)];
+    let row_size = b_len + 1;
 
     // Closure to translate 2d coordinates to a single-dimensional array.
     let xy = |x, y| x * row_size + y;
 
-    for i in 1..(a.len() + 1) {
+    for i in 1..(a_len + 1) {
         matrix[xy(i, 0)] = i as i32;
     }
-    for i in 1..(b.len() + 1) {
+    for i in 1..(b_len + 1) {
         matrix[xy(0, i)] = i as i32;
     }
 
-    for i in 1..(a.len() + 1) {
-        for j in 1..(b.len() + 1) {
-            let cost = match a[(i - 1)..i] == b[(j - 1)..j] {
+    for (i, a) in a.chars().enumerate() {
+        for (j, b) in b.chars().enumerate() {
+            let cost = match a == b {
                 true => 0,
                 false => 1,
             };
-            matrix[xy(i, j)] = std::cmp::min(
-                std::cmp::min(matrix[xy(i - 1, j)] + 1, matrix[xy(i, j - 1)] + 1),
-                matrix[xy(i - 1, j - 1)] + cost,
+            matrix[xy(i + 1, j + 1)] = std::cmp::min(
+                std::cmp::min(matrix[xy(i, j + 1)] + 1, matrix[xy(i + 1, j)] + 1),
+                matrix[xy(i, j)] + cost,
             );
         }
     }
+
     *matrix.last().unwrap()
 }
 
@@ -165,9 +206,10 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "byte index 1 is not a char boundary; it is inside")]
     fn edit_distance_emoji() {
-        assert_eq!(edit_distance("😊", ""), 4);
-        assert_eq!(edit_distance("😊", "❤️"), 4);
+        assert_eq!(edit_distance("😊", ""), 1);
+        assert_eq!(edit_distance("😊", "😊😊"), 1);
+        assert_eq!(edit_distance("😊❤️", "❤️😊❤️"), 2);
+        assert_eq!(edit_distance("😊❤️", "😊❤️"), 0);
     }
 }
