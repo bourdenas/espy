@@ -10,6 +10,7 @@ class GameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final games = context.watch<GameLibraryModel>().games;
+    final game = games[42].game;
     return Column(
       children: [
         if (games.length > 0) ...[
@@ -21,7 +22,7 @@ class GameScreen extends StatelessWidget {
           //     child: BackdropFilter(
           //       filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
           //       child: Image.network(
-          //         'https://images.igdb.com/igdb/image/upload/t_720p/${games[12].game.screenshots[0].imageId}.jpg',
+          //         'https://images.igdb.com/igdb/image/upload/t_720p/${game.screenshots[0].imageId}.jpg',
           //         fit: BoxFit.cover,
           //         height: 200,
           //         width: 1200,
@@ -34,7 +35,7 @@ class GameScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: Image.network(
-                    'https://images.igdb.com/igdb/image/upload/t_cover_big/${games[12].game.cover.imageId}.jpg',
+                    'https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.imageId}.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -42,7 +43,7 @@ class GameScreen extends StatelessWidget {
                 Column(
                   children: [
                     Center(
-                      child: Text(games[12].game.name,
+                      child: Text(game.name,
                           style: Theme.of(context).textTheme.headline3),
                     ),
                     Padding(padding: EdgeInsets.all(16)),
@@ -72,7 +73,7 @@ class GameScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Padding(padding: EdgeInsets.all(64)),
-              Expanded(child: Text(games[12].game.summary)),
+              Expanded(child: Text(game.summary)),
               Padding(padding: EdgeInsets.all(64)),
             ],
           ),
@@ -84,9 +85,9 @@ class GameScreen extends StatelessWidget {
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
               padding: const EdgeInsets.all(16),
-              childAspectRatio: 1.33,
+              childAspectRatio: 1.6,
               children: [
-                for (final screenshot in games[12].game.screenshots)
+                for (final screenshot in game.screenshots)
                   GridTile(
                     child: Material(
                       elevation: 10,
