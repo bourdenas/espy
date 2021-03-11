@@ -11,7 +11,8 @@ void main() {
         model.fetch();
         return model;
       },
-    )
+    ),
+    ChangeNotifierProvider(create: (_context) => GameDetailsModel())
   ], child: const EspyApp()));
 }
 

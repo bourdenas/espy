@@ -9,11 +9,10 @@ class GameScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final games = context.watch<GameLibraryModel>().games;
-    final game = games[42].game;
+    final entry = context.watch<GameDetailsModel>().entry;
     return Column(
       children: [
-        if (games.length > 0) ...[
+        if (entry != null) ...[
           // Material(
           //     elevation: 2,
           //     shape: RoundedRectangleBorder(
@@ -35,7 +34,7 @@ class GameScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: Image.network(
-                    'https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.imageId}.jpg',
+                    'https://images.igdb.com/igdb/image/upload/t_cover_big/${entry.game.cover.imageId}.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -43,7 +42,7 @@ class GameScreen extends StatelessWidget {
                 Column(
                   children: [
                     Center(
-                      child: Text(game.name,
+                      child: Text(entry.game.name,
                           style: Theme.of(context).textTheme.headline3),
                     ),
                     Padding(padding: EdgeInsets.all(16)),
@@ -73,7 +72,7 @@ class GameScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Padding(padding: EdgeInsets.all(64)),
-              Expanded(child: Text(game.summary)),
+              Expanded(child: Text(entry.game.summary)),
               Padding(padding: EdgeInsets.all(64)),
             ],
           ),
@@ -87,7 +86,7 @@ class GameScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               childAspectRatio: 1.6,
               children: [
-                for (final screenshot in game.screenshots)
+                for (final screenshot in entry.game.screenshots)
                   GridTile(
                     child: Material(
                       elevation: 10,

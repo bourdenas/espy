@@ -33,3 +33,14 @@ class GameLibraryModel extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+class GameDetailsModel extends ChangeNotifier {
+  GameEntry? _entry;
+
+  GameEntry? get entry => _entry;
+
+  void examine(GameEntry entry) {
+    _entry = entry;
+    notifyListeners();
+  }
+}
