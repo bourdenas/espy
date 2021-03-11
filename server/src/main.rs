@@ -42,8 +42,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     igdb.connect().await?;
 
     if let Some(title) = &opts.search {
-        let result = igdb.search_by_title(title).await?;
-        println!("{:?}", result);
+        let candidates = recon::reconciler::get_candidates(&igdb, title).await?;
+        for candidate in candidates {
+            println!("{}", candidate);
+        }
         return Ok(());
     } else if opts.over_grpc {
         let mut client =

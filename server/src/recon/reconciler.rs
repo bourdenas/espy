@@ -9,12 +9,6 @@ pub struct Reconciler {
     igdb: Arc<igdb_service::api::IgdbApi>,
 }
 
-struct Task {
-    entry: espy::SteamEntry,
-    igdb: Arc<igdb_service::api::IgdbApi>,
-    tx: mpsc::Sender<Result<espy::GameEntry, espy::SteamEntry>>,
-}
-
 impl Reconciler {
     pub fn new(igdb: Arc<igdb_service::api::IgdbApi>) -> Reconciler {
         Reconciler { igdb }
@@ -71,16 +65,15 @@ impl Reconciler {
     }
 }
 
-/// Returns a Game entry from IGDB that matches the input Steam entry.
-async fn recon(
+/// Returns scored Candidates of igdb.Game entries that match the input title.
+pub async fn get_candidates(
     igdb: &igdb_service::api::IgdbApi,
-    entry: &espy::SteamEntry,
-) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
-    println!("Resolving '{}'", &entry.title);
-    let result = match igdb.search_by_title(&entry.title).await {
+    title: &str,
+) -> Result<Vec<Candidate>, Box<dyn std::error::Error + Send + Sync>> {
+    let result = match igdb.search_by_title(title).await {
         Ok(r) => r,
         Err(e) => {
-            println!("Failed to recon '{}': {}", &entry.title, e);
+            println!("Failed to recon '{}': {}", title, e);
             igdb::GameResult::default()
         }
     };
@@ -89,17 +82,33 @@ async fn recon(
         .games
         .into_iter()
         .map(|e| Candidate {
-            score: edit_distance(&entry.title, &e.name),
+            score: edit_distance(title, &e.name),
             game: e,
         })
         .collect::<Vec<Candidate>>();
     candidates.sort_by(|a, b| a.score.cmp(&b.score));
 
+    Ok(candidates)
+}
+
+struct Task {
+    entry: espy::SteamEntry,
+    igdb: Arc<igdb_service::api::IgdbApi>,
+    tx: mpsc::Sender<Result<espy::GameEntry, espy::SteamEntry>>,
+}
+
+/// Returns a Game entry from IGDB that matches the input Steam entry.
+async fn recon(
+    igdb: &igdb_service::api::IgdbApi,
+    entry: &espy::SteamEntry,
+) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
+    println!("Resolving '{}'", &entry.title);
+    let candidates = get_candidates(igdb, &entry.title).await?;
     if candidates.len() == 0 {
         return Ok(None);
     }
 
-    let mut game = candidates.pop().unwrap().game;
+    let mut game = candidates[0].game.clone();
     if let Some(cover) = game.cover {
         game.cover = match igdb.get_cover(cover.id).await? {
             Some(cover) => Some(Box::new(cover)),
@@ -125,9 +134,17 @@ async fn recon(
     Ok(Some(game))
 }
 
-struct Candidate {
+// Internal struct that is only exposed for debug reasons (search by title) in
+// the command line tool.
+pub struct Candidate {
     game: igdb::Game,
     score: i32,
+}
+
+impl std::fmt::Display for Candidate {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{} ({})", self.game.name, self.score)
+    }
 }
 
 // Returns edit distance between two strings.
