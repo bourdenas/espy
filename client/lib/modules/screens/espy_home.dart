@@ -1,3 +1,4 @@
+import 'package:espy/modules/screens/game_screen.dart';
 import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/espy_game_grid.dart';
 import 'package:espy/widgets/espy_navigation_rail.dart' show EspyNavigationRail;
@@ -23,6 +24,9 @@ class EspyHome extends StatelessWidget {
           ],
           Expanded(
             child: EspyGameGrid(),
+          ),
+          Expanded(
+            child: GameScreen(),
           ),
         ]),
       );
