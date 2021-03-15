@@ -20,7 +20,7 @@ class EspyGameGrid extends StatelessWidget {
           .games
           .map((entry) => InkResponse(
               enableFeedback: true,
-              onTap: () => context.read<GameDetailsModel>().examine(entry),
+              onTap: () => context.read<GameDetailsModel>().open(entry),
               child: GameCard(
                 game: entry.game,
               )))

@@ -39,8 +39,13 @@ class GameDetailsModel extends ChangeNotifier {
 
   GameEntry? get entry => _entry;
 
-  void examine(GameEntry entry) {
+  void open(GameEntry entry) {
     _entry = entry;
+    notifyListeners();
+  }
+
+  void close() {
+    _entry = null;
     notifyListeners();
   }
 }
