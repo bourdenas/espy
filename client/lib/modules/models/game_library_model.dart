@@ -21,6 +21,15 @@ class GameLibraryModel extends ChangeNotifier {
     }
   }
 
+  GameEntry? getEntryById(int id) {
+    for (final entry in _entries) {
+      if (entry.game.id == id) {
+        return entry;
+      }
+    }
+    return null;
+  }
+
   /// Updates the model with new entries from input [Library].
   void update(Library lib) {
     _entries.addAll(lib.entry);
