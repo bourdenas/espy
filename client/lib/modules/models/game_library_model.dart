@@ -12,12 +12,13 @@ class GameLibraryModel extends ChangeNotifier {
   void fetch() async {
     final response =
         await http.get(Uri.parse('http://localhost:3030/library/testing'));
+    // await http.get(Uri.parse('http://10.0.2.2:3030/library/testing'));
 
     if (response.statusCode == 200) {
       final lib = Library.fromBuffer(response.bodyBytes);
       update(lib);
     } else {
-      throw Exception('Failed to load album');
+      throw Exception('Failed to load game library');
     }
   }
 
@@ -38,6 +39,8 @@ class GameLibraryModel extends ChangeNotifier {
   /// Updates the model with new entries from input [Library].
   void update(Library lib) {
     _entries.addAll(lib.entry);
+    _entries.sort((a, b) => -a.game.firstReleaseDate.seconds
+        .compareTo(b.game.firstReleaseDate.seconds));
     notifyListeners();
   }
 
