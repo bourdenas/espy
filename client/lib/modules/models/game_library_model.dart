@@ -21,9 +21,14 @@ class GameLibraryModel extends ChangeNotifier {
     }
   }
 
-  GameEntry? getEntryById(int id) {
+  GameEntry? getEntryById(String id) {
+    final gameId = int.tryParse(id);
+    if (gameId == null) {
+      return null;
+    }
+
     for (final entry in _entries) {
-      if (entry.game.id == id) {
+      if (entry.game.id == gameId) {
         return entry;
       }
     }
@@ -39,22 +44,6 @@ class GameLibraryModel extends ChangeNotifier {
   /// Removes all games from the model.
   void clear() {
     _entries.clear();
-    notifyListeners();
-  }
-}
-
-class GameDetailsModel extends ChangeNotifier {
-  GameEntry? _entry;
-
-  GameEntry? get entry => _entry;
-
-  void open(GameEntry entry) {
-    _entry = entry;
-    notifyListeners();
-  }
-
-  void close() {
-    _entry = null;
     notifyListeners();
   }
 }

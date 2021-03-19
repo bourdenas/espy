@@ -1,4 +1,5 @@
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/modules/screens/game_screen.dart';
 import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/espy_game_grid.dart';
@@ -7,9 +8,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class EspyHome extends StatelessWidget {
-  EspyHome({Key? key, required this.title}) : super(key: key);
+  EspyHome({
+    Key? key,
+    required this.title,
+    required this.navigatorKey,
+    this.gameId,
+  }) : super(key: key);
 
+  final GlobalKey<NavigatorState> navigatorKey;
   final String title;
+  final String? gameId;
 
   @override
   Widget build(BuildContext context) {
@@ -26,21 +34,24 @@ class EspyHome extends StatelessWidget {
           ],
           Expanded(
             child: Navigator(
+              key: navigatorKey,
               pages: [
                 MaterialPage(
                   key: ValueKey('LibraryGridPage'),
                   child: EspyGameGrid(),
                 ),
-                if (context.watch<GameDetailsModel>().entry != null)
+                if (gameId != null)
                   GameDetailsPage(
-                      entry: context.watch<GameDetailsModel>().entry!),
+                      entry: context
+                          .read<GameLibraryModel>()
+                          .getEntryById(gameId!)!),
               ],
               onPopPage: (route, result) {
                 if (!route.didPop(result)) {
                   return false;
                 }
 
-                context.read<GameDetailsModel>().close();
+                context.read<EspyRouterDelegate>().goHome();
                 return true;
               },
             ),
