@@ -29,6 +29,17 @@ class GameScreen extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         _HeaderSliver(entry),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (BuildContext context, int index) {
+              return Container(
+                padding: const EdgeInsets.all(32),
+                child: Text(entry.game.summary),
+              );
+            },
+            childCount: 1,
+          ),
+        ),
         _ScreenshotsSliver(entry),
       ],
     );
@@ -43,18 +54,19 @@ class _HeaderSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      floating: true,
-      expandedHeight: 300.0,
+      pinned: true,
+      expandedHeight: 320.0,
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(children: [
           // Material(
           //   elevation: 2,
-          //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          //   shape:
+          //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           //   clipBehavior: Clip.antiAlias,
           //   child: BackdropFilter(
           //     filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
           //     child: Image.network(
-          //       'https://images.igdb.com/igdb/image/upload/t_720p/${entry.game.screenshots[0].imageId}.jpg',
+          //       'https://images.igdb.com/igdb/image/upload/t_720p/${entry.game.artworks[0].imageId}.jpg',
           //       fit: BoxFit.cover,
           //       height: 200,
           //       width: 1200,
@@ -105,8 +117,6 @@ class _HeaderSliver extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Padding(padding: EdgeInsets.all(8)),
-                      Expanded(child: Text(entry.game.summary)),
                     ],
                   ),
                 ),
