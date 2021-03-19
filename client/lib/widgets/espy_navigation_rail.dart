@@ -25,9 +25,9 @@ class EspyNavigationRail extends StatelessWidget {
           .toList(),
       onDestinationSelected: (index) {
         context.read<EspyRouterDelegate>().goHome();
-        context.read<GameLibraryModel>().update(Library()
-          ..entry
-              .add(GameEntry()..game = (Game()..name = 'New Game ($index)')));
+        // context.read<GameLibraryModel>().update(Library()
+        //   ..entry
+        //       .add(GameEntry()..game = (Game()..name = 'New Game ($index)')));
       },
     );
   }

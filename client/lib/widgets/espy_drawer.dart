@@ -1,5 +1,7 @@
 import 'package:espy/constants/menu_items.dart' show menu_items;
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class EspyDrawer extends StatelessWidget {
   const EspyDrawer();
@@ -18,7 +20,7 @@ class EspyDrawer extends StatelessWidget {
             ListTile(
               leading: Icon(item.icon),
               title: Text(item.label),
-              onTap: () {},
+              onTap: () => context.read<EspyRouterDelegate>().goHome(),
             ),
         ],
       ),
