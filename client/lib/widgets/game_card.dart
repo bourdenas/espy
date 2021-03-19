@@ -28,12 +28,15 @@ class GameCard extends StatelessWidget {
         elevation: 10,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         clipBehavior: Clip.antiAlias,
-        child: game.cover.imageId.isNotEmpty
-            ? Image.network(
-                'https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.imageId}.jpg',
-                fit: BoxFit.fitHeight,
-              )
-            : Image.asset('assets/images/placeholder.png'),
+        child: Hero(
+          tag: '${game.id}_cover',
+          child: game.cover.imageId.isNotEmpty
+              ? Image.network(
+                  'https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.imageId}.jpg',
+                  fit: BoxFit.fitHeight,
+                )
+              : Image.asset('assets/images/placeholder.png'),
+        ),
       ),
     );
   }

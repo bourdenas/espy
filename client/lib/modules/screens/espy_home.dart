@@ -43,7 +43,7 @@ class EspyHome extends StatelessWidget {
                 if (gameId != null)
                   GameDetailsPage(
                       entry: context
-                          .read<GameLibraryModel>()
+                          .watch<GameLibraryModel>()
                           .getEntryById(gameId!)!),
               ],
               onPopPage: (route, result) {
