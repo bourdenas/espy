@@ -11,7 +11,7 @@ class GameLibrary extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.extent(
       restorationId: 'grid_view_game_entries_grid_offset',
-      maxCrossAxisExtent: 200,
+      maxCrossAxisExtent: 300,
       mainAxisSpacing: 16,
       crossAxisSpacing: 16,
       padding: const EdgeInsets.all(16),
