@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 
-class EspyGameGrid extends StatelessWidget {
-  const EspyGameGrid({Key? key}) : super(key: key);
+class GameLibrary extends StatelessWidget {
+  const GameLibrary({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

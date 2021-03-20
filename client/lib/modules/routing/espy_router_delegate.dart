@@ -1,8 +1,9 @@
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:provider/provider.dart';
+import 'package:espy/modules/pages/game_details_page.dart';
+import 'package:espy/modules/pages/game_library_page.dart';
+import 'package:espy/modules/routing/espy_route_path.dart';
 import 'package:flutter/material.dart';
-import 'package:espy/modules/screens/espy_home.dart';
-import 'package:espy/modules/screens/game_screen.dart';
+import 'package:provider/provider.dart';
 
 class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<EspyRoutePath> {
@@ -58,45 +59,4 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
       gameId = path.entryId!;
     }
   }
-}
-
-class EspyRouteInformationParser extends RouteInformationParser<EspyRoutePath> {
-  @override
-  Future<EspyRoutePath> parseRouteInformation(
-      RouteInformation routeInformation) async {
-    if (routeInformation.location == null) {
-      return EspyRoutePath.home();
-    }
-
-    final uri = Uri.parse(routeInformation.location!);
-    print('parseRouteInformation=$uri');
-
-    if (uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'game') {
-      var gameId = uri.pathSegments[1];
-      return EspyRoutePath.entry(gameId);
-    } else {
-      return EspyRoutePath.home();
-    }
-  }
-
-  @override
-  RouteInformation? restoreRouteInformation(EspyRoutePath path) {
-    if (path.isHomePage) {
-      return RouteInformation(location: '/');
-    }
-    if (path.isGameDetailsPage) {
-      return RouteInformation(location: '/game/${path.entryId}');
-    }
-    return null;
-  }
-}
-
-class EspyRoutePath {
-  final String? entryId;
-
-  EspyRoutePath.home() : entryId = null;
-  EspyRoutePath.entry(this.entryId);
-
-  bool get isHomePage => entryId == null;
-  bool get isGameDetailsPage => entryId != null;
 }

@@ -1,23 +1,6 @@
-import 'dart:ui' as ui;
-
+// import 'dart:ui' as ui;
 import 'package:espy/proto/library.pb.dart';
 import 'package:flutter/material.dart';
-
-class GameDetailsPage extends Page {
-  final GameEntry entry;
-
-  GameDetailsPage({required this.entry}) : super(key: ValueKey(entry));
-
-  @override
-  Route createRoute(BuildContext context) {
-    return MaterialPageRoute(
-      settings: this,
-      builder: (BuildContext context) {
-        return GameDetails(entry: entry);
-      },
-    );
-  }
-}
 
 class GameDetails extends StatelessWidget {
   final GameEntry entry;
