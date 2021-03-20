@@ -1,5 +1,8 @@
+import 'package:espy/modules/models/game_library_model.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:espy/modules/screens/espy_home.dart';
+import 'package:espy/modules/screens/game_screen.dart';
 
 class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<EspyRoutePath> {
@@ -25,7 +28,25 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
 
   @override
   Widget build(BuildContext context) {
-    return EspyHome(title: 'espy', navigatorKey: navigatorKey, gameId: _gameId);
+    return Navigator(
+      key: navigatorKey,
+      pages: [
+        GameLibraryPage(),
+        if (_gameId != null)
+          GameDetailsPage(
+              entry: context.watch<GameLibraryModel>().getEntryById(_gameId!)!),
+      ],
+      onPopPage: (route, result) {
+        if (!route.didPop(result)) {
+          return false;
+        }
+
+        context.read<EspyRouterDelegate>().goHome();
+        return true;
+      },
+    );
+
+    // EspyHome(title: 'espy', navigatorKey: navigatorKey, gameId: _gameId);
   }
 
   @override

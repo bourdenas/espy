@@ -13,20 +13,21 @@ class GameDetailsPage extends Page {
     return MaterialPageRoute(
       settings: this,
       builder: (BuildContext context) {
-        return GameScreen(entry: entry);
+        return GameDetails(entry: entry);
       },
     );
   }
 }
 
-class GameScreen extends StatelessWidget {
+class GameDetails extends StatelessWidget {
   final GameEntry entry;
 
-  GameScreen({Key? key, required this.entry}) : super(key: key);
+  GameDetails({Key? key, required this.entry}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
+    return Scaffold(
+        body: CustomScrollView(
       slivers: [
         _HeaderSliver(entry),
         SliverList(
@@ -42,7 +43,7 @@ class GameScreen extends StatelessWidget {
         ),
         _ScreenshotsSliver(entry),
       ],
-    );
+    ));
   }
 }
 
