@@ -1,6 +1,8 @@
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/espy_navigation_rail.dart' show EspyNavigationRail;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class EspyScaffold extends StatefulWidget {
   final Widget body;
@@ -17,6 +19,36 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   _EspyScaffoldState({required this.body});
 
   @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      final text = _searchController.text.toLowerCase();
+      if (text.isNotEmpty && _searchIcon.icon != Icons.close) {
+        setState(() {
+          _searchIcon = Icon(Icons.close);
+        });
+      }
+      if (text.isEmpty && _searchIcon.icon != Icons.search) {
+        setState(() {
+          _searchIcon = Icon(Icons.search);
+        });
+      }
+      context.read<GameLibraryModel>().titleFilter =
+          _searchController.text.toLowerCase();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  Icon _searchIcon = Icon(Icons.search);
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       return Row(children: [
@@ -24,59 +56,32 @@ class _EspyScaffoldState extends State<EspyScaffold> {
           EspyNavigationRail(constraints.maxWidth > 3200),
         Expanded(
           child: Scaffold(
-            appBar: AppBar(
-              title: Row(children: [
-                Text('espy'),
-                Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: constraints.maxWidth > 800 ? 32 : 16)),
-                Expanded(
-                  child: TextField(
-                    // controller: _filter,
-                    decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.search), hintText: 'Search...'),
+              appBar: AppBar(
+                title: Row(children: [
+                  Text('espy'),
+                  Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: constraints.maxWidth > 800 ? 32 : 16)),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        prefixIcon: IconButton(
+                          icon: _searchIcon,
+                          onPressed: () => _searchController.clear(),
+                        ),
+                        hintText: 'Search...',
+                      ),
+                    ),
                   ),
-                ),
-              ]),
-            ),
-            drawer: constraints.maxWidth <= 800 ? EspyDrawer() : null,
-            body: body,
-          ),
+                ]),
+              ),
+              drawer: constraints.maxWidth <= 800 ? EspyDrawer() : null,
+              body: body),
         ),
       ]);
     });
-  }
-}
-
-class _Search extends SearchDelegate {
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(icon: Icon(Icons.close), onPressed: () => query = ''),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-        icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context));
-  }
-
-  String selectedResult = '';
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return Container(child: Center(child: Text(selectedResult)));
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    List<String> suggestions = ['Adventure', 'Strategy', 'RPG'];
-
-    return ListView.builder(
-        itemCount: suggestions.length,
-        itemBuilder: (context, index) {
-          return ListTile(title: Text(suggestions[index]));
-        });
   }
 }

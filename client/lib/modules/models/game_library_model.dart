@@ -6,8 +6,10 @@ import 'package:http/http.dart' as http;
 
 class GameLibraryModel extends ChangeNotifier {
   final List<GameEntry> _entries = [];
+  String _searchFilter = '';
 
-  UnmodifiableListView<GameEntry> get games => UnmodifiableListView(_entries);
+  UnmodifiableListView<GameEntry> get games => UnmodifiableListView(
+      _entries.where((e) => e.game.name.toLowerCase().contains(_searchFilter)));
 
   void fetch() async {
     final response =
@@ -20,6 +22,14 @@ class GameLibraryModel extends ChangeNotifier {
     } else {
       throw Exception('Failed to load game library');
     }
+  }
+
+  set titleFilter(String phrase) {
+    if (phrase == _searchFilter) {
+      return;
+    }
+    _searchFilter = phrase;
+    notifyListeners();
   }
 
   GameEntry? getEntryById(String id) {
