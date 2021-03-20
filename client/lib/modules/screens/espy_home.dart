@@ -25,6 +25,12 @@ class EspyHome extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: Text(title),
+          actions: [
+            IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () =>
+                    showSearch(context: context, delegate: Search()))
+          ],
         ),
         drawer: constraints.maxWidth <= 800 ? EspyDrawer() : null,
         body: Row(children: [
@@ -58,6 +64,37 @@ class EspyHome extends StatelessWidget {
           ),
         ]),
       );
+    });
+  }
+}
+
+class Search extends SearchDelegate {
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(icon: Icon(Icons.close), onPressed: () => query = ''),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+        icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context));
+  }
+
+  String selectedResult = '';
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return Container(child: Center(child: Text(selectedResult)));
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    List<String> suggestions = ['Adventure', 'Strategy', 'RPG'];
+
+    return ListView.builder(itemBuilder: (context, index) {
+      return ListTile(title: Text(suggestions[index]));
     });
   }
 }
