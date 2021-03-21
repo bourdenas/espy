@@ -12,6 +12,10 @@ message Library {
 
 message GameEntry {
   igdb.Game game = 1;
-
+  GameDetails details = 2;
   SteamEntry steam_entry = 3;
+}
+
+message GameDetails {
+  repeated string tag = 1;
 }
