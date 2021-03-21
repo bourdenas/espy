@@ -1,5 +1,6 @@
 // import 'dart:ui' as ui;
 import 'package:espy/proto/library.pb.dart';
+import 'package:espy/widgets/game_tags.dart';
 import 'package:flutter/material.dart';
 
 class GameDetails extends StatelessWidget {
@@ -72,35 +73,21 @@ class _HeaderSliver extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      Text(entry.game.name,
-                          style: Theme.of(context).textTheme.headline3),
+                      Row(children: [
+                        Expanded(
+                          child: Text(
+                            entry.game.name,
+                            style: Theme.of(context).textTheme.headline3,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        InputChip(
+                          label: Icon(Icons.settings),
+                          onPressed: () {},
+                        ),
+                      ]),
                       Padding(padding: EdgeInsets.all(16)),
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 4.0,
-                        children: [
-                          InputChip(
-                            label: Text('4X'),
-                            onPressed: () {},
-                            onDeleted: () {},
-                          ),
-                          InputChip(
-                            label: Text('Strategy'),
-                            onPressed: () {},
-                            onDeleted: () {},
-                          ),
-                          InputChip(
-                            label: Text('Amplitude'),
-                            onPressed: () {},
-                            onDeleted: () {},
-                          ),
-                          InputChip(
-                            label: Text('Turn-Based Strategy'),
-                            onPressed: () {},
-                            onDeleted: () {},
-                          ),
-                        ],
-                      ),
+                      GameTags(entry),
                     ],
                   ),
                 ),
