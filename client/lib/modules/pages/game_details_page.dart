@@ -1,9 +1,9 @@
-import 'package:espy/proto/library.pb.dart';
+import 'package:espy/proto/library.pb.dart' as pb;
 import 'package:espy/widgets/game_details.dart' show GameDetails;
 import 'package:flutter/material.dart';
 
 class GameDetailsPage extends Page {
-  final GameEntry entry;
+  final pb.GameEntry entry;
 
   GameDetailsPage({required this.entry}) : super(key: ValueKey(entry));
 

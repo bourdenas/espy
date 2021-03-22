@@ -1,4 +1,4 @@
-import 'package:espy/proto/library.pb.dart' show GameEntry;
+import 'package:espy/proto/library.pb.dart' show GameEntry, GameDetails;
 import 'package:flutter/material.dart';
 
 class GameTags extends StatefulWidget {
@@ -22,12 +22,12 @@ class GameTagsState extends State<GameTags> {
         spacing: 8.0,
         runSpacing: 4.0,
         children: [
-          for (final tag in _tags)
+          for (final tag in entry.details.tag)
             InputChip(
               label: Text(tag),
               onPressed: () {},
               onDeleted: () => setState(() {
-                _tags.remove(tag);
+                entry.details.tag.remove(tag);
               }),
             ),
         ],
@@ -37,7 +37,11 @@ class GameTagsState extends State<GameTags> {
           width: 200,
           child: TextField(
             onSubmitted: (tag) => setState(() {
-              _tags.add(tag);
+              // NB: I don't get it why just "entry.details.tag.add(tag);"
+              // fails and I need to clone GameDetails to edit it.
+              entry.details = GameDetails()
+                ..mergeFromMessage(entry.details)
+                ..tag.add(tag);
               _tagsController.clear();
               _tagsFocusNode.requestFocus();
             }),
@@ -54,12 +58,6 @@ class GameTagsState extends State<GameTags> {
     ]);
   }
 
-  final Set<String> _tags = {
-    '4X',
-    'Strategy',
-    'Amplitude',
-    'Turn-Based Strategy'
-  };
   final TextEditingController _tagsController = TextEditingController();
   final FocusNode _tagsFocusNode = FocusNode();
 

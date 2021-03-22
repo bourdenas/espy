@@ -5,11 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class GameLibraryModel extends ChangeNotifier {
-  final List<GameEntry> _entries = [];
+  Library _library = Library.create();
   String _searchFilter = '';
 
-  UnmodifiableListView<GameEntry> get games => UnmodifiableListView(
-      _entries.where((e) => e.game.name.toLowerCase().contains(_searchFilter)));
+  UnmodifiableListView<GameEntry> get games =>
+      UnmodifiableListView(_library.entry
+          .where((e) => e.game.name.toLowerCase().contains(_searchFilter)));
 
   void fetch() async {
     final response =
@@ -18,7 +19,7 @@ class GameLibraryModel extends ChangeNotifier {
 
     if (response.statusCode == 200) {
       final lib = Library.fromBuffer(response.bodyBytes);
-      update(lib);
+      _update(lib);
     } else {
       throw Exception('Failed to load game library');
     }
@@ -38,7 +39,7 @@ class GameLibraryModel extends ChangeNotifier {
       return null;
     }
 
-    for (final entry in _entries) {
+    for (final entry in _library.entry) {
       if (entry.game.id == gameId) {
         return entry;
       }
@@ -47,16 +48,16 @@ class GameLibraryModel extends ChangeNotifier {
   }
 
   /// Updates the model with new entries from input [Library].
-  void update(Library lib) {
-    _entries.addAll(lib.entry);
-    _entries.sort((a, b) => -a.game.firstReleaseDate.seconds
+  void _update(Library lib) {
+    _library = lib;
+    _library.entry.sort((a, b) => -a.game.firstReleaseDate.seconds
         .compareTo(b.game.firstReleaseDate.seconds));
     notifyListeners();
   }
 
   /// Removes all games from the model.
   void clear() {
-    _entries.clear();
+    _library.clear();
     notifyListeners();
   }
 }
