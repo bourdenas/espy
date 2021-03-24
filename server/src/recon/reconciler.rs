@@ -125,6 +125,18 @@ async fn recon(
             .await?
             .franchises;
     }
+    if game.involved_companies.len() > 0 {
+        game.involved_companies = igdb
+            .get_companies(
+                &game
+                    .involved_companies
+                    .iter()
+                    .map(|f| f.id)
+                    .collect::<Vec<_>>(),
+            )
+            .await?
+            .involvedcompanies;
+    }
     if game.artworks.len() > 0 {
         game.artworks = igdb
             .get_artwork(&game.artworks.iter().map(|f| f.id).collect::<Vec<_>>())

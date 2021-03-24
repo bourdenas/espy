@@ -146,6 +146,59 @@ impl IgdbApi {
             .await?)
     }
 
+    // Returns game companies involved in the making of the game.
+    pub async fn get_companies(
+        &self,
+        company_ids: &[u64],
+    ) -> Result<igdb::InvolvedCompanyResult, Box<dyn std::error::Error + Send + Sync>> {
+        let mut ic_result: igdb::InvolvedCompanyResult = self
+            .post(
+                INVOLVED_COMPANIES_ENDPOINT,
+                &format!(
+                    "fields *; where id = ({});",
+                    company_ids
+                        .iter()
+                        .map(|id| id.to_string())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                ),
+            )
+            .await?;
+
+        let company_result: igdb::CompanyResult = self
+            .post(
+                COMPANIES_ENDPOINT,
+                &format!(
+                    "fields *; where id = ({});",
+                    ic_result
+                        .involvedcompanies
+                        .iter()
+                        .filter_map(|ic| match ic.developer {
+                            true => match &ic.company {
+                                Some(c) => Some(c.id.to_string()),
+                                None => None,
+                            },
+                            false => None,
+                        })
+                        .collect::<Vec<_>>()
+                        .join(",")
+                ),
+            )
+            .await?;
+
+        for company in company_result.companies {
+            let ic = ic_result
+                .involvedcompanies
+                .iter_mut()
+                .find(|ic| ic.company.as_ref().unwrap().id == company.id);
+            if let Some(ic) = ic {
+                ic.company = Some(company);
+            }
+        }
+
+        Ok(ic_result)
+    }
+
     // Sends a POST request to an IGDB service endpoint. It expects to reach a
     // protobuf endpoint and tries to decode the response into a protobuf Message.
     async fn post<T: Message + Default>(
@@ -181,6 +234,8 @@ const FRANCHISES_ENDPOINT: &str = "franchises.pb";
 const COLLECTIONS_ENDPOINT: &str = "collections.pb";
 const ARTWORKS_ENDPOINT: &str = "artworks.pb";
 const SCREENSHOTS_ENDPOINT: &str = "screenshots.pb";
+const COMPANIES_ENDPOINT: &str = "companies.pb";
+const INVOLVED_COMPANIES_ENDPOINT: &str = "involved_companies.pb";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct TwitchOAuthResponse {
