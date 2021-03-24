@@ -88,6 +88,25 @@ impl IgdbApi {
     }
 
     // Returns game screenshots based on id from the igdb/screenshots endpoint.
+    pub async fn get_artwork(
+        &self,
+        artwork_ids: &[u64],
+    ) -> Result<igdb::ArtworkResult, Box<dyn std::error::Error + Send + Sync>> {
+        Ok(self
+            .post(
+                ARTWORKS_ENDPOINT,
+                &format!(
+                    "fields *; where id = ({});",
+                    artwork_ids
+                        .iter()
+                        .map(|id| id.to_string())
+                        .collect::<Vec<String>>()
+                        .join(",")
+                ),
+            )
+            .await?)
+    }
+    // Returns game screenshots based on id from the igdb/screenshots endpoint.
     pub async fn get_screenshots(
         &self,
         screenshot_ids: &[u64],
@@ -160,6 +179,7 @@ const GAMES_ENDPOINT: &str = "games.pb";
 const COVERS_ENDPOINT: &str = "covers.pb";
 const FRANCHISES_ENDPOINT: &str = "franchises.pb";
 const COLLECTIONS_ENDPOINT: &str = "collections.pb";
+const ARTWORKS_ENDPOINT: &str = "artworks.pb";
 const SCREENSHOTS_ENDPOINT: &str = "screenshots.pb";
 
 #[derive(Debug, Serialize, Deserialize)]

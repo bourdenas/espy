@@ -33,6 +33,7 @@ impl Reconciler {
                     Some(game) => Ok(espy::GameEntry {
                         game: Some(game),
                         steam_entry: Some(task.entry),
+                        ..Default::default()
                     }),
                     None => Err(task.entry),
                 },
@@ -123,6 +124,12 @@ async fn recon(
             .get_franchises(&game.franchises.iter().map(|f| f.id).collect::<Vec<_>>())
             .await?
             .franchises;
+    }
+    if game.artworks.len() > 0 {
+        game.artworks = igdb
+            .get_artwork(&game.artworks.iter().map(|f| f.id).collect::<Vec<_>>())
+            .await?
+            .artworks;
     }
     if game.screenshots.len() > 0 {
         game.screenshots = igdb
