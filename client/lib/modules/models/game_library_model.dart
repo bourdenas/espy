@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:espy/proto/library.pb.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,11 +11,10 @@ const String BACKEND_HOST = 'localhost:3030';
 
 class GameLibraryModel extends ChangeNotifier {
   Library _library = Library.create();
-  String _searchFilter = '';
+  _LibraryFilter _filter = _LibraryFilter();
 
   UnmodifiableListView<GameEntry> get games =>
-      UnmodifiableListView(_library.entry
-          .where((e) => e.game.name.toLowerCase().contains(_searchFilter)));
+      UnmodifiableListView(_library.entry.where((e) => _filter.apply(e)));
 
   void fetch() async {
     final response = await http.get(Uri.http(BACKEND_HOST, 'library/testing'));
@@ -43,10 +43,30 @@ class GameLibraryModel extends ChangeNotifier {
   }
 
   set titleFilter(String phrase) {
-    if (phrase == _searchFilter) {
+    if (phrase == _filter.titlePhrase) {
       return;
     }
-    _searchFilter = phrase;
+    _filter.titlePhrase = phrase;
+    notifyListeners();
+  }
+
+  set companyFilter(Int64 id) {
+    _filter.companyId = id;
+    notifyListeners();
+  }
+
+  set collectionFilter(Int64 id) {
+    _filter.collectionId = id;
+    notifyListeners();
+  }
+
+  set tag(String tag) {
+    _filter.tag = tag;
+    notifyListeners();
+  }
+
+  void clearFilter() {
+    _filter.clear();
     notifyListeners();
   }
 
@@ -76,5 +96,66 @@ class GameLibraryModel extends ChangeNotifier {
   void clear() {
     _library.clear();
     notifyListeners();
+  }
+}
+
+class _LibraryFilter {
+  String get titlePhrase {
+    return _titlePhrase;
+  }
+
+  set titlePhrase(String phrase) {
+    _titlePhrase = phrase.toLowerCase();
+  }
+
+  set companyId(Int64 id) {
+    clear();
+    _companyId = id;
+  }
+
+  set collectionId(Int64 id) {
+    clear();
+    _collectionId = id;
+  }
+
+  set tag(String tag) {
+    clear();
+    _tag = tag;
+  }
+
+  bool apply(GameEntry entry) {
+    return _filterCompany(entry) &&
+        _filterCollection(entry) &&
+        _filterTag(entry) &&
+        _filterTitle(entry);
+  }
+
+  void clear() {
+    _titlePhrase = '';
+    _companyId = null;
+    _collectionId = null;
+    _tag = null;
+  }
+
+  String _titlePhrase = '';
+  Int64? _companyId;
+  Int64? _collectionId;
+  String? _tag;
+
+  bool _filterCompany(GameEntry entry) {
+    return _companyId == null ||
+        entry.game.involvedCompanies.any((e) => e.company.id == _companyId);
+  }
+
+  bool _filterCollection(GameEntry entry) {
+    return _collectionId == null || entry.game.collection.id == _collectionId;
+  }
+
+  bool _filterTag(GameEntry entry) {
+    return _tag == null || entry.details.tag.contains(_tag);
+  }
+
+  bool _filterTitle(GameEntry entry) {
+    return entry.game.name.toLowerCase().contains(_titlePhrase);
   }
 }

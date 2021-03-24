@@ -1,5 +1,5 @@
 import 'package:espy/constants/menu_items.dart' show menu_items;
-import 'package:espy/modules/routing/espy_router_delegate.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -21,7 +21,7 @@ class EspyNavigationRail extends StatelessWidget {
               ))
           .toList(),
       onDestinationSelected: (index) {
-        context.read<EspyRouterDelegate>().goHome();
+        context.read<GameLibraryModel>().clearFilter();
       },
     );
   }
