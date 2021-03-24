@@ -1,5 +1,7 @@
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/proto/library.pb.dart' show GameEntry, GameDetails;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GameTags extends StatefulWidget {
   final GameEntry entry;
@@ -28,6 +30,7 @@ class GameTagsState extends State<GameTags> {
               onPressed: () {},
               onDeleted: () => setState(() {
                 entry.details.tag.remove(tag);
+                context.read<GameLibraryModel>().postDetails(entry);
               }),
             ),
         ],
@@ -44,6 +47,7 @@ class GameTagsState extends State<GameTags> {
                 ..tag.add(tag);
               _tagsController.clear();
               _tagsFocusNode.requestFocus();
+              context.read<GameLibraryModel>().postDetails(entry);
             }),
             controller: _tagsController,
             focusNode: _tagsFocusNode,

@@ -1,8 +1,12 @@
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:espy/proto/library.pb.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+
+const String BACKEND_HOST = 'localhost:3030';
+// const String BACKEND_HOST = '10.0.2.2:3030';
 
 class GameLibraryModel extends ChangeNotifier {
   Library _library = Library.create();
@@ -13,15 +17,28 @@ class GameLibraryModel extends ChangeNotifier {
           .where((e) => e.game.name.toLowerCase().contains(_searchFilter)));
 
   void fetch() async {
-    final response =
-        await http.get(Uri.parse('http://localhost:3030/library/testing'));
-    // await http.get(Uri.parse('http://10.0.2.2:3030/library/testing'));
+    final response = await http.get(Uri.http(BACKEND_HOST, 'library/testing'));
 
     if (response.statusCode == 200) {
       final lib = Library.fromBuffer(response.bodyBytes);
       _update(lib);
     } else {
       throw Exception('Failed to load game library');
+    }
+  }
+
+  void postDetails(GameEntry entry) async {
+    var response = await http.post(
+      Uri.http(BACKEND_HOST, '/library/testing/details/${entry.game.id}'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'tags': entry.details.tag,
+      }),
+    );
+    if (response.statusCode != 200) {
+      print('postDetails (error): $response');
     }
   }
 
