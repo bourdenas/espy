@@ -55,9 +55,14 @@ impl LibraryManager {
 
             // Save changes in local library.
             util::proto::save(&path, &self.library)?;
-            util::proto::save_text(&format!("target/{}.asciipb", self.user_id), &self.library)?;
         }
 
+        Ok(())
+    }
+
+    pub async fn save(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let path = format!("target/{}.bin", self.user_id);
+        util::proto::save(&path, &self.library)?;
         Ok(())
     }
 

@@ -1,4 +1,5 @@
 use crate::http::handlers;
+use crate::http::models;
 use crate::igdb_service::api::IgdbApi;
 use std::convert::Infallible;
 use std::sync::Arc;
@@ -8,7 +9,7 @@ use warp::{self, Filter};
 pub fn routes(
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    get_library(igdb).with(warp::cors().allow_any_origin())
+    get_library(igdb.clone()).or(post_details(igdb))
 }
 
 /// GET /library/{user_id}
@@ -21,8 +22,23 @@ fn get_library(
         .and_then(handlers::get_library)
 }
 
+/// POST /library/{user_id}/details/{id}
+fn post_details(
+    igdb: Arc<IgdbApi>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / String / "details" / u64)
+        .and(warp::post())
+        .and(details_body())
+        .and(with_igdb(igdb))
+        .and_then(handlers::post_details)
+}
+
 fn with_igdb(
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = (Arc<IgdbApi>,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&igdb))
+}
+
+fn details_body() -> impl Filter<Extract = (models::Details,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(1024 * 16).and(warp::body::json())
 }

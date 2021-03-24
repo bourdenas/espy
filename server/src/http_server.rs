@@ -3,6 +3,7 @@ use crate::igdb_service::api::IgdbApi;
 use clap::Clap;
 use espy_server::*;
 use std::sync::Arc;
+use warp::{self, Filter};
 
 #[derive(Clap)]
 struct Opts {
@@ -25,9 +26,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let igdb = Arc::new(igdb);
 
     println!("starting the HTTP server...");
-    warp::serve(http::routes::routes(igdb))
-        .run(([127, 0, 0, 1], opts.port))
-        .await;
+    warp::serve(
+        http::routes::routes(igdb).with(
+            warp::cors()
+                .allow_methods(vec!["GET", "POST"])
+                .allow_headers(vec!["Content-Type", "Authorization"])
+                .allow_any_origin()
+                .allow_credentials(true),
+        ),
+    )
+    .run(([127, 0, 0, 1], opts.port))
+    .await;
 
     Ok(())
 }
