@@ -73,6 +73,11 @@ class GameTagsState extends State<GameTags> {
           width: 200,
           child: TextField(
             onSubmitted: (tag) => setState(() {
+              if (tag.isEmpty) {
+                _tagsFocusNode.requestFocus();
+                return;
+              }
+
               // NB: I don't get it why just "entry.details.tag.add(tag);"
               // fails and I need to clone GameDetails to edit it.
               entry.details = GameDetails()
