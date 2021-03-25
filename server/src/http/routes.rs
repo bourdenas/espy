@@ -9,7 +9,9 @@ use warp::{self, Filter};
 pub fn routes(
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    get_library(igdb.clone()).or(post_details(igdb))
+    get_library(igdb.clone())
+        .or(post_details(igdb))
+        .or(get_images())
 }
 
 /// GET /library/{user_id}
@@ -31,6 +33,13 @@ fn post_details(
         .and(details_body())
         .and(with_igdb(igdb))
         .and_then(handlers::post_details)
+}
+
+/// GET /images/{resolution}/{image_id}
+fn get_images() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("images" / String / String)
+        .and(warp::get())
+        .and_then(handlers::get_images)
 }
 
 fn with_igdb(
