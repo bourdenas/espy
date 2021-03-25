@@ -22,7 +22,7 @@ dependencies:
   flutter:
     sdk: flutter
   http:
-  protobuf:
+  protobuf: ^2.0.0
   provider: ^5.0.0
 
   # The following adds the Cupertino Icons font to your application.

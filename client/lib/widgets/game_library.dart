@@ -2,9 +2,10 @@ import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/game_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 
-class EspyGameGrid extends StatelessWidget {
-  const EspyGameGrid({Key? key}) : super(key: key);
+class GameLibrary extends StatelessWidget {
+  const GameLibrary({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +19,13 @@ class EspyGameGrid extends StatelessWidget {
       children: context
           .watch<GameLibraryModel>()
           .games
-          .map((entry) => GameCard(
+          .map((entry) => InkResponse(
+              enableFeedback: true,
+              onTap: () => context.read<EspyRouterDelegate>().gameId =
+                  '${entry.game.id}',
+              child: GameCard(
                 game: entry.game,
-              ))
+              )))
           .toList(),
     );
   }
