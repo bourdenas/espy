@@ -1,6 +1,7 @@
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/espy_navigation_rail.dart' show EspyNavigationRail;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -66,7 +67,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                     child: TextField(
                       controller: _searchController,
                       focusNode: _searchFocusNode,
-                      autofocus: true,
+                      autofocus: kIsWeb,
                       decoration: InputDecoration(
                         prefixIcon: IconButton(
                           icon: _searchIcon,

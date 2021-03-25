@@ -1,5 +1,6 @@
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/proto/library.pb.dart' show GameEntry, GameDetails;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -83,7 +84,7 @@ class GameTagsState extends State<GameTags> {
             }),
             controller: _tagsController,
             focusNode: _tagsFocusNode,
-            autofocus: true,
+            autofocus: kIsWeb,
             decoration: InputDecoration(
               prefixIcon: Icon(Icons.tag),
               hintText: 'tags...',

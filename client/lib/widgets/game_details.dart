@@ -1,4 +1,5 @@
 // import 'dart:ui' as ui;
+import 'package:espy/constants/urls.dart';
 import 'package:espy/proto/library.pb.dart';
 import 'package:espy/widgets/game_tags.dart';
 import 'package:flutter/material.dart';
@@ -65,7 +66,7 @@ class _HeaderSliver extends StatelessWidget {
                 Hero(
                   tag: '${entry.game.id}_cover',
                   child: Image.network(
-                    'https://images.igdb.com/igdb/image/upload/t_cover_big/${entry.game.cover.imageId}.jpg',
+                    '${Urls.imageProvider}/t_cover_big/${entry.game.cover.imageId}.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -123,7 +124,7 @@ class _ScreenshotsSliver extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4)),
               clipBehavior: Clip.antiAlias,
               child: Image.network(
-                'https://images.igdb.com/igdb/image/upload/t_720p/${screenshot.imageId}.jpg',
+                '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
                 fit: BoxFit.contain,
               ),
             ),

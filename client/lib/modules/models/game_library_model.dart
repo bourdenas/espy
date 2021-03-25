@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:espy/constants/urls.dart';
 import 'package:espy/proto/library.pb.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
@@ -17,7 +18,8 @@ class GameLibraryModel extends ChangeNotifier {
       UnmodifiableListView(_library.entry.where((e) => _filter.apply(e)));
 
   void fetch() async {
-    final response = await http.get(Uri.http(BACKEND_HOST, 'library/testing'));
+    final response =
+        await http.get(Uri.parse('${Urls.espyBackend}/library/testing'));
 
     if (response.statusCode == 200) {
       final lib = Library.fromBuffer(response.bodyBytes);
@@ -29,7 +31,7 @@ class GameLibraryModel extends ChangeNotifier {
 
   void postDetails(GameEntry entry) async {
     var response = await http.post(
-      Uri.http(BACKEND_HOST, '/library/testing/details/${entry.game.id}'),
+      Uri.parse('${Urls.espyBackend}/library/testing/details/${entry.game.id}'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
