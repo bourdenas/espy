@@ -7,15 +7,14 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-const String BACKEND_HOST = 'localhost:3030';
-// const String BACKEND_HOST = '10.0.2.2:3030';
-
 class GameLibraryModel extends ChangeNotifier {
   Library _library = Library.create();
-  _LibraryFilter _filter = _LibraryFilter();
+  LibraryFilter _filter = LibraryFilter();
 
   UnmodifiableListView<GameEntry> get games =>
       UnmodifiableListView(_library.entry.where((e) => _filter.apply(e)));
+
+  LibraryFilter get filter => _filter;
 
   void fetch() async {
     final response =
@@ -101,7 +100,7 @@ class GameLibraryModel extends ChangeNotifier {
   }
 }
 
-class _LibraryFilter {
+class LibraryFilter {
   String get titlePhrase {
     return _titlePhrase;
   }
@@ -109,6 +108,10 @@ class _LibraryFilter {
   set titlePhrase(String phrase) {
     _titlePhrase = phrase.toLowerCase();
   }
+
+  Int64? get company => _companyId;
+  Int64? get collection => _collectionId;
+  String? get tag => _tag;
 
   set companyId(Int64 id) {
     clear();
@@ -120,7 +123,7 @@ class _LibraryFilter {
     _collectionId = id;
   }
 
-  set tag(String tag) {
+  set tag(String? tag) {
     clear();
     _tag = tag;
   }
