@@ -19,7 +19,7 @@ class GameLibrary extends StatelessWidget {
                 label: Text('${company.name}'),
                 backgroundColor: Colors.red[700],
                 onDeleted: () {
-                  context.read<GameLibraryModel>().clearFilter();
+                  context.read<GameLibraryModel>().removeCompanyFilter(company);
                 },
               ),
               Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
@@ -29,7 +29,9 @@ class GameLibrary extends StatelessWidget {
                 label: Text('${collection.name}'),
                 backgroundColor: Colors.indigo[700],
                 onDeleted: () {
-                  context.read<GameLibraryModel>().clearFilter();
+                  context
+                      .read<GameLibraryModel>()
+                      .removeCollectionFilter(collection);
                 },
               ),
               Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
@@ -38,7 +40,7 @@ class GameLibrary extends StatelessWidget {
               InputChip(
                 label: Text(tag),
                 onDeleted: () {
-                  context.read<GameLibraryModel>().clearFilter();
+                  context.read<GameLibraryModel>().removeTagFilter(tag);
                 },
               ),
               Padding(padding: EdgeInsets.symmetric(horizontal: 4)),

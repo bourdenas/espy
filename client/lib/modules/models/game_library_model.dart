@@ -51,18 +51,33 @@ class GameLibraryModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  set companyFilter(Company company) {
+  void addCompanyFilter(Company company) {
     _filter.companies.add(company);
     notifyListeners();
   }
 
-  set collectionFilter(Collection collection) {
+  void removeCompanyFilter(Company company) {
+    _filter.companies.remove(company);
+    notifyListeners();
+  }
+
+  void addCollectionFilter(Collection collection) {
     _filter.collections.add(collection);
     notifyListeners();
   }
 
-  set tag(String tag) {
+  void removeCollectionFilter(Collection collection) {
+    _filter.collections.remove(collection);
+    notifyListeners();
+  }
+
+  void addTagFilter(String tag) {
     _filter.tags.add(tag);
+    notifyListeners();
+  }
+
+  void removeTagFilter(String tag) {
+    _filter.tags.remove(tag);
     notifyListeners();
   }
 
