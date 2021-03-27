@@ -2,9 +2,9 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:espy/constants/urls.dart';
+import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company;
 import 'package:espy/proto/library.pb.dart';
-import 'package:fixnum/fixnum.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
 
 class GameLibraryModel extends ChangeNotifier {
@@ -51,13 +51,13 @@ class GameLibraryModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  set companyFilter(Int64 id) {
-    _filter.companyId = id;
+  set companyFilter(Company company) {
+    _filter.company = company;
     notifyListeners();
   }
 
-  set collectionFilter(Int64 id) {
-    _filter.collectionId = id;
+  set collectionFilter(Collection collection) {
+    _filter.collection = collection;
     notifyListeners();
   }
 
@@ -101,31 +101,17 @@ class GameLibraryModel extends ChangeNotifier {
 }
 
 class LibraryFilter {
+  String _titlePhrase = '';
+  Company? company;
+  Collection? collection;
+  String? tag;
+
   String get titlePhrase {
     return _titlePhrase;
   }
 
   set titlePhrase(String phrase) {
     _titlePhrase = phrase.toLowerCase();
-  }
-
-  Int64? get company => _companyId;
-  Int64? get collection => _collectionId;
-  String? get tag => _tag;
-
-  set companyId(Int64 id) {
-    clear();
-    _companyId = id;
-  }
-
-  set collectionId(Int64 id) {
-    clear();
-    _collectionId = id;
-  }
-
-  set tag(String? tag) {
-    clear();
-    _tag = tag;
   }
 
   bool apply(GameEntry entry) {
@@ -137,27 +123,22 @@ class LibraryFilter {
 
   void clear() {
     _titlePhrase = '';
-    _companyId = null;
-    _collectionId = null;
-    _tag = null;
+    company = null;
+    collection = null;
+    tag = null;
   }
 
-  String _titlePhrase = '';
-  Int64? _companyId;
-  Int64? _collectionId;
-  String? _tag;
-
   bool _filterCompany(GameEntry entry) {
-    return _companyId == null ||
-        entry.game.involvedCompanies.any((e) => e.company.id == _companyId);
+    return company == null ||
+        entry.game.involvedCompanies.any((e) => e.company.id == company!.id);
   }
 
   bool _filterCollection(GameEntry entry) {
-    return _collectionId == null || entry.game.collection.id == _collectionId;
+    return collection == null || entry.game.collection.id == collection!.id;
   }
 
   bool _filterTag(GameEntry entry) {
-    return _tag == null || entry.details.tag.contains(_tag);
+    return tag == null || entry.details.tag.contains(tag);
   }
 
   bool _filterTitle(GameEntry entry) {

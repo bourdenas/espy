@@ -17,7 +17,7 @@ class GameLibrary extends StatelessWidget {
             children: [
               if (filter.company != null)
                 InputChip(
-                  label: Text('${filter.company}'),
+                  label: Text('${filter.company!.name}'),
                   backgroundColor: Colors.red[700],
                   onDeleted: () {
                     context.read<GameLibraryModel>().clearFilter();
@@ -25,7 +25,7 @@ class GameLibrary extends StatelessWidget {
                 ),
               if (filter.collection != null)
                 InputChip(
-                  label: Text('${filter.collection}'),
+                  label: Text('${filter.collection!.name}'),
                   backgroundColor: Colors.indigo[700],
                   onDeleted: () {
                     context.read<GameLibraryModel>().clearFilter();

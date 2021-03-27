@@ -33,7 +33,7 @@ class GameTagsState extends State<GameTags> {
                 backgroundColor: Colors.red[700],
                 onPressed: () {
                   context.read<GameLibraryModel>().companyFilter =
-                      involved.company.id;
+                      involved.company;
                   Navigator.pop(context);
                 },
               ),
@@ -44,7 +44,7 @@ class GameTagsState extends State<GameTags> {
               backgroundColor: Colors.indigo[700],
               onPressed: () {
                 context.read<GameLibraryModel>().collectionFilter =
-                    entry.game.collection.id;
+                    entry.game.collection;
                 Navigator.pop(context);
               },
             ),
