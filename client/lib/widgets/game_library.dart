@@ -13,37 +13,37 @@ class GameLibrary extends StatelessWidget {
     return Column(children: [
       Container(
           padding: EdgeInsets.all(16),
-          child: Row(
-            children: [
-              if (filter.company != null)
-                InputChip(
-                  label: Text('${filter.company!.name}'),
-                  backgroundColor: Colors.red[700],
-                  onDeleted: () {
-                    context.read<GameLibraryModel>().clearFilter();
-                  },
-                ),
-              if (filter.collection != null)
-                InputChip(
-                  label: Text('${filter.collection!.name}'),
-                  backgroundColor: Colors.indigo[700],
-                  onDeleted: () {
-                    context.read<GameLibraryModel>().clearFilter();
-                  },
-                ),
-              if (filter.tag != null)
-                InputChip(
-                  label: Text('${filter.tag}'),
-                  onDeleted: () {
-                    context.read<GameLibraryModel>().clearFilter();
-                  },
-                ),
-              if (filter.company != null ||
-                  filter.collection != null ||
-                  filter.tag != null)
-                Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
+          child: Row(children: [
+            for (final company in filter.companies) ...[
+              InputChip(
+                label: Text('${company.name}'),
+                backgroundColor: Colors.red[700],
+                onDeleted: () {
+                  context.read<GameLibraryModel>().clearFilter();
+                },
+              ),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
             ],
-          )),
+            for (final collection in filter.collections) ...[
+              InputChip(
+                label: Text('${collection.name}'),
+                backgroundColor: Colors.indigo[700],
+                onDeleted: () {
+                  context.read<GameLibraryModel>().clearFilter();
+                },
+              ),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
+            ],
+            for (final tag in filter.tags) ...[
+              InputChip(
+                label: Text(tag),
+                onDeleted: () {
+                  context.read<GameLibraryModel>().clearFilter();
+                },
+              ),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
+            ],
+          ])),
       Expanded(
         child: GridView.extent(
           restorationId: 'grid_view_game_entries_grid_offset',

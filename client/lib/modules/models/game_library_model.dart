@@ -52,17 +52,17 @@ class GameLibraryModel extends ChangeNotifier {
   }
 
   set companyFilter(Company company) {
-    _filter.company = company;
+    _filter.companies.add(company);
     notifyListeners();
   }
 
   set collectionFilter(Collection collection) {
-    _filter.collection = collection;
+    _filter.collections.add(collection);
     notifyListeners();
   }
 
   set tag(String tag) {
-    _filter.tag = tag;
+    _filter.tags.add(tag);
     notifyListeners();
   }
 
@@ -102,9 +102,9 @@ class GameLibraryModel extends ChangeNotifier {
 
 class LibraryFilter {
   String _titlePhrase = '';
-  Company? company;
-  Collection? collection;
-  String? tag;
+  Set<Company> companies = {};
+  Set<Collection> collections = {};
+  Set<String> tags = {};
 
   String get titlePhrase {
     return _titlePhrase;
@@ -123,22 +123,24 @@ class LibraryFilter {
 
   void clear() {
     _titlePhrase = '';
-    company = null;
-    collection = null;
-    tag = null;
+    companies.clear();
+    collections.clear();
+    tags.clear();
   }
 
   bool _filterCompany(GameEntry entry) {
-    return company == null ||
-        entry.game.involvedCompanies.any((e) => e.company.id == company!.id);
+    return companies.isEmpty ||
+        companies.every((company) => entry.game.involvedCompanies
+            .any((ic) => ic.developer && company.id == ic.company.id));
   }
 
   bool _filterCollection(GameEntry entry) {
-    return collection == null || entry.game.collection.id == collection!.id;
+    return collections.isEmpty ||
+        collections.every((collection) => collection == entry.game.collection);
   }
 
   bool _filterTag(GameEntry entry) {
-    return tag == null || entry.details.tag.contains(tag);
+    return tags.isEmpty || tags.every((tag) => entry.details.tag.contains(tag));
   }
 
   bool _filterTitle(GameEntry entry) {
