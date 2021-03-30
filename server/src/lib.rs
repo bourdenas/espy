@@ -6,6 +6,7 @@ mod igdb {
     tonic::include_proto!("igdb");
 }
 
+pub mod gog;
 pub mod handler;
 pub mod http;
 pub mod igdb_service;

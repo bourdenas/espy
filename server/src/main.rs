@@ -9,27 +9,41 @@ struct Opts {
     /// Search for a game in IGDB by title.
     #[clap(short, long)]
     search: Option<String>,
+
     /// If set to true, it tries to connect to a local gRPC server for
     /// retrieving the library.
     #[clap(long)]
     over_grpc: bool,
+
     /// If set to true, it tries to connect to a local HTTP server for
     /// retrieving the library.
     #[clap(long)]
     over_http: bool,
+
     /// Port number of the gRPC server to connect to if --over_grpc is true.
     #[clap(long, default_value = "6235")]
     grpc_port: u16,
+
     /// Espy user name for managing a game library.
     #[clap(short, long, default_value = "testing")]
     user: String,
+
     /// JSON file that contains application keys for espy service.
     #[clap(long, default_value = "keys.json")]
     key_store: String,
+
     /// Steam user id used for building the library. If set, it overrides the
     /// user id stored in --key_store JSON file.
     #[clap(long)]
     steam_user: Option<String>,
+
+    /// Code string provided from the GOG OAuth login page.
+    #[clap(long)]
+    gog_code: Option<String>,
+
+    /// Token string provided after GOG authentication.
+    #[clap(long)]
+    gog_token: Option<String>,
 }
 
 #[tokio::main]
@@ -46,6 +60,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         for candidate in candidates {
             println!("{}", candidate);
         }
+        return Ok(());
+    } else if let Some(gog_code) = &opts.gog_code {
+        let token = gog::api::get_token(gog_code).await?;
+        let gog_api = gog::api::GogApi::new(&token);
+        let game_list = gog_api.get_filtered_products().await?;
+        return Ok(());
+    } else if let Some(gog_token) = &opts.gog_token {
+        let gog_api = gog::api::GogApi::new(gog_token);
+        let game_list = gog_api.get_filtered_products().await?;
         return Ok(());
     } else if opts.over_grpc {
         let mut client =
