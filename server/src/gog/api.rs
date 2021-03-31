@@ -1,3 +1,5 @@
+use crate::espy;
+
 pub struct GogApi {
     token: String,
 }
@@ -9,7 +11,7 @@ impl GogApi {
         }
     }
 
-    pub async fn get_games(
+    pub async fn get_game_ids(
         &self,
     ) -> Result<GogGamesList, Box<dyn std::error::Error + Send + Sync>> {
         let uri = format!("{}/user/data/games", GOG_API_HOST);
@@ -21,15 +23,14 @@ impl GogApi {
             .await?
             .json::<GogGamesList>()
             .await?;
-        println!("steam games: {:#?}", game_list);
 
         Ok(game_list)
     }
 
-    pub async fn get_filtered_products(
+    pub async fn get_game_entries(
         &self,
-    ) -> Result<GogProductList, Box<dyn std::error::Error + Send + Sync>> {
-        let mut product_list = GogProductList {
+    ) -> Result<espy::GogList, Box<dyn std::error::Error + Send + Sync>> {
+        let mut gog_list = espy::GogList {
             ..Default::default()
         };
 
@@ -45,21 +46,26 @@ impl GogApi {
                 .await?
                 .json::<GogProductList>()
                 .await?;
-            println!("steam games: {:#?}", product_list_page);
 
-            if page == 1 {
-                product_list = product_list_page;
-            } else {
-                product_list
-                    .products
-                    .extend(product_list_page.products.into_iter());
-            }
+            gog_list
+                .game
+                .extend(
+                    product_list_page
+                        .products
+                        .into_iter()
+                        .map(|product| espy::GogEntry {
+                            id: product.id as i64,
+                            title: product.title,
+                            image: product.image,
+                            url: product.url,
+                        }),
+                );
 
-            if page >= product_list.total_pages {
+            if page >= product_list_page.total_pages {
                 break;
             }
         }
-        Ok(product_list)
+        Ok(gog_list)
     }
 }
 
@@ -68,10 +74,10 @@ pub async fn get_token(code: &str) -> Result<String, Box<dyn std::error::Error +
         "/token?client_id={}&client_secret={}&grant_type=authorization_code&code={}&redirect_uri={}%2Ftoken", 
         GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, code, GOG_GALAXY_REDIRECT_URI);
     let uri = format!("{}{}", GOG_AUTH_HOST, params);
-    println!("{}", uri);
+    println!("GET: {}", uri);
 
     let resp = reqwest::get(&uri).await?.json::<GogTokenResponse>().await?;
-    println!("gog token resp: {:#?}", resp);
+    println!("GOG token resp: {:#?}", resp);
 
     Ok(resp.access_token)
 }
