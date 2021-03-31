@@ -62,13 +62,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         }
         return Ok(());
     } else if let Some(gog_code) = &opts.gog_code {
-        let token = gog::api::get_token(gog_code).await?;
-        let gog_api = gog::api::GogApi::new(&token);
+        let token = gog::token::GogToken::from_code(gog_code).await?;
+        let gog_api = gog::api::GogApi::new(token);
         let gog_entries = gog_api.get_game_entries().await?;
         println!("{:#?}", gog_entries);
         return Ok(());
     } else if let Some(gog_token) = &opts.gog_token {
-        let gog_api = gog::api::GogApi::new(gog_token);
+        let token = gog::token::GogToken::from_token(gog_token);
+        let gog_api = gog::api::GogApi::new(token);
         let gog_entries = gog_api.get_game_entries().await?;
         println!("{:#?}", gog_entries);
         return Ok(());

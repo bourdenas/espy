@@ -1,14 +1,13 @@
 use crate::espy;
+use crate::gog::token::GogToken;
 
 pub struct GogApi {
-    token: String,
+    token: GogToken,
 }
 
 impl GogApi {
-    pub fn new(token: &str) -> GogApi {
-        GogApi {
-            token: String::from(token),
-        }
+    pub fn new(token: GogToken) -> GogApi {
+        GogApi { token }
     }
 
     pub async fn get_game_ids(
@@ -18,7 +17,10 @@ impl GogApi {
 
         let game_list = reqwest::Client::new()
             .get(&uri)
-            .header("Authorization", format!("Bearer {}", &self.token))
+            .header(
+                "Authorization",
+                format!("Bearer {}", &self.token.access_token),
+            )
             .send()
             .await?
             .json::<GogGamesList>()
@@ -41,7 +43,10 @@ impl GogApi {
             );
             let product_list_page = reqwest::Client::new()
                 .get(&uri)
-                .header("Authorization", format!("Bearer {}", &self.token))
+                .header(
+                    "Authorization",
+                    format!("Bearer {}", &self.token.access_token),
+                )
                 .send()
                 .await?
                 .json::<GogProductList>()
@@ -69,29 +74,7 @@ impl GogApi {
     }
 }
 
-pub async fn get_token(code: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    let params = format!(
-        "/token?client_id={}&client_secret={}&grant_type=authorization_code&code={}&redirect_uri={}%2Ftoken", 
-        GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, code, GOG_GALAXY_REDIRECT_URI);
-    let uri = format!("{}{}", GOG_AUTH_HOST, params);
-    println!("GET: {}", uri);
-
-    let resp = reqwest::get(&uri).await?.json::<GogTokenResponse>().await?;
-    println!("GOG token resp: {:#?}", resp);
-
-    Ok(resp.access_token)
-}
-
 use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize)]
-struct GogTokenResponse {
-    expires_in: u32,
-    access_token: String,
-    user_id: String,
-    refresh_token: String,
-    session_id: String,
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GogGamesList {
@@ -100,7 +83,7 @@ pub struct GogGamesList {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GogProductList {
+struct GogProductList {
     page: u32,
     total_pages: u32,
     total_products: u32,
@@ -109,16 +92,11 @@ pub struct GogProductList {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
-pub struct GogProduct {
+struct GogProduct {
     id: u32,
     title: String,
     image: String,
     url: String,
 }
 
-const GOG_AUTH_HOST: &str = "https://auth.gog.com";
 const GOG_API_HOST: &str = "https://embed.gog.com";
-const GOG_GALAXY_CLIENT_ID: &str = "46899977096215655";
-const GOG_GALAXY_SECRET: &str = "9d85c43b1482497dbbce61f6e4aa173a433796eeae2ca8c5f6129f2dc4de46d9";
-const GOG_GALAXY_REDIRECT_URI: &str =
-    "https%3A%2F%2Fembed.gog.com%2Fon_login_success%3Forigin%3Dclient";
