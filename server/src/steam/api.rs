@@ -16,7 +16,7 @@ impl SteamApi {
     // Returns the list of games owned by the user in Steam.
     pub async fn get_owned_games(
         &self,
-    ) -> Result<espy::SteamList, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<espy::StoreEntryList, Box<dyn std::error::Error + Send + Sync>> {
         let uri = format!(
             "{}{}?key={}&steamid={}&include_appinfo=true&format=json",
             STEAM_HOST, STEAM_GETOWNEDGAMES_SERVICE, self.steam_key, self.steam_user_id
@@ -25,14 +25,15 @@ impl SteamApi {
         let resp = reqwest::get(&uri).await?.json::<SteamResponse>().await?;
         println!("steam games: {}", resp.response.game_count);
 
-        Ok(espy::SteamList {
-            game: resp
+        Ok(espy::StoreEntryList {
+            entry: resp
                 .response
                 .games
                 .into_iter()
-                .map(|entry| espy::SteamEntry {
+                .map(|entry| espy::StoreEntry {
                     id: entry.appid,
                     title: entry.name,
+                    ..Default::default()
                 })
                 .collect(),
         })

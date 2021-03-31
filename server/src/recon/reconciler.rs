@@ -14,15 +14,15 @@ impl Reconciler {
         Reconciler { igdb }
     }
 
-    // Retrieve data from IGDB for Steam entries and create a Library based on
+    // Retrieve data from IGDB for store entries and create a Library based on
     // IGDB info.
     pub async fn reconcile(
         &self,
-        steam_entries: &[espy::SteamEntry],
+        entries: &[espy::StoreEntry],
     ) -> Result<espy::Library, Box<dyn std::error::Error + Send + Sync>> {
         let (tx, mut rx) = mpsc::channel(32);
 
-        let fut = stream::iter(steam_entries.iter().map(|entry| Task {
+        let fut = stream::iter(entries.iter().map(|entry| Task {
             entry: entry.clone(),
             igdb: Arc::clone(&self.igdb),
             tx: tx.clone(),
@@ -93,15 +93,15 @@ pub async fn get_candidates(
 }
 
 struct Task {
-    entry: espy::SteamEntry,
+    entry: espy::StoreEntry,
     igdb: Arc<igdb_service::api::IgdbApi>,
-    tx: mpsc::Sender<Result<espy::GameEntry, espy::SteamEntry>>,
+    tx: mpsc::Sender<Result<espy::GameEntry, espy::StoreEntry>>,
 }
 
 /// Returns a Game entry from IGDB that matches the input Steam entry.
 async fn recon(
     igdb: &igdb_service::api::IgdbApi,
-    entry: &espy::SteamEntry,
+    entry: &espy::StoreEntry,
 ) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
     println!("Resolving '{}'", &entry.title);
     let candidates = get_candidates(igdb, &entry.title).await?;

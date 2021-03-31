@@ -1,24 +1,33 @@
 syntax = "proto3";
 
-import "gog_entry.proto";
 import "igdbapi.proto";
-import "steam_entry.proto";
 
 package espy;
 
 message Library {
   repeated GameEntry entry = 1;
-  repeated SteamEntry unreconciled_steam_game = 2;
-  repeated GogEntry unreconciled_gog_game = 3;
+  repeated StoreEntry unreconciled_steam_game = 2;
+  repeated StoreEntry unreconciled_gog_game = 3;
 }
 
 message GameEntry {
   igdb.Game game = 1;
   GameDetails details = 2;
-  SteamEntry steam_entry = 3;
-  GogEntry gog_entry = 4;
+  StoreEntry steam_entry = 3;
+  StoreEntry gog_entry = 4;
 }
 
 message GameDetails {
   repeated string tag = 1;
+}
+
+message StoreEntry {
+  int64 id = 1;
+  string title = 2;
+  string url = 3;
+  string image = 4;
+}
+
+message StoreEntryList {
+  repeated StoreEntry entry = 1;
 }

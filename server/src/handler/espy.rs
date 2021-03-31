@@ -39,10 +39,13 @@ impl espy::espy_server::Espy for EspyImpl {
             recon::reconciler::Reconciler::new(Arc::clone(&self.igdb)),
         );
         match mgr
-            .build(Some(steam::api::SteamApi::new(
-                &self.keys.steam.client_key,
-                &self.keys.steam.user_id,
-            )))
+            .build(
+                Some(steam::api::SteamApi::new(
+                    &self.keys.steam.client_key,
+                    &self.keys.steam.user_id,
+                )),
+                None,
+            )
             .await
         {
             Ok(_) => Ok(tonic::Response::new(espy::LibraryResponse {

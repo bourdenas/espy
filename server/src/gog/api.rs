@@ -31,8 +31,8 @@ impl GogApi {
 
     pub async fn get_game_entries(
         &self,
-    ) -> Result<espy::GogList, Box<dyn std::error::Error + Send + Sync>> {
-        let mut gog_list = espy::GogList {
+    ) -> Result<espy::StoreEntryList, Box<dyn std::error::Error + Send + Sync>> {
+        let mut gog_list = espy::StoreEntryList {
             ..Default::default()
         };
 
@@ -53,16 +53,16 @@ impl GogApi {
                 .await?;
 
             gog_list
-                .game
+                .entry
                 .extend(
                     product_list_page
                         .products
                         .into_iter()
-                        .map(|product| espy::GogEntry {
+                        .map(|product| espy::StoreEntry {
                             id: product.id as i64,
                             title: product.title,
-                            image: product.image,
                             url: product.url,
+                            image: product.image,
                         }),
                 );
 

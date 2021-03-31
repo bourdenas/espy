@@ -107,13 +107,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         &opts.user,
         recon::reconciler::Reconciler::new(Arc::new(igdb)),
     );
-    mgr.build(Some(steam::api::SteamApi::new(
-        &keys.steam.client_key,
-        match &opts.steam_user {
-            Some(user_id) => user_id,
-            None => &keys.steam.user_id,
-        },
-    )))
+    mgr.build(
+        Some(steam::api::SteamApi::new(
+            &keys.steam.client_key,
+            match &opts.steam_user {
+                Some(user_id) => user_id,
+                None => &keys.steam.user_id,
+            },
+        )),
+        None,
+    )
     .await?;
 
     render_html(&opts.user, &mgr.library)?;
