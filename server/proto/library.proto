@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+import "gog_entry.proto";
 import "igdbapi.proto";
 import "steam_entry.proto";
 
@@ -8,12 +9,14 @@ package espy;
 message Library {
   repeated GameEntry entry = 1;
   repeated SteamEntry unreconciled_steam_game = 2;
+  repeated GogEntry unreconciled_gog_game = 3;
 }
 
 message GameEntry {
   igdb.Game game = 1;
   GameDetails details = 2;
   SteamEntry steam_entry = 3;
+  GogEntry gog_entry = 4;
 }
 
 message GameDetails {
