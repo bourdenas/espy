@@ -98,7 +98,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut gog_api: Option<gog::api::GogApi> = None;
 
     if let Some(gog_code) = &opts.gog_code {
-        let token = gog::token::GogToken::from_code(gog_code).await?;
+        let token = gog::token::GogToken::from_code(gog_code, "gog_token.json").await?;
         gog_api = Some(gog::api::GogApi::new(token));
         // let gog_entries = gog_api.get_game_entries().await?;
         // println!("{:#?}", gog_entries);
@@ -110,7 +110,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // println!("{:#?}", gog_entries);
         // return Ok(());
     } else if let Some(gog_refresh) = &opts.gog_refresh {
-        let token = gog::token::GogToken::from_refresh(gog_refresh).await?;
+        let token = gog::token::GogToken::from_refresh(gog_refresh, "gog_token.json").await?;
         gog_api = Some(gog::api::GogApi::new(token));
         // let gog_entries = gog_api.get_game_entries().await?;
         // println!("{:#?}", gog_entries);
