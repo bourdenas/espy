@@ -62,7 +62,7 @@ class GameLibrary extends StatelessWidget {
                   onTap: () => context.read<EspyRouterDelegate>().gameId =
                       '${entry.game.id}',
                   child: GameCard(
-                    game: entry.game,
+                    entry: entry,
                   )))
               .toList(),
         ),

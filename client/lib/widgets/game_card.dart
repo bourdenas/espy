@@ -1,14 +1,14 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/proto/igdbapi.pb.dart';
+import 'package:espy/proto/library.pb.dart' show GameEntry;
 import 'package:flutter/material.dart';
 
 class GameCard extends StatelessWidget {
   GameCard({
     Key? key,
-    required this.game,
+    required this.entry,
   }) : super(key: key);
 
-  final Game game;
+  final GameEntry entry;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class GameCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: GridTileBar(
           backgroundColor: Colors.black45,
-          title: GameTitleText(game.name),
+          title: GameTitleText(entry.game.name),
           subtitle: GameTitleText("Steam"),
         ),
       ),
@@ -30,10 +30,10 @@ class GameCard extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         clipBehavior: Clip.antiAlias,
         child: Hero(
-          tag: '${game.id}_cover',
-          child: game.cover.imageId.isNotEmpty
+          tag: '${entry.game.id}_cover',
+          child: entry.game.cover.imageId.isNotEmpty
               ? Image.network(
-                  '${Urls.imageProvider}/t_cover_big/${game.cover.imageId}.jpg',
+                  '${Urls.imageProvider}/t_cover_big/${entry.game.cover.imageId}.jpg',
                   fit: BoxFit.fitHeight,
                 )
               : Image.asset('assets/images/placeholder.png'),
