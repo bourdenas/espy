@@ -10,12 +10,10 @@ pub struct GogToken {
 }
 
 impl GogToken {
-    pub async fn from_code(
-        code: &str,
-    ) -> Result<GogToken, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn from_code(code: &str) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let params = format!(
-        "/token?client_id={}&client_secret={}&grant_type=authorization_code&code={}&redirect_uri={}%2Ftoken", 
-        GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, code, GOG_GALAXY_REDIRECT_URI);
+            "/token?client_id={}&client_secret={}&grant_type=authorization_code&code={}&redirect_uri={}%2Ftoken", 
+            GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, code, GOG_GALAXY_REDIRECT_URI);
         let uri = format!("{}{}", GOG_AUTH_HOST, params);
         println!("GET: {}", uri);
 
@@ -25,11 +23,26 @@ impl GogToken {
         Ok(resp)
     }
 
-    pub fn from_token(token: &str) -> GogToken {
+    pub fn from_token(token: &str) -> Self {
         GogToken {
             access_token: String::from(token),
             ..Default::default()
         }
+    }
+
+    pub async fn from_refresh(
+        refresh_token: &str,
+    ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+        let params = format!(
+            "/token?client_id={}&client_secret={}&grant_type=refresh_token&refresh_token={}&%2Ftoken",
+            GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, refresh_token);
+        let uri = format!("{}{}", GOG_AUTH_HOST, params);
+        println!("GET: {}", uri);
+
+        let resp = reqwest::get(&uri).await?.json::<GogToken>().await?;
+        println!("GOG refresh token resp: {:#?}", resp);
+
+        Ok(resp)
     }
 }
 

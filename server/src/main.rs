@@ -44,6 +44,10 @@ struct Opts {
     /// Token string provided after GOG authentication.
     #[clap(long)]
     gog_token: Option<String>,
+
+    /// Token string provided after GOG authentication.
+    #[clap(long)]
+    gog_refresh: Option<String>,
 }
 
 #[tokio::main]
@@ -60,18 +64,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         for candidate in candidates {
             println!("{}", candidate);
         }
-        return Ok(());
-    } else if let Some(gog_code) = &opts.gog_code {
-        let token = gog::token::GogToken::from_code(gog_code).await?;
-        let gog_api = gog::api::GogApi::new(token);
-        let gog_entries = gog_api.get_game_entries().await?;
-        println!("{:#?}", gog_entries);
-        return Ok(());
-    } else if let Some(gog_token) = &opts.gog_token {
-        let token = gog::token::GogToken::from_token(gog_token);
-        let gog_api = gog::api::GogApi::new(token);
-        let gog_entries = gog_api.get_game_entries().await?;
-        println!("{:#?}", gog_entries);
         return Ok(());
     } else if opts.over_grpc {
         let mut client =
@@ -103,6 +95,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         return Ok(());
     }
 
+    let mut gog_api: Option<gog::api::GogApi> = None;
+
+    if let Some(gog_code) = &opts.gog_code {
+        let token = gog::token::GogToken::from_code(gog_code).await?;
+        gog_api = Some(gog::api::GogApi::new(token));
+        // let gog_entries = gog_api.get_game_entries().await?;
+        // println!("{:#?}", gog_entries);
+        // return Ok(());
+    } else if let Some(gog_token) = &opts.gog_token {
+        let token = gog::token::GogToken::from_token(gog_token);
+        gog_api = Some(gog::api::GogApi::new(token));
+        // let gog_entries = gog_api.get_game_entries().await?;
+        // println!("{:#?}", gog_entries);
+        // return Ok(());
+    } else if let Some(gog_refresh) = &opts.gog_refresh {
+        let token = gog::token::GogToken::from_refresh(gog_refresh).await?;
+        gog_api = Some(gog::api::GogApi::new(token));
+        // let gog_entries = gog_api.get_game_entries().await?;
+        // println!("{:#?}", gog_entries);
+        // return Ok(());
+    }
+
     let mut mgr = library::manager::LibraryManager::new(
         &opts.user,
         recon::reconciler::Reconciler::new(Arc::new(igdb)),
@@ -115,7 +129,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 None => &keys.steam.user_id,
             },
         )),
-        None,
+        gog_api,
     )
     .await?;
 
