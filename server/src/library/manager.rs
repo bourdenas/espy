@@ -3,7 +3,9 @@ use crate::gog;
 use crate::recon;
 use crate::steam;
 use crate::util;
+use itertools::Itertools;
 use std::collections::HashSet;
+use std::mem::swap;
 
 pub struct LibraryManager {
     pub library: espy::Library,
@@ -54,7 +56,7 @@ impl LibraryManager {
             new_entries.extend(self.collect_new_entries(gog_entries, &get_gog_id));
         }
 
-        // Try to reconcile entries that do not exist in local library and merge them.
+        // Reconcile entries that do not exist in local library and update library.
         self.update_library(self.recon_service.reconcile(&new_entries).await?);
 
         // Save changes in local library.
@@ -71,14 +73,14 @@ impl LibraryManager {
 
     async fn get_steam_entries(&self) -> Option<espy::StoreEntryList> {
         match &self.steam_api {
-            Some(steam_api) => Some(steam_api.get_owned_games().await.unwrap()),
+            Some(steam_api) => Some(steam_api.get_owned_games().await.unwrap_or_default()),
             None => None,
         }
     }
 
     async fn get_gog_entries(&self) -> Option<espy::StoreEntryList> {
         match &self.gog_api {
-            Some(gog_api) => Some(gog_api.get_game_entries().await.unwrap()),
+            Some(gog_api) => Some(gog_api.get_game_entries().await.unwrap_or_default()),
             None => None,
         }
     }
@@ -106,11 +108,42 @@ impl LibraryManager {
         )
     }
 
-    // Incorporates library update to the existing library.
+    // Merges update into existing library. Ensures that there are no duplicate
+    // entries.
     fn update_library(&mut self, update: espy::Library) {
         self.library.unreconciled_store_entry = update.unreconciled_store_entry;
-        if !update.entry.is_empty() {
-            self.library.entry.extend(update.entry);
+        if update.entry.is_empty() {
+            return;
+        }
+
+        let mut entries = vec![];
+        swap(&mut entries, &mut self.library.entry);
+        entries.extend(update.entry);
+
+        // Sort entries by Game.id and aggregate in groups entries with the same
+        // Game.id.
+        entries.sort_by_key(|e| match &e.game {
+            Some(game) => game.id,
+            None => 0,
+        });
+        let groups = entries.into_iter().group_by(|e| match &e.game {
+            Some(game) => game.id,
+            None => 0,
+        });
+
+        // Collapse groups of same Game into a single entry and maintain
+        // ownership in different stores.
+        for (_key, mut group) in groups.into_iter() {
+            let init = group.next().unwrap_or_default();
+            let group = group.collect::<Vec<espy::GameEntry>>();
+            self.library.entry.push(match group.is_empty() {
+                false => group.into_iter().fold(init, |acc, x| {
+                    let mut entry = acc;
+                    entry.store_entry.extend(x.store_entry);
+                    entry
+                }),
+                true => init,
+            });
         }
     }
 }
