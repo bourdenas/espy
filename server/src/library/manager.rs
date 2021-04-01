@@ -11,6 +11,7 @@ pub struct LibraryManager {
     pub library: espy::Library,
 
     user_id: String,
+    path: String,
 
     recon_service: recon::reconciler::Reconciler,
     steam_api: Option<steam::api::SteamApi>,
@@ -19,31 +20,28 @@ pub struct LibraryManager {
 
 impl LibraryManager {
     // Creates a LibraryManager instance for a unique user_id id.
-    pub fn new(user_id: &str, recon_service: recon::reconciler::Reconciler) -> LibraryManager {
+    pub fn new(
+        user_id: &str,
+        recon_service: recon::reconciler::Reconciler,
+        steam_api: Option<steam::api::SteamApi>,
+        gog_api: Option<gog::api::GogApi>,
+    ) -> LibraryManager {
         LibraryManager {
             library: espy::Library::default(),
             user_id: String::from(user_id),
-            recon_service: recon_service,
-            steam_api: None,
-            gog_api: None,
+            path: format!("target/{}.bin", user_id),
+            recon_service,
+            steam_api,
+            gog_api,
         }
     }
 
-    // Build LibraryManager from local stored library if available and by
-    // syncing external storefronts.
-    pub async fn build(
-        &mut self,
-        steam_api: Option<steam::api::SteamApi>,
-        gog_api: Option<gog::api::GogApi>,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        // Load local game library.
-        let path = format!("target/{}.bin", self.user_id);
-        self.library = load_local_library(&path);
+    pub fn build(&mut self) {
+        self.library = load_local_library(&self.path);
+    }
 
-        self.steam_api = steam_api;
+    pub async fn sync(&mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let steam_entries = self.get_steam_entries().await;
-
-        self.gog_api = gog_api;
         let gog_entries = self.get_gog_entries().await;
 
         let mut new_entries = Vec::<espy::StoreEntry>::new();
@@ -60,7 +58,7 @@ impl LibraryManager {
         self.update_library(self.recon_service.reconcile(&new_entries).await?);
 
         // Save changes in local library.
-        util::proto::save(&path, &self.library)?;
+        util::proto::save(&self.path, &self.library)?;
 
         Ok(())
     }

@@ -120,8 +120,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut mgr = library::manager::LibraryManager::new(
         &opts.user,
         recon::reconciler::Reconciler::new(Arc::new(igdb)),
-    );
-    mgr.build(
         Some(steam::api::SteamApi::new(
             &keys.steam.client_key,
             match &opts.steam_user {
@@ -130,8 +128,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             },
         )),
         gog_api,
-    )
-    .await?;
+    );
+    mgr.build();
+    mgr.sync().await?;
 
     render_html(&opts.user, &mgr.library)?;
 

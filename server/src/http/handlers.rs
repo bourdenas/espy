@@ -16,15 +16,12 @@ pub async fn get_library(
 
     // Pass None for Steam API to avoid retrieving entries and reconciling on
     // every get_library request.
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)));
-    match mgr.build(None, None).await {
-        Ok(_) => {
-            let mut bytes = vec![];
-            match mgr.library.encode(&mut bytes) {
-                Ok(_) => Ok(Box::new(bytes)),
-                Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
-            }
-        }
+    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    mgr.build();
+
+    let mut bytes = vec![];
+    match mgr.library.encode(&mut bytes) {
+        Ok(_) => Ok(Box::new(bytes)),
         Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
     }
 }
@@ -40,10 +37,8 @@ pub async fn post_details(
         &user_id, game_id, &details
     );
 
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)));
-    if let Err(_) = mgr.build(None, None).await {
-        return Ok(StatusCode::NOT_FOUND);
-    }
+    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    mgr.build();
 
     let mut entry = mgr.library.entry.iter_mut().find(|e| match &e.game {
         Some(game) => game.id == game_id,

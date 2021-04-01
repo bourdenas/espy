@@ -37,24 +37,15 @@ impl espy::espy_server::Espy for EspyImpl {
         let mut mgr = library::manager::LibraryManager::new(
             &request.get_ref().user_id,
             recon::reconciler::Reconciler::new(Arc::clone(&self.igdb)),
+            Some(steam::api::SteamApi::new(
+                &self.keys.steam.client_key,
+                &self.keys.steam.user_id,
+            )),
+            None,
         );
-        match mgr
-            .build(
-                Some(steam::api::SteamApi::new(
-                    &self.keys.steam.client_key,
-                    &self.keys.steam.user_id,
-                )),
-                None,
-            )
-            .await
-        {
-            Ok(_) => Ok(tonic::Response::new(espy::LibraryResponse {
-                library: Some(mgr.library),
-            })),
-            Err(e) => {
-                println!("Internal Error: {}", e);
-                Err(tonic::Status::internal("Failed to build user library."))
-            }
-        }
+        mgr.build();
+        Ok(tonic::Response::new(espy::LibraryResponse {
+            library: Some(mgr.library),
+        }))
     }
 }
