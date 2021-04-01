@@ -34,24 +34,31 @@ impl LibraryManager {
         steam_api: Option<steam::api::SteamApi>,
         gog_api: Option<gog::api::GogApi>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        self.steam_api = steam_api;
-        self.gog_api = gog_api;
-
-        let steam_entries = self.get_steam_entries().await;
-        // let _gog_entries = self.get_gog_entries().await;
-
         // Load local game library.
         let path = format!("target/{}.bin", self.user_id);
         self.library = load_local_library(&path);
 
-        // Try to reconcile entries that do not exist in local library and merge them.
-        if let Some(steam_entries) = steam_entries {
-            let new_entries = get_new_steam_entries(&self.library, steam_entries);
-            self.update_library(self.recon_service.reconcile(&new_entries).await?);
+        self.steam_api = steam_api;
+        let steam_entries = self.get_steam_entries().await;
 
-            // Save changes in local library.
-            util::proto::save(&path, &self.library)?;
+        self.gog_api = gog_api;
+        let gog_entries = self.get_gog_entries().await;
+
+        let mut new_entries = Vec::<espy::StoreEntry>::new();
+
+        if let Some(steam_entries) = steam_entries {
+            new_entries.extend(self.collect_new_entries(steam_entries, &get_steam_id));
         }
+
+        if let Some(gog_entries) = gog_entries {
+            new_entries.extend(self.collect_new_entries(gog_entries, &get_gog_id));
+        }
+
+        // Try to reconcile entries that do not exist in local library and merge them.
+        self.update_library(self.recon_service.reconcile(&new_entries).await?);
+
+        // Save changes in local library.
+        util::proto::save(&path, &self.library)?;
 
         Ok(())
     }
@@ -76,56 +83,64 @@ impl LibraryManager {
         }
     }
 
+    // Returns store entries that are not already contained in the reconciled
+    // set of the library.
+    fn collect_new_entries(
+        &self,
+        store_entries: espy::StoreEntryList,
+        filter: &dyn Fn(&espy::StoreEntry) -> Option<i64>,
+    ) -> Vec<espy::StoreEntry> {
+        get_new_entries(
+            self.library
+                .entry
+                .iter()
+                .flat_map(|entry| {
+                    entry
+                        .store_entry
+                        .iter()
+                        .filter_map(filter)
+                        .collect::<Vec<_>>()
+                })
+                .collect(),
+            store_entries,
+        )
+    }
+
     // Incorporates library update to the existing library.
     fn update_library(&mut self, update: espy::Library) {
-        self.library.unreconciled_steam_game = update.unreconciled_steam_game;
+        self.library.unreconciled_store_entry = update.unreconciled_store_entry;
         if !update.entry.is_empty() {
             self.library.entry.extend(update.entry);
         }
     }
 }
 
-// Filters Steam game entries that are not included in the manager's library.
-fn get_new_steam_entries(
-    library: &espy::Library,
-    entries: espy::StoreEntryList,
+// Filters Store game entries that are not already included in the input IDs set.
+fn get_new_entries(
+    existing_ids: HashSet<i64>,
+    store_entries: espy::StoreEntryList,
 ) -> Vec<espy::StoreEntry> {
-    // Collect steam ids of reconciled entries.
-    let lib_ids = library
-        .entry
-        .iter()
-        .filter_map(|e| match &e.steam_entry {
-            Some(entry) => Some(entry.id),
-            None => None,
-        })
-        .collect::<HashSet<i64>>();
-
-    entries
+    store_entries
         .entry
         .into_iter()
-        .filter(|e| !lib_ids.contains(&e.id))
+        .filter(|store_entry| !existing_ids.contains(&store_entry.id))
         .collect()
 }
 
-fn get_new_gog_entries(
-    library: &espy::Library,
-    entries: espy::StoreEntryList,
-) -> Vec<espy::StoreEntry> {
-    // Collect GOG ids of reconciled entries.
-    let lib_ids = library
-        .entry
-        .iter()
-        .filter_map(|e| match &e.gog_entry {
-            Some(enyry) => Some(enyry.id),
-            None => None,
-        })
-        .collect::<HashSet<i64>>();
+// Returns the store id if StoreEntry belong to Steam.
+fn get_steam_id(store_entry: &espy::StoreEntry) -> Option<i64> {
+    if store_entry.store == espy::store_entry::Store::Steam as i32 {
+        return Some(store_entry.id);
+    }
+    None
+}
 
-    entries
-        .entry
-        .into_iter()
-        .filter(|e| !lib_ids.contains(&e.id))
-        .collect()
+// Returns the store id if StoreEntry belong to GOG.
+fn get_gog_id(store_entry: &espy::StoreEntry) -> Option<i64> {
+    if store_entry.store == espy::store_entry::Store::Gog as i32 {
+        return Some(store_entry.id);
+    }
+    None
 }
 
 // Load a user game library from path.

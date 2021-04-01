@@ -33,6 +33,7 @@ impl SteamApi {
                 .map(|entry| espy::StoreEntry {
                     id: entry.appid,
                     title: entry.name,
+                    store: espy::store_entry::Store::Steam as i32,
                     ..Default::default()
                 })
                 .collect(),

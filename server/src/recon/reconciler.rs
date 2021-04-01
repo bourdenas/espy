@@ -22,24 +22,24 @@ impl Reconciler {
     ) -> Result<espy::Library, Box<dyn std::error::Error + Send + Sync>> {
         let (tx, mut rx) = mpsc::channel(32);
 
-        let fut = stream::iter(entries.iter().map(|entry| Task {
-            entry: entry.clone(),
+        let fut = stream::iter(entries.iter().map(|store_entry| Task {
+            store_entry: store_entry.clone(),
             igdb: Arc::clone(&self.igdb),
             tx: tx.clone(),
         }))
         .for_each_concurrent(8, |task| async move {
-            let resp = match recon(&task.igdb, &task.entry).await {
+            let resp = match recon(&task.igdb, &task.store_entry).await {
                 Ok(game) => match game {
                     Some(game) => Ok(espy::GameEntry {
                         game: Some(game),
-                        steam_entry: Some(task.entry),
+                        store_entry: vec![task.store_entry],
                         ..Default::default()
                     }),
-                    None => Err(task.entry),
+                    None => Err(task.store_entry),
                 },
                 Err(_) => {
-                    println!("failed recon request '{}'", task.entry.title);
-                    Err(task.entry)
+                    println!("failed recon request '{}'", task.store_entry.title);
+                    Err(task.store_entry)
                 }
             };
 
@@ -52,8 +52,8 @@ impl Reconciler {
             let mut lib = espy::Library::default();
             while let Some(resp) = rx.recv().await {
                 match resp {
-                    Ok(game) => lib.entry.push(game),
-                    Err(entry) => lib.unreconciled_steam_game.push(entry),
+                    Ok(game_entry) => lib.entry.push(game_entry),
+                    Err(store_entry) => lib.unreconciled_store_entry.push(store_entry),
                 };
             }
             return lib;
@@ -93,7 +93,7 @@ pub async fn get_candidates(
 }
 
 struct Task {
-    entry: espy::StoreEntry,
+    store_entry: espy::StoreEntry,
     igdb: Arc<igdb_service::api::IgdbApi>,
     tx: mpsc::Sender<Result<espy::GameEntry, espy::StoreEntry>>,
 }
@@ -101,10 +101,10 @@ struct Task {
 /// Returns a Game entry from IGDB that matches the input Steam entry.
 async fn recon(
     igdb: &igdb_service::api::IgdbApi,
-    entry: &espy::StoreEntry,
+    store_entry: &espy::StoreEntry,
 ) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
-    println!("Resolving '{}'", &entry.title);
-    let candidates = get_candidates(igdb, &entry.title).await?;
+    println!("Resolving '{}'", &store_entry.title);
+    let candidates = get_candidates(igdb, &store_entry.title).await?;
     if candidates.len() == 0 {
         return Ok(None);
     }

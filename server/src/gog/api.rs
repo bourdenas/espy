@@ -61,6 +61,7 @@ impl GogApi {
                         .map(|product| espy::StoreEntry {
                             id: product.id as i64,
                             title: product.title,
+                            store: espy::store_entry::Store::Gog as i32,
                             url: product.url,
                             image: product.image,
                         }),
