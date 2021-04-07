@@ -10,9 +10,12 @@ import 'package:http/http.dart' as http;
 class GameLibraryModel extends ChangeNotifier {
   Library _library = Library.create();
   LibraryFilter _filter = LibraryFilter();
+  Set<String> _tags = {};
 
   UnmodifiableListView<GameEntry> get games =>
       UnmodifiableListView(_library.entry.where((e) => _filter.apply(e)));
+
+  UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
 
   LibraryFilter get filter => _filter;
 
@@ -105,6 +108,12 @@ class GameLibraryModel extends ChangeNotifier {
     _library = lib;
     _library.entry.sort((a, b) => -a.game.firstReleaseDate.seconds
         .compareTo(b.game.firstReleaseDate.seconds));
+
+    _tags.clear();
+    for (final entry in _library.entry) {
+      _tags.addAll(entry.details.tag);
+    }
+
     notifyListeners();
   }
 
