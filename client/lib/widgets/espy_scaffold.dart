@@ -53,8 +53,8 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       return Row(children: [
-        // if (constraints.maxWidth > 800)
-        //   EspyNavigationRail(constraints.maxWidth > 3200),
+        if (constraints.maxWidth > 800)
+          EspyNavigationRail(constraints.maxWidth > 1200),
         Expanded(
           child: Scaffold(
               appBar: AppBar(
