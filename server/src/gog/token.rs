@@ -60,9 +60,15 @@ impl GogToken {
         Ok(token)
     }
 
-    pub fn from_file(path: &str) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn from_file(path: &str) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let bytes = std::fs::read(path)?;
-        let token: GogToken = serde_json::from_slice(&bytes)?;
+        let mut token: GogToken = serde_json::from_slice(&bytes)?;
+        token.path = String::from(path);
+
+        println!("Is token fresh? {}", token.is_fresh());
+        if !token.is_fresh() {
+            token.refresh().await?;
+        }
 
         Ok(token)
     }

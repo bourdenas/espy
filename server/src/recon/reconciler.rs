@@ -37,8 +37,8 @@ impl Reconciler {
                     }),
                     None => Err(task.store_entry),
                 },
-                Err(_) => {
-                    println!("failed recon request '{}'", task.store_entry.title);
+                Err(e) => {
+                    println!("failed recon request '{}': {}", task.store_entry.title, e);
                     Err(task.store_entry)
                 }
             };

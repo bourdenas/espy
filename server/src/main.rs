@@ -95,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         return Ok(());
     }
 
-    let token = gog::token::GogToken::from_file("gog_token.json")?;
+    let token = gog::token::GogToken::from_file("gog_token.json").await?;
     let mut gog_api = Some(gog::api::GogApi::new(token));
 
     if let Some(gog_code) = &opts.gog_code {
