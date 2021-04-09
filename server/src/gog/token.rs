@@ -60,7 +60,7 @@ impl GogToken {
         Ok(token)
     }
 
-    pub async fn from_file(path: &str) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    pub fn from_file(path: &str) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let bytes = std::fs::read(path)?;
         let token: GogToken = serde_json::from_slice(&bytes)?;
 

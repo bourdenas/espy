@@ -41,7 +41,7 @@ impl GogApi {
                 "{}/account/getFilteredProducts?mediaType=1&page={}",
                 GOG_API_HOST, page
             );
-            let product_list_page = reqwest::Client::new()
+            let resp = reqwest::Client::new()
                 .get(&uri)
                 .header(
                     "Authorization",
@@ -49,8 +49,16 @@ impl GogApi {
                 )
                 .send()
                 .await?
-                .json::<GogProductList>()
+                .json::<GogProductListResponse>()
                 .await?;
+
+            let product_list_page = match resp {
+                GogProductListResponse::Ok(pl) => pl,
+                GogProductListResponse::Err(e) => {
+                    eprintln!("{}", e);
+                    return Err(Box::new(e));
+                }
+            };
 
             gog_list
                 .entry
@@ -81,6 +89,33 @@ use serde::{Deserialize, Serialize};
 pub struct GogGamesList {
     owned: Vec<u32>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum GogProductListResponse {
+    Ok(GogProductList),
+    Err(GogError),
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+struct GogError {
+    error: String,
+    error_description: String,
+}
+
+use std::fmt;
+impl fmt::Display for GogError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "GOG response error: '{}' -- {}",
+            self.error, self.error_description
+        )
+    }
+}
+
+use std::error::Error;
+impl Error for GogError {}
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
