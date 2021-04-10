@@ -1,9 +1,9 @@
 class EspyRoutePath {
-  final String? entryId;
+  final String? gameId;
 
-  EspyRoutePath.home() : entryId = null;
-  EspyRoutePath.entry(this.entryId);
+  EspyRoutePath.library() : gameId = null;
+  EspyRoutePath.details(this.gameId);
 
-  bool get isHomePage => entryId == null;
-  bool get isGameDetailsPage => entryId != null;
+  bool get isLibraryPage => gameId == null;
+  bool get isGameDetailsPage => gameId != null;
 }

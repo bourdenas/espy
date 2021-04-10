@@ -24,8 +24,9 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
   EspyRouterDelegate() : navigatorKey = GlobalKey<NavigatorState>();
 
   @override
-  EspyRoutePath get currentConfiguration =>
-      _gameId == null ? EspyRoutePath.home() : EspyRoutePath.entry(_gameId);
+  EspyRoutePath get currentConfiguration => _gameId == null
+      ? EspyRoutePath.library()
+      : EspyRoutePath.details(_gameId);
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,7 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
           return false;
         }
 
-        context.read<EspyRouterDelegate>().goHome();
+        goHome();
         return true;
       },
     );
@@ -52,11 +53,11 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
 
   @override
   Future<void> setNewRoutePath(EspyRoutePath path) async {
-    if (path.isHomePage) {
+    if (path.isLibraryPage) {
       goHome();
     }
     if (path.isGameDetailsPage) {
-      gameId = path.entryId!;
+      gameId = path.gameId!;
     }
   }
 }
