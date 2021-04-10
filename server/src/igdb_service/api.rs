@@ -1,3 +1,4 @@
+use crate::espy;
 use crate::igdb;
 use crate::util::rate_limiter::RateLimiter;
 use prost::Message;
@@ -49,6 +50,47 @@ impl IgdbApi {
         Ok(self
             .post(GAMES_ENDPOINT, &format!("search \"{}\"; fields *;", title))
             .await?)
+    }
+
+    pub async fn match_external(
+        &self,
+        store_entry: &espy::StoreEntry,
+    ) -> Result<Option<igdb::ExternalGame>, Box<dyn std::error::Error + Send + Sync>> {
+        // I don't get why proto enums are i32 in porst!?!
+        let category: u8 = match store_entry.store {
+            1 => 1,
+            2 => 5,
+            _ => 0,
+        };
+
+        let mut result: igdb::ExternalGameResult = self
+            .post(
+                EXTERNAL_GAMES_ENDPOINT,
+                &format!(
+                    "fields *; where uid = \"{}\" & category = {};",
+                    store_entry.id, category
+                ),
+            )
+            .await?;
+
+        match result.externalgames.is_empty() {
+            false => Ok(Some(result.externalgames.remove(0))),
+            true => Ok(None),
+        }
+    }
+
+    pub async fn get_game_by_id(
+        &self,
+        id: u64,
+    ) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut result: igdb::GameResult = self
+            .post(GAMES_ENDPOINT, &format!("fields *; where id={};", id))
+            .await?;
+
+        match result.games.is_empty() {
+            false => Ok(Some(result.games.remove(0))),
+            true => Ok(None),
+        }
     }
 
     // Returns game image cover based on id from the igdb/covers endpoint.
@@ -222,13 +264,21 @@ impl IgdbApi {
             .await?
             .bytes()
             .await?;
-        Ok(T::decode(bytes)?)
+
+        match T::decode(bytes.clone()) {
+            Ok(msg) => Ok(msg),
+            Err(e) => {
+                eprintln!("IGDB.POST error: {}", std::str::from_utf8(&bytes).unwrap());
+                Err(Box::new(e))
+            }
+        }
     }
 }
 
 const TWITCH_OAUTH_URL: &str = "https://id.twitch.tv/oauth2/token";
 const IGDB_SERVICE_URL: &str = "https://api.igdb.com/v4";
 const GAMES_ENDPOINT: &str = "games.pb";
+const EXTERNAL_GAMES_ENDPOINT: &str = "external_games.pb";
 const COVERS_ENDPOINT: &str = "covers.pb";
 const FRANCHISES_ENDPOINT: &str = "franchises.pb";
 const COLLECTIONS_ENDPOINT: &str = "collections.pb";

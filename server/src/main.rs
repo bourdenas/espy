@@ -60,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     igdb.connect().await?;
 
     if let Some(title) = &opts.search {
-        let candidates = recon::reconciler::get_candidates(&igdb, title).await?;
+        let candidates = recon::search::get_candidates(&igdb, title).await?;
         for candidate in candidates {
             println!("{}", candidate);
         }
