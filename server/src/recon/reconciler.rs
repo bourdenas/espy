@@ -30,8 +30,13 @@ impl Reconciler {
 
         let handle = tokio::spawn(async move {
             let mut lib = espy::Library::default();
-            while let Some(game_entry) = rx.recv().await {
-                lib.entry.push(game_entry)
+            while let Some(mut game_entry) = rx.recv().await {
+                match game_entry.game {
+                    Some(_) => lib.entry.push(game_entry),
+                    None => lib
+                        .unreconciled_store_entry
+                        .push(game_entry.store_entry.remove(0)),
+                }
             }
             return lib;
         });
