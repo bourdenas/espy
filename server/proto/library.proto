@@ -6,6 +6,8 @@ package espy;
 
 message Library {
   repeated GameEntry entry = 1;
+  repeated GameEntry hidden = 3;
+  
   repeated StoreEntry unreconciled_store_entry = 2;
 }
 
