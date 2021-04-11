@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/modules/routing/espy_route_information_parser.dart';
@@ -29,6 +31,14 @@ class _EspyAppState extends State<EspyApp> {
   EspyRouterDelegate? _routerDelegate;
   EspyRouteInformationParser _routeInformationParser =
       EspyRouteInformationParser();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Prevent default event handler
+    document.onContextMenu.listen((event) => event.preventDefault());
+  }
 
   @override
   Widget build(BuildContext context) {

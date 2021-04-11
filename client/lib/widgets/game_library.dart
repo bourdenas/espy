@@ -1,7 +1,9 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
+import 'package:espy/proto/library.pb.dart';
 import 'package:espy/widgets/game_card.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -57,15 +59,15 @@ class GameLibrary extends StatelessWidget {
           ])),
       Expanded(
         child: view == LibraryView.GRID
-            ? gridView(context)
+            ? _gridView(context)
             : view == LibraryView.LIST
-                ? listView(context)
-                : tableView(context),
+                ? _listView(context)
+                : _tableView(context),
       ),
     ]);
   }
 
-  Widget gridView(BuildContext context) {
+  Widget _gridView(BuildContext context) {
     return Scrollbar(
         child: GridView.extent(
       restorationId: 'grid_view_game_entries_grid_offset',
@@ -81,14 +83,18 @@ class GameLibrary extends StatelessWidget {
               enableFeedback: true,
               onTap: () => context.read<EspyRouterDelegate>().gameId =
                   '${entry.game.id}',
-              child: GameCard(
-                entry: entry,
+              child: Listener(
+                child: GameCard(
+                  entry: entry,
+                ),
+                onPointerDown: (PointerDownEvent event) async =>
+                    await _showEntryContextMenu(context, event, entry),
               )))
           .toList(),
     ));
   }
 
-  Widget listView(BuildContext context) {
+  Widget _listView(BuildContext context) {
     return Scrollbar(
       child: ListView(
         restorationId: 'list_view_game_entries_offset',
@@ -97,19 +103,23 @@ class GameLibrary extends StatelessWidget {
             .watch<GameLibraryModel>()
             .games
             .map(
-              (entry) => ListTile(
-                leading: CircleAvatar(
-                    foregroundImage: NetworkImage(
-                        '${Urls.imageProvider}/t_thumb/${entry.game.cover.imageId}.jpg')),
-                title: Row(children: [
-                  Text(entry.game.name),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 8)),
-                  Text(entry.details.tag.join(", ")),
-                ]),
-                subtitle: Text(
-                    '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}'),
-                onTap: () => context.read<EspyRouterDelegate>().gameId =
-                    '${entry.game.id}',
+              (entry) => Listener(
+                child: ListTile(
+                  leading: CircleAvatar(
+                      foregroundImage: NetworkImage(
+                          '${Urls.imageProvider}/t_thumb/${entry.game.cover.imageId}.jpg')),
+                  title: Row(children: [
+                    Text(entry.game.name),
+                    Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
+                    Text(entry.details.tag.join(", ")),
+                  ]),
+                  subtitle: Text(
+                      '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}'),
+                  onTap: () => context.read<EspyRouterDelegate>().gameId =
+                      '${entry.game.id}',
+                ),
+                onPointerDown: (PointerDownEvent event) async =>
+                    await _showEntryContextMenu(context, event, entry),
               ),
             )
             .toList(),
@@ -117,7 +127,48 @@ class GameLibrary extends StatelessWidget {
     );
   }
 
-  Widget tableView(BuildContext context) {
+  Future<void> _showEntryContextMenu(
+      BuildContext context, PointerDownEvent event, GameEntry entry) async {
+    if (event.kind != PointerDeviceKind.mouse ||
+        event.buttons != kSecondaryMouseButton) {
+      return;
+    }
+
+    final overlay =
+        Overlay.of(context)!.context.findRenderObject() as RenderBox;
+
+    final selectedTag = await showMenu<String>(
+      context: context,
+      items: context
+          .read<GameLibraryModel>()
+          .tags
+          .map((tag) => CheckedPopupMenuItem(
+                child: Text(tag),
+                value: tag,
+                checked: entry.details.tag.contains(tag),
+              ))
+          .toList(),
+      position:
+          RelativeRect.fromSize(event.position & Size(48, 48), overlay.size),
+    );
+
+    if (selectedTag == null) {
+      return;
+    }
+
+    if (entry.details.tag.contains(selectedTag)) {
+      entry.details.tag.remove(selectedTag);
+    } else {
+      // NB: I don't get it why just "entry.details.tag.add(tag);"
+      // fails and I need to clone GameDetails to edit it.
+      entry.details = GameDetails()
+        ..mergeFromMessage(entry.details)
+        ..tag.add(selectedTag);
+    }
+    context.read<GameLibraryModel>().postDetails(entry);
+  }
+
+  Widget _tableView(BuildContext context) {
     return Scrollbar(
       child: ListView(
         restorationId: 'table_view_game_entries_offset',
@@ -127,23 +178,10 @@ class GameLibrary extends StatelessWidget {
             dividerThickness: 0,
             sortColumnIndex: 2,
             columns: [
+              DataColumn(label: Text('TITLE')),
+              DataColumn(label: Text('TAGS')),
               DataColumn(
-                label: Text(
-                  'TITLE',
-                  // style: TextStyle(fontStyle: FontStyle.italic),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'TAGS',
-                  // style: TextStyle(fontStyle: FontStyle.italic),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'YEAR',
-                  // style: TextStyle(fontStyle: FontStyle.italic),
-                ),
+                label: Text('YEAR'),
                 numeric: true,
               ),
             ],

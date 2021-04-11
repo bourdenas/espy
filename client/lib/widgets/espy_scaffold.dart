@@ -41,7 +41,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   Icon _searchIcon = Icon(Icons.search);
-  LibraryView _view = LibraryView.GRID;
+  LibraryView _view = LibraryView.LIST;
 
   @override
   Widget build(BuildContext context) {
