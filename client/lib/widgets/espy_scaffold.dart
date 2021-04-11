@@ -1,24 +1,17 @@
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/espy_navigation_rail.dart' show EspyNavigationRail;
+import 'package:espy/widgets/game_library.dart' show GameLibrary, LibraryView;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class EspyScaffold extends StatefulWidget {
-  final Widget body;
-
-  EspyScaffold({required this.body});
-
   @override
-  State<StatefulWidget> createState() => _EspyScaffoldState(body: body);
+  State<StatefulWidget> createState() => _EspyScaffoldState();
 }
 
 class _EspyScaffoldState extends State<EspyScaffold> {
-  final Widget body;
-
-  _EspyScaffoldState({required this.body});
-
   @override
   void initState() {
     super.initState();
@@ -48,6 +41,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   Icon _searchIcon = Icon(Icons.search);
+  LibraryView _view = LibraryView.GRID;
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +72,44 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                     ),
                   ),
                 ]),
+                actions: [
+                  PopupMenuButton(
+                    itemBuilder: (context) {
+                      return <PopupMenuEntry<LibraryView>>[
+                        CheckedPopupMenuItem(
+                          value: LibraryView.GRID,
+                          checked: _view == LibraryView.GRID,
+                          child: Text('Grid View'),
+                        ),
+                        CheckedPopupMenuItem(
+                          value: LibraryView.LIST,
+                          checked: _view == LibraryView.LIST,
+                          child: Text('List View'),
+                        ),
+                        CheckedPopupMenuItem(
+                          value: LibraryView.TABLE,
+                          checked: _view == LibraryView.TABLE,
+                          child: Text('Table View'),
+                        ),
+                        PopupMenuDivider(),
+                        PopupMenuItem(
+                            child: Slider(
+                                value: 80,
+                                min: 60,
+                                max: 120,
+                                divisions: 20,
+                                label: 'Cover Size',
+                                onChanged: (value) {})),
+                      ];
+                    },
+                    onSelected: (LibraryView value) {
+                      setState(() => _view = value);
+                    },
+                  )
+                ],
               ),
               drawer: constraints.maxWidth <= 800 ? EspyDrawer() : null,
-              body: body),
+              body: GameLibrary(view: _view)),
         ),
       ]);
     });

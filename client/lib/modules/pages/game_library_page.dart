@@ -1,5 +1,4 @@
 import 'package:espy/widgets/espy_scaffold.dart' show EspyScaffold;
-import 'package:espy/widgets/game_library.dart' show GameLibrary;
 import 'package:flutter/material.dart';
 
 class GameLibraryPage extends Page {
@@ -10,9 +9,7 @@ class GameLibraryPage extends Page {
     return MaterialPageRoute(
       settings: this,
       builder: (BuildContext context) {
-        return EspyScaffold(
-          body: GameLibrary(),
-        );
+        return EspyScaffold();
       },
     );
   }
