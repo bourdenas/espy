@@ -3,6 +3,7 @@ import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/proto/library.pb.dart';
 import 'package:espy/widgets/game_card.dart';
+import 'package:espy/widgets/game_tags.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -108,11 +109,12 @@ class GameLibrary extends StatelessWidget {
                   leading: CircleAvatar(
                       foregroundImage: NetworkImage(
                           '${Urls.imageProvider}/t_thumb/${entry.game.cover.imageId}.jpg')),
-                  title: Row(children: [
-                    Text(entry.game.name),
-                    Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
-                    Text(entry.details.tag.join(", ")),
-                  ]),
+                  title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(entry.game.name),
+                        GameChipsBar(entry),
+                      ]),
                   subtitle: Text(
                       '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}'),
                   onTap: () => context.read<EspyRouterDelegate>().gameId =

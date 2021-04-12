@@ -100,7 +100,7 @@ class CompanyChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InputChip(
       label: Text('${company.name} (${company.id})'),
-      backgroundColor: Colors.red[700],
+      backgroundColor: Colors.red[900],
       onPressed: () {
         context.read<GameLibraryModel>().addCompanyFilter(company);
         Navigator.pop(context);
@@ -118,7 +118,7 @@ class CollectionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InputChip(
       label: Text('${collection.name} (${collection.id})'),
-      backgroundColor: Colors.indigo[700],
+      backgroundColor: Colors.indigo[800],
       onPressed: () {
         context.read<GameLibraryModel>().addCollectionFilter(collection);
         Navigator.pop(context);
@@ -136,6 +136,7 @@ class FranchiseChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InputChip(
       label: Text('${franchise.name} (${franchise.id})'),
+      onPressed: () {},
       backgroundColor: Colors.yellow[800],
     );
   }
