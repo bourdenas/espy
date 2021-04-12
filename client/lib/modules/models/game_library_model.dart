@@ -41,8 +41,12 @@ class GameLibraryModel extends ChangeNotifier {
         'tags': entry.details.tag,
       }),
     );
+
     if (response.statusCode != 200) {
       print('postDetails (error): $response');
+    } else {
+      _tags.addAll(entry.details.tag);
+      notifyListeners();
     }
   }
 

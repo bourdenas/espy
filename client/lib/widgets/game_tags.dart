@@ -1,5 +1,6 @@
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/proto/library.pb.dart' show GameEntry, GameDetails;
+import 'package:espy/proto/library.pb.dart' show GameDetails, GameEntry;
+import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company, Franchise;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,54 +22,7 @@ class GameTagsState extends State<GameTags> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Wrap(
-        spacing: 8.0,
-        runSpacing: 4.0,
-        children: [
-          for (final involved in entry.game.involvedCompanies)
-            if (involved.developer)
-              InputChip(
-                label:
-                    Text('${involved.company.name} (${involved.company.id})'),
-                backgroundColor: Colors.red[700],
-                onPressed: () {
-                  context
-                      .read<GameLibraryModel>()
-                      .addCompanyFilter(involved.company);
-                  Navigator.pop(context);
-                },
-              ),
-          if (entry.game.hasCollection())
-            InputChip(
-              label: Text(
-                  '${entry.game.collection.name} (${entry.game.collection.id})'),
-              backgroundColor: Colors.indigo[700],
-              onPressed: () {
-                context
-                    .read<GameLibraryModel>()
-                    .addCollectionFilter(entry.game.collection);
-                Navigator.pop(context);
-              },
-            ),
-          for (final franchise in entry.game.franchises)
-            InputChip(
-              label: Text('${franchise.name} (${franchise.id})'),
-              backgroundColor: Colors.yellow[800],
-            ),
-          for (final tag in entry.details.tag)
-            InputChip(
-              label: Text(tag),
-              onPressed: () {
-                context.read<GameLibraryModel>().addTagFilter(tag);
-                Navigator.pop(context);
-              },
-              onDeleted: () => setState(() {
-                entry.details.tag.remove(tag);
-                context.read<GameLibraryModel>().postDetails(entry);
-              }),
-            ),
-        ],
-      ),
+      GameChipsBar(entry),
       Center(
         child: Container(
           width: 200,
@@ -113,5 +67,98 @@ class GameTagsState extends State<GameTags> {
   void dispose() {
     _tagsController.dispose();
     super.dispose();
+  }
+}
+
+class GameChipsBar extends StatelessWidget {
+  final GameEntry entry;
+
+  const GameChipsBar(this.entry);
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 4.0,
+      children: [
+        for (final involved in entry.game.involvedCompanies)
+          if (involved.developer) CompanyChip(involved.company),
+        if (entry.game.hasCollection()) CollectionChip(entry.game.collection),
+        for (final franchise in entry.game.franchises) FranchiseChip(franchise),
+        for (final tag in entry.details.tag) TagChip(tag, entry),
+      ],
+    );
+  }
+}
+
+class CompanyChip extends StatelessWidget {
+  final Company company;
+
+  const CompanyChip(this.company);
+
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Text('${company.name} (${company.id})'),
+      backgroundColor: Colors.red[700],
+      onPressed: () {
+        context.read<GameLibraryModel>().addCompanyFilter(company);
+        Navigator.pop(context);
+      },
+    );
+  }
+}
+
+class CollectionChip extends StatelessWidget {
+  final Collection collection;
+
+  const CollectionChip(this.collection);
+
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Text('${collection.name} (${collection.id})'),
+      backgroundColor: Colors.indigo[700],
+      onPressed: () {
+        context.read<GameLibraryModel>().addCollectionFilter(collection);
+        Navigator.pop(context);
+      },
+    );
+  }
+}
+
+class FranchiseChip extends StatelessWidget {
+  final Franchise franchise;
+
+  const FranchiseChip(this.franchise);
+
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Text('${franchise.name} (${franchise.id})'),
+      backgroundColor: Colors.yellow[800],
+    );
+  }
+}
+
+class TagChip extends StatelessWidget {
+  final String tag;
+  final GameEntry entry;
+
+  const TagChip(this.tag, this.entry);
+
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Text(tag),
+      onPressed: () {
+        context.read<GameLibraryModel>().addTagFilter(tag);
+        Navigator.pop(context);
+      },
+      onDeleted: () {
+        entry.details.tag.remove(tag);
+        context.read<GameLibraryModel>().postDetails(entry);
+      },
+    );
   }
 }
