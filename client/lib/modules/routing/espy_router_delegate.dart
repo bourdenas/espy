@@ -10,9 +10,15 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
   final GlobalKey<NavigatorState> navigatorKey;
 
   String? _gameId;
+  bool showUnmatched = false;
 
-  set gameId(String id) {
+  void showGameDetails(String id) {
     _gameId = id;
+    notifyListeners();
+  }
+
+  void showUnmatchedEntries(bool show) {
+    showUnmatched = show;
     notifyListeners();
   }
 
@@ -57,7 +63,7 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
       goHome();
     }
     if (path.isGameDetailsPage) {
-      gameId = path.gameId!;
+      showGameDetails(path.gameId!);
     }
   }
 }

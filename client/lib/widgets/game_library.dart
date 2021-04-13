@@ -21,6 +21,16 @@ class GameLibrary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var viewWidget = view == LibraryView.GRID
+        ? _gridView(context)
+        : view == LibraryView.LIST
+            ? _listView(context)
+            : _tableView(context);
+
+    if (context.watch<EspyRouterDelegate>().showUnmatched) {
+      viewWidget = _umatchedListView(context);
+    }
+
     final filter = context.watch<GameLibraryModel>().filter;
     return Column(children: [
       Container(
@@ -59,11 +69,7 @@ class GameLibrary extends StatelessWidget {
             ],
           ])),
       Expanded(
-        child: view == LibraryView.GRID
-            ? _gridView(context)
-            : view == LibraryView.LIST
-                ? _listView(context)
-                : _tableView(context),
+        child: viewWidget,
       ),
     ]);
   }
@@ -82,8 +88,9 @@ class GameLibrary extends StatelessWidget {
           .games
           .map((entry) => InkResponse(
               enableFeedback: true,
-              onTap: () => context.read<EspyRouterDelegate>().gameId =
-                  '${entry.game.id}',
+              onTap: () => context
+                  .read<EspyRouterDelegate>()
+                  .showGameDetails('${entry.game.id}'),
               child: Listener(
                 child: GameCard(
                   entry: entry,
@@ -117,11 +124,35 @@ class GameLibrary extends StatelessWidget {
                       ]),
                   subtitle: Text(
                       '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}'),
-                  onTap: () => context.read<EspyRouterDelegate>().gameId =
-                      '${entry.game.id}',
+                  onTap: () => context
+                      .read<EspyRouterDelegate>()
+                      .showGameDetails('${entry.game.id}'),
                 ),
                 onPointerDown: (PointerDownEvent event) async =>
                     await _showEntryContextMenu(context, event, entry),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _umatchedListView(BuildContext context) {
+    return Scrollbar(
+      child: ListView(
+        restorationId: 'list_view_unmatched_game_entries_offset',
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: context
+            .watch<GameLibraryModel>()
+            .unmatchedGames
+            .map(
+              (storeEntry) => Listener(
+                child: ListTile(
+                  title: Row(children: [
+                    Text(storeEntry.title),
+                  ]),
+                  subtitle: Text('${storeEntry.store}'),
+                ),
               ),
             )
             .toList(),
@@ -203,9 +234,9 @@ class GameLibrary extends StatelessWidget {
                           ]),
                           onTap: () => context
                               .read<EspyRouterDelegate>()
-                              .gameId = '${entry.game.id}',
+                              .showGameDetails('${entry.game.id}'),
                         ),
-                        DataCell(Text(entry.details.tag.join(", "))),
+                        DataCell(GameChipsBar(entry)),
                         DataCell(Text(
                             '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}')),
                       ],

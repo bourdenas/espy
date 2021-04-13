@@ -1,5 +1,6 @@
 import 'package:espy/constants/menu_items.dart' show menu_items;
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,7 +32,12 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
         NavigationRailDestination(
           icon: Icon(Icons.home_outlined),
           selectedIcon: Icon(Icons.home),
-          label: Text('Home'),
+          label: Text('Library'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.cloud_off_outlined),
+          selectedIcon: Icon(Icons.cloud_off),
+          label: Text('Unmatched'),
         ),
         NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
@@ -52,10 +58,13 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
         if (index == 0) {
           context.read<GameLibraryModel>().clearFilter();
         } else if (index == 1) {
+          context.read<EspyRouterDelegate>().showUnmatchedEntries(
+              !context.read<EspyRouterDelegate>().showUnmatched);
+        } else if (index == 1) {
           // TODO: Settings page.
-        } else if (index > 1) {
+        } else if (index > 2) {
           context.read<GameLibraryModel>().clearFilter();
-          context.read<GameLibraryModel>().addTagFilter(tags[index - 2]);
+          context.read<GameLibraryModel>().addTagFilter(tags[index - 3]);
         }
       },
     );

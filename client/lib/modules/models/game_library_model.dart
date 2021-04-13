@@ -15,6 +15,9 @@ class GameLibraryModel extends ChangeNotifier {
   UnmodifiableListView<GameEntry> get games =>
       UnmodifiableListView(_library.entry.where((e) => _filter.apply(e)));
 
+  UnmodifiableListView<StoreEntry> get unmatchedGames =>
+      UnmodifiableListView(_library.unreconciledStoreEntry);
+
   UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
 
   LibraryFilter get filter => _filter;
