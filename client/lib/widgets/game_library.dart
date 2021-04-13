@@ -1,5 +1,7 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_details_model.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/unmatched_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/proto/library.pb.dart';
 import 'package:espy/widgets/game_card.dart';
@@ -31,7 +33,7 @@ class GameLibrary extends StatelessWidget {
       viewWidget = _umatchedListView(context);
     }
 
-    final filter = context.watch<GameLibraryModel>().filter;
+    final filter = context.watch<GameEntriesModel>().filter;
     return Column(children: [
       Container(
           padding: EdgeInsets.all(16),
@@ -41,7 +43,7 @@ class GameLibrary extends StatelessWidget {
                 label: Text('${company.name}'),
                 backgroundColor: Colors.red[700],
                 onDeleted: () {
-                  context.read<GameLibraryModel>().removeCompanyFilter(company);
+                  context.read<GameEntriesModel>().removeCompanyFilter(company);
                 },
               ),
               Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
@@ -52,7 +54,7 @@ class GameLibrary extends StatelessWidget {
                 backgroundColor: Colors.indigo[700],
                 onDeleted: () {
                   context
-                      .read<GameLibraryModel>()
+                      .read<GameEntriesModel>()
                       .removeCollectionFilter(collection);
                 },
               ),
@@ -62,7 +64,7 @@ class GameLibrary extends StatelessWidget {
               InputChip(
                 label: Text(tag),
                 onDeleted: () {
-                  context.read<GameLibraryModel>().removeTagFilter(tag);
+                  context.read<GameEntriesModel>().removeTagFilter(tag);
                 },
               ),
               Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
@@ -84,7 +86,7 @@ class GameLibrary extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       childAspectRatio: .75,
       children: context
-          .watch<GameLibraryModel>()
+          .watch<GameEntriesModel>()
           .games
           .map((entry) => InkResponse(
               enableFeedback: true,
@@ -108,14 +110,16 @@ class GameLibrary extends StatelessWidget {
         restorationId: 'list_view_game_entries_offset',
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: context
-            .watch<GameLibraryModel>()
+            .watch<GameEntriesModel>()
             .games
             .map(
               (entry) => Listener(
                 child: ListTile(
-                  leading: CircleAvatar(
-                      foregroundImage: NetworkImage(
-                          '${Urls.imageProvider}/t_thumb/${entry.game.cover.imageId}.jpg')),
+                  leading: Hero(
+                      tag: '${entry.game.id}_cover',
+                      child: CircleAvatar(
+                          foregroundImage: NetworkImage(
+                              '${Urls.imageProvider}/t_thumb/${entry.game.cover.imageId}.jpg'))),
                   title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -143,8 +147,8 @@ class GameLibrary extends StatelessWidget {
         restorationId: 'list_view_unmatched_game_entries_offset',
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: context
-            .watch<GameLibraryModel>()
-            .unmatchedGames
+            .watch<UnmatchedEntriesModel>()
+            .entries
             .map(
               (storeEntry) => Listener(
                 child: ListTile(
@@ -173,7 +177,7 @@ class GameLibrary extends StatelessWidget {
     final selectedTag = await showMenu<String>(
       context: context,
       items: context
-          .read<GameLibraryModel>()
+          .read<GameDetailsModel>()
           .tags
           .map((tag) => CheckedPopupMenuItem(
                 child: Text(tag),
@@ -198,7 +202,7 @@ class GameLibrary extends StatelessWidget {
         ..mergeFromMessage(entry.details)
         ..tag.add(selectedTag);
     }
-    context.read<GameLibraryModel>().postDetails(entry);
+    context.read<GameDetailsModel>().postDetails(entry);
   }
 
   Widget _tableView(BuildContext context) {
@@ -219,7 +223,7 @@ class GameLibrary extends StatelessWidget {
               ),
             ],
             rows: context
-                .watch<GameLibraryModel>()
+                .watch<GameEntriesModel>()
                 .games
                 .map((entry) => DataRow(
                       cells: [

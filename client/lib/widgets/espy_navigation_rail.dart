@@ -1,5 +1,5 @@
-import 'package:espy/constants/menu_items.dart' show menu_items;
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_details_model.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +23,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
 
   @override
   Widget build(BuildContext context) {
-    final tags = context.watch<GameLibraryModel>().tags;
+    final tags = context.watch<GameDetailsModel>().tags;
 
     return NavigationRail(
       extended: extended,
@@ -56,15 +56,15 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       onDestinationSelected: (index) {
         _selectedIndex = index;
         if (index == 0) {
-          context.read<GameLibraryModel>().clearFilter();
+          context.read<GameEntriesModel>().clearFilter();
         } else if (index == 1) {
           context.read<EspyRouterDelegate>().showUnmatchedEntries(
               !context.read<EspyRouterDelegate>().showUnmatched);
         } else if (index == 1) {
           // TODO: Settings page.
         } else if (index > 2) {
-          context.read<GameLibraryModel>().clearFilter();
-          context.read<GameLibraryModel>().addTagFilter(tags[index - 3]);
+          context.read<GameEntriesModel>().clearFilter();
+          context.read<GameEntriesModel>().addTagFilter(tags[index - 3]);
         }
       },
     );

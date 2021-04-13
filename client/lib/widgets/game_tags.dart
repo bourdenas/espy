@@ -1,6 +1,7 @@
-import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/proto/library.pb.dart' show GameDetails, GameEntry;
+import 'package:espy/modules/models/game_details_model.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company, Franchise;
+import 'package:espy/proto/library.pb.dart' show GameDetails, GameEntry;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,7 +41,7 @@ class GameTagsState extends State<GameTags> {
                 ..tag.add(tag);
               _tagsController.clear();
               _tagsFocusNode.requestFocus();
-              context.read<GameLibraryModel>().postDetails(entry);
+              context.read<GameDetailsModel>().postDetails(entry);
             }),
             controller: _tagsController,
             focusNode: _tagsFocusNode,
@@ -102,7 +103,7 @@ class CompanyChip extends StatelessWidget {
       label: Text('${company.name} (${company.id})'),
       backgroundColor: Colors.red[900],
       onPressed: () {
-        context.read<GameLibraryModel>().addCompanyFilter(company);
+        context.read<GameEntriesModel>().addCompanyFilter(company);
         Navigator.pop(context);
       },
     );
@@ -120,7 +121,7 @@ class CollectionChip extends StatelessWidget {
       label: Text('${collection.name} (${collection.id})'),
       backgroundColor: Colors.indigo[800],
       onPressed: () {
-        context.read<GameLibraryModel>().addCollectionFilter(collection);
+        context.read<GameEntriesModel>().addCollectionFilter(collection);
         Navigator.pop(context);
       },
     );
@@ -153,12 +154,12 @@ class TagChip extends StatelessWidget {
     return InputChip(
       label: Text(tag),
       onPressed: () {
-        context.read<GameLibraryModel>().addTagFilter(tag);
+        context.read<GameEntriesModel>().addTagFilter(tag);
         Navigator.pop(context);
       },
       onDeleted: () {
         entry.details.tag.remove(tag);
-        context.read<GameLibraryModel>().postDetails(entry);
+        context.read<GameDetailsModel>().postDetails(entry);
       },
     );
   }

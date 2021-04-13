@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/espy_navigation_rail.dart' show EspyNavigationRail;
 import 'package:espy/widgets/game_library.dart' show GameLibrary, LibraryView;
@@ -27,7 +27,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
           _searchIcon = Icon(Icons.search);
         });
       }
-      context.read<GameLibraryModel>().titleFilter =
+      context.read<GameEntriesModel>().titleFilter =
           _searchController.text.toLowerCase();
     });
   }

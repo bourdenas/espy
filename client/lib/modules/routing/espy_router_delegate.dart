@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/pages/game_details_page.dart';
 import 'package:espy/modules/pages/game_library_page.dart';
 import 'package:espy/modules/routing/espy_route_path.dart';
@@ -42,7 +42,7 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
         GameLibraryPage(),
         if (_gameId != null)
           GameDetailsPage(
-              entry: context.watch<GameLibraryModel>().getEntryById(_gameId!)!),
+              entry: context.watch<GameEntriesModel>().getEntryById(_gameId!)!),
       ],
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
