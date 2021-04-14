@@ -58,7 +58,12 @@ class GameCard extends StatelessWidget {
         child: GridTileBar(
           backgroundColor: Colors.black45,
           title: GameTitleText(entry.game.name),
-          subtitle: GameTitleText("Steam"),
+          subtitle: Row(children: [
+            GameTitleText(
+                '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}'),
+            Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
+            GameTitleText(entry.storeEntry.map((e) => e.store).join(', ')),
+          ]),
         ),
       ),
       child: Material(
