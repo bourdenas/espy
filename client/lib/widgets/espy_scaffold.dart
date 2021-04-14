@@ -41,14 +41,14 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   Icon _searchIcon = Icon(Icons.search);
-  LibraryView _view = LibraryView.LIST;
+  LibraryView _view = LibraryView.GRID;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       return Row(children: [
         if (constraints.maxWidth > 800)
-          EspyNavigationRail(constraints.maxWidth > 1200),
+          EspyNavigationRail(constraints.maxWidth > 3200),
         Expanded(
           child: Scaffold(
               appBar: AppBar(

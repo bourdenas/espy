@@ -41,7 +41,7 @@ class GameLibrary extends StatelessWidget {
             for (final company in filter.companies) ...[
               InputChip(
                 label: Text('${company.name}'),
-                backgroundColor: Colors.red[700],
+                backgroundColor: Colors.red[900],
                 onDeleted: () {
                   context.read<GameEntriesModel>().removeCompanyFilter(company);
                 },
@@ -51,7 +51,7 @@ class GameLibrary extends StatelessWidget {
             for (final collection in filter.collections) ...[
               InputChip(
                 label: Text('${collection.name}'),
-                backgroundColor: Colors.indigo[700],
+                backgroundColor: Colors.indigo[800],
                 onDeleted: () {
                   context
                       .read<GameEntriesModel>()

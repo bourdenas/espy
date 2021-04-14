@@ -27,7 +27,15 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
 
     return NavigationRail(
       extended: extended,
+      labelType: NavigationRailLabelType.selected,
       selectedIndex: _selectedIndex,
+      leading: Column(children: [
+        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
+        CircleAvatar(
+          child: Icon(Icons.person),
+        ),
+      ]),
+      groupAlignment: 0,
       destinations: [
         NavigationRailDestination(
           icon: Icon(Icons.home_outlined),
@@ -44,14 +52,14 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
           selectedIcon: Icon(Icons.settings),
           label: Text('Settings'),
         ),
-        ...tags
-            .take(15)
-            .map((tag) => NavigationRailDestination(
-                  icon: Icon(Icons.bookmark_border),
-                  selectedIcon: Icon(Icons.bookmark),
-                  label: Text(tag),
-                ))
-            .toList(),
+        // ...tags
+        //     .take(10)
+        //     .map((tag) => NavigationRailDestination(
+        //           icon: Icon(Icons.bookmark_border),
+        //           selectedIcon: Icon(Icons.bookmark),
+        //           label: Text(tag),
+        //         ))
+        //     .toList(),
       ],
       onDestinationSelected: (index) {
         _selectedIndex = index;
