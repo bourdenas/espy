@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
 
 class GameDetailsModel extends ChangeNotifier {
-  Set<String> _tags = {};
+  SplayTreeSet<String> _tags = SplayTreeSet<String>();
 
   UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
 
@@ -20,6 +20,8 @@ class GameDetailsModel extends ChangeNotifier {
   }
 
   void postDetails(GameEntry entry) async {
+    entry.details.tag.sort();
+
     var response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/testing/details/${entry.game.id}'),
       headers: {
