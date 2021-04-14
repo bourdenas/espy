@@ -1,7 +1,8 @@
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/espy_navigation_rail.dart' show EspyNavigationRail;
-import 'package:espy/widgets/game_library.dart' show GameLibrary, LibraryView;
+import 'package:espy/widgets/library/game_library.dart'
+    show GameLibrary, LibraryView;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

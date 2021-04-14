@@ -1,6 +1,42 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/proto/library.pb.dart' show GameEntry;
+import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
+import 'package:espy/proto/library.pb.dart';
+import 'package:espy/widgets/library/tags_context_menu.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class LibraryGridView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scrollbar(
+        child: GridView.extent(
+      restorationId: 'grid_view_game_entries_grid_offset',
+      maxCrossAxisExtent: 300,
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      childAspectRatio: .75,
+      children: context
+          .watch<GameEntriesModel>()
+          .games
+          .map((entry) => InkResponse(
+              enableFeedback: true,
+              onTap: () => context
+                  .read<EspyRouterDelegate>()
+                  .showGameDetails('${entry.game.id}'),
+              child: Listener(
+                child: GameCard(
+                  entry: entry,
+                ),
+                onPointerDown: (PointerDownEvent event) async =>
+                    await showTagsContextMenu(context, event, entry),
+              )))
+          .toList(),
+    ));
+  }
+}
 
 class GameCard extends StatelessWidget {
   GameCard({
