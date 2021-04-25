@@ -3,6 +3,7 @@ import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/library/library_grid_view.dart';
 import 'package:espy/widgets/library/library_list_view.dart';
 import 'package:espy/widgets/library/library_table_view.dart';
+import 'package:espy/widgets/library/tags_view.dart';
 import 'package:espy/widgets/library/unmatched_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,8 +27,12 @@ class GameLibrary extends StatelessWidget {
             ? LibraryListView()
             : LibraryTableView();
 
-    if (context.watch<EspyRouterDelegate>().path.isUnmatchedPage) {
+    final path = context.watch<EspyRouterDelegate>().path;
+
+    if (path.isUnmatchedPage) {
       viewWidget = UnmatchedView();
+    } else if (path.isTagsPage) {
+      viewWidget = TagsView();
     }
 
     final filter = context.watch<GameEntriesModel>().filter;

@@ -158,6 +158,7 @@ class TagChip extends StatelessWidget {
         Navigator.pop(context);
       },
       onDeleted: () {
+        if (entry.details.tag.isEmpty) return;
         entry.details.tag.remove(tag);
         context.read<GameDetailsModel>().postDetails(entry);
       },
