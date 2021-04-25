@@ -1,73 +1,24 @@
 import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company, Franchise;
-import 'package:espy/proto/library.pb.dart' show GameDetails, GameEntry;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:espy/proto/library.pb.dart' show GameEntry;
+import 'package:espy/widgets/game_tags_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GameTags extends StatefulWidget {
+class GameTags extends StatelessWidget {
   final GameEntry entry;
 
-  const GameTags(this.entry);
-
-  @override
-  State<StatefulWidget> createState() => GameTagsState(entry);
-}
-
-class GameTagsState extends State<GameTags> {
-  final GameEntry entry;
-
-  GameTagsState(this.entry);
+  GameTags(this.entry);
 
   @override
   Widget build(BuildContext context) {
     return Column(children: [
       GameChipsBar(entry),
       Center(
-        child: Container(
-          width: 200,
-          child: TextField(
-            onSubmitted: (tag) => setState(() {
-              if (tag.isEmpty) {
-                _tagsFocusNode.requestFocus();
-                return;
-              }
-
-              // NB: I don't get it why just "entry.details.tag.add(tag);"
-              // fails and I need to clone GameDetails to edit it.
-              entry.details = GameDetails()
-                ..mergeFromMessage(entry.details)
-                ..tag.add(tag);
-              _tagsController.clear();
-              _tagsFocusNode.requestFocus();
-              context.read<GameDetailsModel>().postDetails(entry);
-            }),
-            controller: _tagsController,
-            focusNode: _tagsFocusNode,
-            autofocus: kIsWeb,
-            decoration: InputDecoration(
-              prefixIcon: Icon(Icons.tag),
-              hintText: 'tags...',
-            ),
-          ),
-        ),
+        child: GameTagsTextField(entry),
       )
     ]);
-  }
-
-  final TextEditingController _tagsController = TextEditingController();
-  final FocusNode _tagsFocusNode = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _tagsController.dispose();
-    super.dispose();
   }
 }
 
