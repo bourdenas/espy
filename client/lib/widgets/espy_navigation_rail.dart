@@ -48,31 +48,27 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
           label: Text('Unmatched'),
         ),
         NavigationRailDestination(
+          icon: Icon(Icons.collections_bookmark_outlined),
+          selectedIcon: Icon(Icons.collections_bookmark),
+          label: Text('Tags'),
+        ),
+        NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings),
           label: Text('Settings'),
         ),
-        // ...tags
-        //     .take(10)
-        //     .map((tag) => NavigationRailDestination(
-        //           icon: Icon(Icons.bookmark_border),
-        //           selectedIcon: Icon(Icons.bookmark),
-        //           label: Text(tag),
-        //         ))
-        //     .toList(),
       ],
       onDestinationSelected: (index) {
         _selectedIndex = index;
         if (index == 0) {
           context.read<GameEntriesModel>().clearFilter();
+          context.read<EspyRouterDelegate>().showLibrary();
         } else if (index == 1) {
-          context.read<EspyRouterDelegate>().showUnmatchedEntries(
-              !context.read<EspyRouterDelegate>().showUnmatched);
-        } else if (index == 1) {
+          context.read<EspyRouterDelegate>().showUnmatchedEntries();
+        } else if (index == 2) {
+          context.read<EspyRouterDelegate>().showTags();
+        } else if (index == 3) {
           // TODO: Settings page.
-        } else if (index > 2) {
-          context.read<GameEntriesModel>().clearFilter();
-          context.read<GameEntriesModel>().addTagFilter(tags[index - 3]);
         }
       },
     );

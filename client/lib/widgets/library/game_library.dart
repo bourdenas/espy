@@ -26,7 +26,7 @@ class GameLibrary extends StatelessWidget {
             ? LibraryListView()
             : LibraryTableView();
 
-    if (context.watch<EspyRouterDelegate>().showUnmatched) {
+    if (context.watch<EspyRouterDelegate>().path.isUnmatchedPage) {
       viewWidget = UnmatchedView();
     }
 

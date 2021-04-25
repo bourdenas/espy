@@ -20,7 +20,7 @@ class EspyDrawer extends StatelessWidget {
             ListTile(
               leading: Icon(item.icon),
               title: Text(item.label),
-              onTap: () => context.read<EspyRouterDelegate>().goHome(),
+              onTap: () => context.read<EspyRouterDelegate>().showLibrary(),
             ),
         ],
       ),
