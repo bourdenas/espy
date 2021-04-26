@@ -1,4 +1,5 @@
 import 'package:espy/modules/models/unmatched_entries_model.dart';
+import 'package:espy/widgets/library/store_entry_edit_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,13 +14,13 @@ class UnmatchedView extends StatelessWidget {
             .watch<UnmatchedEntriesModel>()
             .entries
             .map(
-              (storeEntry) => Listener(
-                child: ListTile(
-                  title: Row(children: [
-                    Text(storeEntry.title),
-                  ]),
-                  subtitle: Text('${storeEntry.store}'),
-                ),
+              (storeEntry) => ListTile(
+                title: Row(children: [
+                  Text(storeEntry.title),
+                ]),
+                subtitle: Text('${storeEntry.store}'),
+                onTap: () async =>
+                    await showEntryEditModalView(context, storeEntry),
               ),
             )
             .toList(),
