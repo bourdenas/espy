@@ -32,8 +32,9 @@ class GameTagsState extends State<GameTags> {
                     Text('${involved.company.name} (${involved.company.id})'),
                 backgroundColor: Colors.red[700],
                 onPressed: () {
-                  context.read<GameLibraryModel>().companyFilter =
-                      involved.company.id;
+                  context
+                      .read<GameLibraryModel>()
+                      .addCompanyFilter(involved.company);
                   Navigator.pop(context);
                 },
               ),
@@ -43,8 +44,9 @@ class GameTagsState extends State<GameTags> {
                   '${entry.game.collection.name} (${entry.game.collection.id})'),
               backgroundColor: Colors.indigo[700],
               onPressed: () {
-                context.read<GameLibraryModel>().collectionFilter =
-                    entry.game.collection.id;
+                context
+                    .read<GameLibraryModel>()
+                    .addCollectionFilter(entry.game.collection);
                 Navigator.pop(context);
               },
             ),
@@ -52,13 +54,12 @@ class GameTagsState extends State<GameTags> {
             InputChip(
               label: Text('${franchise.name} (${franchise.id})'),
               backgroundColor: Colors.yellow[800],
-              onPressed: () {},
             ),
           for (final tag in entry.details.tag)
             InputChip(
               label: Text(tag),
               onPressed: () {
-                context.read<GameLibraryModel>().tag = tag;
+                context.read<GameLibraryModel>().addTagFilter(tag);
                 Navigator.pop(context);
               },
               onDeleted: () => setState(() {

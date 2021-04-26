@@ -2,20 +2,22 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:espy/constants/urls.dart';
+import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company;
 import 'package:espy/proto/library.pb.dart';
-import 'package:fixnum/fixnum.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
-
-const String BACKEND_HOST = 'localhost:3030';
-// const String BACKEND_HOST = '10.0.2.2:3030';
 
 class GameLibraryModel extends ChangeNotifier {
   Library _library = Library.create();
-  _LibraryFilter _filter = _LibraryFilter();
+  LibraryFilter _filter = LibraryFilter();
+  Set<String> _tags = {};
 
   UnmodifiableListView<GameEntry> get games =>
       UnmodifiableListView(_library.entry.where((e) => _filter.apply(e)));
+
+  UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
+
+  LibraryFilter get filter => _filter;
 
   void fetch() async {
     final response =
@@ -52,18 +54,33 @@ class GameLibraryModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  set companyFilter(Int64 id) {
-    _filter.companyId = id;
+  void addCompanyFilter(Company company) {
+    _filter.companies.add(company);
     notifyListeners();
   }
 
-  set collectionFilter(Int64 id) {
-    _filter.collectionId = id;
+  void removeCompanyFilter(Company company) {
+    _filter.companies.remove(company);
     notifyListeners();
   }
 
-  set tag(String tag) {
-    _filter.tag = tag;
+  void addCollectionFilter(Collection collection) {
+    _filter.collections.add(collection);
+    notifyListeners();
+  }
+
+  void removeCollectionFilter(Collection collection) {
+    _filter.collections.remove(collection);
+    notifyListeners();
+  }
+
+  void addTagFilter(String tag) {
+    _filter.tags.add(tag);
+    notifyListeners();
+  }
+
+  void removeTagFilter(String tag) {
+    _filter.tags.remove(tag);
     notifyListeners();
   }
 
@@ -91,6 +108,12 @@ class GameLibraryModel extends ChangeNotifier {
     _library = lib;
     _library.entry.sort((a, b) => -a.game.firstReleaseDate.seconds
         .compareTo(b.game.firstReleaseDate.seconds));
+
+    _tags.clear();
+    for (final entry in _library.entry) {
+      _tags.addAll(entry.details.tag);
+    }
+
     notifyListeners();
   }
 
@@ -101,28 +124,18 @@ class GameLibraryModel extends ChangeNotifier {
   }
 }
 
-class _LibraryFilter {
+class LibraryFilter {
+  String _titlePhrase = '';
+  Set<Company> companies = {};
+  Set<Collection> collections = {};
+  Set<String> tags = {};
+
   String get titlePhrase {
     return _titlePhrase;
   }
 
   set titlePhrase(String phrase) {
     _titlePhrase = phrase.toLowerCase();
-  }
-
-  set companyId(Int64 id) {
-    clear();
-    _companyId = id;
-  }
-
-  set collectionId(Int64 id) {
-    clear();
-    _collectionId = id;
-  }
-
-  set tag(String tag) {
-    clear();
-    _tag = tag;
   }
 
   bool apply(GameEntry entry) {
@@ -134,27 +147,24 @@ class _LibraryFilter {
 
   void clear() {
     _titlePhrase = '';
-    _companyId = null;
-    _collectionId = null;
-    _tag = null;
+    companies.clear();
+    collections.clear();
+    tags.clear();
   }
 
-  String _titlePhrase = '';
-  Int64? _companyId;
-  Int64? _collectionId;
-  String? _tag;
-
   bool _filterCompany(GameEntry entry) {
-    return _companyId == null ||
-        entry.game.involvedCompanies.any((e) => e.company.id == _companyId);
+    return companies.isEmpty ||
+        companies.every((company) => entry.game.involvedCompanies
+            .any((ic) => ic.developer && company.id == ic.company.id));
   }
 
   bool _filterCollection(GameEntry entry) {
-    return _collectionId == null || entry.game.collection.id == _collectionId;
+    return collections.isEmpty ||
+        collections.every((collection) => collection == entry.game.collection);
   }
 
   bool _filterTag(GameEntry entry) {
-    return _tag == null || entry.details.tag.contains(_tag);
+    return tags.isEmpty || tags.every((tag) => entry.details.tag.contains(tag));
   }
 
   bool _filterTitle(GameEntry entry) {
