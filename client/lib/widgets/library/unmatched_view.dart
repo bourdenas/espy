@@ -20,7 +20,7 @@ class UnmatchedView extends StatelessWidget {
                 ]),
                 subtitle: Text('${storeEntry.store}'),
                 onTap: () async =>
-                    await showEntryEditModalView(context, storeEntry),
+                    await StoreEntryEditDialog.show(context, storeEntry),
               ),
             )
             .toList(),

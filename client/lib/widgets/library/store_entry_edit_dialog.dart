@@ -1,23 +1,20 @@
+import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/proto/library.pb.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class StoreEntryEditDialog extends StatefulWidget {
+class StoreEntryEditDialog extends StatelessWidget {
+  static Future<void> show(BuildContext context, StoreEntry entry) async {
+    showDialog(
+      context: context,
+      builder: (context) => StoreEntryEditDialog(entry),
+    );
+  }
+
   final StoreEntry storeEntry;
 
   StoreEntryEditDialog(this.storeEntry);
-
-  @override
-  _StoreEntryEditDialogState createState() =>
-      _StoreEntryEditDialogState(storeEntry);
-}
-
-class _StoreEntryEditDialogState extends State<StoreEntryEditDialog> {
-  final StoreEntry storeEntry;
-
-  _StoreEntryEditDialogState(this.storeEntry);
-
-  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -37,46 +34,25 @@ class _StoreEntryEditDialogState extends State<StoreEntryEditDialog> {
               ),
             ),
           ),
-          Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    initialValue: storeEntry.title,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'Title',
-                      floatingLabelBehavior: FloatingLabelBehavior.auto,
-                      hintText: 'match...',
-                    ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: TextEditingController()..text = storeEntry.title,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Title',
+                    floatingLabelBehavior: FloatingLabelBehavior.auto,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    autofocus: kIsWeb,
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.search),
-                      hintText: 'match...',
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                    child: Text("Ok"),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                      }
-                    },
-                  ),
-                )
-              ],
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _GameMatchTextField(storeEntry),
+              ),
+            ],
           ),
         ],
       ),
@@ -84,10 +60,95 @@ class _StoreEntryEditDialogState extends State<StoreEntryEditDialog> {
   }
 }
 
-Future<void> showEntryEditModalView(
-    BuildContext context, StoreEntry entry) async {
-  showDialog(
-    context: context,
-    builder: (context) => StoreEntryEditDialog(entry),
-  );
+class _GameMatchTextField extends StatefulWidget {
+  final StoreEntry storeEntry;
+
+  const _GameMatchTextField(this.storeEntry);
+
+  @override
+  State<StatefulWidget> createState() => _GameMatchTextFieldState(storeEntry);
+}
+
+class _GameMatchTextFieldState extends State<_GameMatchTextField> {
+  StoreEntry storeEntry;
+
+  _GameMatchTextFieldState(this.storeEntry);
+
+  final TextEditingController _matchController = TextEditingController();
+  final FocusNode _matchFocusNode = FocusNode();
+  final LayerLink _matchLayerLink = LayerLink();
+  OverlayEntry? _matchOverlay;
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _matchLayerLink,
+      child: TextField(
+        onSubmitted: (text) async {
+          final entries =
+              await context.read<GameDetailsModel>().searchByTitle(text);
+
+          setState(() {
+            _matchOverlay = _createMatchSuggestions(entries);
+            Overlay.of(context)!.insert(_matchOverlay!);
+          });
+        },
+        controller: _matchController,
+        focusNode: _matchFocusNode,
+        autofocus: kIsWeb,
+        decoration: InputDecoration(
+          prefixIcon: Icon(Icons.search),
+          hintText: 'match...',
+        ),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _matchController.addListener(() {
+      if (_matchOverlay == null) {
+        return;
+      }
+
+      _matchOverlay!.remove();
+      _matchOverlay = null;
+    });
+  }
+
+  @override
+  void dispose() {
+    _matchController.dispose();
+    super.dispose();
+  }
+
+  OverlayEntry _createMatchSuggestions(Iterable<GameEntry> suggestions) {
+    final size = context.size!;
+
+    return OverlayEntry(
+        builder: (context) => Positioned(
+              width: size.width,
+              child: CompositedTransformFollower(
+                link: _matchLayerLink,
+                showWhenUnlinked: false,
+                offset: Offset(0.0, size.height + 5.0),
+                child: Material(
+                  elevation: 4.0,
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    children: [
+                      for (final entry in suggestions)
+                        ListTile(
+                          title: Text(entry.game.name),
+                          onTap: () => print(entry),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ));
+  }
 }
