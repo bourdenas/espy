@@ -1,4 +1,5 @@
-import 'package:espy/modules/models/game_details_model.dart';
+import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/proto/igdbapi.pb.dart' as igdb;
 import 'package:espy/proto/library.pb.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -86,7 +87,7 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
       child: TextField(
         onSubmitted: (text) async {
           final entries =
-              await context.read<GameDetailsModel>().searchByTitle(text);
+              await context.read<GameLibraryModel>().searchByTitle(text);
 
           setState(() {
             _matchOverlay = _createMatchSuggestions(entries);
@@ -124,7 +125,7 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
     super.dispose();
   }
 
-  OverlayEntry _createMatchSuggestions(Iterable<GameEntry> suggestions) {
+  OverlayEntry _createMatchSuggestions(Iterable<igdb.Game> suggestions) {
     final size = context.size!;
 
     return OverlayEntry(
@@ -140,10 +141,10 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
                     children: [
-                      for (final entry in suggestions)
+                      for (final game in suggestions)
                         ListTile(
-                          title: Text(entry.game.name),
-                          onTap: () => print(entry),
+                          title: Text(game.name),
+                          onTap: () => print(game),
                         ),
                     ],
                   ),

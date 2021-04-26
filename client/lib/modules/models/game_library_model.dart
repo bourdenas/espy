@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:espy/constants/urls.dart';
+import 'package:espy/proto/igdbapi.pb.dart' as igdb;
 import 'package:espy/proto/library.pb.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
@@ -31,5 +34,27 @@ class GameLibraryModel extends ChangeNotifier {
   void clear() {
     library.clear();
     notifyListeners();
+  }
+
+  Future<List<igdb.Game>> searchByTitle(String title) async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/search'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'title': title,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      print('searchByTitle (error): $response');
+      return [];
+    }
+
+    final entries = igdb.GameResult.fromBuffer(response.bodyBytes);
+    print(entries);
+
+    return entries.games;
   }
 }
