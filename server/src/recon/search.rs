@@ -30,7 +30,7 @@ pub async fn get_candidates(
 // Internal struct that is only exposed for debug reasons (search by title) in
 // the command line tool.
 pub struct Candidate {
-    game: igdb::Game,
+    pub game: igdb::Game,
     score: i32,
 }
 

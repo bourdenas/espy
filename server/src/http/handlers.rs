@@ -1,7 +1,9 @@
 use crate::espy;
 use crate::http::models;
+use crate::igdb;
 use crate::igdb_service::api::IgdbApi;
 use crate::library::manager::LibraryManager;
+use crate::recon;
 use crate::recon::reconciler::Reconciler;
 use prost::Message;
 use std::convert::Infallible;
@@ -51,6 +53,28 @@ pub async fn post_details(
     match mgr.save().await {
         Ok(_) => Ok(StatusCode::OK),
         Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
+pub async fn post_search(
+    search: models::Search,
+    igdb: Arc<IgdbApi>,
+) -> Result<Box<dyn warp::Reply>, Infallible> {
+    println!("/search body: {:?}", &search);
+
+    let candidates = match recon::search::get_candidates(&igdb, &search.title).await {
+        Ok(result) => result,
+        Err(_) => return Ok(Box::new(StatusCode::NOT_FOUND)),
+    };
+
+    let result = igdb::GameResult {
+        games: candidates.into_iter().map(|c| c.game).collect(),
+    };
+
+    let mut bytes = vec![];
+    match result.encode(&mut bytes) {
+        Ok(_) => Ok(Box::new(bytes)),
+        Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
     }
 }
 
