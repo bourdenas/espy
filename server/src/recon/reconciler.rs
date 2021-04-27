@@ -1,4 +1,5 @@
 use crate::espy;
+use crate::igdb;
 use crate::igdb_service;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
@@ -94,12 +95,27 @@ async fn resolve(
     }
     let mut game = game.unwrap();
 
+    resolve_game_info(igdb, &mut game).await?;
+
+    game_entry.game = Some(game);
+    Ok(game_entry)
+}
+
+/// Retrieves igdb.Game fields that are relevant to espy. For instance, cover
+/// images, screenshots, franchise info, etc.
+///
+///  IGDB returns Game entries only with relevant IDs for such items that need
+/// subsequent lookups in corresponding IGDB tables.
+async fn resolve_game_info(
+    igdb: &igdb_service::api::IgdbApi,
+    game: &mut igdb::Game,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     if let Some(cover) = &game.cover {
         if let Some(cover) = igdb.get_cover(cover.id).await? {
             game.cover = Some(Box::new(cover));
         }
     }
-    if let Some(collection) = game.collection {
+    if let Some(collection) = &game.collection {
         game.collection = igdb.get_collection(collection.id).await?;
     }
     if game.franchises.len() > 0 {
@@ -133,8 +149,7 @@ async fn resolve(
             .screenshots;
     }
 
-    game_entry.game = Some(game);
-    Ok(game_entry)
+    Ok(())
 }
 
 struct Task {
