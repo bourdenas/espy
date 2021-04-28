@@ -1,5 +1,5 @@
 import 'package:espy/modules/models/game_details_model.dart';
-import 'package:espy/proto/library.pb.dart' show GameEntry;
+import 'package:espy/proto/library.pb.dart' show GameDetails, GameEntry;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -114,12 +114,11 @@ class GameTagsTextFieldState extends State<GameTagsTextField> {
       return;
     }
 
-    // // NB: I don't get it why just "entry.details.tag.add(tag);"
-    // // fails and I need to clone GameDetails to edit it.
-    // entry.details = GameDetails()
-    //   ..mergeFromMessage(entry.details)
-    //   ..tag.add(tag);
-    entry.details.tag.add(tag);
+    // NB: I don't get it why just "entry.details.tag.add(tag);"
+    // fails and I need to clone GameDetails to edit it.
+    entry.details = GameDetails()
+      ..mergeFromMessage(entry.details)
+      ..tag.add(tag);
 
     _tagsController.clear();
     _tagsFocusNode.requestFocus();

@@ -53,8 +53,26 @@ class GameLibraryModel extends ChangeNotifier {
     }
 
     final entries = igdb.GameResult.fromBuffer(response.bodyBytes);
-    print(entries);
-
     return entries.games;
+  }
+
+  Future<void> matchEntry(StoreEntry storeEntry, igdb.Game game) async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/testing/match'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'encoded_store_entry': storeEntry.writeToBuffer(),
+        'encoded_game': game.writeToBuffer(),
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      print('matchEntry (error): $response');
+      return;
+    }
+
+    fetch();
   }
 }

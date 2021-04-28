@@ -144,7 +144,15 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
                       for (final game in suggestions)
                         ListTile(
                           title: Text(game.name),
-                          onTap: () => print(game),
+                          onTap: () async {
+                            _matchOverlay!.remove();
+                            _matchOverlay = null;
+                            Navigator.of(context).pop();
+
+                            await context
+                                .read<GameLibraryModel>()
+                                .matchEntry(storeEntry, game);
+                          },
                         ),
                     ],
                   ),
