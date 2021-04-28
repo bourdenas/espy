@@ -63,6 +63,13 @@ impl LibraryManager {
         Ok(())
     }
 
+    pub async fn update_entry(
+        &self,
+        entry: &mut espy::GameEntry,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.recon_service.update_entry(entry).await
+    }
+
     pub async fn save(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let path = format!("target/{}.bin", self.user_id);
         util::proto::save(&path, &self.library)?;

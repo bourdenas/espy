@@ -14,8 +14,8 @@ impl Reconciler {
         Reconciler { igdb }
     }
 
-    // Retrieve data from IGDB for store entries and create a Library based on
-    // IGDB info.
+    /// Retrieve data from IGDB for store entries and create a Library based on
+    /// IGDB info.
     pub async fn reconcile(
         &self,
         entries: &[espy::StoreEntry],
@@ -46,6 +46,16 @@ impl Reconciler {
         drop(tx);
 
         Ok(handle.await?)
+    }
+
+    pub async fn update_entry(
+        &self,
+        game_entry: &mut espy::GameEntry,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        if let Some(game) = &mut game_entry.game {
+            resolve_game_info(&self.igdb, game).await?;
+        }
+        Ok(())
     }
 }
 
