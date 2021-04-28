@@ -1,4 +1,3 @@
-import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +22,6 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
 
   @override
   Widget build(BuildContext context) {
-    final tags = context.watch<GameDetailsModel>().tags;
-
     return NavigationRail(
       extended: extended,
       labelType: NavigationRailLabelType.selected,

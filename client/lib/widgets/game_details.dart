@@ -2,6 +2,7 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/proto/library.pb.dart';
 import 'package:espy/widgets/game_tags.dart';
+import 'package:espy/widgets/library/game_entry_edit_dialog.dart';
 import 'package:flutter/material.dart';
 
 class GameDetails extends StatelessWidget {
@@ -83,12 +84,29 @@ class _HeaderSliver extends StatelessWidget {
                   ? MainAxisAlignment.center
                   : MainAxisAlignment.start,
               children: [
-                Hero(
-                  tag: '${entry.game.id}_cover',
-                  child: Image.network(
-                    '${Urls.imageProvider}/t_cover_big/${entry.game.cover.imageId}.jpg',
-                    fit: BoxFit.cover,
-                  ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Hero(
+                      tag: '${entry.game.id}_cover',
+                      child: Image.network(
+                        '${Urls.imageProvider}/t_cover_big/${entry.game.cover.imageId}.jpg',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      child: FloatingActionButton(
+                        mini: true,
+                        tooltip: 'Edit',
+                        child: Icon(Icons.edit),
+                        backgroundColor: Color.fromARGB(64, 255, 255, 255),
+                        onPressed: () {
+                          GameEntryEditDialog.show(context, entry);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 if (layout == _Layout.twoColumns) ...[
                   Padding(padding: EdgeInsets.all(8)),
