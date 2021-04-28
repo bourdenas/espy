@@ -5,6 +5,7 @@ use crate::igdb_service::api::IgdbApi;
 use crate::library::manager::LibraryManager;
 use crate::recon;
 use crate::recon::reconciler::Reconciler;
+use prost::bytes::Bytes;
 use prost::Message;
 use std::convert::Infallible;
 use std::sync::Arc;
@@ -54,6 +55,62 @@ pub async fn post_details(
         Ok(_) => Ok(StatusCode::OK),
         Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
     }
+}
+
+pub async fn post_match(
+    user_id: String,
+    match_msg: models::Match,
+    igdb: Arc<IgdbApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    println!("/library/{}/match", &user_id);
+
+    let store_entry = match espy::StoreEntry::decode(Bytes::from(match_msg.encoded_store_entry)) {
+        Ok(msg) => msg,
+        Err(e) => {
+            eprintln!("post_match StoreEntry decoding error: {}", e);
+            return Ok(StatusCode::BAD_REQUEST);
+        }
+    };
+    let game = match igdb::Game::decode(Bytes::from(match_msg.encoded_game)) {
+        Ok(msg) => msg,
+        Err(e) => {
+            eprintln!("post_match Game decoding error: {}", e);
+            return Ok(StatusCode::BAD_REQUEST);
+        }
+    };
+
+    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    mgr.build();
+
+    mgr.library
+        .unreconciled_store_entry
+        .retain(|e| !(e.id == store_entry.id && e.store == store_entry.store));
+
+    let entry = mgr.library.entry.iter_mut().find(|e| match &e.game {
+        Some(g) => g.id == game.id,
+        None => false,
+    });
+
+    match entry {
+        Some(entry) => entry.store_entry.push(store_entry),
+        None => {
+            let mut entry = espy::GameEntry {
+                game: Some(game),
+                store_entry: vec![store_entry],
+                ..Default::default()
+            };
+            if let Err(_) = mgr.update_entry(&mut entry).await {
+                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+            mgr.library.entry.push(entry);
+        }
+    }
+
+    match mgr.save().await {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+    // Ok(StatusCode::OK)
 }
 
 pub async fn post_search(

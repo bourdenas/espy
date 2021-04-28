@@ -11,6 +11,7 @@ pub fn routes(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     get_library(igdb.clone())
         .or(post_details(igdb.clone()))
+        .or(post_match(igdb.clone()))
         .or(post_search(igdb))
         .or(get_images())
 }
@@ -36,7 +37,18 @@ fn post_details(
         .and_then(handlers::post_details)
 }
 
-/// POST /search
+/// POST /library/{user_id}/match
+fn post_match(
+    igdb: Arc<IgdbApi>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / String / "match")
+        .and(warp::post())
+        .and(match_body())
+        .and(with_igdb(igdb))
+        .and_then(handlers::post_match)
+}
+
+/// POST /match/search
 fn post_search(
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
@@ -61,9 +73,13 @@ fn with_igdb(
 }
 
 fn details_body() -> impl Filter<Extract = (models::Details,), Error = warp::Rejection> + Clone {
-    warp::body::content_length_limit(1024 * 16).and(warp::body::json())
+    warp::body::content_length_limit(32 * 1024).and(warp::body::json())
+}
+
+fn match_body() -> impl Filter<Extract = (models::Match,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
 }
 
 fn search_body() -> impl Filter<Extract = (models::Search,), Error = warp::Rejection> + Clone {
-    warp::body::content_length_limit(1024 * 16).and(warp::body::json())
+    warp::body::content_length_limit(16 * 1024).and(warp::body::json())
 }
