@@ -1,4 +1,5 @@
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/proto/library.pb.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -135,10 +136,22 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
                         actions: [
                           TextButton(
                               onPressed: () async {
+                                ScaffoldMessenger.of(context)
+                                    .hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text(
+                                        "Unmatching '${_chosenValue.title}'...")));
+                                Navigator.of(context).pop();
+
+                                if (_entry.storeEntry.length == 1) {
+                                  context
+                                      .read<EspyRouterDelegate>()
+                                      .showLibrary();
+                                }
+
                                 await context
                                     .read<GameLibraryModel>()
                                     .unmatchEntry(_chosenValue, _entry.game);
-                                Navigator.of(context).pop();
                               },
                               child: Text('Confirm')),
                           TextButton(
