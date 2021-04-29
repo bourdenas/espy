@@ -37,10 +37,11 @@ void main() {
             (context, appBarSearchModel, libraryModel, detailsModel, model) =>
                 model!..update(libraryModel.library, appBarSearchModel.text),
       ),
-      ChangeNotifierProxyProvider<GameLibraryModel, UnmatchedEntriesModel>(
+      ChangeNotifierProxyProvider2<AppBarSearchModel, GameLibraryModel,
+          UnmatchedEntriesModel>(
         create: (context) => UnmatchedEntriesModel(),
-        update: (context, libraryModel, model) =>
-            model!..update(libraryModel.library),
+        update: (context, appBarSearchModel, libraryModel, model) =>
+            model!..update(libraryModel.library, appBarSearchModel.text),
       ),
     ],
     child: EspyApp(),
