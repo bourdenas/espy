@@ -56,7 +56,7 @@ class GameLibraryModel extends ChangeNotifier {
     return entries.games;
   }
 
-  Future<void> matchEntry(StoreEntry storeEntry, igdb.Game game) async {
+  Future<bool> matchEntry(StoreEntry storeEntry, igdb.Game game) async {
     var response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/testing/match'),
       headers: {
@@ -70,9 +70,10 @@ class GameLibraryModel extends ChangeNotifier {
 
     if (response.statusCode != 200) {
       print('matchEntry (error): $response');
-      return;
+      return false;
     }
 
     fetch();
+    return true;
   }
 }

@@ -86,9 +86,17 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
       link: _matchLayerLink,
       child: TextField(
         onSubmitted: (text) async {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Looking up for matches...')));
           final entries =
               await context.read<GameLibraryModel>().searchByTitle(text);
 
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          if (entries.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('No matches were found.')));
+          }
           setState(() {
             _matchOverlay = _createMatchSuggestions(entries);
             Overlay.of(context)!.insert(_matchOverlay!);
@@ -148,6 +156,11 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
                             _matchOverlay!.remove();
                             _matchOverlay = null;
                             Navigator.of(context).pop();
+
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text(
+                                    "Matching '${storeEntry.title}' with '${game.name}'...")));
 
                             await context
                                 .read<GameLibraryModel>()
