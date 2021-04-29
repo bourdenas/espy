@@ -11,9 +11,9 @@ class GameEntriesModel extends ChangeNotifier {
   UnmodifiableListView<GameEntry> get games =>
       UnmodifiableListView(_entries.where((e) => _filter.apply(e)));
 
-  void update(Library library, String titleSearchPhrase) {
+  void update(Library library, String searchPhrase) {
     _entries = library.entry;
-    _filter.titleSearchPhrase = titleSearchPhrase;
+    _filter.titleSearchPhrase = searchPhrase;
     notifyListeners();
   }
 

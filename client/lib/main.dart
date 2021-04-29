@@ -14,16 +14,10 @@ void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => EspyRouterDelegate()),
+      ChangeNotifierProvider(create: (context) => AppBarSearchModel()),
       ChangeNotifierProvider(
-        create: (context) {
-          final model = GameLibraryModel();
-          model.fetch();
-          return model;
-        },
+        create: (context) => GameLibraryModel()..fetch(),
         lazy: false,
-      ),
-      ChangeNotifierProvider(
-        create: (context) => AppBarSearchModel(),
       ),
       ChangeNotifierProxyProvider2<AppBarSearchModel, GameLibraryModel,
           GameDetailsModel>(

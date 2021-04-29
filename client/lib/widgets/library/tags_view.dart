@@ -9,14 +9,19 @@ class TagsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final tags = context.read<GameDetailsModel>().tags;
 
-    return Padding(
-        padding: const EdgeInsets.all(32),
-        child: Wrap(
-          spacing: 16.0,
-          runSpacing: 16.0,
-          children: [
-            for (final tag in tags) TagChip(tag, GameEntry()),
-          ],
-        ));
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(32),
+          child: Wrap(
+            spacing: 16.0,
+            runSpacing: 16.0,
+            children: [
+              for (final tag in tags) TagChip(tag, GameEntry()),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
