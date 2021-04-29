@@ -25,10 +25,11 @@ void main() {
       ChangeNotifierProvider(
         create: (context) => AppBarSearchModel(),
       ),
-      ChangeNotifierProxyProvider<GameLibraryModel, GameDetailsModel>(
+      ChangeNotifierProxyProvider2<AppBarSearchModel, GameLibraryModel,
+          GameDetailsModel>(
         create: (context) => GameDetailsModel(),
-        update: (context, libraryModel, model) =>
-            model!..update(libraryModel.library),
+        update: (context, appBarSearchModel, libraryModel, model) =>
+            model!..update(libraryModel.library, appBarSearchModel.text),
       ),
       ChangeNotifierProxyProvider3<AppBarSearchModel, GameLibraryModel,
           GameDetailsModel, GameEntriesModel>(

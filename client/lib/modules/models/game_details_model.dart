@@ -8,14 +8,18 @@ import 'package:http/http.dart' as http;
 
 class GameDetailsModel extends ChangeNotifier {
   SplayTreeSet<String> _tags = SplayTreeSet<String>();
+  String _searchPhrase = '';
 
-  UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
+  UnmodifiableListView<String> get tags => UnmodifiableListView(
+      _tags.where((tag) => tag.toLowerCase().contains(_searchPhrase)));
 
-  void update(Library library) {
+  void update(Library library, String searchPhrase) {
     _tags.clear();
     for (final entry in library.entry) {
       _tags.addAll(entry.details.tag);
     }
+    _searchPhrase = searchPhrase;
+
     notifyListeners();
   }
 
