@@ -12,6 +12,7 @@ pub fn routes(
     get_library(igdb.clone())
         .or(post_details(igdb.clone()))
         .or(post_match(igdb.clone()))
+        .or(post_unmatch(igdb.clone()))
         .or(post_search(igdb))
         .or(get_images())
 }
@@ -46,6 +47,17 @@ fn post_match(
         .and(match_body())
         .and(with_igdb(igdb))
         .and_then(handlers::post_match)
+}
+
+/// POST /library/{user_id}/unmatch
+fn post_unmatch(
+    igdb: Arc<IgdbApi>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / String / "unmatch")
+        .and(warp::post())
+        .and(match_body())
+        .and(with_igdb(igdb))
+        .and_then(handlers::post_unmatch)
 }
 
 /// POST /match/search

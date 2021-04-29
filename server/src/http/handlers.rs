@@ -110,7 +110,53 @@ pub async fn post_match(
         Ok(_) => Ok(StatusCode::OK),
         Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
     }
-    // Ok(StatusCode::OK)
+}
+
+pub async fn post_unmatch(
+    user_id: String,
+    match_msg: models::Match,
+    igdb: Arc<IgdbApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    println!("/library/{}/unmatch", &user_id);
+
+    let store_entry = match espy::StoreEntry::decode(Bytes::from(match_msg.encoded_store_entry)) {
+        Ok(msg) => msg,
+        Err(e) => {
+            eprintln!("post_unmatch StoreEntry decoding error: {}", e);
+            return Ok(StatusCode::BAD_REQUEST);
+        }
+    };
+    let game = match igdb::Game::decode(Bytes::from(match_msg.encoded_game)) {
+        Ok(msg) => msg,
+        Err(e) => {
+            eprintln!("post_unmatch Game decoding error: {}", e);
+            return Ok(StatusCode::BAD_REQUEST);
+        }
+    };
+
+    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    mgr.build();
+
+    // There's no remove_if so I need to iterate the vector twice. Once to find
+    // the game entry and remove the request's storefront from it and a second
+    // one to remove the game entry if it no longer has a store entry.
+    let entry = mgr.library.entry.iter_mut().find(|e| match &e.game {
+        Some(g) => g.id == game.id,
+        None => false,
+    });
+    if let Some(entry) = entry {
+        entry
+            .store_entry
+            .retain(|se| !(se.id == store_entry.id && se.store == store_entry.store));
+    }
+    // NB: It'd be nice if retain() allowed for modifying elements.
+    mgr.library.entry.retain(|e| !e.store_entry.is_empty());
+    mgr.library.unreconciled_store_entry.push(store_entry);
+
+    match mgr.save().await {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+    }
 }
 
 pub async fn post_search(
