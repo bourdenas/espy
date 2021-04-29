@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/espy_navigation_rail.dart' show EspyNavigationRail;
@@ -16,6 +17,9 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   @override
   void initState() {
     super.initState();
+
+    context.read<AppBarSearchModel>().controller = _searchController;
+
     _searchController.addListener(() {
       final text = _searchController.text.toLowerCase();
       if (text.isNotEmpty && _searchIcon.icon != Icons.close) {
@@ -28,8 +32,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
           _searchIcon = Icon(Icons.search);
         });
       }
-      context.read<GameEntriesModel>().titleFilter =
-          _searchController.text.toLowerCase();
+      context.read<AppBarSearchModel>().text = _searchController.text;
     });
   }
 

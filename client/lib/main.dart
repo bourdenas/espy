@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
@@ -21,16 +22,20 @@ void main() {
         },
         lazy: false,
       ),
+      ChangeNotifierProvider(
+        create: (context) => AppBarSearchModel(),
+      ),
       ChangeNotifierProxyProvider<GameLibraryModel, GameDetailsModel>(
         create: (context) => GameDetailsModel(),
         update: (context, libraryModel, model) =>
             model!..update(libraryModel.library),
       ),
-      ChangeNotifierProxyProvider2<GameLibraryModel, GameDetailsModel,
-          GameEntriesModel>(
+      ChangeNotifierProxyProvider3<AppBarSearchModel, GameLibraryModel,
+          GameDetailsModel, GameEntriesModel>(
         create: (context) => GameEntriesModel(),
-        update: (context, libraryModel, detailsModel, model) =>
-            model!..update(libraryModel.library),
+        update:
+            (context, appBarSearchModel, libraryModel, detailsModel, model) =>
+                model!..update(libraryModel.library, appBarSearchModel.text),
       ),
       ChangeNotifierProxyProvider<GameLibraryModel, UnmatchedEntriesModel>(
         create: (context) => UnmatchedEntriesModel(),

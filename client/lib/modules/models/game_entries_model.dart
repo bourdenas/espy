@@ -11,8 +11,9 @@ class GameEntriesModel extends ChangeNotifier {
   UnmodifiableListView<GameEntry> get games =>
       UnmodifiableListView(_entries.where((e) => _filter.apply(e)));
 
-  void update(Library library) {
+  void update(Library library, String titleSearchPhrase) {
     _entries = library.entry;
+    _filter.titleSearchPhrase = titleSearchPhrase;
     notifyListeners();
   }
 
@@ -31,14 +32,6 @@ class GameEntriesModel extends ChangeNotifier {
   }
 
   LibraryFilter get filter => _filter;
-
-  set titleFilter(String phrase) {
-    if (phrase == _filter.titlePhrase) {
-      return;
-    }
-    _filter.titlePhrase = phrase;
-    notifyListeners();
-  }
 
   void addCompanyFilter(Company company) {
     _filter.companies.add(company);
@@ -77,17 +70,13 @@ class GameEntriesModel extends ChangeNotifier {
 }
 
 class LibraryFilter {
-  String _titlePhrase = '';
+  String _titleSearchPhrase = '';
   Set<Company> companies = {};
   Set<Collection> collections = {};
   Set<String> tags = {};
 
-  String get titlePhrase {
-    return _titlePhrase;
-  }
-
-  set titlePhrase(String phrase) {
-    _titlePhrase = phrase.toLowerCase();
+  set titleSearchPhrase(String phrase) {
+    _titleSearchPhrase = phrase;
   }
 
   bool apply(GameEntry entry) {
@@ -98,7 +87,6 @@ class LibraryFilter {
   }
 
   void clear() {
-    _titlePhrase = '';
     companies.clear();
     collections.clear();
     tags.clear();
@@ -120,6 +108,6 @@ class LibraryFilter {
   }
 
   bool _filterTitle(GameEntry entry) {
-    return entry.game.name.toLowerCase().contains(_titlePhrase);
+    return entry.game.name.toLowerCase().contains(_titleSearchPhrase);
   }
 }

@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company, Franchise;
@@ -55,6 +56,7 @@ class CompanyChip extends StatelessWidget {
       backgroundColor: Colors.red[900],
       onPressed: () {
         context.read<GameEntriesModel>().addCompanyFilter(company);
+        context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
       },
     );
@@ -73,6 +75,7 @@ class CollectionChip extends StatelessWidget {
       backgroundColor: Colors.indigo[800],
       onPressed: () {
         context.read<GameEntriesModel>().addCollectionFilter(collection);
+        context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
       },
     );
@@ -106,6 +109,7 @@ class TagChip extends StatelessWidget {
       label: Text(tag),
       onPressed: () {
         context.read<GameEntriesModel>().addTagFilter(tag);
+        context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
       },
       onDeleted: () {
