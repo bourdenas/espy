@@ -1,5 +1,7 @@
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/proto/library.pb.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GameEntryEditDialog extends StatelessWidget {
   static Future<void> show(BuildContext context, GameEntry entry) async {
@@ -60,7 +62,7 @@ class GameEntryEditDialog extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: _StorefrontDropdown(gameEntry.storeEntry),
+                child: _StorefrontDropdown(gameEntry),
               ),
             ],
           ),
@@ -71,18 +73,18 @@ class GameEntryEditDialog extends StatelessWidget {
 }
 
 class _StorefrontDropdown extends StatefulWidget {
-  _StorefrontDropdown(this._entries);
+  _StorefrontDropdown(this._entry);
 
-  final List<StoreEntry> _entries;
+  final GameEntry _entry;
 
   @override
-  _StorefrontDropdownState createState() => _StorefrontDropdownState(_entries);
+  _StorefrontDropdownState createState() => _StorefrontDropdownState(_entry);
 }
 
 class _StorefrontDropdownState extends State<_StorefrontDropdown> {
-  _StorefrontDropdownState(this._entries) : _chosenValue = _entries[0];
+  _StorefrontDropdownState(this._entry) : _chosenValue = _entry.storeEntry[0];
 
-  final List<StoreEntry> _entries;
+  final GameEntry _entry;
   StoreEntry _chosenValue;
 
   @override
@@ -93,9 +95,8 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
         children: [
           DropdownButton<StoreEntry>(
             value: _chosenValue,
-            //elevation: 5,
             items: [
-              for (final storeEntry in _entries)
+              for (final storeEntry in _entry.storeEntry)
                 DropdownMenuItem<StoreEntry>(
                   value: storeEntry,
                   child: Text(storeEntry.store.toString()),
@@ -124,7 +125,29 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        content: Text(
+                            'Are you sure you want to unmatch this store entry?'),
+                        actions: [
+                          TextButton(
+                              onPressed: () async {
+                                await context
+                                    .read<GameLibraryModel>()
+                                    .unmatchEntry(_chosenValue, _entry.game);
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('Confirm')),
+                          TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text('Cancel')),
+                        ],
+                      );
+                    });
+              },
               child: Text('Unmatch'),
             ),
           ),

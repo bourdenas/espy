@@ -76,4 +76,25 @@ class GameLibraryModel extends ChangeNotifier {
     fetch();
     return true;
   }
+
+  Future<bool> unmatchEntry(StoreEntry storeEntry, igdb.Game game) async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/testing/unmatch'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'encoded_store_entry': storeEntry.writeToBuffer(),
+        'encoded_game': game.writeToBuffer(),
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      print('unmatchEntry (error): $response');
+      return false;
+    }
+
+    fetch();
+    return true;
+  }
 }
