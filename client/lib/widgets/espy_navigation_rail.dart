@@ -67,8 +67,10 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
           context.read<GameEntriesModel>().clearFilter();
           context.read<EspyRouterDelegate>().showLibrary();
         } else if (index == 1) {
+          context.read<GameEntriesModel>().clearFilter();
           context.read<EspyRouterDelegate>().showUnmatchedEntries();
         } else if (index == 2) {
+          context.read<GameEntriesModel>().clearFilter();
           context.read<EspyRouterDelegate>().showTags();
         } else if (index == 3) {
           // TODO: Settings page.
