@@ -17,8 +17,10 @@ class GameDetailsModel extends ChangeNotifier {
       _companies.where((c) => c.name.toLowerCase().contains(_searchPhrase)));
   UnmodifiableListView<igdb.Collection> get collections => UnmodifiableListView(
       _collections.where((c) => c.name.toLowerCase().contains(_searchPhrase)));
+
   UnmodifiableListView<String> get tags => UnmodifiableListView(
       _tags.where((tag) => tag.toLowerCase().contains(_searchPhrase)));
+  UnmodifiableListView<String> get allTags => UnmodifiableListView(_tags);
 
   void update(Library library, String searchPhrase) {
     if (_searchPhrase == searchPhrase) {

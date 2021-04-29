@@ -17,7 +17,7 @@ Future<void> showTagsContextMenu(
     context: context,
     items: context
         .read<GameDetailsModel>()
-        .tags
+        .allTags
         .map((tag) => CheckedPopupMenuItem(
               child: Text(tag),
               value: tag,

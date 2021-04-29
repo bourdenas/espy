@@ -58,7 +58,7 @@ class GameTagsTextFieldState extends State<GameTagsTextField> {
         final prefix = _tagsController.text.toLowerCase();
         final suggestions = context
             .read<GameDetailsModel>()
-            .tags
+            .allTags
             .where((tag) => tag.toLowerCase().startsWith(prefix))
             .take(3);
         _suggestionsOverlay = _createSuggestions(suggestions);
