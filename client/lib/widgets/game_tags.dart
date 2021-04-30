@@ -1,6 +1,6 @@
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_details_model.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company, Franchise;
 import 'package:espy/proto/library.pb.dart' show GameEntry;
 import 'package:espy/widgets/game_tags_text_field.dart';
@@ -55,7 +55,7 @@ class CompanyChip extends StatelessWidget {
       label: Text('${company.name} (${company.id})'),
       backgroundColor: Colors.red[900],
       onPressed: () {
-        context.read<GameEntriesModel>().addCompanyFilter(company);
+        context.read<LibraryFiltersModel>().addCompanyFilter(company);
         context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
       },
@@ -74,7 +74,7 @@ class CollectionChip extends StatelessWidget {
       label: Text('${collection.name} (${collection.id})'),
       backgroundColor: Colors.indigo[800],
       onPressed: () {
-        context.read<GameEntriesModel>().addCollectionFilter(collection);
+        context.read<LibraryFiltersModel>().addCollectionFilter(collection);
         context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
       },
@@ -108,7 +108,7 @@ class TagChip extends StatelessWidget {
     return InputChip(
       label: Text(tag),
       onPressed: () {
-        context.read<GameEntriesModel>().addTagFilter(tag);
+        context.read<LibraryFiltersModel>().addTagFilter(tag);
         context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
       },

@@ -2,6 +2,7 @@ import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/modules/models/unmatched_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
@@ -19,23 +20,27 @@ void main() {
         create: (context) => GameLibraryModel()..fetch(),
         lazy: false,
       ),
-      ChangeNotifierProxyProvider2<AppBarSearchModel, GameLibraryModel,
+      ChangeNotifierProxyProvider<AppBarSearchModel, LibraryFiltersModel>(
+        create: (context) => LibraryFiltersModel(),
+        update: (context, appBarSearchModel, model) =>
+            model!..update(appBarSearchModel.text),
+      ),
+      ChangeNotifierProxyProvider2<GameLibraryModel, AppBarSearchModel,
           GameDetailsModel>(
         create: (context) => GameDetailsModel(),
-        update: (context, appBarSearchModel, libraryModel, model) =>
+        update: (context, libraryModel, appBarSearchModel, model) =>
             model!..update(libraryModel.library, appBarSearchModel.text),
       ),
-      ChangeNotifierProxyProvider3<AppBarSearchModel, GameLibraryModel,
-          GameDetailsModel, GameEntriesModel>(
+      ChangeNotifierProxyProvider2<GameLibraryModel, LibraryFiltersModel,
+          GameEntriesModel>(
         create: (context) => GameEntriesModel(),
-        update:
-            (context, appBarSearchModel, libraryModel, detailsModel, model) =>
-                model!..update(libraryModel.library, appBarSearchModel.text),
+        update: (context, libraryModel, filtersModel, model) =>
+            model!..update(libraryModel.library, filtersModel.filter),
       ),
-      ChangeNotifierProxyProvider2<AppBarSearchModel, GameLibraryModel,
+      ChangeNotifierProxyProvider2<GameLibraryModel, AppBarSearchModel,
           UnmatchedEntriesModel>(
         create: (context) => UnmatchedEntriesModel(),
-        update: (context, appBarSearchModel, libraryModel, model) =>
+        update: (context, libraryModel, appBarSearchModel, model) =>
             model!..update(libraryModel.library, appBarSearchModel.text),
       ),
     ],

@@ -1,5 +1,6 @@
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -64,13 +65,13 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
         }
 
         if (index == 0) {
-          context.read<GameEntriesModel>().clearFilter();
+          context.read<LibraryFiltersModel>().clearFilter();
           context.read<EspyRouterDelegate>().showLibrary();
         } else if (index == 1) {
-          context.read<GameEntriesModel>().clearFilter();
+          context.read<LibraryFiltersModel>().clearFilter();
           context.read<EspyRouterDelegate>().showUnmatchedEntries();
         } else if (index == 2) {
-          context.read<GameEntriesModel>().clearFilter();
+          context.read<LibraryFiltersModel>().clearFilter();
           context.read<EspyRouterDelegate>().showTags();
         } else if (index == 3) {
           // TODO: Settings page.

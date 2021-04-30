@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/library/library_grid_view.dart';
 import 'package:espy/widgets/library/library_list_view.dart';
@@ -35,7 +35,7 @@ class GameLibrary extends StatelessWidget {
       viewWidget = TagsView();
     }
 
-    final filter = context.watch<GameEntriesModel>().filter;
+    final filter = context.watch<LibraryFiltersModel>().filter;
     return Column(children: [
       Container(
           padding: EdgeInsets.all(16),
@@ -45,7 +45,9 @@ class GameLibrary extends StatelessWidget {
                 label: Text('${company.name}'),
                 backgroundColor: Colors.red[900],
                 onDeleted: () {
-                  context.read<GameEntriesModel>().removeCompanyFilter(company);
+                  context
+                      .read<LibraryFiltersModel>()
+                      .removeCompanyFilter(company);
                 },
               ),
               Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
@@ -56,7 +58,7 @@ class GameLibrary extends StatelessWidget {
                 backgroundColor: Colors.indigo[800],
                 onDeleted: () {
                   context
-                      .read<GameEntriesModel>()
+                      .read<LibraryFiltersModel>()
                       .removeCollectionFilter(collection);
                 },
               ),
@@ -66,7 +68,7 @@ class GameLibrary extends StatelessWidget {
               InputChip(
                 label: Text(tag),
                 onDeleted: () {
-                  context.read<GameEntriesModel>().removeTagFilter(tag);
+                  context.read<LibraryFiltersModel>().removeTagFilter(tag);
                 },
               ),
               Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
