@@ -6,7 +6,7 @@ pub async fn get_candidates(
     igdb: &igdb_service::api::IgdbApi,
     title: &str,
 ) -> Result<Vec<Candidate>, Box<dyn std::error::Error + Send + Sync>> {
-    let result = match igdb.search_by_title(title).await {
+    let mut result = match igdb.search_by_title(title).await {
         Ok(r) => r,
         Err(e) => {
             println!("Failed to recon '{}': {}", title, e);
@@ -14,12 +14,20 @@ pub async fn get_candidates(
         }
     };
 
+    for game in &mut result.games {
+        if let Some(cover) = &game.cover {
+            if let Some(cover) = igdb.get_cover(cover.id).await? {
+                game.cover = Some(Box::new(cover));
+            }
+        }
+    }
+
     let mut candidates = result
         .games
         .into_iter()
-        .map(|e| Candidate {
-            score: edit_distance(title, &e.name),
-            game: e,
+        .map(|game| Candidate {
+            score: edit_distance(title, &game.name),
+            game: game,
         })
         .collect::<Vec<Candidate>>();
     candidates.sort_by(|a, b| a.score.cmp(&b.score));
