@@ -25,14 +25,16 @@ class LibraryListView extends StatelessWidget {
                       child: CircleAvatar(
                           foregroundImage: NetworkImage(
                               '${Urls.imageProvider}/t_thumb/${entry.game.cover.imageId}.jpg'))),
-                  title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(entry.game.name),
-                        GameChipsBar(entry),
-                      ]),
+                  title: Text(entry.game.name),
                   subtitle: Text(
                       '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}'),
+                  trailing: Wrap(
+                    spacing: 8.0,
+                    runSpacing: 4.0,
+                    children: [
+                      for (final tag in entry.details.tag) TagChip(tag, entry)
+                    ],
+                  ),
                   onTap: () => context
                       .read<EspyRouterDelegate>()
                       .showGameDetails('${entry.game.id}'),

@@ -42,7 +42,14 @@ class LibraryTableView extends StatelessWidget {
                               .read<EspyRouterDelegate>()
                               .showGameDetails('${entry.game.id}'),
                         ),
-                        DataCell(GameChipsBar(entry)),
+                        DataCell(Wrap(
+                          spacing: 8.0,
+                          runSpacing: 4.0,
+                          children: [
+                            for (final tag in entry.details.tag)
+                              TagChip(tag, entry)
+                          ],
+                        )),
                         DataCell(Text(
                             '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}')),
                       ],
