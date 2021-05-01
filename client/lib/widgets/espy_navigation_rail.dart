@@ -1,5 +1,4 @@
 import 'package:espy/modules/models/appbar_search_model.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
@@ -29,9 +28,11 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       labelType: NavigationRailLabelType.selected,
       selectedIndex: _selectedIndex,
       leading: Column(children: [
-        Padding(padding: EdgeInsets.symmetric(vertical: 8)),
-        CircleAvatar(
-          child: Icon(Icons.person),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            child: Icon(Icons.person),
+          ),
         ),
       ]),
       groupAlignment: 0,
