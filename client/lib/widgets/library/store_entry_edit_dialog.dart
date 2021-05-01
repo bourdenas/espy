@@ -1,3 +1,4 @@
+import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/proto/igdbapi.pb.dart' as igdb;
 import 'package:espy/proto/library.pb.dart';
@@ -87,8 +88,18 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
       child: TextField(
         onSubmitted: (text) async {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Looking up for matches...')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Row(
+              children: [
+                CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.blueAccent)),
+                Padding(padding: EdgeInsets.symmetric(horizontal: 8)),
+                Text('Looking up for matches...'),
+              ],
+            ),
+            duration: Duration(milliseconds: 30000),
+          ));
           final entries =
               await context.read<GameLibraryModel>().searchByTitle(text);
 
@@ -151,7 +162,12 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
                     children: [
                       for (final game in suggestions)
                         ListTile(
+                          leading: CircleAvatar(
+                              foregroundImage: NetworkImage(
+                                  '${Urls.imageProvider}/t_thumb/${game.cover.imageId}.jpg')),
                           title: Text(game.name),
+                          trailing: Text(
+                              '${DateTime.fromMillisecondsSinceEpoch(game.firstReleaseDate.seconds.toInt() * 1000).year}'),
                           onTap: () async {
                             _matchOverlay!.remove();
                             _matchOverlay = null;
@@ -159,8 +175,18 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
 
                             ScaffoldMessenger.of(context).hideCurrentSnackBar();
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text(
-                                    "Matching '${storeEntry.title}' with '${game.name}'...")));
+                                content: Row(
+                              children: [
+                                CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.blueAccent)),
+                                Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 8)),
+                                Text(
+                                    "Matching '${storeEntry.title}' with '${game.name}'..."),
+                              ],
+                            )));
 
                             await context
                                 .read<GameLibraryModel>()
