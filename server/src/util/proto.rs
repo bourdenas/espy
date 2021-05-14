@@ -8,7 +8,7 @@ pub fn load<T: Message + Default>(path: &str) -> Result<T, Status> {
     let msg = Bytes::from(fs::read(path)?);
     match T::decode(msg) {
         Ok(msg) => Ok(msg),
-        Err(err) => Err(Status::new(format!("Failed to decode message: '{}'", err))),
+        Err(err) => Err(Status::internal("Failed to decode proto message", err)),
     }
 }
 
@@ -16,10 +16,7 @@ pub fn load<T: Message + Default>(path: &str) -> Result<T, Status> {
 pub fn save<T: Message + Default>(path: &str, msg: &T) -> Result<(), Status> {
     let mut bytes = vec![];
     if let Err(err) = msg.encode(&mut bytes) {
-        return Err(Status::new(format!(
-            "Failed to encode message: {:?}\nwith error: {}",
-            msg, err
-        )));
+        return Err(Status::internal("Failed to encode proto message", err));
     }
 
     fs::write(path, bytes)?;

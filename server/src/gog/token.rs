@@ -108,19 +108,11 @@ impl GogToken {
     fn save(&self, path: &str) -> Result<(), Status> {
         let text = match serde_json::to_string(self) {
             Ok(text) => text,
-            Err(err) => {
-                return Err(Status::new(format!(
-                    "Failed to serialise GogToken: '{}'",
-                    err
-                )))
-            }
+            Err(err) => return Err(Status::internal("Failed to serialise GogToken", err)),
         };
         match fs::write(path, text) {
             Ok(_) => Ok(()),
-            Err(err) => Err(Status::new(format!(
-                "Failed to save token to disk: '{}",
-                err
-            ))),
+            Err(err) => Err(Status::internal("Failed to save token to disk", err)),
         }
     }
 }

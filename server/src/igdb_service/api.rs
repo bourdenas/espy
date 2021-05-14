@@ -255,10 +255,7 @@ impl IgdbApi {
             Ok(msg) => Ok(msg),
             Err(err) => {
                 eprintln!("IGDB.POST error: {}", std::str::from_utf8(&bytes).unwrap());
-                Err(Status::new(format!(
-                    "Failed to decode IGDB response: '{}'",
-                    err
-                )))
+                Err(Status::internal("Failed to decode IGDB response", err))
             }
         }
     }
