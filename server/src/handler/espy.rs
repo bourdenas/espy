@@ -4,6 +4,7 @@ use crate::library;
 use crate::recon;
 use crate::steam;
 use crate::util;
+use crate::Status;
 use std::sync::Arc;
 
 /// Implementation of espy.Espy API.
@@ -13,9 +14,7 @@ pub struct EspyImpl {
 }
 
 impl EspyImpl {
-    pub async fn build(
-        keys: util::keys::Keys,
-    ) -> Result<EspyImpl, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn build(keys: util::keys::Keys) -> Result<EspyImpl, Status> {
         let mut igdb = igdb_service::api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
         igdb.connect().await?;
 
