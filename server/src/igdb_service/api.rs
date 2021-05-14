@@ -1,6 +1,7 @@
 use crate::espy;
 use crate::igdb;
 use crate::util::rate_limiter::RateLimiter;
+use crate::Status;
 use prost::Message;
 use serde::{Deserialize, Serialize};
 
@@ -24,7 +25,7 @@ impl IgdbApi {
     // Authenticate with twtich/igdb OAuth2 server and retrieve session token.
     // Authentication is valid for the lifetime of this instane or until the
     // retrieved token expires.
-    pub async fn connect(&mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn connect(&mut self) -> Result<(), Status> {
         let uri = format!(
             "{}?client_id={}&client_secret={}&grant_type=client_credentials",
             TWITCH_OAUTH_URL, self.client_id, self.secret
@@ -43,10 +44,7 @@ impl IgdbApi {
 
     // Returns matching candidates by searching based on game title from the
     // igdb/games endpoint.
-    pub async fn search_by_title(
-        &self,
-        title: &str,
-    ) -> Result<igdb::GameResult, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn search_by_title(&self, title: &str) -> Result<igdb::GameResult, Status> {
         Ok(self
             .post(GAMES_ENDPOINT, &format!("search \"{}\"; fields *;", title))
             .await?)
@@ -55,7 +53,7 @@ impl IgdbApi {
     pub async fn match_external(
         &self,
         store_entry: &espy::StoreEntry,
-    ) -> Result<Option<igdb::ExternalGame>, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Option<igdb::ExternalGame>, Status> {
         // I don't get why proto enums are i32 in porst!?!
         let category: u8 = match store_entry.store {
             1 => 1,
@@ -79,10 +77,7 @@ impl IgdbApi {
         }
     }
 
-    pub async fn get_game_by_id(
-        &self,
-        id: u64,
-    ) -> Result<Option<igdb::Game>, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn get_game_by_id(&self, id: u64) -> Result<Option<igdb::Game>, Status> {
         let mut result: igdb::GameResult = self
             .post(GAMES_ENDPOINT, &format!("fields *; where id={};", id))
             .await?;
@@ -94,10 +89,7 @@ impl IgdbApi {
     }
 
     // Returns game image cover based on id from the igdb/covers endpoint.
-    pub async fn get_cover(
-        &self,
-        cover_id: u64,
-    ) -> Result<Option<igdb::Cover>, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn get_cover(&self, cover_id: u64) -> Result<Option<igdb::Cover>, Status> {
         let mut result: igdb::CoverResult = self
             .post(
                 COVERS_ENDPOINT,
@@ -115,7 +107,7 @@ impl IgdbApi {
     pub async fn get_collection(
         &self,
         collection_id: u64,
-    ) -> Result<Option<igdb::Collection>, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Option<igdb::Collection>, Status> {
         let mut result: igdb::CollectionResult = self
             .post(
                 COLLECTIONS_ENDPOINT,
@@ -130,10 +122,7 @@ impl IgdbApi {
     }
 
     // Returns game screenshots based on id from the igdb/screenshots endpoint.
-    pub async fn get_artwork(
-        &self,
-        artwork_ids: &[u64],
-    ) -> Result<igdb::ArtworkResult, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn get_artwork(&self, artwork_ids: &[u64]) -> Result<igdb::ArtworkResult, Status> {
         Ok(self
             .post(
                 ARTWORKS_ENDPOINT,
@@ -148,11 +137,12 @@ impl IgdbApi {
             )
             .await?)
     }
+
     // Returns game screenshots based on id from the igdb/screenshots endpoint.
     pub async fn get_screenshots(
         &self,
         screenshot_ids: &[u64],
-    ) -> Result<igdb::ScreenshotResult, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<igdb::ScreenshotResult, Status> {
         Ok(self
             .post(
                 SCREENSHOTS_ENDPOINT,
@@ -172,7 +162,7 @@ impl IgdbApi {
     pub async fn get_franchises(
         &self,
         franchise_ids: &[u64],
-    ) -> Result<igdb::FranchiseResult, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<igdb::FranchiseResult, Status> {
         Ok(self
             .post(
                 FRANCHISES_ENDPOINT,
@@ -192,7 +182,7 @@ impl IgdbApi {
     pub async fn get_companies(
         &self,
         company_ids: &[u64],
-    ) -> Result<igdb::InvolvedCompanyResult, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<igdb::InvolvedCompanyResult, Status> {
         let mut ic_result: igdb::InvolvedCompanyResult = self
             .post(
                 INVOLVED_COMPANIES_ENDPOINT,
@@ -243,15 +233,11 @@ impl IgdbApi {
 
     // Sends a POST request to an IGDB service endpoint. It expects to reach a
     // protobuf endpoint and tries to decode the response into a protobuf Message.
-    async fn post<T: Message + Default>(
-        &self,
-        endpoint: &str,
-        body: &str,
-    ) -> Result<T, Box<dyn std::error::Error + Send + Sync>> {
+    async fn post<T: Message + Default>(&self, endpoint: &str, body: &str) -> Result<T, Status> {
         let token = self
             .oauth_token
             .as_ref()
-            .ok_or(String::from("IgdbApi endpoint is not connected."))?;
+            .ok_or(Status::new("IgdbApi endpoint is not connected."))?;
 
         self.qps.wait();
         let uri = format!("{}/{}/", IGDB_SERVICE_URL, endpoint);
@@ -267,9 +253,12 @@ impl IgdbApi {
 
         match T::decode(bytes.clone()) {
             Ok(msg) => Ok(msg),
-            Err(e) => {
+            Err(err) => {
                 eprintln!("IGDB.POST error: {}", std::str::from_utf8(&bytes).unwrap());
-                Err(Box::new(e))
+                Err(Status::new(format!(
+                    "Failed to decode IGDB response: '{}'",
+                    err
+                )))
             }
         }
     }
