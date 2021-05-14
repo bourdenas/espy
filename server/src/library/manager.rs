@@ -3,6 +3,7 @@ use crate::gog;
 use crate::recon;
 use crate::steam;
 use crate::util;
+use crate::Status;
 use itertools::Itertools;
 use std::collections::HashSet;
 use std::mem::swap;
@@ -40,7 +41,7 @@ impl LibraryManager {
         self.library = load_local_library(&self.path);
     }
 
-    pub async fn sync(&mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn sync(&mut self) -> Result<(), Status> {
         let steam_entries = self.get_steam_entries().await;
         let gog_entries = self.get_gog_entries().await;
 
@@ -63,14 +64,11 @@ impl LibraryManager {
         Ok(())
     }
 
-    pub async fn update_entry(
-        &self,
-        entry: &mut espy::GameEntry,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn update_entry(&self, entry: &mut espy::GameEntry) -> Result<(), Status> {
         self.recon_service.update_entry(entry).await
     }
 
-    pub async fn save(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn save(&self) -> Result<(), Status> {
         let path = format!("target/{}.bin", self.user_id);
         util::proto::save(&path, &self.library)?;
         Ok(())

@@ -9,6 +9,10 @@ impl Status {
     pub fn new(msg: impl Into<String>) -> Self {
         Self(tonic::Status::internal(msg))
     }
+
+    pub fn internal(msg: &str, err: impl Error) -> Self {
+        Self(tonic::Status::internal(format!("{}: '{}'", msg, err)))
+    }
 }
 
 impl From<std::io::Error> for Status {

@@ -1,11 +1,12 @@
 use crate::igdb;
 use crate::igdb_service;
+use crate::Status;
 
 /// Returns scored Candidates of igdb.Game entries that match the input title.
 pub async fn get_candidates(
     igdb: &igdb_service::api::IgdbApi,
     title: &str,
-) -> Result<Vec<Candidate>, Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<Vec<Candidate>, Status> {
     let mut result = match igdb.search_by_title(title).await {
         Ok(r) => r,
         Err(e) => {

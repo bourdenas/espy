@@ -1,6 +1,7 @@
 use crate::espy;
 use crate::igdb;
 use crate::igdb_service;
+use crate::Status;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
@@ -16,10 +17,7 @@ impl Reconciler {
 
     /// Retrieve data from IGDB for store entries and create a Library based on
     /// IGDB info.
-    pub async fn reconcile(
-        &self,
-        entries: &[espy::StoreEntry],
-    ) -> Result<espy::Library, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn reconcile(&self, entries: &[espy::StoreEntry]) -> Result<espy::Library, Status> {
         let (tx, mut rx) = mpsc::channel(32);
 
         let fut = stream::iter(entries.iter().map(|store_entry| Task {
@@ -45,13 +43,16 @@ impl Reconciler {
         fut.await;
         drop(tx);
 
-        Ok(handle.await?)
+        match handle.await {
+            Ok(lib) => Ok(lib),
+            Err(err) => Err(Status::internal(
+                "Failed to reconcile entries into the library",
+                err,
+            )),
+        }
     }
 
-    pub async fn update_entry(
-        &self,
-        game_entry: &mut espy::GameEntry,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn update_entry(&self, game_entry: &mut espy::GameEntry) -> Result<(), Status> {
         if let Some(game) = &mut game_entry.game {
             resolve_game_info(&self.igdb, game).await?;
         }
@@ -83,7 +84,7 @@ async fn recon_task(task: Task) {
 async fn resolve(
     igdb: &igdb_service::api::IgdbApi,
     store_entry: espy::StoreEntry,
-) -> Result<espy::GameEntry, Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<espy::GameEntry, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
     let mut game_entry = espy::GameEntry {
@@ -114,12 +115,12 @@ async fn resolve(
 /// Retrieves igdb.Game fields that are relevant to espy. For instance, cover
 /// images, screenshots, franchise info, etc.
 ///
-///  IGDB returns Game entries only with relevant IDs for such items that need
+/// IGDB returns Game entries only with relevant IDs for such items that need
 /// subsequent lookups in corresponding IGDB tables.
 async fn resolve_game_info(
     igdb: &igdb_service::api::IgdbApi,
     game: &mut igdb::Game,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<(), Status> {
     if let Some(cover) = &game.cover {
         if let Some(cover) = igdb.get_cover(cover.id).await? {
             game.cover = Some(Box::new(cover));
