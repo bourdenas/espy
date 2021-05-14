@@ -1,4 +1,5 @@
 use crate::espy;
+use crate::Status;
 
 pub struct SteamApi {
     steam_key: String,
@@ -14,9 +15,7 @@ impl SteamApi {
     }
 
     // Returns the list of games owned by the user in Steam.
-    pub async fn get_owned_games(
-        &self,
-    ) -> Result<espy::StoreEntryList, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn get_owned_games(&self) -> Result<espy::StoreEntryList, Status> {
         let uri = format!(
             "{}{}?key={}&steamid={}&include_appinfo=true&format=json",
             STEAM_HOST, STEAM_GETOWNEDGAMES_SERVICE, self.steam_key, self.steam_user_id

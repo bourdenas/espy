@@ -1,3 +1,4 @@
+use crate::Status;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -17,10 +18,7 @@ pub struct GogToken {
 impl GogToken {
     // Retrieve GOG authentication code by loging in to:
     // https://auth.gog.com/auth?client_id=46899977096215655&redirect_uri=https%3A%2F%2Fembed.gog.com%2Fon_login_success%3Forigin%3Dclient&response_type=code&layout=client2
-    pub async fn from_code(
-        code: &str,
-        path: &str,
-    ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn from_code(code: &str, path: &str) -> Result<Self, Status> {
         let params = format!(
             "/token?client_id={}&client_secret={}&grant_type=authorization_code&code={}&redirect_uri={}%2Ftoken", 
             GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, code, GOG_GALAXY_REDIRECT_URI);
@@ -33,7 +31,8 @@ impl GogToken {
         token.expires_in = SystemTime::now()
             .checked_add(Duration::from_secs(token.expires_in))
             .unwrap()
-            .duration_since(UNIX_EPOCH)?
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
             .as_secs();
         token.path = String::from(path);
         token.save(path)?;
@@ -48,10 +47,7 @@ impl GogToken {
         }
     }
 
-    pub async fn from_refresh(
-        refresh_token: &str,
-        path: &str,
-    ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn from_refresh(refresh_token: &str, path: &str) -> Result<Self, Status> {
         let mut token = GogToken::default();
         token.refresh_token = String::from(refresh_token);
         token.path = String::from(path);
@@ -60,7 +56,7 @@ impl GogToken {
         Ok(token)
     }
 
-    pub async fn from_file(path: &str) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn from_file(path: &str) -> Result<Self, Status> {
         let bytes = std::fs::read(path)?;
         let mut token: GogToken = serde_json::from_slice(&bytes)?;
         token.path = String::from(path);
@@ -88,7 +84,7 @@ impl GogToken {
         now.as_secs() < self.expires_in
     }
 
-    async fn refresh(&mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn refresh(&mut self) -> Result<(), Status> {
         let params = format!(
             "/token?client_id={}&client_secret={}&grant_type=refresh_token&refresh_token={}&%2Ftoken",
             GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, &self.refresh_token);
@@ -101,17 +97,31 @@ impl GogToken {
         self.expires_in = SystemTime::now()
             .checked_add(Duration::from_secs(self.expires_in))
             .unwrap()
-            .duration_since(UNIX_EPOCH)?
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
             .as_secs();
         self.save(&path)?;
 
         Ok(())
     }
 
-    fn save(&self, path: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        let text = serde_json::to_string(self).expect("Failed to serialise GOG Token.");
-        fs::write(path, text)?;
-        Ok(())
+    fn save(&self, path: &str) -> Result<(), Status> {
+        let text = match serde_json::to_string(self) {
+            Ok(text) => text,
+            Err(err) => {
+                return Err(Status::new(format!(
+                    "Failed to serialise GogToken: '{}'",
+                    err
+                )))
+            }
+        };
+        match fs::write(path, text) {
+            Ok(_) => Ok(()),
+            Err(err) => Err(Status::new(format!(
+                "Failed to save token to disk: '{}",
+                err
+            ))),
+        }
     }
 }
 

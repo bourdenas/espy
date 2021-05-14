@@ -1,5 +1,6 @@
 use crate::espy;
 use crate::gog::token::GogToken;
+use crate::Status;
 
 pub struct GogApi {
     token: GogToken,
@@ -10,9 +11,7 @@ impl GogApi {
         GogApi { token }
     }
 
-    pub async fn get_game_ids(
-        &self,
-    ) -> Result<GogGamesList, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn get_game_ids(&self) -> Result<GogGamesList, Status> {
         let uri = format!("{}/user/data/games", GOG_API_HOST);
 
         let game_list = reqwest::Client::new()
@@ -29,9 +28,7 @@ impl GogApi {
         Ok(game_list)
     }
 
-    pub async fn get_game_entries(
-        &self,
-    ) -> Result<espy::StoreEntryList, Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn get_game_entries(&self) -> Result<espy::StoreEntryList, Status> {
         let mut gog_list = espy::StoreEntryList {
             ..Default::default()
         };
@@ -54,9 +51,8 @@ impl GogApi {
 
             let product_list_page = match resp {
                 GogProductListResponse::Ok(pl) => pl,
-                GogProductListResponse::Err(e) => {
-                    eprintln!("{}", e);
-                    return Err(Box::new(e));
+                GogProductListResponse::Err(gog_err) => {
+                    return Err(Status::new(format!("{}", gog_err)));
                 }
             };
 
