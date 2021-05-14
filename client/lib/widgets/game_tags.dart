@@ -30,6 +30,9 @@ class GameChipsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Force to render the view when GameDetails (e.g. game tags) are updated.
+    context.watch<GameDetailsModel>();
+
     return Wrap(
       spacing: 8.0,
       runSpacing: 4.0,
@@ -110,6 +113,8 @@ class TagChip extends StatelessWidget {
       onPressed: () {
         context.read<LibraryFiltersModel>().addTagFilter(tag);
         context.read<AppBarSearchModel>().clear();
+        // TODO: Depending which screen the TagChip is present, this shouldn't
+        // be poping always.
         Navigator.pop(context);
       },
       onDeleted: () {

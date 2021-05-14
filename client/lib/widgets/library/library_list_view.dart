@@ -1,4 +1,5 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/game_tags.dart';
@@ -10,6 +11,9 @@ import 'package:provider/provider.dart';
 class LibraryListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // Force to render the view when GameDetails (e.g. game tags) are updated.
+    context.watch<GameDetailsModel>();
+
     return Scrollbar(
       child: ListView(
         restorationId: 'list_view_game_entries_offset',
