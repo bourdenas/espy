@@ -1,3 +1,4 @@
+use crate::Status;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -19,7 +20,7 @@ pub struct SteamKeys {
 }
 
 impl Keys {
-    pub fn from_file(path: &str) -> Result<Keys, Box<dyn std::error::Error + Send + Sync>> {
+    pub fn from_file(path: &str) -> Result<Keys, Status> {
         let keys = std::fs::read(path)?;
         Ok(serde_json::from_slice(&keys)?)
     }

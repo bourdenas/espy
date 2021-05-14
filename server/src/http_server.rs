@@ -16,7 +16,7 @@ struct Opts {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn main() -> Result<(), Status> {
     let opts: Opts = Opts::parse();
 
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
