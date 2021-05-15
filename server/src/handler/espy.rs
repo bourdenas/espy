@@ -1,7 +1,6 @@
 use crate::api::{IgdbApi, SteamApi};
 use crate::espy;
-use crate::library;
-use crate::recon;
+use crate::library::{LibraryManager, Reconciler};
 use crate::util;
 use crate::Status;
 use std::sync::Arc;
@@ -32,9 +31,9 @@ impl espy::espy_server::Espy for EspyImpl {
     ) -> Result<tonic::Response<espy::LibraryResponse>, tonic::Status> {
         println!("Espy.GetLibrary request: {:?}", request.get_ref());
 
-        let mut mgr = library::manager::LibraryManager::new(
+        let mut mgr = LibraryManager::new(
             &request.get_ref().user_id,
-            recon::reconciler::Reconciler::new(Arc::clone(&self.igdb)),
+            Reconciler::new(Arc::clone(&self.igdb)),
             Some(SteamApi::new(
                 &self.keys.steam.client_key,
                 &self.keys.steam.user_id,

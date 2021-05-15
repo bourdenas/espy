@@ -60,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     igdb.connect().await?;
 
     if let Some(title) = &opts.search {
-        let candidates = recon::search::get_candidates(&igdb, title).await?;
+        let candidates = library::search::get_candidates(&igdb, title).await?;
         for candidate in candidates {
             println!("{}", candidate);
         }
@@ -109,9 +109,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         gog_api = Some(api::GogApi::new(token));
     }
 
-    let mut mgr = library::manager::LibraryManager::new(
+    let mut mgr = library::LibraryManager::new(
         &opts.user,
-        recon::reconciler::Reconciler::new(Arc::new(igdb)),
+        library::Reconciler::new(Arc::new(igdb)),
         Some(api::SteamApi::new(
             &keys.steam.client_key,
             match &opts.steam_user {

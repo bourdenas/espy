@@ -9,10 +9,7 @@ mod igdb {
 pub mod api;
 pub mod handler;
 pub mod http;
-// pub mod igdb_service;
 pub mod library;
-pub mod recon;
-// pub mod steam;
 pub mod util;
 
 mod status;

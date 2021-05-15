@@ -2,9 +2,8 @@ use crate::api::IgdbApi;
 use crate::espy;
 use crate::http::models;
 use crate::igdb;
-use crate::library::manager::LibraryManager;
-use crate::recon;
-use crate::recon::reconciler::Reconciler;
+use crate::library;
+use crate::library::{LibraryManager, Reconciler};
 use prost::bytes::Bytes;
 use prost::Message;
 use std::convert::Infallible;
@@ -165,7 +164,7 @@ pub async fn post_search(
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
     println!("/search body: {:?}", &search);
 
-    let candidates = match recon::search::get_candidates(&igdb, &search.title).await {
+    let candidates = match library::search::get_candidates(&igdb, &search.title).await {
         Ok(result) => result,
         Err(_) => return Ok(Box::new(StatusCode::NOT_FOUND)),
     };

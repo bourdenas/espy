@@ -1,6 +1,6 @@
 use crate::api::{GogApi, SteamApi};
 use crate::espy;
-use crate::recon;
+use crate::library::Reconciler;
 use crate::util;
 use crate::Status;
 use itertools::Itertools;
@@ -13,7 +13,7 @@ pub struct LibraryManager {
     user_id: String,
     path: String,
 
-    recon_service: recon::reconciler::Reconciler,
+    recon_service: Reconciler,
     steam_api: Option<SteamApi>,
     gog_api: Option<GogApi>,
 }
@@ -22,7 +22,7 @@ impl LibraryManager {
     // Creates a LibraryManager instance for a unique user_id id.
     pub fn new(
         user_id: &str,
-        recon_service: recon::reconciler::Reconciler,
+        recon_service: Reconciler,
         steam_api: Option<SteamApi>,
         gog_api: Option<GogApi>,
     ) -> LibraryManager {
