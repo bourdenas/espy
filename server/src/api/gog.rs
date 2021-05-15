@@ -1,5 +1,5 @@
+use crate::api::GogToken;
 use crate::espy;
-use crate::gog::token::GogToken;
 use crate::Status;
 
 pub struct GogApi {

@@ -1,7 +1,6 @@
+use crate::api::{GogApi, SteamApi};
 use crate::espy;
-use crate::gog;
 use crate::recon;
-use crate::steam;
 use crate::util;
 use crate::Status;
 use itertools::Itertools;
@@ -15,8 +14,8 @@ pub struct LibraryManager {
     path: String,
 
     recon_service: recon::reconciler::Reconciler,
-    steam_api: Option<steam::api::SteamApi>,
-    gog_api: Option<gog::api::GogApi>,
+    steam_api: Option<SteamApi>,
+    gog_api: Option<GogApi>,
 }
 
 impl LibraryManager {
@@ -24,8 +23,8 @@ impl LibraryManager {
     pub fn new(
         user_id: &str,
         recon_service: recon::reconciler::Reconciler,
-        steam_api: Option<steam::api::SteamApi>,
-        gog_api: Option<gog::api::GogApi>,
+        steam_api: Option<SteamApi>,
+        gog_api: Option<GogApi>,
     ) -> LibraryManager {
         LibraryManager {
             library: espy::Library::default(),

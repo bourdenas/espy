@@ -1,7 +1,7 @@
+use crate::api::IgdbApi;
 use crate::espy;
 use crate::http::models;
 use crate::igdb;
-use crate::igdb_service::api::IgdbApi;
 use crate::library::manager::LibraryManager;
 use crate::recon;
 use crate::recon::reconciler::Reconciler;

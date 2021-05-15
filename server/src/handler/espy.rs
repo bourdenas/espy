@@ -1,8 +1,7 @@
+use crate::api::{IgdbApi, SteamApi};
 use crate::espy;
-use crate::igdb_service;
 use crate::library;
 use crate::recon;
-use crate::steam;
 use crate::util;
 use crate::Status;
 use std::sync::Arc;
@@ -10,12 +9,12 @@ use std::sync::Arc;
 /// Implementation of espy.Espy API.
 pub struct EspyImpl {
     keys: util::keys::Keys,
-    igdb: Arc<igdb_service::api::IgdbApi>,
+    igdb: Arc<IgdbApi>,
 }
 
 impl EspyImpl {
     pub async fn build(keys: util::keys::Keys) -> Result<EspyImpl, Status> {
-        let mut igdb = igdb_service::api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
+        let mut igdb = IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
         igdb.connect().await?;
 
         Ok(EspyImpl {
@@ -36,7 +35,7 @@ impl espy::espy_server::Espy for EspyImpl {
         let mut mgr = library::manager::LibraryManager::new(
             &request.get_ref().user_id,
             recon::reconciler::Reconciler::new(Arc::clone(&self.igdb)),
-            Some(steam::api::SteamApi::new(
+            Some(SteamApi::new(
                 &self.keys.steam.client_key,
                 &self.keys.steam.user_id,
             )),

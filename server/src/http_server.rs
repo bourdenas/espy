@@ -1,5 +1,5 @@
+use crate::api::IgdbApi;
 use crate::http;
-use crate::igdb_service::api::IgdbApi;
 use clap::Clap;
 use espy_server::*;
 use std::sync::Arc;

@@ -1,17 +1,17 @@
+use crate::api::IgdbApi;
 use crate::espy;
 use crate::igdb;
-use crate::igdb_service;
 use crate::Status;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 
 pub struct Reconciler {
-    igdb: Arc<igdb_service::api::IgdbApi>,
+    igdb: Arc<IgdbApi>,
 }
 
 impl Reconciler {
-    pub fn new(igdb: Arc<igdb_service::api::IgdbApi>) -> Reconciler {
+    pub fn new(igdb: Arc<IgdbApi>) -> Reconciler {
         Reconciler { igdb }
     }
 
@@ -81,10 +81,7 @@ async fn recon_task(task: Task) {
 }
 
 /// Returns a game entry from IGDB that matches the input store entry.
-async fn resolve(
-    igdb: &igdb_service::api::IgdbApi,
-    store_entry: espy::StoreEntry,
-) -> Result<espy::GameEntry, Status> {
+async fn resolve(igdb: &IgdbApi, store_entry: espy::StoreEntry) -> Result<espy::GameEntry, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
     let mut game_entry = espy::GameEntry {
@@ -117,10 +114,7 @@ async fn resolve(
 ///
 /// IGDB returns Game entries only with relevant IDs for such items that need
 /// subsequent lookups in corresponding IGDB tables.
-async fn resolve_game_info(
-    igdb: &igdb_service::api::IgdbApi,
-    game: &mut igdb::Game,
-) -> Result<(), Status> {
+async fn resolve_game_info(igdb: &IgdbApi, game: &mut igdb::Game) -> Result<(), Status> {
     if let Some(cover) = &game.cover {
         if let Some(cover) = igdb.get_cover(cover.id).await? {
             game.cover = Some(Box::new(cover));
@@ -165,6 +159,6 @@ async fn resolve_game_info(
 
 struct Task {
     store_entry: espy::StoreEntry,
-    igdb: Arc<igdb_service::api::IgdbApi>,
+    igdb: Arc<IgdbApi>,
     tx: mpsc::Sender<espy::GameEntry>,
 }

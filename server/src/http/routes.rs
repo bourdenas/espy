@@ -1,6 +1,6 @@
+use crate::api::IgdbApi;
 use crate::http::handlers;
 use crate::http::models;
-use crate::igdb_service::api::IgdbApi;
 use std::convert::Infallible;
 use std::sync::Arc;
 use warp::{self, Filter};

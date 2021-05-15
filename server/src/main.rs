@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
 
-    let mut igdb = igdb_service::api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
+    let mut igdb = api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
 
     if let Some(title) = &opts.search {
@@ -95,24 +95,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         return Ok(());
     }
 
-    let token = gog::token::GogToken::from_file("gog_token.json").await?;
-    let mut gog_api = Some(gog::api::GogApi::new(token));
+    let token = api::GogToken::from_file("gog_token.json").await?;
+    let mut gog_api = Some(api::GogApi::new(token));
 
     if let Some(gog_code) = &opts.gog_code {
-        let token = gog::token::GogToken::from_code(gog_code, "gog_token.json").await?;
-        gog_api = Some(gog::api::GogApi::new(token));
+        let token = api::GogToken::from_code(gog_code, "gog_token.json").await?;
+        gog_api = Some(api::GogApi::new(token));
     } else if let Some(gog_token) = &opts.gog_token {
-        let token = gog::token::GogToken::from_token(gog_token);
-        gog_api = Some(gog::api::GogApi::new(token));
+        let token = api::GogToken::from_token(gog_token);
+        gog_api = Some(api::GogApi::new(token));
     } else if let Some(gog_refresh) = &opts.gog_refresh {
-        let token = gog::token::GogToken::from_refresh(gog_refresh, "gog_token.json").await?;
-        gog_api = Some(gog::api::GogApi::new(token));
+        let token = api::GogToken::from_refresh(gog_refresh, "gog_token.json").await?;
+        gog_api = Some(api::GogApi::new(token));
     }
 
     let mut mgr = library::manager::LibraryManager::new(
         &opts.user,
         recon::reconciler::Reconciler::new(Arc::new(igdb)),
-        Some(steam::api::SteamApi::new(
+        Some(api::SteamApi::new(
             &keys.steam.client_key,
             match &opts.steam_user {
                 Some(user_id) => user_id,
