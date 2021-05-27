@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/pages/game_details_page.dart';
 import 'package:espy/modules/pages/game_library_page.dart';
 import 'package:espy/modules/routing/espy_route_path.dart';
@@ -9,24 +9,32 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<EspyRoutePath> {
   final GlobalKey<NavigatorState> navigatorKey;
 
-  String? _gameId;
+  EspyRoutePath path = EspyRoutePath.library();
 
-  set gameId(String id) {
-    _gameId = id;
+  void showLibrary() {
+    path = EspyRoutePath.library();
     notifyListeners();
   }
 
-  void goHome() {
-    _gameId = null;
+  void showGameDetails(String id) {
+    path = EspyRoutePath.details(id);
+    notifyListeners();
+  }
+
+  void showUnmatchedEntries() {
+    path = EspyRoutePath.unmatched();
+    notifyListeners();
+  }
+
+  void showTags() {
+    path = EspyRoutePath.tags();
     notifyListeners();
   }
 
   EspyRouterDelegate() : navigatorKey = GlobalKey<NavigatorState>();
 
   @override
-  EspyRoutePath get currentConfiguration => _gameId == null
-      ? EspyRoutePath.library()
-      : EspyRoutePath.details(_gameId);
+  EspyRoutePath get currentConfiguration => path;
 
   @override
   Widget build(BuildContext context) {
@@ -34,30 +42,33 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
       key: navigatorKey,
       pages: [
         GameLibraryPage(),
-        if (_gameId != null)
+        if (path.isDetailsPage)
           GameDetailsPage(
-              entry: context.watch<GameLibraryModel>().getEntryById(_gameId!)!),
+              entry: context
+                  .watch<GameEntriesModel>()
+                  .getEntryById(path.gameId!)!),
       ],
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
           return false;
         }
 
-        goHome();
+        showLibrary();
         return true;
       },
     );
-
-    // EspyHome(title: 'espy', navigatorKey: navigatorKey, gameId: _gameId);
   }
 
   @override
   Future<void> setNewRoutePath(EspyRoutePath path) async {
     if (path.isLibraryPage) {
-      goHome();
-    }
-    if (path.isGameDetailsPage) {
-      gameId = path.gameId!;
+      showLibrary();
+    } else if (path.isDetailsPage) {
+      showGameDetails(path.gameId!);
+    } else if (path.isUnmatchedPage) {
+      showUnmatchedEntries();
+    } else if (path.isTagsPage) {
+      showTags();
     }
   }
 }

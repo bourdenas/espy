@@ -1,117 +1,127 @@
-import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/proto/library.pb.dart' show GameEntry, GameDetails;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:espy/modules/models/appbar_search_model.dart';
+import 'package:espy/modules/models/game_details_model.dart';
+import 'package:espy/modules/models/library_filters_model.dart';
+import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company, Franchise;
+import 'package:espy/proto/library.pb.dart' show GameEntry;
+import 'package:espy/widgets/game_tags_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GameTags extends StatefulWidget {
+class GameTags extends StatelessWidget {
   final GameEntry entry;
 
-  const GameTags(this.entry);
-
-  @override
-  State<StatefulWidget> createState() => GameTagsState(entry);
-}
-
-class GameTagsState extends State<GameTags> {
-  final GameEntry entry;
-
-  GameTagsState(this.entry);
+  GameTags(this.entry);
 
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Wrap(
-        spacing: 8.0,
-        runSpacing: 4.0,
-        children: [
-          for (final involved in entry.game.involvedCompanies)
-            if (involved.developer)
-              InputChip(
-                label:
-                    Text('${involved.company.name} (${involved.company.id})'),
-                backgroundColor: Colors.red[700],
-                onPressed: () {
-                  context
-                      .read<GameLibraryModel>()
-                      .addCompanyFilter(involved.company);
-                  Navigator.pop(context);
-                },
-              ),
-          if (entry.game.hasCollection())
-            InputChip(
-              label: Text(
-                  '${entry.game.collection.name} (${entry.game.collection.id})'),
-              backgroundColor: Colors.indigo[700],
-              onPressed: () {
-                context
-                    .read<GameLibraryModel>()
-                    .addCollectionFilter(entry.game.collection);
-                Navigator.pop(context);
-              },
-            ),
-          for (final franchise in entry.game.franchises)
-            InputChip(
-              label: Text('${franchise.name} (${franchise.id})'),
-              backgroundColor: Colors.yellow[800],
-            ),
-          for (final tag in entry.details.tag)
-            InputChip(
-              label: Text(tag),
-              onPressed: () {
-                context.read<GameLibraryModel>().addTagFilter(tag);
-                Navigator.pop(context);
-              },
-              onDeleted: () => setState(() {
-                entry.details.tag.remove(tag);
-                context.read<GameLibraryModel>().postDetails(entry);
-              }),
-            ),
-        ],
-      ),
+      GameChipsBar(entry),
       Center(
-        child: Container(
-          width: 200,
-          child: TextField(
-            onSubmitted: (tag) => setState(() {
-              if (tag.isEmpty) {
-                _tagsFocusNode.requestFocus();
-                return;
-              }
-
-              // NB: I don't get it why just "entry.details.tag.add(tag);"
-              // fails and I need to clone GameDetails to edit it.
-              entry.details = GameDetails()
-                ..mergeFromMessage(entry.details)
-                ..tag.add(tag);
-              _tagsController.clear();
-              _tagsFocusNode.requestFocus();
-              context.read<GameLibraryModel>().postDetails(entry);
-            }),
-            controller: _tagsController,
-            focusNode: _tagsFocusNode,
-            autofocus: kIsWeb,
-            decoration: InputDecoration(
-              prefixIcon: Icon(Icons.tag),
-              hintText: 'tags...',
-            ),
-          ),
-        ),
+        child: GameTagsTextField(entry),
       )
     ]);
   }
+}
 
-  final TextEditingController _tagsController = TextEditingController();
-  final FocusNode _tagsFocusNode = FocusNode();
+class GameChipsBar extends StatelessWidget {
+  final GameEntry entry;
+
+  const GameChipsBar(this.entry);
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    // Force to render the view when GameDetails (e.g. game tags) are updated.
+    context.watch<GameDetailsModel>();
+
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 4.0,
+      children: [
+        for (final involved in entry.game.involvedCompanies)
+          if (involved.developer) CompanyChip(involved.company),
+        if (entry.game.hasCollection()) CollectionChip(entry.game.collection),
+        for (final franchise in entry.game.franchises) FranchiseChip(franchise),
+        for (final tag in entry.details.tag) TagChip(tag, entry),
+      ],
+    );
   }
+}
+
+class CompanyChip extends StatelessWidget {
+  final Company company;
+
+  const CompanyChip(this.company);
 
   @override
-  void dispose() {
-    _tagsController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Text('${company.name} (${company.id})'),
+      backgroundColor: Colors.red[900],
+      onPressed: () {
+        context.read<LibraryFiltersModel>().addCompanyFilter(company);
+        context.read<AppBarSearchModel>().clear();
+        Navigator.pop(context);
+      },
+    );
+  }
+}
+
+class CollectionChip extends StatelessWidget {
+  final Collection collection;
+
+  const CollectionChip(this.collection);
+
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Text('${collection.name} (${collection.id})'),
+      backgroundColor: Colors.indigo[800],
+      onPressed: () {
+        context.read<LibraryFiltersModel>().addCollectionFilter(collection);
+        context.read<AppBarSearchModel>().clear();
+        Navigator.pop(context);
+      },
+    );
+  }
+}
+
+class FranchiseChip extends StatelessWidget {
+  final Franchise franchise;
+
+  const FranchiseChip(this.franchise);
+
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Text('${franchise.name} (${franchise.id})'),
+      onPressed: () {},
+      backgroundColor: Colors.yellow[800],
+    );
+  }
+}
+
+class TagChip extends StatelessWidget {
+  final String tag;
+  final GameEntry entry;
+
+  const TagChip(this.tag, this.entry);
+
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Text(tag),
+      onPressed: () {
+        context.read<LibraryFiltersModel>().addTagFilter(tag);
+        context.read<AppBarSearchModel>().clear();
+        // TODO: Depending which screen the TagChip is present, this shouldn't
+        // be poping always.
+        Navigator.pop(context);
+      },
+      onDeleted: () {
+        if (entry.details.tag.isEmpty) return;
+        entry.details.tag.remove(tag);
+        context.read<GameDetailsModel>().postDetails(entry);
+      },
+    );
   }
 }

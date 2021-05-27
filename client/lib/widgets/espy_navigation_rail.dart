@@ -1,5 +1,6 @@
-import 'package:espy/constants/menu_items.dart' show menu_items;
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/appbar_search_model.dart';
+import 'package:espy/modules/models/library_filters_model.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,40 +23,59 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
 
   @override
   Widget build(BuildContext context) {
-    final tags = context.watch<GameLibraryModel>().tags;
-
     return NavigationRail(
       extended: extended,
+      labelType: NavigationRailLabelType.selected,
       selectedIndex: _selectedIndex,
+      leading: Column(children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            child: Icon(Icons.person),
+          ),
+        ),
+      ]),
+      groupAlignment: 0,
       destinations: [
         NavigationRailDestination(
           icon: Icon(Icons.home_outlined),
           selectedIcon: Icon(Icons.home),
-          label: Text('Home'),
+          label: Text('Library'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.cloud_off_outlined),
+          selectedIcon: Icon(Icons.cloud_off),
+          label: Text('Unmatched'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.collections_bookmark_outlined),
+          selectedIcon: Icon(Icons.collections_bookmark),
+          label: Text('Tags'),
         ),
         NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings),
           label: Text('Settings'),
         ),
-        ...tags
-            .take(15)
-            .map((tag) => NavigationRailDestination(
-                  icon: Icon(Icons.bookmark_border),
-                  selectedIcon: Icon(Icons.bookmark),
-                  label: Text(tag),
-                ))
-            .toList(),
       ],
       onDestinationSelected: (index) {
         _selectedIndex = index;
+
+        if (index != 3) {
+          context.read<AppBarSearchModel>().clear();
+        }
+
         if (index == 0) {
-          context.read<GameLibraryModel>().clearFilter();
+          context.read<LibraryFiltersModel>().clearFilter();
+          context.read<EspyRouterDelegate>().showLibrary();
         } else if (index == 1) {
+          context.read<LibraryFiltersModel>().clearFilter();
+          context.read<EspyRouterDelegate>().showUnmatchedEntries();
+        } else if (index == 2) {
+          context.read<LibraryFiltersModel>().clearFilter();
+          context.read<EspyRouterDelegate>().showTags();
+        } else if (index == 3) {
           // TODO: Settings page.
-        } else if (index > 1) {
-          context.read<GameLibraryModel>().clearFilter();
-          context.read<GameLibraryModel>().addTagFilter(tags[index - 2]);
         }
       },
     );
