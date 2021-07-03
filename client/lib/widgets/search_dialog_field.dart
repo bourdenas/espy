@@ -1,6 +1,7 @@
 import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/proto/library.pb.dart' show GameDetails, GameEntry;
+import 'package:espy/modules/models/library_filters_model.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -57,30 +58,48 @@ class SearchDialogFieldState extends State<SearchDialogField> {
               .where(
                   (entry) => entry.game.name.toLowerCase().contains(searchTerm))
               .take(4)
-              .map((entry) => entry.game.name)
-              .map((entry) => _Suggestion(entry, Icons.games)),
+              .map((entry) => _Suggestion(entry.game.name, Icons.games, () {
+                    context
+                        .read<EspyRouterDelegate>()
+                        .showGameDetails('${entry.game.id}');
+                  })),
           ...context
               .read<GameDetailsModel>()
               .tags
               .where((tag) => tag.toLowerCase().contains(searchTerm))
               .take(4)
-              .map((tag) => _Suggestion(tag, Icons.tag)),
+              .map((tag) => _Suggestion(tag, Icons.tag, () {
+                    context.read<LibraryFiltersModel>().clearFilter();
+                    context.read<EspyRouterDelegate>().showLibrary();
+                    context.read<LibraryFiltersModel>().addTagFilter(tag);
+                  })),
           ...context
               .read<GameDetailsModel>()
               .collections
               .where((collection) =>
                   collection.name.toLowerCase().contains(searchTerm))
               .take(4)
-              .map((collection) => collection.name)
-              .map((collection) => _Suggestion(collection, Icons.label)),
+              .map(
+                  (collection) => _Suggestion(collection.name, Icons.label, () {
+                        context.read<LibraryFiltersModel>().clearFilter();
+                        context.read<EspyRouterDelegate>().showLibrary();
+                        context
+                            .read<LibraryFiltersModel>()
+                            .addCollectionFilter(collection);
+                      })),
           ...context
               .read<GameDetailsModel>()
               .companies
               .where(
                   (company) => company.name.toLowerCase().contains(searchTerm))
               .take(4)
-              .map((company) => company.name)
-              .map((company) => _Suggestion(company, Icons.business)),
+              .map((company) => _Suggestion(company.name, Icons.business, () {
+                    context.read<LibraryFiltersModel>().clearFilter();
+                    context.read<EspyRouterDelegate>().showLibrary();
+                    context
+                        .read<LibraryFiltersModel>()
+                        .addCompanyFilter(company);
+                  })),
         ];
 
         _suggestionsOverlay = _createSuggestions(suggestions);
@@ -122,7 +141,7 @@ class SearchDialogFieldState extends State<SearchDialogField> {
                   ListTile(
                     leading: Icon(suggestion.icon),
                     title: Text(suggestion.text),
-                    onTap: () => _matchSearchTerm(suggestion.text),
+                    onTap: () => _invokeSuggestion(suggestion),
                   ),
               ],
             ),
@@ -130,6 +149,11 @@ class SearchDialogFieldState extends State<SearchDialogField> {
         ),
       ),
     );
+  }
+
+  void _invokeSuggestion(_Suggestion suggestion) {
+    suggestion.invoke();
+    Navigator.of(context).pop();
   }
 
   void _matchSearchTerm(String term) {
@@ -153,6 +177,11 @@ class SearchDialogFieldState extends State<SearchDialogField> {
 class _Suggestion {
   final String text;
   final IconData icon;
+  final Function invoke;
 
-  const _Suggestion(this.text, this.icon);
+  const _Suggestion(
+    this.text,
+    this.icon,
+    this.invoke,
+  );
 }
