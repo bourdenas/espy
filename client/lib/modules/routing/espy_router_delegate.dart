@@ -1,8 +1,10 @@
+import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/pages/game_details_page.dart';
 import 'package:espy/modules/pages/game_library_page.dart';
 import 'package:espy/modules/routing/espy_route_path.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
@@ -38,24 +40,29 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
 
   @override
   Widget build(BuildContext context) {
-    return Navigator(
-      key: navigatorKey,
-      pages: [
-        GameLibraryPage(),
-        if (path.isDetailsPage)
-          GameDetailsPage(
-              entry: context
-                  .watch<GameEntriesModel>()
-                  .getEntryById(path.gameId!)!),
-      ],
-      onPopPage: (route, result) {
-        if (!route.didPop(result)) {
-          return false;
-        }
-
-        showLibrary();
-        return true;
+    return Shortcuts(
+      shortcuts: {
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF):
+            const SearchIntent(),
       },
+      child: Navigator(
+        key: navigatorKey,
+        pages: [
+          GameLibraryPage(),
+          if (path.isDetailsPage)
+            GameDetailsPage(
+                entry: context
+                    .watch<GameEntriesModel>()
+                    .getEntryById(path.gameId!)!),
+        ],
+        onPopPage: (route, result) {
+          if (!route.didPop(result)) {
+            return false;
+          }
+          showLibrary();
+          return true;
+        },
+      ),
     );
   }
 
