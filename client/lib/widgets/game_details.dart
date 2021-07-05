@@ -30,7 +30,7 @@ class GameDetails extends StatelessWidget {
                   ],
                   Container(
                     padding: const EdgeInsets.all(32),
-                    child: Text(entry.game.summary),
+                    child: SelectableText(entry.game.summary),
                   )
                 ]);
               },
