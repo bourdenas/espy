@@ -3,6 +3,7 @@ import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class SearchDialogField extends StatefulWidget {
@@ -22,20 +23,40 @@ class SearchDialogFieldState extends State<SearchDialogField> {
       link: _suggestionsLayerLink,
       child: Container(
         width: 400,
-        child: TextField(
-          onSubmitted: (term) => setState(() {
-            _matchSearchTerm(term);
-          }),
-          controller: _searchController,
+        child: RawKeyboardListener(
+          key: UniqueKey(),
           focusNode: _searchFocusNode,
-          autofocus: true,
-          decoration: InputDecoration(
-            prefixIcon: Icon(Icons.search),
-            hintText: 'Search...',
+          onKey: handleKey,
+          child: TextField(
+            key: UniqueKey(),
+            onSubmitted: (term) => setState(() {
+              _matchSearchTerm(term);
+            }),
+            controller: _searchController,
+            // focusNode: _searchFocusNode,
+            autofocus: true,
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search...',
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void handleKey(RawKeyEvent key) {
+    if (key.runtimeType == RawKeyDownEvent) {
+      if (key.data.logicalKey == LogicalKeyboardKey.arrowUp) {
+        setState(() {
+          _selectedIndex = (_selectedIndex - 1) % _suggestions.length;
+        });
+      } else if (key.data.logicalKey == LogicalKeyboardKey.arrowDown) {
+        setState(() {
+          _selectedIndex = (_selectedIndex + 1) % _suggestions.length;
+        });
+      }
+    }
   }
 
   @override
@@ -49,14 +70,29 @@ class SearchDialogFieldState extends State<SearchDialogField> {
       }
 
       if (_searchController.text.isNotEmpty) {
-        final searchTerm = _searchController.text.toLowerCase();
+        final searchTerms = _searchController.text.toLowerCase().split(' ');
         final suggestions = [
+          ...context
+              .read<GameDetailsModel>()
+              .tags
+              .where((tag) => searchTerms.every((term) => tag
+                  .toLowerCase()
+                  .split(' ')
+                  .any((word) => word.startsWith(term))))
+              .take(4)
+              .map((tag) => _Suggestion(tag, Icons.tag, () {
+                    context.read<LibraryFiltersModel>().clearFilter();
+                    context.read<EspyRouterDelegate>().showLibrary();
+                    context.read<LibraryFiltersModel>().addTagFilter(tag);
+                  })),
           ...context
               .read<GameLibraryModel>()
               .library
               .entry
-              .where(
-                  (entry) => entry.game.name.toLowerCase().contains(searchTerm))
+              .where((entry) => searchTerms.every((term) => entry.game.name
+                  .toLowerCase()
+                  .split(' ')
+                  .any((word) => word.startsWith(term))))
               .take(4)
               .map((entry) => _Suggestion(entry.game.name, Icons.games, () {
                     context
@@ -65,33 +101,27 @@ class SearchDialogFieldState extends State<SearchDialogField> {
                   })),
           ...context
               .read<GameDetailsModel>()
-              .tags
-              .where((tag) => tag.toLowerCase().contains(searchTerm))
+              .collections
+              .where((collection) => searchTerms.every((term) => collection.name
+                  .toLowerCase()
+                  .split(' ')
+                  .any((word) => word.startsWith(term))))
               .take(4)
-              .map((tag) => _Suggestion(tag, Icons.tag, () {
+              .map((collection) =>
+                  _Suggestion(collection.name, Icons.circle, () {
                     context.read<LibraryFiltersModel>().clearFilter();
                     context.read<EspyRouterDelegate>().showLibrary();
-                    context.read<LibraryFiltersModel>().addTagFilter(tag);
+                    context
+                        .read<LibraryFiltersModel>()
+                        .addCollectionFilter(collection);
                   })),
           ...context
               .read<GameDetailsModel>()
-              .collections
-              .where((collection) =>
-                  collection.name.toLowerCase().contains(searchTerm))
-              .take(4)
-              .map(
-                  (collection) => _Suggestion(collection.name, Icons.label, () {
-                        context.read<LibraryFiltersModel>().clearFilter();
-                        context.read<EspyRouterDelegate>().showLibrary();
-                        context
-                            .read<LibraryFiltersModel>()
-                            .addCollectionFilter(collection);
-                      })),
-          ...context
-              .read<GameDetailsModel>()
               .companies
-              .where(
-                  (company) => company.name.toLowerCase().contains(searchTerm))
+              .where((company) => searchTerms.every((term) => company.name
+                  .toLowerCase()
+                  .split(' ')
+                  .any((word) => word.startsWith(term))))
               .take(4)
               .map((company) => _Suggestion(company.name, Icons.business, () {
                     context.read<LibraryFiltersModel>().clearFilter();
@@ -121,8 +151,9 @@ class SearchDialogFieldState extends State<SearchDialogField> {
     super.dispose();
   }
 
-  OverlayEntry _createSuggestions(Iterable<_Suggestion> suggestions) {
+  OverlayEntry _createSuggestions(List<_Suggestion> suggestions) {
     final size = context.size!;
+    _suggestions = suggestions;
 
     return OverlayEntry(
       builder: (context) => Positioned(
@@ -136,20 +167,25 @@ class SearchDialogFieldState extends State<SearchDialogField> {
             child: ListView(
               padding: EdgeInsets.zero,
               shrinkWrap: true,
-              children: [
-                for (final suggestion in suggestions)
-                  ListTile(
-                    leading: Icon(suggestion.icon),
-                    title: Text(suggestion.text),
-                    onTap: () => _invokeSuggestion(suggestion),
-                  ),
-              ],
+              children: suggestions
+                  .asMap()
+                  .entries
+                  .map<ListTile>((entry) => ListTile(
+                        leading: Icon(entry.value.icon),
+                        title: Text(entry.value.text),
+                        onTap: () => _invokeSuggestion(entry.value),
+                        selected: entry.key == _selectedIndex,
+                      ))
+                  .toList(),
             ),
           ),
         ),
       ),
     );
   }
+
+  var _selectedIndex = 0;
+  var _suggestions = [];
 
   void _invokeSuggestion(_Suggestion suggestion) {
     suggestion.invoke();
@@ -162,15 +198,10 @@ class SearchDialogFieldState extends State<SearchDialogField> {
       return;
     }
 
-    print(term);
-
-    // TODO: Correct condition should be if term has a match.
-    if (term.isNotEmpty) {
-      Navigator.of(context).pop();
-    } else {
-      _searchController.clear();
-      _searchFocusNode.requestFocus();
+    if (_selectedIndex < _suggestions.length) {
+      _suggestions[_selectedIndex].invoke();
     }
+    Navigator.of(context).pop();
   }
 }
 
