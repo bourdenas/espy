@@ -1,4 +1,4 @@
-package com.example.espy
+package com.bourdenas.espy
 
 import io.flutter.embedding.android.FlutterActivity
 
