@@ -48,8 +48,8 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
           label: Text('Unmatched'),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.tag),
-          selectedIcon: Icon(Icons.tag),
+          icon: Icon(Icons.bubble_chart_outlined),
+          selectedIcon: Icon(Icons.bubble_chart),
           label: Text('Tags'),
         ),
         NavigationRailDestination(

@@ -46,6 +46,13 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   Icon _searchIcon = Icon(Icons.search);
+
+  List<bool> _viewSelection = [true, false, false];
+  final List<LibraryView> _libraryViews = const [
+    LibraryView.GRID,
+    LibraryView.LIST,
+    LibraryView.TABLE
+  ];
   LibraryView _view = LibraryView.GRID;
 
   @override
@@ -76,42 +83,25 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                     ),
                   ),
                 ),
+                Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: constraints.maxWidth > 800 ? 32 : 16)),
+                ToggleButtons(
+                  children: const [
+                    Icon(Icons.grid_4x4),
+                    Icon(Icons.list),
+                    Icon(Icons.table_view),
+                  ],
+                  isSelected: _viewSelection,
+                  onPressed: (index) {
+                    setState(() {
+                      _viewSelection =
+                          List<bool>.generate(3, (i) => i == index);
+                      _view = _libraryViews[index];
+                    });
+                  },
+                ),
               ]),
-              actions: [
-                PopupMenuButton(
-                  itemBuilder: (context) {
-                    return <PopupMenuEntry<LibraryView>>[
-                      CheckedPopupMenuItem(
-                        value: LibraryView.GRID,
-                        checked: _view == LibraryView.GRID,
-                        child: Text('Grid View'),
-                      ),
-                      CheckedPopupMenuItem(
-                        value: LibraryView.LIST,
-                        checked: _view == LibraryView.LIST,
-                        child: Text('List View'),
-                      ),
-                      CheckedPopupMenuItem(
-                        value: LibraryView.TABLE,
-                        checked: _view == LibraryView.TABLE,
-                        child: Text('Table View'),
-                      ),
-                      PopupMenuDivider(),
-                      PopupMenuItem(
-                          child: Slider(
-                              value: 80,
-                              min: 60,
-                              max: 120,
-                              divisions: 20,
-                              label: 'Cover Size',
-                              onChanged: (value) {})),
-                    ];
-                  },
-                  onSelected: (LibraryView value) {
-                    setState(() => _view = value);
-                  },
-                )
-              ],
             ),
             drawer: constraints.maxWidth <= 800 ? EspyDrawer() : null,
             body: GameLibrary(view: _view),
