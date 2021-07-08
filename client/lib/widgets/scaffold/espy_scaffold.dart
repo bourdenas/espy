@@ -1,11 +1,12 @@
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/user_model.dart';
-import 'package:espy/widgets/auth_dialog.dart';
-import 'package:espy/widgets/espy_drawer.dart' show EspyDrawer;
-import 'package:espy/widgets/espy_navigation_rail.dart' show EspyNavigationRail;
+import 'package:espy/widgets/dialogs/auth_dialog.dart';
+import 'package:espy/widgets/scaffold/espy_drawer.dart' show EspyDrawer;
+import 'package:espy/widgets/scaffold/espy_navigation_rail.dart'
+    show EspyNavigationRail;
 import 'package:espy/widgets/library/game_library.dart'
     show GameLibrary, LibraryView;
-import 'package:espy/widgets/search_dialog.dart';
+import 'package:espy/widgets/dialogs/search_dialog.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,8 +20,6 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   @override
   void initState() {
     super.initState();
-
-    context.read<UserModel>().signInAuthenticatedUser();
 
     context.read<AppBarSearchModel>().controller = _searchController;
 

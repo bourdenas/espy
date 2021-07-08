@@ -1,4 +1,4 @@
-import 'package:espy/widgets/search_dialog_field.dart';
+import 'package:espy/widgets/dialogs/search_dialog_field.dart';
 import 'package:flutter/material.dart';
 
 class SearchDialog extends StatelessWidget {

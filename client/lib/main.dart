@@ -18,8 +18,9 @@ Future<void> main() async {
 
   runApp(MultiProvider(
     providers: [
+      ChangeNotifierProvider(
+          create: (context) => UserModel()..signInAuthenticatedUser()),
       ChangeNotifierProvider(create: (context) => EspyRouterDelegate()),
-      ChangeNotifierProvider(create: (context) => UserModel()),
       ChangeNotifierProvider(create: (context) => AppBarSearchModel()),
       ChangeNotifierProxyProvider<UserModel, GameLibraryModel>(
         create: (context) => GameLibraryModel(''),

@@ -2,7 +2,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
-import 'package:espy/widgets/game_tags.dart';
+import 'package:espy/widgets/details/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

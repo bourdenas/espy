@@ -1,7 +1,7 @@
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/proto/library.pb.dart' as pb;
-import 'package:espy/widgets/game_details.dart' show GameDetails;
-import 'package:espy/widgets/search_dialog.dart';
+import 'package:espy/widgets/details/game_details.dart' show GameDetails;
+import 'package:espy/widgets/dialogs/search_dialog.dart';
 import 'package:flutter/material.dart';
 
 class GameDetailsPage extends Page {

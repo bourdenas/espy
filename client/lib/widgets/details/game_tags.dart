@@ -3,7 +3,7 @@ import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company, Franchise;
 import 'package:espy/proto/library.pb.dart' show GameEntry;
-import 'package:espy/widgets/game_tags_text_field.dart';
+import 'package:espy/widgets/details/game_tags_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

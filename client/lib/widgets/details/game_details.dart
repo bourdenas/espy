@@ -1,8 +1,8 @@
 // import 'dart:ui' as ui;
 import 'package:espy/constants/urls.dart';
 import 'package:espy/proto/library.pb.dart';
-import 'package:espy/widgets/game_tags.dart';
-import 'package:espy/widgets/library/game_entry_edit_dialog.dart';
+import 'package:espy/widgets/details/game_tags.dart';
+import 'package:espy/widgets/dialogs/game_entry_edit_dialog.dart';
 import 'package:flutter/material.dart';
 
 class GameDetails extends StatelessWidget {
