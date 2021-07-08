@@ -91,6 +91,23 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                         : Container(),
                   ),
                   Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
+                  if (auth.signedIn)
+                    ToggleButtons(
+                      children: const [
+                        Icon(Icons.grid_4x4),
+                        Icon(Icons.list),
+                        Icon(Icons.table_view),
+                      ],
+                      isSelected: _viewSelection,
+                      onPressed: (index) {
+                        setState(() {
+                          _viewSelection =
+                              List<bool>.generate(3, (i) => i == index);
+                          _view = _libraryViews[index];
+                        });
+                      },
+                    ),
+                  Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
                   if (!auth.signedIn)
                     TextButton(
                       child: Text("Sign In"),
@@ -101,10 +118,9 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                       child: Text("Sign Out"),
                       onPressed: () => auth.signOut(),
                     ),
-                        checked: _view == LibraryView.GRID,
-                  },
-                ),
-              ]),
+                  Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
+                ],
+              ),
             ),
             drawer: constraints.maxWidth <= 800 ? EspyDrawer() : null,
             body: auth.signedIn ? GameLibrary(view: _view) : EmptyLibrary(),
