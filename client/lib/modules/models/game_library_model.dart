@@ -8,16 +8,21 @@ import 'package:http/http.dart' as http;
 
 class GameLibraryModel extends ChangeNotifier {
   Library library = Library.create();
+  String _userId;
+
+  GameLibraryModel(this._userId);
+
+  String get userId => _userId;
 
   void fetch() async {
     final response =
-        await http.get(Uri.parse('${Urls.espyBackend}/library/testing'));
+        await http.get(Uri.parse('${Urls.espyBackend}/library/$_userId'));
 
     if (response.statusCode == 200) {
       final lib = Library.fromBuffer(response.bodyBytes);
       _update(lib);
     } else {
-      throw Exception('Failed to load game library');
+      print('Failed to load game library');
     }
   }
 
@@ -58,7 +63,7 @@ class GameLibraryModel extends ChangeNotifier {
 
   Future<bool> matchEntry(StoreEntry storeEntry, igdb.Game game) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/testing/match'),
+      Uri.parse('${Urls.espyBackend}/library/$_userId/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -79,7 +84,7 @@ class GameLibraryModel extends ChangeNotifier {
 
   Future<bool> unmatchEntry(StoreEntry storeEntry, igdb.Game game) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/testing/unmatch'),
+      Uri.parse('${Urls.espyBackend}/library/$_userId/unmatch'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },

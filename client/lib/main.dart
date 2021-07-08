@@ -4,21 +4,33 @@ import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/modules/models/unmatched_entries_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:espy/widgets/espy_app.dart'
     if (dart.library.js) 'package:espy/widgets/espy_app_web.dart';
 
-void main() {
+Future<void> main() async {
+  await Firebase.initializeApp();
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => EspyRouterDelegate()),
+      ChangeNotifierProvider(create: (context) => UserModel()),
       ChangeNotifierProvider(create: (context) => AppBarSearchModel()),
-      ChangeNotifierProvider(
-        create: (context) => GameLibraryModel()..fetch(),
-        lazy: false,
+      ChangeNotifierProxyProvider<UserModel, GameLibraryModel>(
+        create: (context) => GameLibraryModel(''),
+        update: (context, userModel, model) {
+          if (userModel.signedIn &&
+              model != null &&
+              userModel.user.uid != model.userId) {
+            return GameLibraryModel(userModel.user.uid)..fetch();
+          }
+          return model!;
+        },
       ),
       ChangeNotifierProxyProvider<AppBarSearchModel, LibraryFiltersModel>(
         create: (context) => LibraryFiltersModel(),

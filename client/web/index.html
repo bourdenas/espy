@@ -16,7 +16,10 @@
 
     <meta charset="UTF-8">
     <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-    <meta name="description" content="A new Flutter project.">
+    <meta name="description" content="espy game library">
+
+    <meta name="google-signin-client_id"
+        content="478783154654-gq2jbr76gn0eggo0i71ak51bu9l3q7q5.apps.googleusercontent.com">
 
     <!-- iOS meta tags & icons -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,6 +32,24 @@
 </head>
 
 <body>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyBLUWanZTnaV3z5HXWtUZ8R4TKmBW9_dbM",
+            authDomain: "espy-library.firebaseapp.com",
+            projectId: "espy-library",
+            storageBucket: "espy-library.appspot.com",
+            messagingSenderId: "478783154654",
+            appId: "1:478783154654:web:d2215a196a0a4dc920954f",
+            measurementId: "G-8JGK05CCQW"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
     <script>
         window.addEventListener('keydown', function (e) {
             if (event.target == document.body) {

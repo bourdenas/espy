@@ -12,8 +12,6 @@ class LibraryGridView extends StatelessWidget {
   Widget build(BuildContext context) {
     final games = context.watch<GameEntriesModel>().games;
 
-    if (games.isEmpty) return EmptyLibrary();
-
     return Scrollbar(
         child: GridView.extent(
       restorationId: 'grid_view_game_entries_grid_offset',
@@ -37,31 +35,6 @@ class LibraryGridView extends StatelessWidget {
               )))
           .toList(),
     ));
-  }
-}
-
-class EmptyLibrary extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: CircleAvatar(
-            radius: 64,
-            child: Image.asset('assets/images/gog-128.png'),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: CircleAvatar(
-            radius: 64,
-            child: Image.asset('assets/images/steam-128.png'),
-          ),
-        ),
-      ],
-    );
   }
 }
 

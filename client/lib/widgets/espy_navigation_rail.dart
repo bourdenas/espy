@@ -1,6 +1,8 @@
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
+import 'package:espy/widgets/settings_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,6 +25,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserModel>();
     return NavigationRail(
       extended: extended,
       labelType: NavigationRailLabelType.selected,
@@ -31,7 +34,11 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
-            child: Icon(Icons.person),
+            child: user.signedIn
+                ? ClipOval(
+                    child: Image.network(user.user.photoURL),
+                  )
+                : Icon(Icons.person),
           ),
         ),
       ]),
@@ -75,7 +82,8 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
           context.read<LibraryFiltersModel>().clearFilter();
           context.read<EspyRouterDelegate>().showTags();
         } else if (index == 3) {
-          // TODO: Settings page.
+          setState(() {});
+          SettingsDialog.show(context);
         }
       },
     );
