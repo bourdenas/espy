@@ -9,27 +9,15 @@ use std::mem::swap;
 
 pub struct LibraryManager {
     pub library: espy::Library,
-
-    user_id: String,
     path: String,
-
-    steam_api: Option<SteamApi>,
-    gog_api: Option<GogApi>,
 }
 
 impl LibraryManager {
     // Creates a LibraryManager instance for a unique user_id id.
-    pub fn new(
-        user_id: &str,
-        steam_api: Option<SteamApi>,
-        gog_api: Option<GogApi>,
-    ) -> LibraryManager {
+    pub fn new(user_id: &str) -> LibraryManager {
         LibraryManager {
             library: espy::Library::default(),
-            user_id: String::from(user_id),
             path: format!("target/{}.library", user_id),
-            steam_api,
-            gog_api,
         }
     }
 
@@ -37,18 +25,26 @@ impl LibraryManager {
         self.library = load_local_library(&self.path);
     }
 
-    pub async fn sync(&mut self) -> Result<(), Status> {
-        let steam_entries = self.get_steam_entries().await;
-        let gog_entries = self.get_gog_entries().await;
+    pub async fn sync(
+        &mut self,
+        steam_api: Option<SteamApi>,
+        gog_api: Option<GogApi>,
+    ) -> Result<(), Status> {
+        let steam_entries = match steam_api {
+            Some(steam_api) => Some(steam_api.get_owned_games().await?),
+            None => None,
+        };
+        let gog_entries = match gog_api {
+            Some(gog_api) => Some(gog_api.get_game_entries().await?),
+            None => None,
+        };
 
         self.library.unreconciled_store_entry.clear();
-
         if let Some(steam_entries) = steam_entries {
             self.library
                 .unreconciled_store_entry
                 .extend(self.collect_new_entries(steam_entries, &get_steam_id));
         }
-
         if let Some(gog_entries) = gog_entries {
             self.library
                 .unreconciled_store_entry
@@ -76,23 +72,8 @@ impl LibraryManager {
     }
 
     pub async fn save(&self) -> Result<(), Status> {
-        let path = format!("target/{}.library", self.user_id);
-        util::proto::save(&path, &self.library)?;
+        util::proto::save(&self.path, &self.library)?;
         Ok(())
-    }
-
-    async fn get_steam_entries(&self) -> Option<espy::StoreEntryList> {
-        match &self.steam_api {
-            Some(steam_api) => Some(steam_api.get_owned_games().await.unwrap_or_default()),
-            None => None,
-        }
-    }
-
-    async fn get_gog_entries(&self) -> Option<espy::StoreEntryList> {
-        match &self.gog_api {
-            Some(gog_api) => Some(gog_api.get_game_entries().await.unwrap_or_default()),
-            None => None,
-        }
     }
 
     // Returns store entries that are not already contained in the reconciled

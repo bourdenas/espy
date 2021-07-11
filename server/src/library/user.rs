@@ -12,7 +12,7 @@ impl User {
     pub fn new(user_id: &str) -> Self {
         User {
             user: User::load_user(user_id),
-            library: LibraryManager::new(user_id, None, None),
+            library: LibraryManager::new(user_id),
         }
     }
 

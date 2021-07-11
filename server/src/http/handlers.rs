@@ -15,7 +15,7 @@ pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infall
 
     // Pass None for Steam API to avoid retrieving entries and reconciling on
     // every get_library request.
-    let mut mgr = LibraryManager::new(&user_id, None, None);
+    let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
     let mut bytes = vec![];
@@ -52,7 +52,7 @@ pub async fn post_details(
         &user_id, game_id, &details
     );
 
-    let mut mgr = LibraryManager::new(&user_id, None, None);
+    let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
     let mut entry = mgr.library.entry.iter_mut().find(|e| match &e.game {
@@ -91,7 +91,7 @@ pub async fn post_match(
         }
     };
 
-    let mut mgr = LibraryManager::new(&user_id, None, None);
+    let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
     mgr.library
@@ -147,7 +147,7 @@ pub async fn post_unmatch(
         }
     };
 
-    let mut mgr = LibraryManager::new(&user_id, None, None);
+    let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
     // There's no remove_if so I need to iterate the vector twice. Once to find

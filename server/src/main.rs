@@ -109,8 +109,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         gog_api = Some(api::GogApi::new(token));
     }
 
-    let mut mgr = library::LibraryManager::new(
-        &opts.user,
+    let mut mgr = library::LibraryManager::new(&opts.user);
+    mgr.build();
+    mgr.sync(
         Some(api::SteamApi::new(
             &keys.steam.client_key,
             match &opts.steam_user {
@@ -119,9 +120,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             },
         )),
         gog_api,
-    );
-    mgr.build();
-    mgr.sync().await?;
+    )
+    .await?;
     mgr.reconcile(library::Reconciler::new(Arc::new(igdb)))
         .await?;
 
