@@ -14,7 +14,11 @@ class UserModel extends ChangeNotifier {
   Future<bool> signInWithGoogle() async {
     var googleSignInAccount = await _googleSignIn.signInSilently();
     if (googleSignInAccount == null) {
-      googleSignInAccount = await _googleSignIn.signIn();
+      try {
+        googleSignInAccount = await _googleSignIn.signIn();
+      } catch (e) {
+        print('$e');
+      }
     }
     if (googleSignInAccount == null) {
       return false;
