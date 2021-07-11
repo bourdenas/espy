@@ -3,22 +3,19 @@ use crate::espy;
 use crate::http::models;
 use crate::igdb;
 use crate::library;
-use crate::library::{LibraryManager, Reconciler};
+use crate::library::{LibraryManager, Reconciler, User};
 use prost::bytes::Bytes;
 use prost::Message;
 use std::convert::Infallible;
 use std::sync::Arc;
 use warp::http::StatusCode;
 
-pub async fn get_library(
-    user_id: String,
-    igdb: Arc<IgdbApi>,
-) -> Result<Box<dyn warp::Reply>, Infallible> {
+pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
     println!("/library/{}", &user_id);
 
     // Pass None for Steam API to avoid retrieving entries and reconciling on
     // every get_library request.
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    let mut mgr = LibraryManager::new(&user_id, None, None);
     mgr.build();
 
     let mut bytes = vec![];
@@ -28,18 +25,34 @@ pub async fn get_library(
     }
 }
 
+pub async fn post_settings(
+    user_id: String,
+    settings: models::Settings,
+) -> Result<impl warp::Reply, Infallible> {
+    let user = User::new(&user_id);
+    match user.update(&settings.steam_user_id, &settings.gog_auth_code) {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
+pub async fn post_sync(user_id: String) -> Result<impl warp::Reply, Infallible> {
+    let user = User::new(&user_id);
+    Ok(StatusCode::NOT_IMPLEMENTED)
+    // user.sync_libraries()
+}
+
 pub async fn post_details(
     user_id: String,
     game_id: u64,
     details: models::Details,
-    igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
     println!(
         "/library/{}/details/{} body: {:?}",
         &user_id, game_id, &details
     );
 
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    let mut mgr = LibraryManager::new(&user_id, None, None);
     mgr.build();
 
     let mut entry = mgr.library.entry.iter_mut().find(|e| match &e.game {
@@ -78,7 +91,7 @@ pub async fn post_match(
         }
     };
 
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    let mut mgr = LibraryManager::new(&user_id, None, None);
     mgr.build();
 
     mgr.library
@@ -98,7 +111,9 @@ pub async fn post_match(
                 store_entry: vec![store_entry],
                 ..Default::default()
             };
-            if let Err(_) = mgr.update_entry(&mut entry).await {
+            let recon_service = Reconciler::new(Arc::clone(&igdb));
+
+            if let Err(_) = recon_service.update_entry(&mut entry).await {
                 return Ok(StatusCode::INTERNAL_SERVER_ERROR);
             }
             mgr.library.entry.push(entry);
@@ -114,7 +129,6 @@ pub async fn post_match(
 pub async fn post_unmatch(
     user_id: String,
     match_msg: models::Match,
-    igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
     println!("/library/{}/unmatch", &user_id);
 
@@ -133,7 +147,7 @@ pub async fn post_unmatch(
         }
     };
 
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    let mut mgr = LibraryManager::new(&user_id, None, None);
     mgr.build();
 
     // There's no remove_if so I need to iterate the vector twice. Once to find

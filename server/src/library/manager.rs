@@ -13,7 +13,6 @@ pub struct LibraryManager {
     user_id: String,
     path: String,
 
-    recon_service: Reconciler,
     steam_api: Option<SteamApi>,
     gog_api: Option<GogApi>,
 }
@@ -22,15 +21,13 @@ impl LibraryManager {
     // Creates a LibraryManager instance for a unique user_id id.
     pub fn new(
         user_id: &str,
-        recon_service: Reconciler,
         steam_api: Option<SteamApi>,
         gog_api: Option<GogApi>,
     ) -> LibraryManager {
         LibraryManager {
             library: espy::Library::default(),
             user_id: String::from(user_id),
-            path: format!("target/{}.bin", user_id),
-            recon_service,
+            path: format!("target/{}.library", user_id),
             steam_api,
             gog_api,
         }
@@ -44,18 +41,19 @@ impl LibraryManager {
         let steam_entries = self.get_steam_entries().await;
         let gog_entries = self.get_gog_entries().await;
 
-        let mut new_entries = Vec::<espy::StoreEntry>::new();
+        self.library.unreconciled_store_entry.clear();
 
         if let Some(steam_entries) = steam_entries {
-            new_entries.extend(self.collect_new_entries(steam_entries, &get_steam_id));
+            self.library
+                .unreconciled_store_entry
+                .extend(self.collect_new_entries(steam_entries, &get_steam_id));
         }
 
         if let Some(gog_entries) = gog_entries {
-            new_entries.extend(self.collect_new_entries(gog_entries, &get_gog_id));
+            self.library
+                .unreconciled_store_entry
+                .extend(self.collect_new_entries(gog_entries, &get_gog_id));
         }
-
-        // Reconcile entries that do not exist in local library and update library.
-        self.update_library(self.recon_service.reconcile(&new_entries).await?);
 
         // Save changes in local library.
         util::proto::save(&self.path, &self.library)?;
@@ -63,12 +61,22 @@ impl LibraryManager {
         Ok(())
     }
 
-    pub async fn update_entry(&self, entry: &mut espy::GameEntry) -> Result<(), Status> {
-        self.recon_service.update_entry(entry).await
+    // Reconciles unmatched entries in library.
+    pub async fn reconcile(&mut self, recon_service: Reconciler) -> Result<(), Status> {
+        self.update_library(
+            recon_service
+                .reconcile(&self.library.unreconciled_store_entry)
+                .await?,
+        );
+
+        // Save changes in local library.
+        util::proto::save(&self.path, &self.library)?;
+
+        Ok(())
     }
 
     pub async fn save(&self) -> Result<(), Status> {
-        let path = format!("target/{}.bin", self.user_id);
+        let path = format!("target/{}.library", self.user_id);
         util::proto::save(&path, &self.library)?;
         Ok(())
     }
@@ -99,6 +107,7 @@ impl LibraryManager {
                 .entry
                 .iter()
                 .flat_map(|entry| {
+                    // Collect all store entries for each game entry.
                     entry
                         .store_entry
                         .iter()
@@ -184,7 +193,11 @@ fn load_local_library(path: &str) -> espy::Library {
         Ok(lib) => lib,
         Err(_) => {
             eprintln!("Local library '{}' not found.\nStarting a new one.", path);
-            espy::Library::default()
+            let lib = espy::Library::default();
+            if let Err(err) = util::proto::save(&path, &lib) {
+                eprintln!("Failed to create library '{}'", err);
+            }
+            lib
         }
     }
 }
