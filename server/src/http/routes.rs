@@ -1,16 +1,18 @@
 use crate::api::IgdbApi;
-use crate::http::handlers;
-use crate::http::models;
+use crate::http::{handlers, models};
+use crate::util;
 use std::convert::Infallible;
 use std::sync::Arc;
 use warp::{self, Filter};
 
 /// Returns a Filter with all available routes.
 pub fn routes(
+    keys: Arc<util::keys::Keys>,
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     get_library()
         .or(post_settings())
+        .or(post_sync(keys))
         .or(post_details())
         .or(post_match(igdb.clone()))
         .or(post_unmatch())
@@ -31,6 +33,16 @@ fn post_settings() -> impl Filter<Extract = impl warp::Reply, Error = warp::Reje
         .and(warp::post())
         .and(settings_body())
         .and_then(handlers::post_settings)
+}
+
+/// POST /library/{user_id}/sync
+fn post_sync(
+    keys: Arc<util::keys::Keys>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / String / "sync")
+        .and(warp::post())
+        .and(with_keys(keys))
+        .and_then(handlers::post_sync)
 }
 
 /// POST /library/{user_id}/details/{id}
@@ -82,6 +94,12 @@ fn with_igdb(
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = (Arc<IgdbApi>,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&igdb))
+}
+
+fn with_keys(
+    keys: Arc<util::keys::Keys>,
+) -> impl Filter<Extract = (Arc<util::keys::Keys>,), Error = Infallible> + Clone {
+    warp::any().map(move || Arc::clone(&keys))
 }
 
 fn settings_body() -> impl Filter<Extract = (models::Settings,), Error = warp::Rejection> + Clone {

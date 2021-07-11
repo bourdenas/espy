@@ -4,7 +4,7 @@ use crate::util;
 use crate::Status;
 
 pub struct User {
-    user: espy::User,
+    pub user: espy::User,
     pub library: LibraryManager,
 }
 

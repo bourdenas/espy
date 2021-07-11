@@ -23,11 +23,10 @@ async fn main() -> Result<(), Status> {
 
     let mut igdb = IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
-    let igdb = Arc::new(igdb);
 
     println!("starting the HTTP server...");
     warp::serve(
-        http::routes::routes(igdb).with(
+        http::routes::routes(Arc::new(keys), Arc::new(igdb)).with(
             warp::cors()
                 .allow_methods(vec!["GET", "POST"])
                 .allow_headers(vec!["Content-Type", "Authorization"])

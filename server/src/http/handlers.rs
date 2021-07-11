@@ -1,9 +1,10 @@
-use crate::api::IgdbApi;
+use crate::api::{IgdbApi, SteamApi};
 use crate::espy;
 use crate::http::models;
 use crate::igdb;
 use crate::library;
 use crate::library::{LibraryManager, Reconciler, User};
+use crate::util;
 use prost::bytes::Bytes;
 use prost::Message;
 use std::convert::Infallible;
@@ -36,10 +37,31 @@ pub async fn post_settings(
     }
 }
 
-pub async fn post_sync(user_id: String) -> Result<impl warp::Reply, Infallible> {
-    let user = User::new(&user_id);
-    Ok(StatusCode::NOT_IMPLEMENTED)
-    // user.sync_libraries()
+pub async fn post_sync(
+    user_id: String,
+    keys: Arc<util::keys::Keys>,
+) -> Result<impl warp::Reply, Infallible> {
+    let mut user = User::new(&user_id);
+    user.library.build();
+
+    let result = user
+        .library
+        .sync(
+            Some(SteamApi::new(
+                &keys.steam.client_key,
+                &user.user.keys.unwrap_or_default().steam_user_id,
+            )),
+            None,
+        )
+        .await;
+
+    match result {
+        Ok(()) => Ok(StatusCode::OK),
+        Err(err) => {
+            eprintln!("{}", err);
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 pub async fn post_details(
