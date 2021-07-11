@@ -26,6 +26,16 @@ pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infall
     }
 }
 
+pub async fn get_settings(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
+    let user = User::new(&user_id);
+
+    let mut bytes = vec![];
+    match user.user.encode(&mut bytes) {
+        Ok(_) => Ok(Box::new(bytes)),
+        Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
+    }
+}
+
 pub async fn post_settings(
     user_id: String,
     settings: models::Settings,

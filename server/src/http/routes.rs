@@ -11,6 +11,7 @@ pub fn routes(
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     get_library()
+        .or(get_settings())
         .or(post_settings())
         .or(post_sync(keys))
         .or(post_details())
@@ -25,6 +26,13 @@ fn get_library() -> impl Filter<Extract = impl warp::Reply, Error = warp::Reject
     warp::path!("library" / String)
         .and(warp::get())
         .and_then(handlers::get_library)
+}
+
+/// GET /library/{user_id}/settings
+fn get_settings() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / String / "settings")
+        .and(warp::get())
+        .and_then(handlers::get_settings)
 }
 
 /// POST /library/{user_id}/settings
