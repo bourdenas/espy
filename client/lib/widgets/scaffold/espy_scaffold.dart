@@ -62,7 +62,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
     return LayoutBuilder(builder: (context, constraints) {
       final auth = context.watch<UserModel>();
       return Row(children: [
-        if (constraints.maxWidth > 800)
+        if (constraints.maxWidth > 800 && context.watch<UserModel>().signedIn)
           EspyNavigationRail(constraints.maxWidth > 3200),
         Expanded(
           child: Scaffold(
