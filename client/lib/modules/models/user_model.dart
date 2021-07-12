@@ -87,6 +87,21 @@ class UserModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> syncLibrary() async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/${_user!.uid}/sync'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Sync successful.');
+    } else {
+      print('Failed to post updated user information:\n${response.statusCode}');
+    }
+  }
+
   Future<void> _fetchUserSettings() async {
     if (_user == null) {
       return;

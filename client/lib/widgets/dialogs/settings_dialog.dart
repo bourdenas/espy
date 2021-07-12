@@ -105,6 +105,18 @@ class SettingsDialog extends StatelessWidget {
           },
         ),
         TextButton(
+          child: Text("Sync"),
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              context.read<UserModel>().updateUserInformation(
+                    steamUserId: _steamTextController.text,
+                    gogAuthCode: _gogTextController.text,
+                  );
+            }
+            context.read<UserModel>().syncLibrary();
+          },
+        ),
+        TextButton(
           child: Text("Cancel"),
           onPressed: () => Navigator.of(context).pop(),
         ),
