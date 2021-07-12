@@ -51,11 +51,11 @@ pub async fn post_sync(
     user_id: String,
     keys: Arc<util::keys::Keys>,
 ) -> Result<impl warp::Reply, Infallible> {
-    let mut user = User::new(&user_id);
-    user.library.build();
+    let user = User::new(&user_id);
+    let mut library = LibraryManager::new(&user_id);
+    library.build();
 
-    let result = user
-        .library
+    let result = library
         .sync(
             Some(SteamApi::new(
                 &keys.steam.client_key,

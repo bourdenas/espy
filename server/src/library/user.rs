@@ -1,18 +1,15 @@
 use crate::espy;
-use crate::library::LibraryManager;
 use crate::util;
 use crate::Status;
 
 pub struct User {
     pub user: espy::User,
-    pub library: LibraryManager,
 }
 
 impl User {
     pub fn new(user_id: &str) -> Self {
         User {
             user: User::load_user(user_id),
-            library: LibraryManager::new(user_id),
         }
     }
 
