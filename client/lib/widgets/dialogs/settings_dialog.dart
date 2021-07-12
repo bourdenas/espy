@@ -11,6 +11,8 @@ class SettingsDialog extends StatelessWidget {
   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final _steamTextController = TextEditingController();
+  final _gogTextController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -49,8 +51,8 @@ class SettingsDialog extends StatelessWidget {
                       ),
                       Expanded(
                         child: TextFormField(
-                          controller: TextEditingController()
-                            ..text = context.read<UserModel>().gogAuthCode,
+                          controller: _gogTextController
+                            ..text = context.watch<UserModel>().gogAuthCode,
                           decoration: InputDecoration(
                             labelText: 'GOG auth token',
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
@@ -73,8 +75,8 @@ class SettingsDialog extends StatelessWidget {
                       ),
                       Expanded(
                         child: TextFormField(
-                          controller: TextEditingController()
-                            ..text = context.read<UserModel>().steamUserId,
+                          controller: _steamTextController
+                            ..text = context.watch<UserModel>().steamUserId,
                           decoration: InputDecoration(
                             labelText: 'Steam auth token',
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
@@ -94,7 +96,11 @@ class SettingsDialog extends StatelessWidget {
           child: Text("Ok"),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              print('TODO: send tokens to backend');
+              context.read<UserModel>().updateUserInformation(
+                    steamUserId: _steamTextController.text,
+                    gogAuthCode: _gogTextController.text,
+                  );
+              Navigator.of(context).pop();
             }
           },
         ),
