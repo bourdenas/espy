@@ -30,15 +30,16 @@ pub async fn get_settings(user_id: String) -> Result<Box<dyn warp::Reply>, Infal
     println!("GET /library/{}/settings", &user_id);
 
     let user = User::new(&user_id);
-
-    let mut settings = models::Settings::default();
-    if let Some(keys) = &user.user.keys {
-        settings.steam_user_id = keys.steam_user_id.clone();
-
-        if let Some(gog_token) = &keys.gog_token {
-            settings.gog_auth_code = gog_token.oauth_code.clone();
-        }
-    }
+    let settings = models::Settings {
+        steam_user_id: match user.steam_user_id() {
+            Some(id) => String::from(id),
+            None => String::default(),
+        },
+        gog_auth_code: match user.gog_auth_code() {
+            Some(code) => String::from(code),
+            None => String::default(),
+        },
+    };
 
     Ok(Box::new(warp::reply::json(&settings)))
 }

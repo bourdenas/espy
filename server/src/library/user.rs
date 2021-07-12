@@ -13,6 +13,23 @@ impl User {
         }
     }
 
+    pub fn steam_user_id<'a>(&'a self) -> Option<&'a str> {
+        match &self.user.keys {
+            Some(keys) => Some(&keys.steam_user_id),
+            None => None,
+        }
+    }
+
+    pub fn gog_auth_code<'a>(&'a self) -> Option<&'a str> {
+        match &self.user.keys {
+            Some(keys) => match &keys.gog_token {
+                Some(token) => Some(&token.oauth_code),
+                None => None,
+            },
+            None => None,
+        }
+    }
+
     pub fn update(mut self, steam_user_id: &str, gog_auth_code: &str) -> Result<(), Status> {
         self.user.keys = Some(espy::Keys {
             steam_user_id: String::from(steam_user_id),
