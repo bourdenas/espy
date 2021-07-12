@@ -1,4 +1,6 @@
+use crate::api;
 use crate::espy;
+use crate::library::LibraryManager;
 use crate::util;
 use crate::Status;
 
@@ -30,7 +32,7 @@ impl User {
         }
     }
 
-    pub fn update(mut self, steam_user_id: &str, gog_auth_code: &str) -> Result<(), Status> {
+    pub fn update(&mut self, steam_user_id: &str, gog_auth_code: &str) -> Result<(), Status> {
         self.user.keys = Some(espy::Keys {
             steam_user_id: String::from(steam_user_id),
             gog_token: Some(espy::GogToken {
@@ -41,6 +43,45 @@ impl User {
         util::proto::save(&format!("target/{}.profile", self.user.uid), &self.user)?;
 
         Ok(())
+    }
+
+    pub async fn sync(&mut self, keys: &util::keys::Keys) -> Result<(), Status> {
+        let gog_api = match self.gog_token() {
+            Some(token) => match api::gog_token::validate(token).await {
+                Ok(()) => Some(api::GogApi::new(token.clone())),
+                Err(_) => match token.oauth_code.is_empty() {
+                    false => Some(api::GogApi::new(
+                        api::gog_token::create_from_oauth_code(&token.oauth_code).await?,
+                    )),
+                    true => None,
+                },
+            },
+            None => None,
+        };
+        // Need to save User as it may got GogToken updated.
+        // TODO: Save only if needed.
+        util::proto::save(&format!("target/{}.profile", self.user.uid), &self.user)?;
+
+        let steam_api = match self.steam_user_id() {
+            Some(user_id) => Some(api::SteamApi::new(&keys.steam.client_key, user_id)),
+            None => None,
+        };
+
+        let mut mgr = LibraryManager::new(&self.user.uid);
+        mgr.build();
+        mgr.sync(steam_api, gog_api).await?;
+
+        Ok(())
+    }
+
+    fn gog_token<'a>(&'a mut self) -> Option<&'a mut espy::GogToken> {
+        match &mut self.user.keys {
+            Some(keys) => match &mut keys.gog_token {
+                Some(token) => Some(token),
+                None => None,
+            },
+            None => None,
+        }
     }
 
     fn load_user(user_id: &str) -> espy::User {

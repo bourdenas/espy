@@ -28,6 +28,10 @@ pub async fn create_from_oauth_code(oauth_code: &str) -> Result<espy::GogToken, 
 /// retrieve a new oauth code and provide it to the `create_from_oauth_code`
 /// function to produce a new GogToken.
 pub async fn validate(token: &mut espy::GogToken) -> Result<(), Status> {
+    if token.access_token.is_empty() || token.refresh_token.is_empty() {
+        return Err(Status::invalid_argument("Invalid GogToken: {:?}"));
+    }
+
     if is_fresh_token(token) {
         return Ok(());
     }

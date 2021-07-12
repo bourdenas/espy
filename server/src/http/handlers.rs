@@ -1,4 +1,4 @@
-use crate::api::{IgdbApi, SteamApi};
+use crate::api::IgdbApi;
 use crate::espy;
 use crate::http::models;
 use crate::igdb;
@@ -14,8 +14,6 @@ use warp::http::StatusCode;
 pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
     println!("GET /library/{}", &user_id);
 
-    // Pass None for Steam API to avoid retrieving entries and reconciling on
-    // every get_library request.
     let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
@@ -50,7 +48,7 @@ pub async fn post_settings(
 ) -> Result<impl warp::Reply, Infallible> {
     println!("POST /library/{}/settings", &user_id);
 
-    let user = User::new(&user_id);
+    let mut user = User::new(&user_id);
     match user.update(&settings.steam_user_id, &settings.gog_auth_code) {
         Ok(_) => Ok(StatusCode::OK),
         Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
@@ -63,19 +61,8 @@ pub async fn post_sync(
 ) -> Result<impl warp::Reply, Infallible> {
     println!("POST /library/{}/sync", &user_id);
 
-    let user = User::new(&user_id);
-    let mut library = LibraryManager::new(&user_id);
-    library.build();
-
-    let result = library
-        .sync(
-            Some(SteamApi::new(
-                &keys.steam.client_key,
-                &user.user.keys.unwrap_or_default().steam_user_id,
-            )),
-            None,
-        )
-        .await;
+    let mut user = User::new(&user_id);
+    let result = user.sync(&keys).await;
 
     match result {
         Ok(()) => Ok(StatusCode::OK),
