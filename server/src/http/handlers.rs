@@ -12,7 +12,7 @@ use std::sync::Arc;
 use warp::http::StatusCode;
 
 pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("/library/{}", &user_id);
+    println!("GET /library/{}", &user_id);
 
     // Pass None for Steam API to avoid retrieving entries and reconciling on
     // every get_library request.
@@ -27,19 +27,28 @@ pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infall
 }
 
 pub async fn get_settings(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
+    println!("GET /library/{}/settings", &user_id);
+
     let user = User::new(&user_id);
 
-    let mut bytes = vec![];
-    match user.user.encode(&mut bytes) {
-        Ok(_) => Ok(Box::new(bytes)),
-        Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
+    let mut settings = models::Settings::default();
+    if let Some(keys) = &user.user.keys {
+        settings.steam_user_id = keys.steam_user_id.clone();
+
+        if let Some(gog_token) = &keys.gog_token {
+            settings.gog_auth_code = gog_token.oauth_code.clone();
+        }
     }
+
+    Ok(Box::new(warp::reply::json(&settings)))
 }
 
 pub async fn post_settings(
     user_id: String,
     settings: models::Settings,
 ) -> Result<impl warp::Reply, Infallible> {
+    println!("POST /library/{}/settings", &user_id);
+
     let user = User::new(&user_id);
     match user.update(&settings.steam_user_id, &settings.gog_auth_code) {
         Ok(_) => Ok(StatusCode::OK),
@@ -51,6 +60,8 @@ pub async fn post_sync(
     user_id: String,
     keys: Arc<util::keys::Keys>,
 ) -> Result<impl warp::Reply, Infallible> {
+    println!("POST /library/{}/sync", &user_id);
+
     let user = User::new(&user_id);
     let mut library = LibraryManager::new(&user_id);
     library.build();
@@ -80,7 +91,7 @@ pub async fn post_details(
     details: models::Details,
 ) -> Result<impl warp::Reply, Infallible> {
     println!(
-        "/library/{}/details/{} body: {:?}",
+        "POST /library/{}/details/{} body: {:?}",
         &user_id, game_id, &details
     );
 
@@ -106,7 +117,7 @@ pub async fn post_match(
     match_msg: models::Match,
     igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    println!("/library/{}/match", &user_id);
+    println!("POST /library/{}/match", &user_id);
 
     let store_entry = match espy::StoreEntry::decode(Bytes::from(match_msg.encoded_store_entry)) {
         Ok(msg) => msg,
@@ -162,7 +173,7 @@ pub async fn post_unmatch(
     user_id: String,
     match_msg: models::Match,
 ) -> Result<impl warp::Reply, Infallible> {
-    println!("/library/{}/unmatch", &user_id);
+    println!("POST /library/{}/unmatch", &user_id);
 
     let store_entry = match espy::StoreEntry::decode(Bytes::from(match_msg.encoded_store_entry)) {
         Ok(msg) => msg,
@@ -208,7 +219,7 @@ pub async fn post_search(
     search: models::Search,
     igdb: Arc<IgdbApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("/search body: {:?}", &search);
+    println!("POST /search body: {:?}", &search);
 
     let candidates = match library::search::get_candidates(&igdb, &search.title).await {
         Ok(result) => result,
@@ -230,7 +241,7 @@ pub async fn get_images(
     resolution: String,
     image: String,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("/images/{}/{}", &resolution, &image);
+    println!("GET /images/{}/{}", &resolution, &image);
 
     let uri = format!("{}/{}/{}", IGDB_IMAGES_URL, &resolution, &image);
     let resp = match reqwest::Client::new().get(&uri).send().await {
