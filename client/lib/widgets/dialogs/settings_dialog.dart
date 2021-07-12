@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -49,7 +50,7 @@ class SettingsDialog extends StatelessWidget {
                       Expanded(
                         child: TextFormField(
                           controller: TextEditingController()
-                            ..text = 'xyfywdfjlk23sdx3',
+                            ..text = context.read<UserModel>().gogAuthCode,
                           decoration: InputDecoration(
                             labelText: 'GOG auth token',
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
@@ -73,7 +74,7 @@ class SettingsDialog extends StatelessWidget {
                       Expanded(
                         child: TextFormField(
                           controller: TextEditingController()
-                            ..text = 'ex82dsdb02cpqwj2',
+                            ..text = context.read<UserModel>().steamUserId,
                           decoration: InputDecoration(
                             labelText: 'Steam auth token',
                             floatingLabelBehavior: FloatingLabelBehavior.auto,

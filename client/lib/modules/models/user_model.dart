@@ -16,6 +16,9 @@ class UserModel extends ChangeNotifier {
   get user => _user!;
   get signedIn => _user != null;
 
+  get steamUserId => _steamUserId;
+  get gogAuthCode => _gogAuthCode;
+
   /// Sign in user through Google authentication system.
   Future<bool> signInWithGoogle() async {
     var googleSignInAccount = await _googleSignIn.signInSilently();
