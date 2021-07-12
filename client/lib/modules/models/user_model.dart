@@ -26,7 +26,7 @@ class UserModel extends ChangeNotifier {
       try {
         googleSignInAccount = await _googleSignIn.signIn();
       } catch (e) {
-        print('$e');
+        print(e);
       }
     }
     if (googleSignInAccount == null) {
@@ -61,6 +61,29 @@ class UserModel extends ChangeNotifier {
     _googleSignIn.disconnect();
     FirebaseAuth.instance.signOut();
     _user = null;
+    notifyListeners();
+  }
+
+  Future<void> updateUserInformation(
+      {String steamUserId = '', String gogAuthCode = ''}) async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/${_user!.uid}/settings'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'steam_user_id': steamUserId,
+        'gog_auth_code': gogAuthCode,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      print('Failed to post updated user information:\n$response');
+      return;
+    }
+
+    _steamUserId = steamUserId;
+    _gogAuthCode = gogAuthCode;
     notifyListeners();
   }
 
