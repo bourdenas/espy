@@ -1,11 +1,17 @@
+import 'dart:convert';
+
+import 'package:espy/constants/urls.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 
 class UserModel extends ChangeNotifier {
   final _googleSignIn = GoogleSignIn();
   User? _user = FirebaseAuth.instance.currentUser;
+  String _steamUserId = '';
+  String _gogAuthCode = '';
 
   get user => _user!;
   get signedIn => _user != null;
@@ -29,6 +35,8 @@ class UserModel extends ChangeNotifier {
       return false;
     }
 
+    await _fetchUserSettings();
+
     notifyListeners();
     return true;
   }
@@ -41,6 +49,8 @@ class UserModel extends ChangeNotifier {
     }
 
     _user = await _getUser(googleSignInAccount);
+    await _fetchUserSettings();
+
     notifyListeners();
   }
 
@@ -51,16 +61,33 @@ class UserModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<User?> _getUser(GoogleSignInAccount googleSignInAccount) async {
-    final GoogleSignInAuthentication googleSignInAuthentication =
-        await googleSignInAccount.authentication;
-    final AuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleSignInAuthentication.accessToken,
-      idToken: googleSignInAuthentication.idToken,
-    );
+  Future<void> _fetchUserSettings() async {
+    if (_user == null) {
+      return;
+    }
 
-    final UserCredential userCredential =
-        await FirebaseAuth.instance.signInWithCredential(credential);
-    return userCredential.user;
+    final response = await http
+        .get(Uri.parse('${Urls.espyBackend}/library/${_user!.uid}/settings'));
+
+    if (response.statusCode == 200) {
+      final obj = jsonDecode(response.body);
+      _steamUserId = obj['steam_user_id'];
+      _gogAuthCode = obj['gog_auth_code'];
+    } else {
+      print('Failed to retrieve user information.');
+    }
   }
+}
+
+Future<User?> _getUser(GoogleSignInAccount googleSignInAccount) async {
+  final GoogleSignInAuthentication googleSignInAuthentication =
+      await googleSignInAccount.authentication;
+  final AuthCredential credential = GoogleAuthProvider.credential(
+    accessToken: googleSignInAuthentication.accessToken,
+    idToken: googleSignInAuthentication.idToken,
+  );
+
+  final UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithCredential(credential);
+  return userCredential.user;
 }
