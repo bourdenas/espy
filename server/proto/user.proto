@@ -9,7 +9,7 @@ message User {
 
 message Keys {
   string steam_user_id = 1;
-  string gog_auth_code = 2;
+  GogToken gog_token = 2;
 }
 
 message GogToken {

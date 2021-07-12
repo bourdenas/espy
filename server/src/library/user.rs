@@ -19,7 +19,10 @@ impl User {
     pub fn update(mut self, steam_user_id: &str, gog_auth_code: &str) -> Result<(), Status> {
         self.user.keys = Some(espy::Keys {
             steam_user_id: String::from(steam_user_id),
-            gog_auth_code: String::from(gog_auth_code),
+            gog_token: Some(espy::GogToken {
+                oauth_code: String::from(gog_auth_code),
+                ..Default::default()
+            }),
         });
         util::proto::save(&format!("target/{}.profile", self.user.uid), &self.user)?;
 
