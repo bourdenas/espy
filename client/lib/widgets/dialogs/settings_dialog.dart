@@ -94,9 +94,9 @@ class SettingsDialog extends StatelessWidget {
       actions: [
         ElevatedButton(
           child: Text("Ok"),
-          onPressed: () {
+          onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              context.read<UserModel>().updateUserInformation(
+              await context.read<UserModel>().updateUserInformation(
                     steamUserId: _steamTextController.text,
                     gogAuthCode: _gogTextController.text,
                   );
@@ -106,14 +106,14 @@ class SettingsDialog extends StatelessWidget {
         ),
         TextButton(
           child: Text("Sync"),
-          onPressed: () {
+          onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              context.read<UserModel>().updateUserInformation(
+              await context.read<UserModel>().updateUserInformation(
                     steamUserId: _steamTextController.text,
                     gogAuthCode: _gogTextController.text,
                   );
             }
-            context.read<UserModel>().syncLibrary();
+            await context.read<UserModel>().syncLibrary();
           },
         ),
         TextButton(
