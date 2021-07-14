@@ -8,13 +8,16 @@ import 'package:http/http.dart' as http;
 
 class GameLibraryModel extends ChangeNotifier {
   Library library = Library.create();
-  String _userId;
+  String _userId = '';
 
-  GameLibraryModel(this._userId);
+  void update(String userId) async {
+    if (userId.isNotEmpty && userId != _userId) {
+      _userId = userId;
+      await fetch();
+    }
+  }
 
-  String get userId => _userId;
-
-  void fetch() async {
+  Future<void> fetch() async {
     final response =
         await http.get(Uri.parse('${Urls.espyBackend}/library/$_userId'));
 

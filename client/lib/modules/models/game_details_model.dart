@@ -12,6 +12,7 @@ class GameDetailsModel extends ChangeNotifier {
   Set<igdb.Collection> _collections = {};
   SplayTreeSet<String> _tags = SplayTreeSet<String>();
   String _searchPhrase = '';
+  String _userId = '';
 
   UnmodifiableListView<igdb.Company> get companies => UnmodifiableListView(
       _companies.where((c) => c.name.toLowerCase().contains(_searchPhrase)));
@@ -22,12 +23,13 @@ class GameDetailsModel extends ChangeNotifier {
       _tags.where((tag) => tag.toLowerCase().contains(_searchPhrase)));
   UnmodifiableListView<String> get allTags => UnmodifiableListView(_tags);
 
-  void update(Library library, String searchPhrase) {
-    if (_searchPhrase == searchPhrase) {
+  void update(String userId, Library library, String searchPhrase) {
+    if (userId != _userId || _searchPhrase == searchPhrase) {
       // Poor man's approach to avoid costly reindexing. I'd rather have updates
       // per dependency.
       _updateIndex(library);
     }
+    _userId = userId;
     _searchPhrase = searchPhrase;
 
     notifyListeners();
@@ -48,7 +50,8 @@ class GameDetailsModel extends ChangeNotifier {
     entry.details.tag.sort();
 
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/testing/details/${entry.game.id}'),
+      Uri.parse(
+          '${Urls.espyBackend}/library/$_userId/details/${entry.game.id}'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },

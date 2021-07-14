@@ -23,12 +23,10 @@ Future<void> main() async {
       ChangeNotifierProvider(create: (context) => EspyRouterDelegate()),
       ChangeNotifierProvider(create: (context) => AppBarSearchModel()),
       ChangeNotifierProxyProvider<UserModel, GameLibraryModel>(
-        create: (context) => GameLibraryModel(''),
+        create: (context) => GameLibraryModel(),
         update: (context, userModel, model) {
-          if (userModel.signedIn &&
-              model != null &&
-              userModel.user.uid != model.userId) {
-            return GameLibraryModel(userModel.user.uid)..fetch();
+          if (userModel.signedIn && model != null) {
+            return model..update(userModel.user.uid);
           }
           return model!;
         },
@@ -38,11 +36,17 @@ Future<void> main() async {
         update: (context, appBarSearchModel, model) =>
             model!..update(appBarSearchModel.text),
       ),
-      ChangeNotifierProxyProvider2<GameLibraryModel, AppBarSearchModel,
-          GameDetailsModel>(
+      ChangeNotifierProxyProvider3<UserModel, GameLibraryModel,
+          AppBarSearchModel, GameDetailsModel>(
         create: (context) => GameDetailsModel(),
-        update: (context, libraryModel, appBarSearchModel, model) =>
-            model!..update(libraryModel.library, appBarSearchModel.text),
+        update: (context, userModel, libraryModel, appBarSearchModel, model) {
+          if (userModel.signedIn && model != null) {
+            return model
+              ..update(userModel.user.uid, libraryModel.library,
+                  appBarSearchModel.text);
+          }
+          return model!;
+        },
       ),
       ChangeNotifierProxyProvider2<GameLibraryModel, LibraryFiltersModel,
           GameEntriesModel>(
