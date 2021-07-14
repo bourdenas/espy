@@ -50,9 +50,14 @@ impl User {
             Some(token) => match api::gog_token::validate(token).await {
                 Ok(()) => Some(api::GogApi::new(token.clone())),
                 Err(_) => match token.oauth_code.is_empty() {
-                    false => Some(api::GogApi::new(
-                        api::gog_token::create_from_oauth_code(&token.oauth_code).await?,
-                    )),
+                    false => {
+                        let token =
+                            api::gog_token::create_from_oauth_code(&token.oauth_code).await?;
+                        if let Some(keys) = &mut self.user.keys {
+                            keys.gog_token = Some(token.clone());
+                        }
+                        Some(api::GogApi::new(token))
+                    }
                     true => None,
                 },
             },
