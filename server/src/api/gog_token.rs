@@ -1,6 +1,5 @@
 use crate::espy;
 use crate::Status;
-use serde::{Deserialize, Serialize};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 /// Creates a GogToken for authenticating a user to the service. The
@@ -15,7 +14,14 @@ pub async fn create_from_oauth_code(oauth_code: &str) -> Result<espy::GogToken, 
             GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, oauth_code, GOG_GALAXY_REDIRECT_URI);
     let uri = format!("{}{}", GOG_AUTH_HOST, params);
 
-    let token = reqwest::get(&uri).await?.json::<GogToken>().await?;
+    let resp = reqwest::get(&uri).await?.json::<GogAuthResponse>().await?;
+    let token = match resp {
+        GogAuthResponse::Ok(token) => token,
+        GogAuthResponse::Err(err) => {
+            return Err(Status::internal("Failed to retrieve GOG entries", err));
+        }
+    };
+
     Ok(token.to_proto(oauth_code))
 }
 
@@ -42,7 +48,14 @@ pub async fn validate(token: &mut espy::GogToken) -> Result<(), Status> {
     );
     let uri = format!("{}{}", GOG_AUTH_HOST, params);
 
-    let new_token = reqwest::get(&uri).await?.json::<GogToken>().await?;
+    let resp = reqwest::get(&uri).await?.json::<GogAuthResponse>().await?;
+    let new_token = match resp {
+        GogAuthResponse::Ok(token) => token,
+        GogAuthResponse::Err(err) => {
+            return Err(Status::internal("Failed to retrieve GOG entries", err));
+        }
+    };
+
     *token = new_token.to_proto(&token.oauth_code);
 
     Ok(())
@@ -54,6 +67,35 @@ fn is_fresh_token(token: &espy::GogToken) -> bool {
     let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
     now.as_secs() < token.expires_at
 }
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum GogAuthResponse {
+    Ok(GogToken),
+    Err(GogAuthError),
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+struct GogAuthError {
+    error: String,
+    error_description: String,
+}
+
+use std::fmt;
+impl fmt::Display for GogAuthError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "GOG Auth response error: '{}' -- {}",
+            self.error, self.error_description
+        )
+    }
+}
+
+use std::error::Error;
+impl Error for GogAuthError {}
 
 /// Intermediate GogToken struct used for serialisation/deserialisation to/from
 /// JSON for requests to GOG auth servers.
