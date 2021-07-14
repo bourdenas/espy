@@ -86,17 +86,27 @@ pub async fn post_details(
     let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
-    let mut entry = mgr.library.entry.iter_mut().find(|e| match &e.game {
-        Some(game) => game.id == game_id,
-        None => false,
-    });
+    let entry = mgr
+        .library
+        .entry
+        .iter_mut()
+        .find(|entry| match &entry.game {
+            Some(game) => game.id == game_id,
+            None => false,
+        });
 
-    if let Some(entry) = &mut entry {
-        entry.details = Some(espy::GameDetails { tag: details.tags });
+    if let None = entry {
+        return Ok(StatusCode::NOT_FOUND);
     }
+    let entry = entry.unwrap();
+    entry.details = Some(espy::GameDetails { tag: details.tags });
+
     match mgr.save().await {
         Ok(_) => Ok(StatusCode::OK),
-        Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(err) => {
+            println!("Failed to save update on library: {}", err);
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
     }
 }
 
