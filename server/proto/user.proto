@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package espy;
+
+message User {
+  string uid = 1;
+  Keys keys = 2;
+}
+
+message Keys {
+  string steam_user_id = 1;
+  GogToken gog_token = 2;
+}
+
+message GogToken {
+  string oauth_code = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+  uint64 expires_at = 4;
+  string user_id = 5;
+  string session_id = 6;
+}

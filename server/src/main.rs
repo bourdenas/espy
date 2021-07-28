@@ -39,15 +39,7 @@ struct Opts {
 
     /// Code string provided from the GOG OAuth login page.
     #[clap(long)]
-    gog_code: Option<String>,
-
-    /// Token string provided after GOG authentication.
-    #[clap(long)]
-    gog_token: Option<String>,
-
-    /// Token string provided after GOG authentication.
-    #[clap(long)]
-    gog_refresh: Option<String>,
+    gog_oauth_code: Option<String>,
 }
 
 #[tokio::main]
@@ -95,23 +87,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         return Ok(());
     }
 
-    let token = api::GogToken::from_file("gog_token.json").await?;
-    let mut gog_api = Some(api::GogApi::new(token));
+    let gog_api = match &opts.gog_oauth_code {
+        Some(gog_oauth_code) => {
+            let token = api::gog_token::create_from_oauth_code(gog_oauth_code).await?;
+            Some(api::GogApi::new(token))
+        }
+        None => None,
+    };
 
-    if let Some(gog_code) = &opts.gog_code {
-        let token = api::GogToken::from_code(gog_code, "gog_token.json").await?;
-        gog_api = Some(api::GogApi::new(token));
-    } else if let Some(gog_token) = &opts.gog_token {
-        let token = api::GogToken::from_token(gog_token);
-        gog_api = Some(api::GogApi::new(token));
-    } else if let Some(gog_refresh) = &opts.gog_refresh {
-        let token = api::GogToken::from_refresh(gog_refresh, "gog_token.json").await?;
-        gog_api = Some(api::GogApi::new(token));
-    }
-
-    let mut mgr = library::LibraryManager::new(
-        &opts.user,
-        library::Reconciler::new(Arc::new(igdb)),
+    let mut mgr = library::LibraryManager::new(&opts.user);
+    mgr.build();
+    mgr.sync(
         Some(api::SteamApi::new(
             &keys.steam.client_key,
             match &opts.steam_user {
@@ -120,9 +106,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             },
         )),
         gog_api,
-    );
-    mgr.build();
-    mgr.sync().await?;
+    )
+    .await?;
+    mgr.reconcile(library::Reconciler::new(Arc::new(igdb)))
+        .await?;
 
     render_html(&opts.user, &mgr.library)?;
 

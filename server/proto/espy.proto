@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "library.proto";
+import "user.proto";
 
 package espy;
 

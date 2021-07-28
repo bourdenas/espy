@@ -1,6 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct Settings {
+    pub steam_user_id: String,
+    pub gog_auth_code: String,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Details {
     pub tags: Vec<String>,
 }

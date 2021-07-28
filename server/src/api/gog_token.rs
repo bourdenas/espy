@@ -1,118 +1,129 @@
+use crate::espy;
 use crate::Status;
-use serde::{Deserialize, Serialize};
-use std::fs;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+/// Creates a GogToken for authenticating a user to the service. The
+/// authentication code is used to retrieve an access token that is used when
+/// calling any GOG API for retrieving user information.
+///
+/// Retrieve GOG authentication code by loging in to:
+/// https://auth.gog.com/auth?client_id=46899977096215655&redirect_uri=https%3A%2F%2Fembed.gog.com%2Fon_login_success%3Forigin%3Dclient&response_type=code&layout=client2
+pub async fn create_from_oauth_code(oauth_code: &str) -> Result<espy::GogToken, Status> {
+    let params = format!(
+            "/token?client_id={}&client_secret={}&grant_type=authorization_code&code={}&redirect_uri={}%2Ftoken", 
+            GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, oauth_code, GOG_GALAXY_REDIRECT_URI);
+    let uri = format!("{}{}", GOG_AUTH_HOST, params);
+
+    let resp = reqwest::get(&uri).await?.json::<GogAuthResponse>().await?;
+    let token = match resp {
+        GogAuthResponse::Ok(token) => token,
+        GogAuthResponse::Err(err) => {
+            return Err(Status::internal("Failed to retrieve GOG entries", err));
+        }
+    };
+
+    Ok(token.to_proto(oauth_code))
+}
+
+/// Validates that the access token contained in a user's GogToken is still
+/// valid. If the access token is expired this will try to refresh it (without
+/// requiring any user interaction).
+///
+/// Validation needs to happen before any request to GOG APIs. If an expired
+/// access token is used, then the user needs to manually authenticate with GOG,
+/// retrieve a new oauth code and provide it to the `create_from_oauth_code`
+/// function to produce a new GogToken.
+pub async fn validate(token: &mut espy::GogToken) -> Result<(), Status> {
+    if token.access_token.is_empty() || token.refresh_token.is_empty() {
+        return Err(Status::invalid_argument("Invalid GogToken: {:?}"));
+    }
+
+    if is_fresh_token(token) {
+        return Ok(());
+    }
+
+    let params = format!(
+        "/token?client_id={}&client_secret={}&grant_type=refresh_token&refresh_token={}&%2Ftoken",
+        GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, &token.refresh_token
+    );
+    let uri = format!("{}{}", GOG_AUTH_HOST, params);
+
+    let resp = reqwest::get(&uri).await?.json::<GogAuthResponse>().await?;
+    let new_token = match resp {
+        GogAuthResponse::Ok(token) => token,
+        GogAuthResponse::Err(err) => {
+            return Err(Status::internal("Failed to retrieve GOG entries", err));
+        }
+    };
+
+    *token = new_token.to_proto(&token.oauth_code);
+
+    Ok(())
+}
+
+/// Returns true if the current user GOG access token has not expired yet.
+/// Typically, it is valid for 2 hours.
+fn is_fresh_token(token: &espy::GogToken) -> bool {
+    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+    now.as_secs() < token.expires_at
+}
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+enum GogAuthResponse {
+    Ok(GogToken),
+    Err(GogAuthError),
+}
+
 #[derive(Debug, Serialize, Deserialize, Default)]
-pub struct GogToken {
-    pub access_token: String,
+struct GogAuthError {
+    error: String,
+    error_description: String,
+}
+
+use std::fmt;
+impl fmt::Display for GogAuthError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "GOG Auth response error: '{}' -- {}",
+            self.error, self.error_description
+        )
+    }
+}
+
+use std::error::Error;
+impl Error for GogAuthError {}
+
+/// Intermediate GogToken struct used for serialisation/deserialisation to/from
+/// JSON for requests to GOG auth servers.
+#[derive(Debug, Serialize, Deserialize, Default)]
+struct GogToken {
+    access_token: String,
     refresh_token: String,
     expires_in: u64,
     user_id: String,
     session_id: String,
-
-    #[serde(skip)]
-    path: String,
 }
 
 impl GogToken {
-    // Retrieve GOG authentication code by loging in to:
-    // https://auth.gog.com/auth?client_id=46899977096215655&redirect_uri=https%3A%2F%2Fembed.gog.com%2Fon_login_success%3Forigin%3Dclient&response_type=code&layout=client2
-    pub async fn from_code(code: &str, path: &str) -> Result<Self, Status> {
-        let params = format!(
-            "/token?client_id={}&client_secret={}&grant_type=authorization_code&code={}&redirect_uri={}%2Ftoken", 
-            GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, code, GOG_GALAXY_REDIRECT_URI);
-        let uri = format!("{}{}", GOG_AUTH_HOST, params);
-        println!("GET: {}", uri);
-
-        let mut token = reqwest::get(&uri).await?.json::<GogToken>().await?;
-        println!("GOG token resp: {:#?}", token);
-
-        token.expires_in = SystemTime::now()
-            .checked_add(Duration::from_secs(token.expires_in))
-            .unwrap()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
-        token.path = String::from(path);
-        token.save(path)?;
-
-        Ok(token)
-    }
-
-    pub fn from_token(token: &str) -> Self {
-        GogToken {
-            access_token: String::from(token),
-            ..Default::default()
-        }
-    }
-
-    pub async fn from_refresh(refresh_token: &str, path: &str) -> Result<Self, Status> {
-        let mut token = GogToken::default();
-        token.refresh_token = String::from(refresh_token);
-        token.path = String::from(path);
-        token.refresh().await?;
-
-        Ok(token)
-    }
-
-    pub async fn from_file(path: &str) -> Result<Self, Status> {
-        let bytes = std::fs::read(path)?;
-        let mut token: GogToken = serde_json::from_slice(&bytes)?;
-        token.path = String::from(path);
-
-        println!("Is token fresh? {}", token.is_fresh());
-        if !token.is_fresh() {
-            token.refresh().await?;
-        }
-
-        Ok(token)
-    }
-
-    pub async fn get_token<'a>(&'a mut self) -> &'a str {
-        match self.is_fresh() {
-            true => &self.access_token,
-            false => {
-                self.refresh().await.expect("Failed to refresh GOG token.");
-                &self.access_token
-            }
-        }
-    }
-
-    fn is_fresh(&self) -> bool {
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-        now.as_secs() < self.expires_in
-    }
-
-    async fn refresh(&mut self) -> Result<(), Status> {
-        let params = format!(
-            "/token?client_id={}&client_secret={}&grant_type=refresh_token&refresh_token={}&%2Ftoken",
-            GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, &self.refresh_token);
-        let uri = format!("{}{}", GOG_AUTH_HOST, params);
-        println!("GET: {}", uri);
-
-        let path = self.path.clone();
-
-        *self = reqwest::get(&uri).await?.json::<GogToken>().await?;
-        self.expires_in = SystemTime::now()
-            .checked_add(Duration::from_secs(self.expires_in))
-            .unwrap()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
-        self.save(&path)?;
-
-        Ok(())
-    }
-
-    fn save(&self, path: &str) -> Result<(), Status> {
-        let text = match serde_json::to_string(self) {
-            Ok(text) => text,
-            Err(err) => return Err(Status::internal("Failed to serialise GogToken", err)),
-        };
-        match fs::write(path, text) {
-            Ok(_) => Ok(()),
-            Err(err) => Err(Status::internal("Failed to save token to disk", err)),
+    // Converts intermediate GogToken struct into a protobuf GogToken that is
+    // used for persistent storage.
+    fn to_proto(self, oauth_code: &str) -> espy::GogToken {
+        espy::GogToken {
+            oauth_code: String::from(oauth_code),
+            access_token: self.access_token,
+            refresh_token: self.refresh_token,
+            expires_at: SystemTime::now()
+                .checked_add(Duration::from_secs(self.expires_in))
+                .unwrap()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            user_id: self.user_id,
+            session_id: self.session_id,
         }
     }
 }

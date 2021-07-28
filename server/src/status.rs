@@ -13,6 +13,10 @@ impl Status {
     pub fn internal(msg: &str, err: impl Error) -> Self {
         Self(tonic::Status::internal(format!("{}: '{}'", msg, err)))
     }
+
+    pub fn invalid_argument(msg: &str) -> Self {
+        Self(tonic::Status::invalid_argument(msg))
+    }
 }
 
 impl From<std::io::Error> for Status {

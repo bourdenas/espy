@@ -3,22 +3,18 @@ use crate::espy;
 use crate::http::models;
 use crate::igdb;
 use crate::library;
-use crate::library::{LibraryManager, Reconciler};
+use crate::library::{LibraryManager, Reconciler, User};
+use crate::util;
 use prost::bytes::Bytes;
 use prost::Message;
 use std::convert::Infallible;
 use std::sync::Arc;
 use warp::http::StatusCode;
 
-pub async fn get_library(
-    user_id: String,
-    igdb: Arc<IgdbApi>,
-) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("/library/{}", &user_id);
+pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
+    println!("GET /library/{}", &user_id);
 
-    // Pass None for Steam API to avoid retrieving entries and reconciling on
-    // every get_library request.
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
     let mut bytes = vec![];
@@ -28,31 +24,89 @@ pub async fn get_library(
     }
 }
 
+pub async fn get_settings(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
+    println!("GET /library/{}/settings", &user_id);
+
+    let user = User::new(&user_id);
+    let settings = models::Settings {
+        steam_user_id: match user.steam_user_id() {
+            Some(id) => String::from(id),
+            None => String::default(),
+        },
+        gog_auth_code: match user.gog_auth_code() {
+            Some(code) => String::from(code),
+            None => String::default(),
+        },
+    };
+
+    Ok(Box::new(warp::reply::json(&settings)))
+}
+
+pub async fn post_settings(
+    user_id: String,
+    settings: models::Settings,
+) -> Result<impl warp::Reply, Infallible> {
+    println!("POST /library/{}/settings", &user_id);
+
+    let mut user = User::new(&user_id);
+    match user.update(&settings.steam_user_id, &settings.gog_auth_code) {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
+pub async fn post_sync(
+    user_id: String,
+    keys: Arc<util::keys::Keys>,
+) -> Result<impl warp::Reply, Infallible> {
+    println!("POST /library/{}/sync", &user_id);
+
+    let mut user = User::new(&user_id);
+    let result = user.sync(&keys).await;
+
+    match result {
+        Ok(()) => Ok(StatusCode::OK),
+        Err(err) => {
+            eprintln!("{}", err);
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
 pub async fn post_details(
     user_id: String,
     game_id: u64,
     details: models::Details,
-    igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
     println!(
-        "/library/{}/details/{} body: {:?}",
+        "POST /library/{}/details/{} body: {:?}",
         &user_id, game_id, &details
     );
 
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
-    let mut entry = mgr.library.entry.iter_mut().find(|e| match &e.game {
-        Some(game) => game.id == game_id,
-        None => false,
-    });
+    let entry = mgr
+        .library
+        .entry
+        .iter_mut()
+        .find(|entry| match &entry.game {
+            Some(game) => game.id == game_id,
+            None => false,
+        });
 
-    if let Some(entry) = &mut entry {
-        entry.details = Some(espy::GameDetails { tag: details.tags });
+    if let None = entry {
+        return Ok(StatusCode::NOT_FOUND);
     }
+    let entry = entry.unwrap();
+    entry.details = Some(espy::GameDetails { tag: details.tags });
+
     match mgr.save().await {
         Ok(_) => Ok(StatusCode::OK),
-        Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(err) => {
+            println!("Failed to save update on library: {}", err);
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
     }
 }
 
@@ -61,7 +115,7 @@ pub async fn post_match(
     match_msg: models::Match,
     igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    println!("/library/{}/match", &user_id);
+    println!("POST /library/{}/match", &user_id);
 
     let store_entry = match espy::StoreEntry::decode(Bytes::from(match_msg.encoded_store_entry)) {
         Ok(msg) => msg,
@@ -78,7 +132,7 @@ pub async fn post_match(
         }
     };
 
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
     mgr.library
@@ -98,7 +152,9 @@ pub async fn post_match(
                 store_entry: vec![store_entry],
                 ..Default::default()
             };
-            if let Err(_) = mgr.update_entry(&mut entry).await {
+            let recon_service = Reconciler::new(Arc::clone(&igdb));
+
+            if let Err(_) = recon_service.update_entry(&mut entry).await {
                 return Ok(StatusCode::INTERNAL_SERVER_ERROR);
             }
             mgr.library.entry.push(entry);
@@ -114,9 +170,8 @@ pub async fn post_match(
 pub async fn post_unmatch(
     user_id: String,
     match_msg: models::Match,
-    igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    println!("/library/{}/unmatch", &user_id);
+    println!("POST /library/{}/unmatch", &user_id);
 
     let store_entry = match espy::StoreEntry::decode(Bytes::from(match_msg.encoded_store_entry)) {
         Ok(msg) => msg,
@@ -133,7 +188,7 @@ pub async fn post_unmatch(
         }
     };
 
-    let mut mgr = LibraryManager::new(&user_id, Reconciler::new(Arc::clone(&igdb)), None, None);
+    let mut mgr = LibraryManager::new(&user_id);
     mgr.build();
 
     // There's no remove_if so I need to iterate the vector twice. Once to find
@@ -162,7 +217,7 @@ pub async fn post_search(
     search: models::Search,
     igdb: Arc<IgdbApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("/search body: {:?}", &search);
+    println!("POST /search body: {:?}", &search);
 
     let candidates = match library::search::get_candidates(&igdb, &search.title).await {
         Ok(result) => result,
@@ -184,7 +239,7 @@ pub async fn get_images(
     resolution: String,
     image: String,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("/images/{}/{}", &resolution, &image);
+    println!("GET /images/{}/{}", &resolution, &image);
 
     let uri = format!("{}/{}/{}", IGDB_IMAGES_URL, &resolution, &image);
     let resp = match reqwest::Client::new().get(&uri).send().await {
