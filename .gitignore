@@ -18,3 +18,5 @@ server/build/
 server/out/
 server/target/
 server/*.json
+
+*.cache
