@@ -17,6 +17,10 @@ impl Status {
     pub fn invalid_argument(msg: &str) -> Self {
         Self(tonic::Status::invalid_argument(msg))
     }
+
+    pub fn not_found(msg: &str) -> Self {
+        Self(tonic::Status::not_found(msg))
+    }
 }
 
 impl From<std::io::Error> for Status {
