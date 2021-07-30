@@ -1,4 +1,4 @@
-use crate::api::IgdbApi;
+use crate::api::{FirestoreApi, IgdbApi};
 use crate::espy;
 use crate::http::models;
 use crate::igdb;
@@ -27,7 +27,17 @@ pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infall
 pub async fn get_settings(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
     println!("GET /library/{}/settings", &user_id);
 
-    let user = User::new(&user_id);
+    let firestore =
+        FirestoreApi::from_credentials(FIRESTORE_CREDENTIALS_FILE).expect("get_settings");
+
+    let user = match User::new(firestore, &user_id) {
+        Ok(user) => user,
+        Err(e) => {
+            eprintln!("GET /library/{}/settings: {}", &user_id, e);
+            return Ok(Box::new(StatusCode::INTERNAL_SERVER_ERROR));
+        }
+    };
+
     let settings = models::Settings {
         steam_user_id: match user.steam_user_id() {
             Some(id) => String::from(id),
@@ -48,10 +58,27 @@ pub async fn post_settings(
 ) -> Result<impl warp::Reply, Infallible> {
     println!("POST /library/{}/settings", &user_id);
 
-    let mut user = User::new(&user_id);
-    match user.update(&settings.steam_user_id, &settings.gog_auth_code) {
-        Ok(_) => Ok(StatusCode::OK),
-        Err(_) => Ok(StatusCode::INTERNAL_SERVER_ERROR),
+    let firestore =
+        FirestoreApi::from_credentials(FIRESTORE_CREDENTIALS_FILE).expect("get_settings");
+
+    let mut user = match User::new(firestore, &user_id) {
+        Ok(user) => user,
+        Err(e) => {
+            eprintln!("POST /library/{}/settings: {}", &user_id, e);
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    let result = user
+        .update(&settings.steam_user_id, &settings.gog_auth_code)
+        .await;
+
+    match result {
+        Ok(()) => Ok(StatusCode::OK),
+        Err(err) => {
+            eprintln!("{}", err);
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
     }
 }
 
@@ -61,7 +88,16 @@ pub async fn post_sync(
 ) -> Result<impl warp::Reply, Infallible> {
     println!("POST /library/{}/sync", &user_id);
 
-    let mut user = User::new(&user_id);
+    let firestore =
+        FirestoreApi::from_credentials(FIRESTORE_CREDENTIALS_FILE).expect("get_settings");
+
+    let mut user = match User::new(firestore, &user_id) {
+        Ok(user) => user,
+        Err(e) => {
+            eprintln!("POST /library/{}/settings: {}", &user_id, e);
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
     let result = user.sync(&keys).await;
 
     match result {
@@ -266,3 +302,4 @@ pub async fn get_images(
 }
 
 const IGDB_IMAGES_URL: &str = "https://images.igdb.com/igdb/image/upload";
+const FIRESTORE_CREDENTIALS_FILE: &str = "espy-library-firebase-adminsdk-sncpo-3da8ca7f57.json";
