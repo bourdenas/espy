@@ -1,12 +1,13 @@
+use crate::api;
 use crate::espy;
 use crate::Status;
 
 pub struct GogApi {
-    token: espy::GogToken,
+    token: api::GogToken,
 }
 
 impl GogApi {
-    pub fn new(token: espy::GogToken) -> GogApi {
+    pub fn new(token: api::GogToken) -> GogApi {
         GogApi { token }
     }
 
