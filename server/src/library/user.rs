@@ -32,12 +32,13 @@ impl User {
     /// collection. Creates a new User entry in Firestore if user does not
     /// already exist.
     pub fn new(firestore: Arc<Mutex<api::FirestoreApi>>, user_id: &str) -> Result<Self, Status> {
-        match firestore.lock().unwrap().read::<UserData>("users", user_id) {
+        match load_user(user_id, firestore.clone()) {
             Ok(data) => Ok(User {
                 data,
                 firestore: firestore.clone(),
             }),
-            Err(_) => {
+            Err(e) => {
+                eprintln!("Creating new user '{}'\n{}", user_id, e);
                 let user = User {
                     data: UserData {
                         uid: String::from(user_id),
@@ -140,9 +141,17 @@ impl User {
 
     /// Save user entry to Firestore. Returns the Firestore document id.
     fn save(&self) -> Result<String, Status> {
+        eprintln!("writing to firestore...");
         self.firestore
             .lock()
             .unwrap()
             .write("users", Some(&self.data.uid), &self.data)
     }
+}
+
+fn load_user(user_id: &str, firestore: Arc<Mutex<api::FirestoreApi>>) -> Result<UserData, Status> {
+    Ok(firestore
+        .lock()
+        .unwrap()
+        .read::<UserData>("users", user_id)?)
 }
