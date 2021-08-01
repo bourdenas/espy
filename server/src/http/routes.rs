@@ -1,19 +1,20 @@
-use crate::api::IgdbApi;
+use crate::api::{FirestoreApi, IgdbApi};
 use crate::http::{handlers, models};
 use crate::util;
 use std::convert::Infallible;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use warp::{self, Filter};
 
 /// Returns a Filter with all available routes.
 pub fn routes(
     keys: Arc<util::keys::Keys>,
     igdb: Arc<IgdbApi>,
+    firestore: Arc<Mutex<FirestoreApi>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     get_library()
-        .or(get_settings())
-        .or(post_settings())
-        .or(post_sync(keys))
+        .or(get_settings(firestore.clone()))
+        .or(post_settings(firestore.clone()))
+        .or(post_sync(keys, firestore))
         .or(post_details())
         .or(post_match(igdb.clone()))
         .or(post_unmatch())
@@ -29,27 +30,35 @@ fn get_library() -> impl Filter<Extract = impl warp::Reply, Error = warp::Reject
 }
 
 /// GET /library/{user_id}/settings
-fn get_settings() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+fn get_settings(
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "settings")
         .and(warp::get())
+        .and(with_firestore(firestore))
         .and_then(handlers::get_settings)
 }
 
 /// POST /library/{user_id}/settings
-fn post_settings() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+fn post_settings(
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "settings")
         .and(warp::post())
         .and(settings_body())
+        .and(with_firestore(firestore))
         .and_then(handlers::post_settings)
 }
 
 /// POST /library/{user_id}/sync
 fn post_sync(
     keys: Arc<util::keys::Keys>,
+    firestore: Arc<Mutex<FirestoreApi>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "sync")
         .and(warp::post())
         .and(with_keys(keys))
+        .and(with_firestore(firestore))
         .and_then(handlers::post_sync)
 }
 
@@ -102,6 +111,12 @@ fn with_igdb(
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = (Arc<IgdbApi>,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&igdb))
+}
+
+fn with_firestore(
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> impl Filter<Extract = (Arc<Mutex<FirestoreApi>>,), Error = Infallible> + Clone {
+    warp::any().map(move || Arc::clone(&firestore))
 }
 
 fn with_keys(

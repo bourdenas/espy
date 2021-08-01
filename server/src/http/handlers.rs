@@ -8,7 +8,7 @@ use crate::util;
 use prost::bytes::Bytes;
 use prost::Message;
 use std::convert::Infallible;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use warp::http::StatusCode;
 
 pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
@@ -24,11 +24,11 @@ pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infall
     }
 }
 
-pub async fn get_settings(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
+pub async fn get_settings(
+    user_id: String,
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> Result<Box<dyn warp::Reply>, Infallible> {
     println!("GET /library/{}/settings", &user_id);
-
-    let firestore =
-        FirestoreApi::from_credentials(FIRESTORE_CREDENTIALS_FILE).expect("get_settings");
 
     let user = match User::new(firestore, &user_id) {
         Ok(user) => user,
@@ -55,11 +55,9 @@ pub async fn get_settings(user_id: String) -> Result<Box<dyn warp::Reply>, Infal
 pub async fn post_settings(
     user_id: String,
     settings: models::Settings,
+    firestore: Arc<Mutex<FirestoreApi>>,
 ) -> Result<impl warp::Reply, Infallible> {
     println!("POST /library/{}/settings", &user_id);
-
-    let firestore =
-        FirestoreApi::from_credentials(FIRESTORE_CREDENTIALS_FILE).expect("get_settings");
 
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
@@ -85,11 +83,9 @@ pub async fn post_settings(
 pub async fn post_sync(
     user_id: String,
     keys: Arc<util::keys::Keys>,
+    firestore: Arc<Mutex<FirestoreApi>>,
 ) -> Result<impl warp::Reply, Infallible> {
     println!("POST /library/{}/sync", &user_id);
-
-    let firestore =
-        FirestoreApi::from_credentials(FIRESTORE_CREDENTIALS_FILE).expect("get_settings");
 
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
@@ -302,4 +298,3 @@ pub async fn get_images(
 }
 
 const IGDB_IMAGES_URL: &str = "https://images.igdb.com/igdb/image/upload";
-const FIRESTORE_CREDENTIALS_FILE: &str = "espy-library-firebase-adminsdk-sncpo-3da8ca7f57.json";
