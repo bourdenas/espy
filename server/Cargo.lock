@@ -253,6 +253,7 @@ dependencies = [
 name = "espy_server"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "clap",
  "firestore-db-and-auth",
  "futures",
