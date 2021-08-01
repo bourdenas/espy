@@ -59,17 +59,14 @@ impl FirestoreApi {
     where
         for<'a> T: Deserialize<'a>,
     {
-        let mut v = vec![];
-
         let collection: documents::List<T, _> = documents::list(&self.session, path);
-        for result in collection {
-            v.push(match result {
-                Ok((doc, _metadata)) => doc,
-                Err(e) => return Err(Status::internal("Firestore.list: ", e)),
-            });
-        }
-
-        Ok(v)
+        collection
+            .into_iter()
+            .map(|result| match result {
+                Ok((doc, _metadata)) => Ok(doc),
+                Err(e) => Err(Status::internal("Firestore.list: ", e)),
+            })
+            .collect()
     }
 
     /// Returns all Firestore documents in the specified path that satisfy the
@@ -89,20 +86,17 @@ impl FirestoreApi {
             field_name,
         ) {
             Ok(result) => result,
-            Err(e) => return Err(Status::internal("Firestore.query :", e)),
+            Err(e) => return Err(Status::internal("Firestore.query: ", e)),
         };
 
-        let mut v = vec![];
-
-        for metadata in result {
-            v.push(
-                match documents::read_by_name(&self.session, &metadata.name) {
-                    Ok(doc) => doc,
-                    Err(e) => return Err(Status::internal("Firestore.query.read_by_name :", e)),
+        result
+            .into_iter()
+            .map(
+                |metadata| match documents::read_by_name(&self.session, &metadata.name) {
+                    Ok(doc) => Ok(doc),
+                    Err(e) => Err(Status::internal("Firestore.query.read_by_name: ", e)),
                 },
-            );
-        }
-
-        Ok(v)
+            )
+            .collect()
     }
 }
