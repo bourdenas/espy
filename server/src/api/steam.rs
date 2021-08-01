@@ -1,5 +1,7 @@
-use crate::espy;
+use crate::models::StoreEntry;
+use crate::traits::Storefront;
 use crate::Status;
+use async_trait::async_trait;
 
 pub struct SteamApi {
     steam_key: String,
@@ -13,9 +15,11 @@ impl SteamApi {
             steam_user_id: String::from(steam_user_id),
         }
     }
+}
 
-    // Returns the list of games owned by the user in Steam.
-    pub async fn get_owned_games(&self) -> Result<espy::StoreEntryList, Status> {
+#[async_trait]
+impl Storefront for SteamApi {
+    async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
         let uri = format!(
             "{}{}?key={}&steamid={}&include_appinfo=true&format=json",
             STEAM_HOST, STEAM_GETOWNEDGAMES_SERVICE, self.steam_key, self.steam_user_id
@@ -24,19 +28,17 @@ impl SteamApi {
         let resp = reqwest::get(&uri).await?.json::<SteamResponse>().await?;
         println!("steam games: {}", resp.response.game_count);
 
-        Ok(espy::StoreEntryList {
-            entry: resp
-                .response
-                .games
-                .into_iter()
-                .map(|entry| espy::StoreEntry {
-                    id: entry.appid,
-                    title: entry.name,
-                    store: espy::store_entry::Store::Steam as i32,
-                    ..Default::default()
-                })
-                .collect(),
-        })
+        Ok(resp
+            .response
+            .games
+            .into_iter()
+            .map(|entry| StoreEntry {
+                id: entry.appid,
+                title: entry.name,
+                storefront_name: String::from("steam"),
+                ..Default::default()
+            })
+            .collect())
     }
 }
 

@@ -1,6 +1,8 @@
 use crate::api;
-use crate::espy;
+use crate::models::StoreEntry;
+use crate::traits::Storefront;
 use crate::Status;
+use async_trait::async_trait;
 
 pub struct GogApi {
     token: api::GogToken,
@@ -27,11 +29,12 @@ impl GogApi {
 
         Ok(game_list)
     }
+}
 
-    pub async fn get_game_entries(&self) -> Result<espy::StoreEntryList, Status> {
-        let mut gog_list = espy::StoreEntryList {
-            ..Default::default()
-        };
+#[async_trait]
+impl Storefront for GogApi {
+    async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
+        let mut store_entries: Vec<StoreEntry> = vec![];
 
         for page in 1.. {
             let uri = format!(
@@ -56,26 +59,21 @@ impl GogApi {
                 }
             };
 
-            gog_list
-                .entry
-                .extend(
-                    product_list_page
-                        .products
-                        .into_iter()
-                        .map(|product| espy::StoreEntry {
-                            id: product.id as i64,
-                            title: product.title,
-                            store: espy::store_entry::Store::Gog as i32,
-                            url: product.url,
-                            image: product.image,
-                        }),
-                );
+            store_entries.extend(product_list_page.products.into_iter().map(|product| {
+                StoreEntry {
+                    id: product.id as i64,
+                    title: product.title,
+                    storefront_name: String::from("gog"),
+                    url: product.url,
+                    image: product.image,
+                }
+            }));
 
             if page >= product_list_page.total_pages {
                 break;
             }
         }
-        Ok(gog_list)
+        Ok(store_entries)
     }
 }
 

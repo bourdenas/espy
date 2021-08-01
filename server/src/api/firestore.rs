@@ -1,6 +1,6 @@
 use crate::Status;
 use firestore_db_and_auth as firestore;
-use firestore_db_and_auth::{documents, Credentials, ServiceSession};
+use firestore_db_and_auth::{documents, dto, Credentials, ServiceSession};
 use serde::{Deserialize, Serialize};
 
 pub struct FirestoreApi {
@@ -29,7 +29,7 @@ impl FirestoreApi {
         match documents::read(&self.session, path, doc_id) {
             Ok(doc) => Ok(doc),
             Err(_) => Err(Status::not_found(&format!(
-                "Firebase document {}/{} not found.",
+                "Firestore document {}/{} not found.",
                 path, doc_id
             ))),
         }
@@ -52,5 +52,51 @@ impl FirestoreApi {
             Ok(result) => Ok(result.document_id),
             Err(e) => Err(Status::internal("Firestore.write: ", e)),
         }
+    }
+
+    /// Returns all Firestore documents in the specified path.
+    pub fn list<T>(&self, path: &str) -> Result<Vec<T>, Status>
+    where
+        for<'a> T: Deserialize<'a>,
+    {
+        let collection: documents::List<T, _> = documents::list(&self.session, path);
+        collection
+            .into_iter()
+            .map(|result| match result {
+                Ok((doc, _metadata)) => Ok(doc),
+                Err(e) => Err(Status::internal("Firestore.list: ", e)),
+            })
+            .collect()
+    }
+
+    /// Returns all Firestore documents in the specified path that satisfy the
+    /// matching condition.
+    ///
+    /// NOTE: This is not flexible yet, the only condition for now is string
+    /// field matching.
+    pub fn query<T>(&self, path: &str, field_name: &str, value: &str) -> Result<Vec<T>, Status>
+    where
+        for<'a> T: Deserialize<'a>,
+    {
+        let result = match documents::query(
+            &self.session,
+            path,
+            value.into(),
+            dto::FieldOperator::EQUAL,
+            field_name,
+        ) {
+            Ok(result) => result,
+            Err(e) => return Err(Status::internal("Firestore.query: ", e)),
+        };
+
+        result
+            .into_iter()
+            .map(
+                |metadata| match documents::read_by_name(&self.session, &metadata.name) {
+                    Ok(doc) => Ok(doc),
+                    Err(e) => Err(Status::internal("Firestore.query.read_by_name: ", e)),
+                },
+            )
+            .collect()
     }
 }

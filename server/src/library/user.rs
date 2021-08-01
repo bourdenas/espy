@@ -3,10 +3,11 @@ use crate::library::LibraryManager;
 use crate::util;
 use crate::Status;
 use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
 
 pub struct User {
     data: UserData,
-    firestore: api::FirestoreApi,
+    firestore: Arc<Mutex<api::FirestoreApi>>,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
@@ -30,16 +31,19 @@ impl User {
     /// Returns a User instance that is loaded from the Firestore users
     /// collection. Creates a new User entry in Firestore if user does not
     /// already exist.
-    pub fn new(firestore: api::FirestoreApi, user_id: &str) -> Result<Self, Status> {
-        match firestore.read::<UserData>("users", user_id) {
-            Ok(data) => Ok(User { data, firestore }),
+    pub fn new(firestore: Arc<Mutex<api::FirestoreApi>>, user_id: &str) -> Result<Self, Status> {
+        match firestore.lock().unwrap().read::<UserData>("users", user_id) {
+            Ok(data) => Ok(User {
+                data,
+                firestore: firestore.clone(),
+            }),
             Err(_) => {
                 let user = User {
                     data: UserData {
                         uid: String::from(user_id),
                         ..Default::default()
                     },
-                    firestore,
+                    firestore: firestore.clone(),
                 };
                 match user.save() {
                     Ok(_) => Ok(user),
@@ -110,9 +114,8 @@ impl User {
             None => None,
         };
 
-        let mut mgr = LibraryManager::new(&self.data.uid);
-        mgr.build();
-        mgr.sync(steam_api, gog_api).await?;
+        let mgr = LibraryManager::new(&self.data.uid, self.firestore.clone());
+        mgr.sync_library(steam_api, gog_api).await?;
 
         Ok(())
     }
@@ -138,6 +141,8 @@ impl User {
     /// Save user entry to Firestore. Returns the Firestore document id.
     fn save(&self) -> Result<String, Status> {
         self.firestore
+            .lock()
+            .unwrap()
             .write("users", Some(&self.data.uid), &self.data)
     }
 }
