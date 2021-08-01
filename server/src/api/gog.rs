@@ -28,7 +28,7 @@ impl GogApi {
         Ok(game_list)
     }
 
-    pub async fn get_game_entries(&self) -> Result<Vec<StoreEntry>, Status> {
+    pub async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
         let mut store_entries: Vec<StoreEntry> = vec![];
 
         for page in 1.. {
