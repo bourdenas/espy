@@ -1,63 +1,136 @@
-use crate::api::{GogApi, SteamApi};
+use crate::api::{FirestoreApi, GogApi, SteamApi};
 use crate::espy;
 use crate::library::Reconciler;
+use crate::models::StoreEntry;
+use crate::traits;
 use crate::util;
 use crate::Status;
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::iter::FromIterator;
 use std::mem::swap;
+use std::sync::{Arc, Mutex};
 
+/// Proxy structure that handles operations regarding user's library.
 pub struct LibraryManager {
     pub library: espy::Library,
     path: String,
+    user_id: String,
+    firestore: Arc<Mutex<FirestoreApi>>,
 }
 
 impl LibraryManager {
-    // Creates a LibraryManager instance for a unique user_id id.
-    pub fn new(user_id: &str) -> LibraryManager {
+    /// Creates a LibraryManager instance for a user.
+    pub fn new(user_id: &str, firestore: Arc<Mutex<FirestoreApi>>) -> Self {
         LibraryManager {
             library: espy::Library::default(),
-            path: format!("target/{}.library", user_id),
+            path: format!("users/{}/library", user_id),
+            user_id: String::from(user_id),
+            firestore,
         }
     }
 
-    pub fn build(&mut self) {
-        self.library = load_local_library(&self.path);
-    }
-
-    pub async fn sync(
-        &mut self,
+    /// Retrieves new entries from remote storefronts the user has access to and
+    /// expands existing library entries.
+    ///
+    /// New entries are added as unreconciled / unknown titles. Reconciliation
+    /// with IGDB entries is a separate step that will be triggered
+    /// independenlty.
+    pub async fn sync_library(
+        &self,
         steam_api: Option<SteamApi>,
         gog_api: Option<GogApi>,
     ) -> Result<(), Status> {
-        let steam_entries = match steam_api {
-            Some(steam_api) => Some(steam_api.get_owned_games().await?),
-            None => None,
-        };
-        let gog_entries = match gog_api {
-            Some(gog_api) => Some(gog_api.get_game_entries().await?),
-            None => None,
-        };
-
-        self.library.unreconciled_store_entry.clear();
-        if let Some(steam_entries) = steam_entries {
-            self.library
-                .unreconciled_store_entry
-                .extend(self.collect_new_entries(steam_entries, &get_steam_id));
+        if let Some(api) = steam_api {
+            self.sync_storefront("steam", &api).await?;
         }
-        if let Some(gog_entries) = gog_entries {
-            self.library
-                .unreconciled_store_entry
-                .extend(self.collect_new_entries(gog_entries, &get_gog_id));
+        if let Some(api) = gog_api {
+            self.sync_storefront("gog", &api).await?;
         }
-
-        // Save changes in local library.
-        util::proto::save(&self.path, &self.library)?;
 
         Ok(())
     }
 
-    // Reconciles unmatched entries in library.
+    /// Retieves new game entries from the provided remote storefront and
+    /// modifies user's library in Firestore.
+    ///
+    /// This operation updates
+    ///   (a) the `users/{user}/storefronts/{storefront_name}` document to
+    ///   contain all storefront game ids owned by the user.
+    ///   (b) the `users/{user}/unknown` collection with [StoreEntry] documents
+    ///   that correspond to new found entries.
+    async fn sync_storefront<T: traits::Storefront>(
+        &self,
+        storefront_name: &str,
+        api: &T,
+    ) -> Result<(), Status> {
+        let mut game_ids =
+            HashSet::<i64>::from_iter(self.read_storefront_ids(storefront_name).into_iter());
+        let store_entries = api
+            .get_owned_games()
+            .await?
+            .into_iter()
+            .filter(|store_entry| !game_ids.contains(&store_entry.id))
+            .collect::<Vec<StoreEntry>>();
+
+        self.write_unknown_entries(&store_entries)?;
+
+        game_ids.extend(store_entries.iter().map(|store_entry| store_entry.id));
+        self.write_storefront_ids(storefront_name, &game_ids.into_iter().collect::<Vec<i64>>())?;
+
+        Ok(())
+    }
+
+    /// Returns all store game ids owned by user from specified storefront.
+    ///
+    /// Reads `users/{user}/storefront/{storefront_name}` document in Firestore.
+    fn read_storefront_ids(&self, name: &str) -> Vec<i64> {
+        match self
+            .firestore
+            .lock()
+            .unwrap()
+            .read::<Storefront>(&format!("users/{}/storefronts", self.user_id), name)
+        {
+            Ok(storefront) => storefront.owned_games,
+            Err(_) => vec![],
+        }
+    }
+
+    /// Writes all store game ids owned by user from specified storefront.
+    ///
+    /// Writes `users/{user}/storefront/{storefront_name}` document in
+    /// Firestore.
+    fn write_storefront_ids(&self, name: &str, ids: &[i64]) -> Result<(), Status> {
+        match self.firestore.lock().unwrap().write(
+            &format!("users/{}/storefronts", self.user_id),
+            Some(name),
+            &Storefront {
+                name: String::from(name),
+                owned_games: ids.to_vec(),
+            },
+        ) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(Status::internal("LibraryManager.write_storefront_ids: ", e)),
+        }
+    }
+
+    /// Create new library entries for newly found storefront entries.
+    ///
+    /// Writes [Storefront] documents under collection `users/{user}/unknown` in
+    /// Firestore.
+    fn write_unknown_entries(&self, entries: &[StoreEntry]) -> Result<(), Status> {
+        for entry in entries {
+            self.firestore.lock().unwrap().write(
+                &format!("users/{}/unknown", self.user_id),
+                Some(&entry.id.to_string()),
+                entry,
+            )?;
+        }
+        Ok(())
+    }
+
+    /// Reconciles unmatched entries in library.
     pub async fn reconcile(&mut self, recon_service: Reconciler) -> Result<(), Status> {
         self.update_library(
             recon_service
@@ -69,35 +142,6 @@ impl LibraryManager {
         util::proto::save(&self.path, &self.library)?;
 
         Ok(())
-    }
-
-    pub async fn save(&self) -> Result<(), Status> {
-        util::proto::save(&self.path, &self.library)?;
-        Ok(())
-    }
-
-    // Returns store entries that are not already contained in the reconciled
-    // set of the library.
-    fn collect_new_entries(
-        &self,
-        store_entries: espy::StoreEntryList,
-        filter: &dyn Fn(&espy::StoreEntry) -> Option<i64>,
-    ) -> Vec<espy::StoreEntry> {
-        get_new_entries(
-            self.library
-                .entry
-                .iter()
-                .flat_map(|entry| {
-                    // Collect all store entries for each game entry.
-                    entry
-                        .store_entry
-                        .iter()
-                        .filter_map(filter)
-                        .collect::<Vec<_>>()
-                })
-                .collect(),
-            store_entries,
-        )
     }
 
     // Merges update into existing library. Ensures that there are no duplicate
@@ -140,45 +184,34 @@ impl LibraryManager {
     }
 }
 
-// Filters Store game entries that are not already included in the input IDs set.
-fn get_new_entries(
-    existing_ids: HashSet<i64>,
-    store_entries: espy::StoreEntryList,
-) -> Vec<espy::StoreEntry> {
-    store_entries
-        .entry
-        .into_iter()
-        .filter(|store_entry| !existing_ids.contains(&store_entry.id))
-        .collect()
+#[derive(Serialize, Deserialize, Default, Debug)]
+struct GameEntry {
+    uid: String,
+    name: String,
+    cover: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    user_data: Option<GameUserData>,
+
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    store_entry: Vec<StoreEntry>,
 }
 
-// Returns the store id if StoreEntry belong to Steam.
-fn get_steam_id(store_entry: &espy::StoreEntry) -> Option<i64> {
-    if store_entry.store == espy::store_entry::Store::Steam as i32 {
-        return Some(store_entry.id);
-    }
-    None
+#[derive(Serialize, Deserialize, Default, Debug)]
+struct GameUserData {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    tags: Vec<String>,
 }
 
-// Returns the store id if StoreEntry belong to GOG.
-fn get_gog_id(store_entry: &espy::StoreEntry) -> Option<i64> {
-    if store_entry.store == espy::store_entry::Store::Gog as i32 {
-        return Some(store_entry.id);
-    }
-    None
-}
+/// Document type under /users/{user_id}/storefronts/{storefront_name}. They are
+/// used as a quick way to check user's game ownership in a storefront.
+///
+/// NOTE: Used as a duplicate entry, instead of querying GameEntries and
+/// StoreEntries, to reduce Firestore reads when syncing libraries.
+#[derive(Serialize, Deserialize, Default, Debug)]
+struct Storefront {
+    name: String,
 
-// Load a user game library from path.
-fn load_local_library(path: &str) -> espy::Library {
-    match util::proto::load(&path) {
-        Ok(lib) => lib,
-        Err(_) => {
-            eprintln!("Local library '{}' not found.\nStarting a new one.", path);
-            let lib = espy::Library::default();
-            if let Err(err) = util::proto::save(&path, &lib) {
-                eprintln!("Failed to create library '{}'", err);
-            }
-            lib
-        }
-    }
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    owned_games: Vec<i64>,
 }

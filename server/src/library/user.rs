@@ -114,9 +114,8 @@ impl User {
             None => None,
         };
 
-        let mut mgr = LibraryManager::new(&self.data.uid);
-        mgr.build();
-        mgr.sync(steam_api, gog_api).await?;
+        let mgr = LibraryManager::new(&self.data.uid, self.firestore.clone());
+        mgr.sync_library(steam_api, gog_api).await?;
 
         Ok(())
     }
