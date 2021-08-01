@@ -1,6 +1,5 @@
 use crate::api::IgdbApi;
 use crate::espy;
-use crate::library::LibraryManager;
 use crate::util;
 use crate::Status;
 use std::sync::Arc;
@@ -31,10 +30,9 @@ impl espy::espy_server::Espy for EspyImpl {
     ) -> Result<tonic::Response<espy::LibraryResponse>, tonic::Status> {
         println!("Espy.GetLibrary request: {:?}", request.get_ref());
 
-        let mut mgr = LibraryManager::new(&request.get_ref().user_id);
-        mgr.build();
+        let library = espy::Library::default();
         Ok(tonic::Response::new(espy::LibraryResponse {
-            library: Some(mgr.library),
+            library: Some(library),
         }))
     }
 }
