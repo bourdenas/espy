@@ -1,5 +1,7 @@
 use crate::models::StoreEntry;
+use crate::traits::Storefront;
 use crate::Status;
+use async_trait::async_trait;
 
 pub struct SteamApi {
     steam_key: String,
@@ -13,9 +15,11 @@ impl SteamApi {
             steam_user_id: String::from(steam_user_id),
         }
     }
+}
 
-    // Returns the list of games owned by the user in Steam.
-    pub async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
+#[async_trait]
+impl Storefront for SteamApi {
+    async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
         let uri = format!(
             "{}{}?key={}&steamid={}&include_appinfo=true&format=json",
             STEAM_HOST, STEAM_GETOWNEDGAMES_SERVICE, self.steam_key, self.steam_user_id

@@ -1,6 +1,8 @@
 use crate::api;
 use crate::models::StoreEntry;
+use crate::traits::Storefront;
 use crate::Status;
+use async_trait::async_trait;
 
 pub struct GogApi {
     token: api::GogToken,
@@ -27,8 +29,11 @@ impl GogApi {
 
         Ok(game_list)
     }
+}
 
-    pub async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
+#[async_trait]
+impl Storefront for GogApi {
+    async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
         let mut store_entries: Vec<StoreEntry> = vec![];
 
         for page in 1.. {
