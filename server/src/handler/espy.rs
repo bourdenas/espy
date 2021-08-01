@@ -7,8 +7,8 @@ use std::sync::Arc;
 
 /// Implementation of espy.Espy API.
 pub struct EspyImpl {
-    keys: util::keys::Keys,
-    igdb: Arc<IgdbApi>,
+    _keys: util::keys::Keys,
+    _igdb: Arc<IgdbApi>,
 }
 
 impl EspyImpl {
@@ -17,8 +17,8 @@ impl EspyImpl {
         igdb.connect().await?;
 
         Ok(EspyImpl {
-            keys,
-            igdb: Arc::new(igdb),
+            _keys: keys,
+            _igdb: Arc::new(igdb),
         })
     }
 }
