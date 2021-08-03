@@ -1,4 +1,3 @@
-import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/widgets/dialogs/auth_dialog.dart';
 import 'package:espy/widgets/scaffold/espy_drawer.dart' show EspyDrawer;
@@ -7,7 +6,7 @@ import 'package:espy/widgets/scaffold/espy_navigation_rail.dart'
 import 'package:espy/widgets/library/game_library.dart'
     show GameLibrary, LibraryView;
 import 'package:espy/widgets/dialogs/search_dialog.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:espy/widgets/scaffold/searchbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,38 +16,6 @@ class EspyScaffold extends StatefulWidget {
 }
 
 class _EspyScaffoldState extends State<EspyScaffold> {
-  @override
-  void initState() {
-    super.initState();
-
-    context.read<AppBarSearchModel>().controller = _searchController;
-
-    _searchController.addListener(() {
-      final text = _searchController.text.toLowerCase();
-      if (text.isNotEmpty && _searchIcon.icon != Icons.close) {
-        setState(() {
-          _searchIcon = Icon(Icons.close);
-        });
-      }
-      if (text.isEmpty && _searchIcon.icon != Icons.search) {
-        setState(() {
-          _searchIcon = Icon(Icons.search);
-        });
-      }
-      context.read<AppBarSearchModel>().text = _searchController.text;
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
-  Icon _searchIcon = Icon(Icons.search);
-
   List<bool> _viewSelection = [true, false, false];
   final List<LibraryView> _libraryViews = const [
     LibraryView.GRID,
@@ -62,7 +29,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
     return LayoutBuilder(builder: (context, constraints) {
       final auth = context.watch<UserModel>();
       return Row(children: [
-        if (constraints.maxWidth > 800 && context.watch<UserModel>().signedIn)
+        if (constraints.maxWidth > 800 && auth.signedIn)
           EspyNavigationRail(constraints.maxWidth > 3200),
         Expanded(
           child: Scaffold(
@@ -74,20 +41,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                       padding: EdgeInsets.symmetric(
                           horizontal: constraints.maxWidth > 800 ? 32 : 16)),
                   Expanded(
-                    child: auth.signedIn
-                        ? TextField(
-                            controller: _searchController,
-                            focusNode: _searchFocusNode,
-                            autofocus: kIsWeb,
-                            decoration: InputDecoration(
-                              prefixIcon: IconButton(
-                                icon: _searchIcon,
-                                onPressed: () => _searchController.clear(),
-                              ),
-                              hintText: 'Title search...',
-                            ),
-                          )
-                        : Container(),
+                    child: auth.signedIn ? Searchbar() : Container(),
                   ),
                   Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
                   if (auth.signedIn)
