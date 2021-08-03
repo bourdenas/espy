@@ -54,11 +54,16 @@ Future<void> main() async {
         update: (context, libraryModel, filtersModel, model) =>
             model!..update(libraryModel.library, filtersModel.filter),
       ),
-      ChangeNotifierProxyProvider2<GameLibraryModel, AppBarSearchModel,
+      ChangeNotifierProxyProvider<UserModel, UnknownEntriesModel>(
+        create: (context) => UnknownEntriesModel(),
+        update: (context, userModel, model) =>
+            model!..update(userModel.user.uid),
+      ),
+      ChangeNotifierProxyProvider2<UnknownEntriesModel, AppBarSearchModel,
           UnmatchedEntriesModel>(
         create: (context) => UnmatchedEntriesModel(),
-        update: (context, libraryModel, appBarSearchModel, model) =>
-            model!..update(libraryModel.library, appBarSearchModel.text),
+        update: (context, unknownModel, appBarSearchModel, model) =>
+            model!..update(unknownModel, appBarSearchModel.text),
       ),
     ],
     child: EspyApp(),
