@@ -96,7 +96,7 @@ class SettingsDialog extends StatelessWidget {
           child: Text("Ok"),
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              await context.read<UserModel>().updateUserInformation(
+              await context.read<UserModel>().updateUserProfile(
                     steamUserId: _steamTextController.text,
                     gogAuthCode: _gogTextController.text,
                   );
@@ -108,7 +108,7 @@ class SettingsDialog extends StatelessWidget {
           child: Text("Sync"),
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              await context.read<UserModel>().updateUserInformation(
+              await context.read<UserModel>().updateUserProfile(
                     steamUserId: _steamTextController.text,
                     gogAuthCode: _gogTextController.text,
                   );

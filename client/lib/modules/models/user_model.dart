@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
@@ -38,7 +37,7 @@ class UserModel extends ChangeNotifier {
       return false;
     }
 
-    await _fetchUserSettings();
+    await _fetchUserProfile();
 
     notifyListeners();
     return true;
@@ -52,7 +51,7 @@ class UserModel extends ChangeNotifier {
     }
 
     _user = await _getUser(googleSignInAccount);
-    await _fetchUserSettings();
+    await _fetchUserProfile();
 
     notifyListeners();
   }
@@ -64,27 +63,19 @@ class UserModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateUserInformation(
+  Future<void> updateUserProfile(
       {String steamUserId = '', String gogAuthCode = ''}) async {
-    var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/${_user!.uid}/settings'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({
-        'steam_user_id': steamUserId,
-        'gog_auth_code': gogAuthCode,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      print('Failed to post updated user information:\n$response');
-      return;
-    }
-
     _steamUserId = steamUserId;
     _gogAuthCode = gogAuthCode;
-    notifyListeners();
+
+    FirebaseFirestore.instance.collection('users').doc(_user!.uid).update({
+      'keys': {
+        'steam_user_id': steamUserId,
+        'gog_token': {
+          'oauth_code': gogAuthCode,
+        },
+      },
+    }).onError((error, _) => print('Failed to update user profile:$error'));
   }
 
   Future<void> syncLibrary() async {
@@ -102,20 +93,30 @@ class UserModel extends ChangeNotifier {
     }
   }
 
-  Future<void> _fetchUserSettings() async {
+  Future<void> _fetchUserProfile() async {
     if (_user == null) {
       return;
     }
 
-    final response = await http
-        .get(Uri.parse('${Urls.espyBackend}/library/${_user!.uid}/settings'));
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_user!.uid)
+        .get();
 
-    if (response.statusCode == 200) {
-      final obj = jsonDecode(response.body);
-      _steamUserId = obj['steam_user_id'];
-      _gogAuthCode = obj['gog_auth_code'];
-    } else {
-      print('Failed to retrieve user information.');
+    final doc = snapshot.data();
+    if (doc == null) {
+      // Create new user entry.
+      await FirebaseFirestore.instance.collection('users').doc(_user!.uid).set({
+        'uid': _user!.uid,
+      });
+      return;
+    }
+
+    if (doc['keys'] != null) {
+      _steamUserId = doc['keys']['steam_user_id'];
+      if (doc['keys']['gog_token'] != null) {
+        _gogAuthCode = doc['keys']['gog_token']['oauth_code'];
+      }
     }
   }
 }
