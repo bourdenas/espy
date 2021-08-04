@@ -24,6 +24,7 @@ pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infall
     }
 }
 
+#[deprecated(note = "TBR by direct client calls to Firestore.")]
 pub async fn get_settings(
     user_id: String,
     firestore: Arc<Mutex<FirestoreApi>>,
@@ -52,6 +53,7 @@ pub async fn get_settings(
     Ok(Box::new(warp::reply::json(&settings)))
 }
 
+#[deprecated(note = "TBR by direct client calls to Firestore.")]
 pub async fn post_settings(
     user_id: String,
     settings: models::Settings,
