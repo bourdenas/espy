@@ -1,6 +1,7 @@
+import 'package:espy/modules/documents/store_entry.dart' as doc;
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
-import 'package:espy/proto/library.pb.dart';
+import 'package:espy/proto/library.pb.dart' show GameEntry, StoreEntry;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -151,7 +152,15 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
 
                                 await context
                                     .read<GameLibraryModel>()
-                                    .unmatchEntry(_chosenValue, _entry.game);
+                                    // TODO: Fix this once we get rid of protobufs
+                                    // .unmatchEntry(_chosenValue, _entry.game);
+                                    .unmatchEntry(
+                                        doc.StoreEntry(
+                                          id: _chosenValue.id,
+                                          title: _chosenValue.title,
+                                          storefront: "steam",
+                                        ),
+                                        _entry.game);
                               },
                               child: Text('Confirm')),
                           TextButton(

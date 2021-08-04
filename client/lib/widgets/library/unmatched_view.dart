@@ -18,7 +18,7 @@ class UnmatchedView extends StatelessWidget {
                 title: Row(children: [
                   Text(storeEntry.title),
                 ]),
-                subtitle: Text('${storeEntry.store}'),
+                subtitle: Text('${storeEntry.storefront}'),
                 onTap: () async =>
                     await StoreEntryEditDialog.show(context, storeEntry),
               ),

@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:espy/proto/library.pb.dart' show StoreEntry;
+import 'package:espy/modules/documents/store_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class UnknownEntriesModel extends ChangeNotifier {
@@ -15,14 +15,16 @@ class UnknownEntriesModel extends ChangeNotifier {
         .collection('users')
         .doc(userId)
         .collection('unknown')
+        .withConverter<StoreEntry>(
+          fromFirestore: (snapshot, _) => StoreEntry.fromJson(snapshot.data()!),
+          toFirestore: (entry, _) => entry.toJson(),
+        )
         .limit(5)
         .snapshots()
         .listen((snapshot) {
       _entries = snapshot.docs
           .map(
-            (doc) => StoreEntry(
-              title: doc.data()['title'],
-            ),
+            (doc) => doc.data(),
           )
           .toList()
             ..sort((l, r) {
