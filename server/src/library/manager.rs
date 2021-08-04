@@ -1,21 +1,16 @@
 use crate::api::{FirestoreApi, GogApi, SteamApi};
-use crate::espy;
 use crate::library::Reconciler;
-use crate::models::StoreEntry;
+use crate::models::{igdb, GameEntry, StoreEntry};
 use crate::traits;
-use crate::util;
 use crate::Status;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::iter::FromIterator;
-use std::mem::swap;
 use std::sync::{Arc, Mutex};
 
 /// Proxy structure that handles operations regarding user's library.
 pub struct LibraryManager {
-    pub library: espy::Library,
-    path: String,
     user_id: String,
     firestore: Arc<Mutex<FirestoreApi>>,
 }
@@ -24,8 +19,6 @@ impl LibraryManager {
     /// Creates a LibraryManager instance for a user.
     pub fn new(user_id: &str, firestore: Arc<Mutex<FirestoreApi>>) -> Self {
         LibraryManager {
-            library: espy::Library::default(),
-            path: format!("users/{}/library", user_id),
             user_id: String::from(user_id),
             firestore,
         }
@@ -82,6 +75,66 @@ impl LibraryManager {
         Ok(())
     }
 
+    /// Reconciles unmatched entries in library.
+    pub async fn reconcile(&self, recon_service: Reconciler) -> Result<(), Status> {
+        let unknown_entries = self.read_unknown_entries()?;
+        let matches = recon_service.reconcile(unknown_entries).await?;
+
+        // Store igdb entries to /games collection.
+        self.write_games(
+            &matches
+                .iter()
+                .filter_map(|m| match &m.igdb_entry {
+                    Some(e) => Some(e),
+                    None => None,
+                })
+                .collect::<Vec<&igdb::Entry>>(),
+        )?;
+
+        // Create GameEntry from IgdbEntry and StoreEntry.
+        let mut game_entries = matches
+            .into_iter()
+            .filter_map(|m| match m.igdb_entry {
+                Some(igdb_entry) => Some(GameEntry {
+                    id: igdb_entry.id,
+                    name: igdb_entry.name,
+                    cover: match igdb_entry.cover {
+                        Some(cover) => Some(cover.image_id),
+                        None => None,
+                    },
+                    store_entry: vec![m.store_entry],
+                    ..Default::default()
+                }),
+                None => None,
+            })
+            .collect::<Vec<GameEntry>>();
+
+        // Group entries by id. User may have same game in multiple storefronts.
+        game_entries.sort_by_key(|e| e.id);
+        let groups = game_entries.into_iter().group_by(|e| e.id);
+
+        // Collapse groups into a single entry and maintain ownership in
+        // different stores.
+        let game_entries = groups
+            .into_iter()
+            .map(|(_key, mut group)| {
+                let init = group.next().unwrap_or_default();
+                group.fold(init, |mut acc, x| {
+                    acc.store_entry.extend(x.store_entry);
+                    acc
+                })
+            })
+            .collect::<Vec<GameEntry>>();
+
+        // Store GameEntries to 'users/{user}/library' collection.
+        self.write_game_entries(&game_entries)?;
+
+        // Delete matched StoreEntries from 'users/{user}/unknown'
+        self.delete_unknown_entries(&game_entries)?;
+
+        Ok(())
+    }
+
     /// Returns all store game ids owned by user from specified storefront.
     ///
     /// Reads `users/{user}/storefront/{storefront_name}` document in Firestore.
@@ -117,7 +170,7 @@ impl LibraryManager {
 
     /// Create new library entries for newly found storefront entries.
     ///
-    /// Writes [Storefront] documents under collection `users/{user}/unknown` in
+    /// Writes [StoreEntry] documents under collection `users/{user}/unknown` in
     /// Firestore.
     fn write_unknown_entries(&self, entries: &[StoreEntry]) -> Result<(), Status> {
         for entry in entries {
@@ -130,81 +183,56 @@ impl LibraryManager {
         Ok(())
     }
 
-    /// Reconciles unmatched entries in library.
-    pub async fn reconcile(&mut self, recon_service: Reconciler) -> Result<(), Status> {
-        self.update_library(
-            recon_service
-                .reconcile(&self.library.unreconciled_store_entry)
-                .await?,
-        );
+    fn read_unknown_entries(&self) -> Result<Vec<StoreEntry>, Status> {
+        match self
+            .firestore
+            .lock()
+            .unwrap()
+            .list::<StoreEntry>(&format!("users/{}/unknown", self.user_id))
+        {
+            Ok(entries) => Ok(entries),
+            Err(e) => Err(Status::internal("LibraryManager.read_unknown_entries: ", e)),
+        }
+    }
 
-        // Save changes in local library.
-        util::proto::save(&self.path, &self.library)?;
-
+    fn write_games(&self, entries: &[&igdb::Entry]) -> Result<(), Status> {
+        for entry in entries {
+            self.firestore.lock().unwrap().write::<igdb::Entry>(
+                "games",
+                Some(&entry.id.to_string()),
+                entry,
+            )?;
+        }
         Ok(())
     }
 
-    // Merges update into existing library. Ensures that there are no duplicate
-    // entries.
-    fn update_library(&mut self, update: espy::Library) {
-        self.library.unreconciled_store_entry = update.unreconciled_store_entry;
-        if update.entry.is_empty() {
-            return;
+    fn write_game_entries(&self, entries: &[GameEntry]) -> Result<(), Status> {
+        for entry in entries {
+            self.firestore.lock().unwrap().write::<GameEntry>(
+                &format!("users/{}/library", self.user_id),
+                Some(&entry.id.to_string()),
+                &entry,
+            )?;
         }
+        Ok(())
+    }
 
-        let mut entries = vec![];
-        swap(&mut entries, &mut self.library.entry);
-        entries.extend(update.entry);
-
-        // Sort entries by Game.id and aggregate in groups entries with the same
-        // Game.id.
-        entries.sort_by_key(|e| match &e.game {
-            Some(game) => game.id,
-            None => 0,
-        });
-        let groups = entries.into_iter().group_by(|e| match &e.game {
-            Some(game) => game.id,
-            None => 0,
-        });
-
-        // Collapse groups of same Game into a single entry and maintain
-        // ownership in different stores.
-        for (_key, mut group) in groups.into_iter() {
-            let init = group.next().unwrap_or_default();
-            let group = group.collect::<Vec<espy::GameEntry>>();
-            self.library.entry.push(match group.is_empty() {
-                false => group.into_iter().fold(init, |acc, x| {
-                    let mut entry = acc;
-                    entry.store_entry.extend(x.store_entry);
-                    entry
-                }),
-                true => init,
-            });
+    fn delete_unknown_entries(&self, entries: &[GameEntry]) -> Result<(), Status> {
+        for entry in entries {
+            for store_entry in &entry.store_entry {
+                self.firestore.lock().unwrap().delete(&format!(
+                    "users/{}/unknown/{}",
+                    self.user_id,
+                    store_entry.id.to_string()
+                ))?;
+            }
         }
+        Ok(())
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
-struct GameEntry {
-    uid: String,
-    name: String,
-    cover: String,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    user_data: Option<GameUserData>,
-
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    store_entry: Vec<StoreEntry>,
-}
-
-#[derive(Serialize, Deserialize, Default, Debug)]
-struct GameUserData {
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    tags: Vec<String>,
-}
-
-/// Document type under /users/{user_id}/storefronts/{storefront_name}. They are
-/// used as a quick way to check user's game ownership in a storefront.
+/// Document type under 'users/{user_id}/storefronts/{storefront_name}'. They
+/// are used as a quick way to check user's game ownership in a storefront.
 ///
 /// NOTE: Used as a duplicate entry, instead of querying GameEntries and
 /// StoreEntries, to reduce Firestore reads when syncing libraries.

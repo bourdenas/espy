@@ -54,6 +54,15 @@ impl FirestoreApi {
         }
     }
 
+    /// Deletes a document in the specified path. Silently returns if no such
+    /// document exists.
+    pub fn delete(&self, path: &str) -> Result<(), Status> {
+        match documents::delete(&self.session, path, false) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(Status::internal("Firestore.delete: ", e)),
+        }
+    }
+
     /// Returns all Firestore documents in the specified path.
     pub fn list<T>(&self, path: &str) -> Result<Vec<T>, Status>
     where

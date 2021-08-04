@@ -1,5 +1,5 @@
-use crate::espy;
 use crate::igdb;
+use crate::models::StoreEntry;
 use crate::util::rate_limiter::RateLimiter;
 use crate::Status;
 use prost::Message;
@@ -52,12 +52,11 @@ impl IgdbApi {
 
     pub async fn match_external(
         &self,
-        store_entry: &espy::StoreEntry,
+        store_entry: &StoreEntry,
     ) -> Result<Option<igdb::ExternalGame>, Status> {
-        // I don't get why proto enums are i32 in porst!?!
-        let category: u8 = match store_entry.store {
-            1 => 1,
-            2 => 5,
+        let category: u8 = match store_entry.storefront_name.as_ref() {
+            "steam" => 1,
+            "gog" => 5,
             _ => 0,
         };
 
@@ -88,6 +87,54 @@ impl IgdbApi {
         }
     }
 
+    /// Retrieves igdb.Game fields that are relevant to espy. For instance, cover
+    /// images, screenshots, franchise info, etc.
+    ///
+    /// IGDB returns Game entries only with relevant IDs for such items that need
+    /// subsequent lookups in corresponding IGDB tables.
+    pub async fn retrieve_game_info(&self, game: &mut igdb::Game) -> Result<(), Status> {
+        if let Some(cover) = &game.cover {
+            if let Some(cover) = self.get_cover(cover.id).await? {
+                game.cover = Some(Box::new(cover));
+            }
+        }
+        if let Some(collection) = &game.collection {
+            game.collection = self.get_collection(collection.id).await?;
+        }
+        if game.franchises.len() > 0 {
+            game.franchises = self
+                .get_franchises(&game.franchises.iter().map(|f| f.id).collect::<Vec<_>>())
+                .await?
+                .franchises;
+        }
+        if game.involved_companies.len() > 0 {
+            game.involved_companies = self
+                .get_companies(
+                    &game
+                        .involved_companies
+                        .iter()
+                        .map(|f| f.id)
+                        .collect::<Vec<_>>(),
+                )
+                .await?
+                .involvedcompanies;
+        }
+        if game.artworks.len() > 0 {
+            game.artworks = self
+                .get_artwork(&game.artworks.iter().map(|f| f.id).collect::<Vec<_>>())
+                .await?
+                .artworks;
+        }
+        if game.screenshots.len() > 0 {
+            game.screenshots = self
+                .get_screenshots(&game.screenshots.iter().map(|f| f.id).collect::<Vec<_>>())
+                .await?
+                .screenshots;
+        }
+
+        Ok(())
+    }
+
     // Returns game image cover based on id from the igdb/covers endpoint.
     pub async fn get_cover(&self, cover_id: u64) -> Result<Option<igdb::Cover>, Status> {
         let mut result: igdb::CoverResult = self
@@ -104,10 +151,7 @@ impl IgdbApi {
     }
 
     // Returns game collection based on id from the igdb/collections endpoint.
-    pub async fn get_collection(
-        &self,
-        collection_id: u64,
-    ) -> Result<Option<igdb::Collection>, Status> {
+    async fn get_collection(&self, collection_id: u64) -> Result<Option<igdb::Collection>, Status> {
         let mut result: igdb::CollectionResult = self
             .post(
                 COLLECTIONS_ENDPOINT,
@@ -122,7 +166,7 @@ impl IgdbApi {
     }
 
     // Returns game screenshots based on id from the igdb/screenshots endpoint.
-    pub async fn get_artwork(&self, artwork_ids: &[u64]) -> Result<igdb::ArtworkResult, Status> {
+    async fn get_artwork(&self, artwork_ids: &[u64]) -> Result<igdb::ArtworkResult, Status> {
         Ok(self
             .post(
                 ARTWORKS_ENDPOINT,
@@ -139,7 +183,7 @@ impl IgdbApi {
     }
 
     // Returns game screenshots based on id from the igdb/screenshots endpoint.
-    pub async fn get_screenshots(
+    async fn get_screenshots(
         &self,
         screenshot_ids: &[u64],
     ) -> Result<igdb::ScreenshotResult, Status> {
@@ -159,10 +203,7 @@ impl IgdbApi {
     }
 
     // Returns game franchices based on id from the igdb/frachises endpoint.
-    pub async fn get_franchises(
-        &self,
-        franchise_ids: &[u64],
-    ) -> Result<igdb::FranchiseResult, Status> {
+    async fn get_franchises(&self, franchise_ids: &[u64]) -> Result<igdb::FranchiseResult, Status> {
         Ok(self
             .post(
                 FRANCHISES_ENDPOINT,
@@ -179,7 +220,7 @@ impl IgdbApi {
     }
 
     // Returns game companies involved in the making of the game.
-    pub async fn get_companies(
+    async fn get_companies(
         &self,
         company_ids: &[u64],
     ) -> Result<igdb::InvolvedCompanyResult, Status> {
