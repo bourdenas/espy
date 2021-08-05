@@ -35,9 +35,8 @@ impl FirestoreApi {
         }
     }
 
-    /// Writes or updates a document given an optional id. If None is provided
-    /// for doc_id a new document is created with a generated id.
-    /// Returns the document id.
+    /// Writes a document given an optional id. If None is provided for doc_id
+    /// a new document is created with a generated id. Returns the document id.
     pub fn write<T>(&self, path: &str, doc_id: Option<&str>, doc: &T) -> Result<String, Status>
     where
         T: Serialize,
@@ -51,6 +50,25 @@ impl FirestoreApi {
         ) {
             Ok(result) => Ok(result.document_id),
             Err(e) => Err(Status::internal("Firestore.write: ", e)),
+        }
+    }
+
+    /// Updates a document with fields present in the struct. For Option fields
+    /// that are not set the existing document value is preserved. Fails is the
+    /// document does not already exist.
+    pub fn update<T>(&self, path: &str, doc_id: &str, doc: &T) -> Result<String, Status>
+    where
+        T: Serialize,
+    {
+        match documents::write(
+            &self.session,
+            path,
+            Some(doc_id),
+            doc,
+            documents::WriteOptions { merge: true },
+        ) {
+            Ok(result) => Ok(result.document_id),
+            Err(e) => Err(Status::internal("Firestore.update: ", e)),
         }
     }
 
