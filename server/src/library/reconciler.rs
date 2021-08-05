@@ -1,7 +1,7 @@
 use crate::api::IgdbApi;
+use crate::documents::{self, GameEntry, StoreEntry};
 use crate::espy;
 use crate::igdb;
-use crate::models::{self, StoreEntry};
 use crate::Status;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
@@ -13,7 +13,7 @@ pub struct Reconciler {
 
 pub struct Match {
     pub store_entry: StoreEntry,
-    pub igdb_entry: Option<models::igdb::Entry>,
+    pub game_entry: Option<GameEntry>,
 }
 
 impl Reconciler {
@@ -61,15 +61,15 @@ const IGDB_CONNECTIONS_LIMIT: usize = 8;
 
 async fn recon_task(task: Task) {
     let entry_match = match resolve(&task.igdb, &task.store_entry).await {
-        Ok(igdb_entry) => Match {
+        Ok(game_entry) => Match {
             store_entry: task.store_entry,
-            igdb_entry,
+            game_entry,
         },
         Err(e) => {
             println!("Failed to resolve '{}': {}", task.store_entry.title, e);
             Match {
                 store_entry: task.store_entry,
-                igdb_entry: None,
+                game_entry: None,
             }
         }
     };
@@ -80,10 +80,7 @@ async fn recon_task(task: Task) {
 }
 
 /// Returns a game entry from IGDB that matches the input store entry.
-async fn resolve(
-    igdb: &IgdbApi,
-    store_entry: &StoreEntry,
-) -> Result<Option<models::igdb::Entry>, Status> {
+async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<Option<GameEntry>, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
     let igdb_external_game = igdb.match_external(store_entry).await?;
@@ -91,35 +88,32 @@ async fn resolve(
         return Ok(None);
     }
 
-    let igdb_entry = igdb
+    let game_entry = igdb
         .get_game_by_id(igdb_external_game.unwrap().game.unwrap().id)
         .await?;
-    if let None = igdb_entry {
+    if let None = game_entry {
         return Ok(None);
     }
 
-    let mut igdb_entry = igdb_entry.unwrap();
-    igdb.retrieve_game_info(&mut igdb_entry).await?;
+    let mut game_entry = game_entry.unwrap();
+    igdb.retrieve_game_info(&mut game_entry).await?;
 
-    Ok(Some(convert(igdb_entry)))
+    Ok(Some(convert(game_entry)))
 }
 
-fn convert(igdb_game: igdb::Game) -> models::igdb::Entry {
-    models::igdb::Entry {
+fn convert(igdb_game: igdb::Game) -> GameEntry {
+    GameEntry {
         id: igdb_game.id,
         name: igdb_game.name,
+        summary: igdb_game.summary,
 
-        cover: match igdb_game.cover {
-            Some(cover) => Some(models::igdb::Image {
-                image_id: cover.image_id,
-                height: cover.height,
-                width: cover.width,
-            }),
+        release_date: match igdb_game.first_release_date {
+            Some(date) => Some(date.seconds),
             None => None,
         },
 
         collection: match igdb_game.collection {
-            Some(collection) => Some(models::igdb::Collection {
+            Some(collection) => Some(documents::Annotation {
                 id: collection.id,
                 name: collection.name,
             }),
@@ -129,7 +123,7 @@ fn convert(igdb_game: igdb::Game) -> models::igdb::Entry {
         franchises: igdb_game
             .franchises
             .into_iter()
-            .map(|franchise| models::igdb::Franchise {
+            .map(|franchise| documents::Annotation {
                 id: franchise.id,
                 name: franchise.name,
             })
@@ -138,7 +132,7 @@ fn convert(igdb_game: igdb::Game) -> models::igdb::Entry {
         companies: igdb_game
             .involved_companies
             .into_iter()
-            .map(|company| models::igdb::Company {
+            .map(|company| documents::Annotation {
                 id: company.id,
                 name: match company.company {
                     Some(company) => company.name,
@@ -147,10 +141,19 @@ fn convert(igdb_game: igdb::Game) -> models::igdb::Entry {
             })
             .collect(),
 
+        cover: match igdb_game.cover {
+            Some(cover) => Some(documents::Image {
+                image_id: cover.image_id,
+                height: cover.height,
+                width: cover.width,
+            }),
+            None => None,
+        },
+
         screenshots: igdb_game
             .screenshots
             .into_iter()
-            .map(|image| models::igdb::Image {
+            .map(|image| documents::Image {
                 image_id: image.image_id,
                 height: image.height,
                 width: image.width,
@@ -160,7 +163,7 @@ fn convert(igdb_game: igdb::Game) -> models::igdb::Entry {
         artwork: igdb_game
             .artworks
             .into_iter()
-            .map(|image| models::igdb::Image {
+            .map(|image| documents::Image {
                 image_id: image.image_id,
                 height: image.height,
                 width: image.width,

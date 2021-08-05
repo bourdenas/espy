@@ -1,5 +1,5 @@
 use crate::api;
-use crate::models::StoreEntry;
+use crate::documents::StoreEntry;
 use crate::traits::Storefront;
 use crate::Status;
 use async_trait::async_trait;

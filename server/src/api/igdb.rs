@@ -1,5 +1,5 @@
+use crate::documents::StoreEntry;
 use crate::igdb;
-use crate::models::StoreEntry;
 use crate::util::rate_limiter::RateLimiter;
 use crate::Status;
 use prost::Message;

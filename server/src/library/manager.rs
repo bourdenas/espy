@@ -1,6 +1,6 @@
 use crate::api::{FirestoreApi, GogApi, SteamApi};
+use crate::documents::{GameEntry, LibraryEntry, StoreEntry};
 use crate::library::Reconciler;
-use crate::models::{igdb, GameEntry, StoreEntry};
 use crate::traits;
 use crate::Status;
 use itertools::Itertools;
@@ -84,30 +84,34 @@ impl LibraryManager {
         self.write_games(
             &matches
                 .iter()
-                .filter_map(|m| match &m.igdb_entry {
+                .filter_map(|m| match &m.game_entry {
                     Some(e) => Some(e),
                     None => None,
                 })
-                .collect::<Vec<&igdb::Entry>>(),
+                .collect::<Vec<&GameEntry>>(),
         )?;
 
-        // Create GameEntry from IgdbEntry and StoreEntry.
+        // Create LibraryEntry from IgdbEntry and StoreEntry.
         let mut game_entries = matches
             .into_iter()
-            .filter_map(|m| match m.igdb_entry {
-                Some(igdb_entry) => Some(GameEntry {
-                    id: igdb_entry.id,
-                    name: igdb_entry.name,
-                    cover: match igdb_entry.cover {
+            .filter_map(|m| match m.game_entry {
+                Some(game_entry) => Some(LibraryEntry {
+                    id: game_entry.id,
+                    name: game_entry.name,
+                    cover: match game_entry.cover {
                         Some(cover) => Some(cover.image_id),
                         None => None,
                     },
+                    release_date: game_entry.release_date,
+                    collection: game_entry.collection,
+                    franchises: game_entry.franchises,
+                    companies: game_entry.companies,
                     store_entry: vec![m.store_entry],
-                    ..Default::default()
+                    user_data: None,
                 }),
                 None => None,
             })
-            .collect::<Vec<GameEntry>>();
+            .collect::<Vec<LibraryEntry>>();
 
         // Group entries by id. User may have same game in multiple storefronts.
         game_entries.sort_by_key(|e| e.id);
@@ -124,7 +128,7 @@ impl LibraryManager {
                     acc
                 })
             })
-            .collect::<Vec<GameEntry>>();
+            .collect::<Vec<LibraryEntry>>();
 
         // Store GameEntries to 'users/{user}/library' collection.
         self.write_game_entries(&game_entries)?;
@@ -195,9 +199,9 @@ impl LibraryManager {
         }
     }
 
-    fn write_games(&self, entries: &[&igdb::Entry]) -> Result<(), Status> {
+    fn write_games(&self, entries: &[&GameEntry]) -> Result<(), Status> {
         for entry in entries {
-            self.firestore.lock().unwrap().write::<igdb::Entry>(
+            self.firestore.lock().unwrap().write::<GameEntry>(
                 "games",
                 Some(&entry.id.to_string()),
                 entry,
@@ -206,9 +210,9 @@ impl LibraryManager {
         Ok(())
     }
 
-    fn write_game_entries(&self, entries: &[GameEntry]) -> Result<(), Status> {
+    fn write_game_entries(&self, entries: &[LibraryEntry]) -> Result<(), Status> {
         for entry in entries {
-            self.firestore.lock().unwrap().write::<GameEntry>(
+            self.firestore.lock().unwrap().write::<LibraryEntry>(
                 &format!("users/{}/library", self.user_id),
                 Some(&entry.id.to_string()),
                 &entry,
@@ -217,7 +221,7 @@ impl LibraryManager {
         Ok(())
     }
 
-    fn delete_unknown_entries(&self, entries: &[GameEntry]) -> Result<(), Status> {
+    fn delete_unknown_entries(&self, entries: &[LibraryEntry]) -> Result<(), Status> {
         for entry in entries {
             for store_entry in &entry.store_entry {
                 self.firestore.lock().unwrap().delete(&format!(
