@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::iter::FromIterator;
 use std::sync::{Arc, Mutex};
+use tokio::sync::mpsc;
 
 /// Proxy structure that handles operations regarding user's library.
 pub struct LibraryManager {
@@ -78,7 +79,18 @@ impl LibraryManager {
     /// Reconciles unmatched entries in library.
     pub async fn reconcile(&self, recon_service: Reconciler) -> Result<(), Status> {
         let unknown_entries = self.read_unknown_entries()?;
-        let matches = recon_service.reconcile(unknown_entries).await?;
+
+        let (tx, mut rx) = mpsc::channel(32);
+
+        tokio::spawn(async move {
+            recon_service.reconcile(tx, unknown_entries).await;
+        });
+
+        let mut matches = vec![];
+        while let Some(entry_match) = rx.recv().await {
+            println!("  received match for {}", &entry_match.store_entry.title);
+            matches.push(entry_match);
+        }
 
         // Store igdb entries to /games collection.
         self.write_games(

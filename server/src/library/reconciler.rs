@@ -22,9 +22,7 @@ impl Reconciler {
     }
 
     /// Matches store entries with IGDB entries.
-    pub async fn reconcile(&self, entries: Vec<StoreEntry>) -> Result<Vec<Match>, Status> {
-        let (tx, mut rx) = mpsc::channel(32);
-
+    pub async fn reconcile(&self, tx: mpsc::Sender<Match>, entries: Vec<StoreEntry>) {
         let fut = stream::iter(entries.into_iter().map(|store_entry| Task {
             store_entry: store_entry,
             igdb: Arc::clone(&self.igdb),
@@ -32,21 +30,8 @@ impl Reconciler {
         }))
         .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, recon_task);
 
-        let handle = tokio::spawn(async move {
-            let mut matches = vec![];
-            while let Some(entry_match) = rx.recv().await {
-                matches.push(entry_match);
-            }
-            return matches;
-        });
-
         fut.await;
         drop(tx);
-
-        match handle.await {
-            Ok(matches) => Ok(matches),
-            Err(err) => Err(Status::internal("StoreEntry reconciliation failed", err)),
-        }
     }
 
     pub async fn update_entry(&self, game_entry: &mut espy::GameEntry) -> Result<(), Status> {
