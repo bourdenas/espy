@@ -13,7 +13,7 @@ use warp::http::StatusCode;
 
 #[deprecated(note = "TBR by direct client calls to Firestore.")]
 pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("GET /library/{}", &user_id);
+    println!("[deprecated] GET /library/{}", &user_id);
 
     let library = espy::Library::default();
 
@@ -29,7 +29,7 @@ pub async fn get_settings(
     user_id: String,
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("GET /library/{}/settings", &user_id);
+    println!("[deprecated] GET /library/{}/settings", &user_id);
 
     let user = match User::new(firestore, &user_id) {
         Ok(user) => user,
@@ -59,7 +59,7 @@ pub async fn post_settings(
     settings: models::Settings,
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> Result<impl warp::Reply, Infallible> {
-    println!("POST /library/{}/settings", &user_id);
+    println!("[deprecated] POST /library/{}/settings", &user_id);
 
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
@@ -114,7 +114,7 @@ pub async fn post_details(
     details: models::Details,
 ) -> Result<impl warp::Reply, Infallible> {
     println!(
-        "POST /library/{}/details/{} body: {:?}",
+        "[deprecated] POST /library/{}/details/{} body: {:?}",
         &user_id, game_id, &details
     );
 
@@ -192,7 +192,7 @@ pub async fn post_unmatch(
     user_id: String,
     match_msg: models::Match,
 ) -> Result<impl warp::Reply, Infallible> {
-    println!("POST /library/{}/unmatch", &user_id);
+    println!("[deprecated] POST /library/{}/unmatch", &user_id);
 
     let store_entry = match espy::StoreEntry::decode(Bytes::from(match_msg.encoded_store_entry)) {
         Ok(msg) => msg,
