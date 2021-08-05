@@ -33,24 +33,24 @@ class LibraryListView extends StatelessWidget {
                     (entry) => Listener(
                       child: ListTile(
                         leading: Hero(
-                            tag: '${entry.game.id}_cover',
+                            tag: '${entry.id}_cover',
                             child: CircleAvatar(
                                 foregroundImage: NetworkImage(
-                                    '${Urls.imageProvider}/t_thumb/${entry.game.cover.imageId}.jpg'))),
-                        title: Text(entry.game.name),
+                                    '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'))),
+                        title: Text(entry.name),
                         subtitle: Text(
-                            '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}'),
+                            '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate?.toInt() ?? 0 * 1000).year}'),
                         trailing: Wrap(
                           spacing: 8.0,
                           runSpacing: 4.0,
                           children: [
-                            for (final tag in entry.details.tag)
+                            for (final tag in entry.userData.tags)
                               TagChip(tag, entry)
                           ],
                         ),
                         onTap: () => context
                             .read<EspyRouterDelegate>()
-                            .showGameDetails('${entry.game.id}'),
+                            .showGameDetails('${entry.id}'),
                       ),
                       onPointerDown: (PointerDownEvent event) async =>
                           await showTagsContextMenu(context, event, entry),

@@ -1,14 +1,17 @@
 // import 'dart:ui' as ui;
 import 'package:espy/constants/urls.dart';
-import 'package:espy/proto/library.pb.dart';
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:espy/widgets/dialogs/game_entry_edit_dialog.dart';
 import 'package:flutter/material.dart';
 
 class GameDetails extends StatelessWidget {
-  final GameEntry entry;
+  final LibraryEntry entry;
 
-  GameDetails({Key? key, required this.entry}) : super(key: key);
+  GameDetails(
+    this.entry, {
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +33,7 @@ class GameDetails extends StatelessWidget {
                   ],
                   Container(
                     padding: const EdgeInsets.all(32),
-                    child: SelectableText(entry.game.summary),
+                    child: SelectableText(entry.details.summary),
                   )
                 ]);
               },
@@ -50,7 +53,7 @@ enum _Layout {
 }
 
 class _HeaderSliver extends StatelessWidget {
-  final GameEntry entry;
+  final LibraryEntry entry;
   final _Layout layout;
 
   const _HeaderSliver(this.entry, this.layout);
@@ -88,9 +91,9 @@ class _HeaderSliver extends StatelessWidget {
                   clipBehavior: Clip.none,
                   children: [
                     Hero(
-                      tag: '${entry.game.id}_cover',
+                      tag: '${entry.id}_cover',
                       child: Image.network(
-                        '${Urls.imageProvider}/t_cover_big/${entry.game.cover.imageId}.jpg',
+                        '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -124,7 +127,7 @@ class _HeaderSliver extends StatelessWidget {
 }
 
 class _GameTitle extends StatelessWidget {
-  final GameEntry entry;
+  final LibraryEntry entry;
 
   _GameTitle(this.entry);
 
@@ -135,7 +138,7 @@ class _GameTitle extends StatelessWidget {
         Row(children: [
           Expanded(
             child: Text(
-              entry.game.name,
+              entry.name,
               style: Theme.of(context).textTheme.headline3,
               textAlign: TextAlign.center,
             ),
@@ -149,7 +152,7 @@ class _GameTitle extends StatelessWidget {
 }
 
 class _ScreenshotsSliver extends StatelessWidget {
-  final GameEntry entry;
+  final LibraryEntry entry;
   final _Layout layout;
 
   const _ScreenshotsSliver(this.entry, this.layout);
@@ -160,11 +163,12 @@ class _ScreenshotsSliver extends StatelessWidget {
       crossAxisCount: layout == _Layout.twoColumns ? 2 : 1,
       mainAxisSpacing: 8,
       crossAxisSpacing: 8,
-      childAspectRatio: entry.game.screenshots.isNotEmpty
-          ? entry.game.screenshots[0].width / entry.game.screenshots[0].height
+      childAspectRatio: entry.details.screenshots.isNotEmpty
+          ? entry.details.screenshots[0].width /
+              entry.details.screenshots[0].height
           : 1,
       children: [
-        for (final screenshot in entry.game.screenshots)
+        for (final screenshot in entry.details.screenshots)
           GridTile(
             child: Material(
               elevation: 10,

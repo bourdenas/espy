@@ -45,26 +45,26 @@ class LibraryTableView extends StatelessWidget {
                                 Row(children: [
                                   CircleAvatar(
                                       foregroundImage: NetworkImage(
-                                          '${Urls.imageProvider}/t_thumb/${entry.game.cover.imageId}.jpg')),
+                                          '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg')),
                                   Padding(
                                       padding:
                                           EdgeInsets.symmetric(horizontal: 8)),
-                                  Text(entry.game.name),
+                                  Text(entry.name),
                                 ]),
                                 onTap: () => context
                                     .read<EspyRouterDelegate>()
-                                    .showGameDetails('${entry.game.id}'),
+                                    .showGameDetails('${entry.id}'),
                               ),
                               DataCell(Wrap(
                                 spacing: 8.0,
                                 runSpacing: 4.0,
                                 children: [
-                                  for (final tag in entry.details.tag)
+                                  for (final tag in entry.userData.tags)
                                     TagChip(tag, entry)
                                 ],
                               )),
                               DataCell(Text(
-                                  '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}')),
+                                  '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate?.toInt() ?? 0 * 1000).year}')),
                             ],
                           ))
                       .toList(),

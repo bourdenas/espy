@@ -1,11 +1,12 @@
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_details_model.dart';
-import 'package:espy/proto/library.pb.dart' show GameDetails, GameEntry;
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class GameTagsTextField extends StatefulWidget {
-  final GameEntry entry;
+  final LibraryEntry entry;
 
   const GameTagsTextField(this.entry);
 
@@ -14,7 +15,7 @@ class GameTagsTextField extends StatefulWidget {
 }
 
 class GameTagsTextFieldState extends State<GameTagsTextField> {
-  GameEntry entry;
+  LibraryEntry entry;
 
   GameTagsTextFieldState(this.entry);
 
@@ -57,8 +58,8 @@ class GameTagsTextFieldState extends State<GameTagsTextField> {
       if (_tagsController.text.isNotEmpty) {
         final prefix = _tagsController.text.toLowerCase();
         final suggestions = context
-            .read<GameDetailsModel>()
-            .allTags
+            .read<GameTagsIndex>()
+            .tags
             .where((tag) => tag.toLowerCase().startsWith(prefix))
             .take(3);
         _suggestionsOverlay = _createSuggestions(suggestions);
@@ -116,9 +117,7 @@ class GameTagsTextFieldState extends State<GameTagsTextField> {
 
     // NB: I don't get it why just "entry.details.tag.add(tag);"
     // fails and I need to clone GameDetails to edit it.
-    entry.details = GameDetails()
-      ..mergeFromMessage(entry.details)
-      ..tag.add(tag);
+    entry.userData.tags.add(tag);
 
     _tagsController.clear();
     _tagsFocusNode.requestFocus();
