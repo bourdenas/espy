@@ -14,15 +14,18 @@ pub struct User {
 struct UserData {
     uid: String,
 
+    #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     keys: Option<Keys>,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 struct Keys {
+    #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
     steam_user_id: String,
 
+    #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     gog_token: Option<api::GogToken>,
 }
@@ -32,10 +35,10 @@ impl User {
     /// collection. Creates a new User entry in Firestore if user does not
     /// already exist.
     pub fn new(firestore: Arc<Mutex<api::FirestoreApi>>, user_id: &str) -> Result<Self, Status> {
-        match load_user(user_id, firestore.clone()) {
+        match load_user(user_id, Arc::clone(&firestore)) {
             Ok(data) => Ok(User {
                 data,
-                firestore: firestore.clone(),
+                firestore: Arc::clone(&firestore),
             }),
             Err(e) => {
                 eprintln!("Creating new user '{}'\n{}", user_id, e);
@@ -44,7 +47,7 @@ impl User {
                         uid: String::from(user_id),
                         ..Default::default()
                     },
-                    firestore: firestore.clone(),
+                    firestore: Arc::clone(&firestore),
                 };
                 match user.save() {
                     Ok(_) => Ok(user),
@@ -115,7 +118,7 @@ impl User {
             None => None,
         };
 
-        let mgr = LibraryManager::new(&self.data.uid, self.firestore.clone());
+        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.sync_library(steam_api, gog_api).await?;
 
         Ok(())

@@ -4,11 +4,22 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct GogToken {
+    #[serde(default)]
     pub oauth_code: String,
+
+    #[serde(default)]
     pub access_token: String,
+
+    #[serde(default)]
     refresh_token: String,
+
+    #[serde(default)]
     expires_at: u64,
+
+    #[serde(default)]
     user_id: String,
+
+    #[serde(default)]
     session_id: String,
 }
 
