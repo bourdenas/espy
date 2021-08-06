@@ -35,7 +35,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             .expect("FirestoreApi.from_credentials()"),
     ));
 
-    let mgr = library::LibraryManager::new(&opts.user, firestore.clone());
+    let mut user = library::User::new(Arc::clone(&firestore), &opts.user)?;
+    user.sync(&keys).await?;
+
+    let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
     mgr.reconcile(library::Reconciler::new(Arc::new(igdb)))
         .await?;
 
