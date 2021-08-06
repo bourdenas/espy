@@ -1,9 +1,8 @@
 use crate::api::{FirestoreApi, GogApi, SteamApi};
-use crate::documents::{GameEntry, LibraryEntry, StoreEntry};
+use crate::documents::{LibraryEntry, StoreEntry};
 use crate::library::Reconciler;
 use crate::traits;
 use crate::Status;
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::iter::FromIterator;
@@ -86,67 +85,90 @@ impl LibraryManager {
             recon_service.reconcile(tx, unknown_entries).await;
         });
 
-        let mut matches = vec![];
         while let Some(entry_match) = rx.recv().await {
             println!("  received match for {}", &entry_match.store_entry.title);
-            matches.push(entry_match);
+
+            if let None = &entry_match.game_entry {
+                continue;
+            }
+
+            let firestore = Arc::clone(&self.firestore);
+            let user_id = self.user_id.clone();
+            tokio::spawn(async move {
+                if let Err(status) = LibraryManager::store_match(firestore, &user_id, entry_match) {
+                    eprintln!("Error handling recon match: {}", status);
+                }
+            });
         }
 
-        // Store igdb entries to /games collection.
-        self.write_games(
-            &matches
-                .iter()
-                .filter_map(|m| match &m.game_entry {
-                    Some(e) => Some(e),
-                    None => None,
-                })
-                .collect::<Vec<&GameEntry>>(),
-        )?;
+        Ok(())
+    }
+
+    /// Handles library Firestore updates on successful matching of game entry.
+    fn store_match(
+        firestore: Arc<Mutex<FirestoreApi>>,
+        user_id: &str,
+        m: crate::library::reconciler::Match,
+    ) -> Result<(), Status> {
+        if let None = &m.game_entry {
+            return Ok(());
+        }
+
+        let game_entry = m.game_entry.unwrap();
+        let firestore = firestore.lock().unwrap();
+
+        // Store GameEntry to 'games' collection. Might overwrite an existing
+        // one. That's ok as this is a fresher version.
+        firestore.write("games", Some(&game_entry.id.to_string()), &game_entry)?;
 
         // Create LibraryEntry from IgdbEntry and StoreEntry.
-        let mut game_entries = matches
-            .into_iter()
-            .filter_map(|m| match m.game_entry {
-                Some(game_entry) => Some(LibraryEntry {
-                    id: game_entry.id,
-                    name: game_entry.name,
-                    cover: match game_entry.cover {
-                        Some(cover) => Some(cover.image_id),
-                        None => None,
-                    },
-                    release_date: game_entry.release_date,
-                    collection: game_entry.collection,
-                    franchises: game_entry.franchises,
-                    companies: game_entry.companies,
-                    store_entry: vec![m.store_entry],
-                    user_data: None,
-                }),
+        let mut library_entry = LibraryEntry {
+            id: game_entry.id,
+            name: game_entry.name,
+            cover: match game_entry.cover {
+                Some(cover) => Some(cover.image_id),
                 None => None,
-            })
-            .collect::<Vec<LibraryEntry>>();
+            },
+            release_date: game_entry.release_date,
+            collection: game_entry.collection,
+            franchises: game_entry.franchises,
+            companies: game_entry.companies,
+            store_entry: vec![m.store_entry],
+            user_data: None,
+        };
 
-        // Group entries by id. User may have same game in multiple storefronts.
-        game_entries.sort_by_key(|e| e.id);
-        let groups = game_entries.into_iter().group_by(|e| e.id);
+        // TODO: The three operations below should be a Transaction, but this is
+        // not currently supported by this library.
+        //
+        // Delete matched StoreEntries from 'users/{user}/unknown'
+        for store_entry in &library_entry.store_entry {
+            firestore.delete(&format!(
+                "users/{}/unknown/{}",
+                user_id,
+                store_entry.id.to_string()
+            ))?;
+        }
 
-        // Collapse groups into a single entry and maintain ownership in
-        // different stores.
-        let game_entries = groups
-            .into_iter()
-            .map(|(_key, mut group)| {
-                let init = group.next().unwrap_or_default();
-                group.fold(init, |mut acc, x| {
-                    acc.store_entry.extend(x.store_entry);
-                    acc
-                })
-            })
-            .collect::<Vec<LibraryEntry>>();
+        // Check if game is already in user's library.
+        if let Ok(existing) = firestore.read::<LibraryEntry>(
+            &format!("users/{}/library", user_id),
+            &library_entry.id.to_string(),
+        ) {
+            // Use the most recently retrieved entry from IGDB to include any
+            // updates and merge existing user data for the entry (e.g. tags)
+            // and other store entries.
+            library_entry
+                .store_entry
+                .extend(existing.store_entry.into_iter());
+            library_entry.user_data = existing.user_data;
+        }
 
         // Store GameEntries to 'users/{user}/library' collection.
-        self.write_game_entries(&game_entries)?;
-
-        // Delete matched StoreEntries from 'users/{user}/unknown'
-        self.delete_unknown_entries(&game_entries)?;
+        firestore.write(
+            &format!("users/{}/library", user_id),
+            Some(&library_entry.id.to_string()),
+            &library_entry,
+        )?;
 
         Ok(())
     }
@@ -210,41 +232,6 @@ impl LibraryManager {
             Err(e) => Err(Status::internal("LibraryManager.read_unknown_entries: ", e)),
         }
     }
-
-    fn write_games(&self, entries: &[&GameEntry]) -> Result<(), Status> {
-        for entry in entries {
-            self.firestore.lock().unwrap().write::<GameEntry>(
-                "games",
-                Some(&entry.id.to_string()),
-                entry,
-            )?;
-        }
-        Ok(())
-    }
-
-    fn write_game_entries(&self, entries: &[LibraryEntry]) -> Result<(), Status> {
-        for entry in entries {
-            self.firestore.lock().unwrap().write::<LibraryEntry>(
-                &format!("users/{}/library", self.user_id),
-                Some(&entry.id.to_string()),
-                &entry,
-            )?;
-        }
-        Ok(())
-    }
-
-    fn delete_unknown_entries(&self, entries: &[LibraryEntry]) -> Result<(), Status> {
-        for entry in entries {
-            for store_entry in &entry.store_entry {
-                self.firestore.lock().unwrap().delete(&format!(
-                    "users/{}/unknown/{}",
-                    self.user_id,
-                    store_entry.id.to_string()
-                ))?;
-            }
-        }
-        Ok(())
-    }
 }
 
 /// Document type under 'users/{user_id}/storefronts/{storefront_name}'. They
@@ -256,6 +243,7 @@ impl LibraryManager {
 struct Storefront {
     name: String,
 
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     owned_games: Vec<i64>,
 }
