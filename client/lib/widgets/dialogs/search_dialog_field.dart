@@ -73,14 +73,17 @@ class SearchDialogFieldState extends State<SearchDialogField> {
         final searchTerms = _searchController.text.toLowerCase().split(' ');
         final suggestions = [
           ...context
-              .read<GameTagsModel>()
+              .read<GameTagsIndex>()
               .tags
               .where((tag) => searchTerms.every((term) => tag
                   .toLowerCase()
                   .split(' ')
                   .any((word) => word.startsWith(term))))
               .take(4)
-              .map((tag) => _Suggestion(tag, Icons.tag, () {
+              .map((tag) => _Suggestion(
+                  text: tag,
+                  icon: Icons.tag,
+                  onTap: () {
                     context.read<LibraryFiltersModel>().clearFilter();
                     context.read<EspyRouterDelegate>().showLibrary();
                     context.read<LibraryFiltersModel>().addTagFilter(tag);
@@ -93,21 +96,26 @@ class SearchDialogFieldState extends State<SearchDialogField> {
                   .split(' ')
                   .any((word) => word.startsWith(term))))
               .take(4)
-              .map((entry) => _Suggestion(entry.name, Icons.games, () {
+              .map((entry) => _Suggestion(
+                  text: entry.name,
+                  icon: Icons.games,
+                  onTap: () {
                     context
                         .read<EspyRouterDelegate>()
                         .showGameDetails('${entry.id}');
                   })),
           ...context
-              .read<GameTagsModel>()
+              .read<GameTagsIndex>()
               .collections
               .where((collection) => searchTerms.every((term) => collection.name
                   .toLowerCase()
                   .split(' ')
                   .any((word) => word.startsWith(term))))
               .take(4)
-              .map((collection) =>
-                  _Suggestion(collection.name, Icons.circle, () {
+              .map((collection) => _Suggestion(
+                  text: collection.name,
+                  icon: Icons.circle,
+                  onTap: () {
                     context.read<LibraryFiltersModel>().clearFilter();
                     context.read<EspyRouterDelegate>().showLibrary();
                     context
@@ -115,14 +123,17 @@ class SearchDialogFieldState extends State<SearchDialogField> {
                         .addCollectionFilter(collection);
                   })),
           ...context
-              .read<GameTagsModel>()
+              .read<GameTagsIndex>()
               .companies
               .where((company) => searchTerms.every((term) => company.name
                   .toLowerCase()
                   .split(' ')
                   .any((word) => word.startsWith(term))))
               .take(4)
-              .map((company) => _Suggestion(company.name, Icons.business, () {
+              .map((company) => _Suggestion(
+                  text: company.name,
+                  icon: Icons.business,
+                  onTap: () {
                     context.read<LibraryFiltersModel>().clearFilter();
                     context.read<EspyRouterDelegate>().showLibrary();
                     context
@@ -187,7 +198,7 @@ class SearchDialogFieldState extends State<SearchDialogField> {
   var _suggestions = [];
 
   void _invokeSuggestion(_Suggestion suggestion) {
-    suggestion.invoke();
+    suggestion.onTap();
     Navigator.of(context).pop();
   }
 
@@ -198,7 +209,7 @@ class SearchDialogFieldState extends State<SearchDialogField> {
     }
 
     if (_selectedIndex < _suggestions.length) {
-      _suggestions[_selectedIndex].invoke();
+      _suggestions[_selectedIndex].onTap();
     }
     Navigator.of(context).pop();
   }
@@ -207,11 +218,11 @@ class SearchDialogFieldState extends State<SearchDialogField> {
 class _Suggestion {
   final String text;
   final IconData icon;
-  final Function invoke;
+  final Function onTap;
 
-  const _Suggestion(
-    this.text,
-    this.icon,
-    this.invoke,
-  );
+  const _Suggestion({
+    required this.text,
+    required this.icon,
+    required this.onTap,
+  });
 }
