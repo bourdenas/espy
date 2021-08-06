@@ -89,7 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let gog_api = match &opts.gog_oauth_code {
         Some(gog_oauth_code) => {
-            let token = api::gog_token::create_from_oauth_code(gog_oauth_code).await?;
+            let token = api::GogToken::from_oauth_code(gog_oauth_code).await?;
             Some(api::GogApi::new(token))
         }
         None => None,

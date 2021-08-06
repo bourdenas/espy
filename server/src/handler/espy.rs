@@ -1,14 +1,13 @@
 use crate::api::IgdbApi;
 use crate::espy;
-use crate::library::LibraryManager;
 use crate::util;
 use crate::Status;
 use std::sync::Arc;
 
 /// Implementation of espy.Espy API.
 pub struct EspyImpl {
-    keys: util::keys::Keys,
-    igdb: Arc<IgdbApi>,
+    _keys: util::keys::Keys,
+    _igdb: Arc<IgdbApi>,
 }
 
 impl EspyImpl {
@@ -17,8 +16,8 @@ impl EspyImpl {
         igdb.connect().await?;
 
         Ok(EspyImpl {
-            keys,
-            igdb: Arc::new(igdb),
+            _keys: keys,
+            _igdb: Arc::new(igdb),
         })
     }
 }
@@ -31,10 +30,9 @@ impl espy::espy_server::Espy for EspyImpl {
     ) -> Result<tonic::Response<espy::LibraryResponse>, tonic::Status> {
         println!("Espy.GetLibrary request: {:?}", request.get_ref());
 
-        let mut mgr = LibraryManager::new(&request.get_ref().user_id);
-        mgr.build();
+        let library = espy::Library::default();
         Ok(tonic::Response::new(espy::LibraryResponse {
-            library: Some(mgr.library),
+            library: Some(library),
         }))
     }
 }

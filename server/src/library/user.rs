@@ -1,29 +1,76 @@
 use crate::api;
-use crate::espy;
 use crate::library::LibraryManager;
 use crate::util;
 use crate::Status;
+use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
 
 pub struct User {
-    pub user: espy::User,
+    data: UserData,
+    firestore: Arc<Mutex<api::FirestoreApi>>,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug)]
+struct UserData {
+    uid: String,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    keys: Option<Keys>,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug)]
+struct Keys {
+    #[serde(default)]
+    #[serde(skip_serializing_if = "String::is_empty")]
+    steam_user_id: String,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    gog_token: Option<api::GogToken>,
 }
 
 impl User {
-    pub fn new(user_id: &str) -> Self {
-        User {
-            user: User::load_user(user_id),
+    /// Returns a User instance that is loaded from the Firestore users
+    /// collection. Creates a new User entry in Firestore if user does not
+    /// already exist.
+    pub fn new(firestore: Arc<Mutex<api::FirestoreApi>>, user_id: &str) -> Result<Self, Status> {
+        match load_user(user_id, Arc::clone(&firestore)) {
+            Ok(data) => Ok(User {
+                data,
+                firestore: Arc::clone(&firestore),
+            }),
+            Err(e) => {
+                eprintln!("Creating new user '{}'\n{}", user_id, e);
+                let user = User {
+                    data: UserData {
+                        uid: String::from(user_id),
+                        ..Default::default()
+                    },
+                    firestore: Arc::clone(&firestore),
+                };
+                match user.save() {
+                    Ok(_) => Ok(user),
+                    Err(e) => Err(Status::internal(
+                        &format!("Failed to read or create user '{}'", user_id),
+                        e,
+                    )),
+                }
+            }
         }
     }
 
+    /// Returns user's Steam id.
     pub fn steam_user_id<'a>(&'a self) -> Option<&'a str> {
-        match &self.user.keys {
+        match &self.data.keys {
             Some(keys) => Some(&keys.steam_user_id),
             None => None,
         }
     }
 
+    /// Returns user's GOG oauth code returned after successful sign in externally.
     pub fn gog_auth_code<'a>(&'a self) -> Option<&'a str> {
-        match &self.user.keys {
+        match &self.data.keys {
             Some(keys) => match &keys.gog_token {
                 Some(token) => Some(&token.oauth_code),
                 None => None,
@@ -32,76 +79,82 @@ impl User {
         }
     }
 
-    pub fn update(&mut self, steam_user_id: &str, gog_auth_code: &str) -> Result<(), Status> {
-        self.user.keys = Some(espy::Keys {
+    /// Updates the user's Steam id and GOG oauth code. If GOG oauth code is
+    /// different than what was already store the GOG logic credentials of the
+    /// user are invalidated and refreshed.
+    /// Updated user entry is pushed to Firestore.
+    pub async fn update(&mut self, steam_user_id: &str, gog_auth_code: &str) -> Result<(), Status> {
+        self.data.keys = Some(Keys {
             steam_user_id: String::from(steam_user_id),
-            gog_token: Some(espy::GogToken {
-                oauth_code: String::from(gog_auth_code),
-                ..Default::default()
-            }),
+            // TODO: Need to avoid invalidating the existing credentials for no reason.
+            gog_token: match api::GogToken::from_oauth_code(gog_auth_code).await {
+                Ok(token) => Some(token),
+                Err(_) => None,
+            },
         });
-        util::proto::save(&format!("target/{}.profile", self.user.uid), &self.user)?;
+
+        if let Err(e) = self.save() {
+            return Err(Status::internal("User.update:", e));
+        }
 
         Ok(())
     }
 
+    /// Synchronises user library with connected storefronts to retrieve updates.
+    /// Note: It does not try to reconcile retrieve entries.
     pub async fn sync(&mut self, keys: &util::keys::Keys) -> Result<(), Status> {
-        let gog_api = match self.gog_token() {
-            Some(token) => match api::gog_token::validate(token).await {
-                Ok(()) => Some(api::GogApi::new(token.clone())),
-                Err(_) => match token.oauth_code.is_empty() {
-                    false => {
-                        let token =
-                            api::gog_token::create_from_oauth_code(&token.oauth_code).await?;
-                        if let Some(keys) = &mut self.user.keys {
-                            keys.gog_token = Some(token.clone());
-                        }
-                        Some(api::GogApi::new(token))
-                    }
-                    true => None,
-                },
-            },
+        let gog_api = match self.gog_token().await {
+            Some(token) => Some(api::GogApi::new(token.clone())),
             None => None,
         };
+
         // Need to save User as it may got GogToken updated.
-        // TODO: Save only if needed.
-        util::proto::save(&format!("target/{}.profile", self.user.uid), &self.user)?;
+        if let Err(e) = self.save() {
+            return Err(Status::internal("User.sync:", e));
+        }
 
         let steam_api = match self.steam_user_id() {
             Some(user_id) => Some(api::SteamApi::new(&keys.steam.client_key, user_id)),
             None => None,
         };
 
-        let mut mgr = LibraryManager::new(&self.user.uid);
-        mgr.build();
-        mgr.sync(steam_api, gog_api).await?;
+        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
+        mgr.sync_library(steam_api, gog_api).await?;
 
         Ok(())
     }
 
-    fn gog_token<'a>(&'a mut self) -> Option<&'a mut espy::GogToken> {
-        match &mut self.user.keys {
+    /// Tries to validate user's GogToken and returns a reference to it only if
+    /// it succeeds.
+    async fn gog_token<'a>(&'a mut self) -> Option<&'a mut api::GogToken> {
+        match &mut self.data.keys {
             Some(keys) => match &mut keys.gog_token {
-                Some(token) => Some(token),
+                Some(token) => match token.validate().await {
+                    Ok(()) => Some(token),
+                    Err(status) => {
+                        eprintln!("Failed to validate GOG toke: {}", status);
+                        None
+                    }
+                },
                 None => None,
             },
             None => None,
         }
     }
 
-    fn load_user(user_id: &str) -> espy::User {
-        match util::proto::load(&format!("target/{}.profile", user_id)) {
-            Ok(user) => user,
-            Err(_) => {
-                let user = espy::User {
-                    uid: String::from(user_id),
-                    ..Default::default()
-                };
-                if let Err(err) = util::proto::save(&format!("target/{}.profile", user_id), &user) {
-                    eprintln!("Failed to create user profile '{}'", err);
-                }
-                user
-            }
-        }
+    /// Save user entry to Firestore. Returns the Firestore document id.
+    fn save(&self) -> Result<String, Status> {
+        eprintln!("writing to firestore...");
+        self.firestore
+            .lock()
+            .unwrap()
+            .write("users", Some(&self.data.uid), &self.data)
     }
+}
+
+fn load_user(user_id: &str, firestore: Arc<Mutex<api::FirestoreApi>>) -> Result<UserData, Status> {
+    Ok(firestore
+        .lock()
+        .unwrap()
+        .read::<UserData>("users", user_id)?)
 }

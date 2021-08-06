@@ -13,6 +13,10 @@ name = "http_server"
 path = "src/http_server.rs"
 
 [[bin]] 
+name = "recon_library"
+path = "src/recon_library.rs"
+
+[[bin]] 
 name = "espy"
 path = "src/main.rs"
 
@@ -27,6 +31,8 @@ serde_json = "1.0"
 tokio = { version = "1.2", features = ["full"] }
 tonic = "0.4"
 warp = "0.3"
+firestore-db-and-auth = "0.6"
+async-trait = "0.1"
 
 [build-dependencies]
 tonic-build = "0.4"
