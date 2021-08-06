@@ -1,3 +1,4 @@
+import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:fixnum/fixnum.dart';
 
@@ -7,13 +8,12 @@ class LibraryEntry {
   final String? cover;
   final Int64? releaseDate;
 
-  final Collection? collection;
-  final List<Franchise> franchises;
-  final List<Company> companies;
+  final Annotation? collection;
+  final List<Annotation> franchises;
+  final List<Annotation> companies;
 
   final List<StoreEntry> storeEntry;
 
-  final GameDetails details;
   final GameUserData userData;
 
   const LibraryEntry({
@@ -25,7 +25,6 @@ class LibraryEntry {
     this.franchises = const [],
     this.companies = const [],
     this.storeEntry = const [],
-    this.details = const GameDetails(),
     this.userData = const GameUserData(),
   });
 
@@ -36,18 +35,18 @@ class LibraryEntry {
           cover: json['cover'],
           releaseDate: Int64(json['release_date'] ?? 0),
           collection: json.containsKey('collection')
-              ? Collection.fromJson(json['collection'])
+              ? Annotation.fromJson(json['collection'])
               : null,
           franchises: json.containsKey('franchises')
               ? [
                   for (final entry in json['franchises'])
-                    Franchise.fromJson(entry),
+                    Annotation.fromJson(entry),
                 ]
               : [],
           companies: json.containsKey('companies')
               ? [
                   for (final entry in json['companies'])
-                    Company.fromJson(entry),
+                    Annotation.fromJson(entry),
                 ]
               : [],
           storeEntry: json.containsKey('store_entry')
@@ -56,9 +55,6 @@ class LibraryEntry {
                     StoreEntry.fromJson(entry),
                 ]
               : [],
-          details: json.containsKey('details')
-              ? GameDetails.fromJson(json['details'])
-              : GameDetails(),
           userData: json.containsKey('user_data')
               ? GameUserData.fromJson(json['user_data'])
               : GameUserData(),
@@ -83,7 +79,6 @@ class LibraryEntry {
         'store_entry': [
           for (final entry in storeEntry) entry.toJson(),
         ],
-      'details': details.toJson(),
       'userData': userData.toJson(),
     };
   }
@@ -104,130 +99,6 @@ class GameUserData {
   Map<String, dynamic> toJson() {
     return {
       'tags': tags,
-    };
-  }
-}
-
-class Collection {
-  final Int64 id;
-  final String name;
-
-  const Collection({
-    required this.id,
-    required this.name,
-  });
-
-  Collection.fromJson(Map<String, dynamic> json)
-      : this(
-          id: Int64(json['id']),
-          name: json['name'],
-        );
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-    };
-  }
-}
-
-class Franchise {
-  final Int64 id;
-  final String name;
-
-  const Franchise({
-    required this.id,
-    required this.name,
-  });
-
-  Franchise.fromJson(Map<String, dynamic> json)
-      : this(
-          id: Int64(json['id']),
-          name: json['name'],
-        );
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-    };
-  }
-}
-
-class Company {
-  final Int64 id;
-  final String name;
-
-  const Company({
-    required this.id,
-    required this.name,
-  });
-
-  Company.fromJson(Map<String, dynamic> json)
-      : this(
-          id: Int64(json['id']),
-          name: json['name'],
-        );
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-    };
-  }
-}
-
-class GameDetails {
-  final String summary;
-  final List<GameImage> screenshots;
-
-  const GameDetails({
-    this.summary = "",
-    this.screenshots = const [],
-  });
-
-  GameDetails.fromJson(Map<String, dynamic> json)
-      : this(
-          summary: json['summary'],
-          screenshots: [
-            for (final entry in json['screenshots']) GameImage.fromJson(entry),
-          ],
-        );
-
-  Map<String, dynamic> toJson() {
-    return {
-      'summary': summary,
-      if (screenshots.isNotEmpty)
-        'screenshots': [
-          for (final entry in screenshots) entry.toJson(),
-        ],
-    };
-  }
-}
-
-class GameImage {
-  final String imageId;
-  final int height;
-  final int width;
-
-  const GameImage({
-    required this.imageId,
-    required this.height,
-    required this.width,
-  });
-
-  GameImage.fromJson(Map<String, dynamic> json)
-      : this(
-          imageId: json['image_id'],
-          height: json['height'],
-          width: json['width'],
-        );
-
-  Map<String, dynamic> toJson() {
-    return {
-      'image_id': imageId,
-      'height': height,
-      'width': width,
     };
   }
 }
