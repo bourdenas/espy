@@ -1,3 +1,4 @@
+import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
@@ -11,22 +12,22 @@ class LibraryFiltersModel extends ChangeNotifier {
 
   LibraryFilter get filter => _filter;
 
-  void addCompanyFilter(Company company) {
+  void addCompanyFilter(Annotation company) {
     _filter.companies.add(company);
     notifyListeners();
   }
 
-  void removeCompanyFilter(Company company) {
+  void removeCompanyFilter(Annotation company) {
     _filter.companies.remove(company);
     notifyListeners();
   }
 
-  void addCollectionFilter(Collection collection) {
+  void addCollectionFilter(Annotation collection) {
     _filter.collections.add(collection);
     notifyListeners();
   }
 
-  void removeCollectionFilter(Collection collection) {
+  void removeCollectionFilter(Annotation collection) {
     _filter.collections.remove(collection);
     notifyListeners();
   }
@@ -49,8 +50,8 @@ class LibraryFiltersModel extends ChangeNotifier {
 
 class LibraryFilter {
   String _titleSearchPhrase = '';
-  Set<Company> companies = {};
-  Set<Collection> collections = {};
+  Set<Annotation> companies = {};
+  Set<Annotation> collections = {};
   Set<String> tags = {};
 
   set titleSearchPhrase(String phrase) {

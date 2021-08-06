@@ -1,16 +1,17 @@
 import 'dart:collection';
 
+import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class GameTagsIndex extends ChangeNotifier {
-  Set<Company> _companies = {};
-  Set<Collection> _collections = {};
+  Set<Annotation> _companies = {};
+  Set<Annotation> _collections = {};
   SplayTreeSet<String> _tags = SplayTreeSet<String>();
 
-  UnmodifiableListView<Company> get companies =>
+  UnmodifiableListView<Annotation> get companies =>
       UnmodifiableListView(_companies);
-  UnmodifiableListView<Collection> get collections =>
+  UnmodifiableListView<Annotation> get collections =>
       UnmodifiableListView(_collections);
   UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
 
@@ -30,10 +31,10 @@ class GameTagsModel extends ChangeNotifier {
   GameTagsIndex? _index;
   String _searchPhrase = '';
 
-  UnmodifiableListView<Company> get companies =>
+  UnmodifiableListView<Annotation> get companies =>
       UnmodifiableListView(_index!.companies
           .where((c) => c.name.toLowerCase().contains(_searchPhrase)));
-  UnmodifiableListView<Collection> get collections =>
+  UnmodifiableListView<Annotation> get collections =>
       UnmodifiableListView(_index!.collections
           .where((c) => c.name.toLowerCase().contains(_searchPhrase)));
   UnmodifiableListView<String> get tags => UnmodifiableListView(

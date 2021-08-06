@@ -1,3 +1,4 @@
+import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_details_model.dart';
@@ -46,7 +47,7 @@ class GameChipsBar extends StatelessWidget {
 }
 
 class CompanyChip extends StatelessWidget {
-  final Company company;
+  final Annotation company;
 
   const CompanyChip(this.company);
 
@@ -65,7 +66,7 @@ class CompanyChip extends StatelessWidget {
 }
 
 class CollectionChip extends StatelessWidget {
-  final Collection collection;
+  final Annotation collection;
 
   const CollectionChip(this.collection);
 
@@ -84,7 +85,7 @@ class CollectionChip extends StatelessWidget {
 }
 
 class FranchiseChip extends StatelessWidget {
-  final Franchise franchise;
+  final Annotation franchise;
 
   const FranchiseChip(this.franchise);
 
