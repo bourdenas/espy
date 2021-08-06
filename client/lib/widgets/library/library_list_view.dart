@@ -39,7 +39,7 @@ class LibraryListView extends StatelessWidget {
                                     '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'))),
                         title: Text(entry.name),
                         subtitle: Text(
-                            '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate?.toInt() ?? 0 * 1000).year}'),
+                            '${DateTime.fromMillisecondsSinceEpoch((entry.releaseDate?.toInt() ?? 0) * 1000).year}'),
                         trailing: Wrap(
                           spacing: 8.0,
                           runSpacing: 4.0,

@@ -36,7 +36,8 @@ class GameLibraryModel extends ChangeNotifier {
           .map(
             (doc) => doc.data(),
           )
-          .toList();
+          .toList()
+            ..sort((l, r) => -l.releaseDate!.compareTo(r.releaseDate!));
       notifyListeners();
     });
   }

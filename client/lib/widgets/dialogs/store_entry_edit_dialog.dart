@@ -169,7 +169,7 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
                                   '${Urls.imageProvider}/t_thumb/${game.cover}.jpg')),
                           title: Text(game.name),
                           trailing: Text(
-                              '${DateTime.fromMillisecondsSinceEpoch(game.releaseDate?.toInt() ?? 0 * 1000).year}'),
+                              '${DateTime.fromMillisecondsSinceEpoch((game.releaseDate?.toInt() ?? 0) * 1000).year}'),
                           onTap: () async {
                             _matchOverlay!.remove();
                             _matchOverlay = null;
