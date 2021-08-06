@@ -1,7 +1,9 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/proto/igdbapi.pb.dart' as igdb;
-import 'package:espy/proto/library.pb.dart';
+// import 'package:espy/proto/library.pb.dart';
+// import 'package:espy/proto/igdbapi.pb.dart' as igdb;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -144,7 +146,7 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
     super.dispose();
   }
 
-  OverlayEntry _createMatchSuggestions(Iterable<igdb.Game> suggestions) {
+  OverlayEntry _createMatchSuggestions(Iterable<LibraryEntry> suggestions) {
     final size = context.size!;
 
     return OverlayEntry(
@@ -164,10 +166,10 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
                         ListTile(
                           leading: CircleAvatar(
                               foregroundImage: NetworkImage(
-                                  '${Urls.imageProvider}/t_thumb/${game.cover.imageId}.jpg')),
+                                  '${Urls.imageProvider}/t_thumb/${game.cover}.jpg')),
                           title: Text(game.name),
                           trailing: Text(
-                              '${DateTime.fromMillisecondsSinceEpoch(game.firstReleaseDate.seconds.toInt() * 1000).year}'),
+                              '${DateTime.fromMillisecondsSinceEpoch(game.releaseDate?.toInt() ?? 0 * 1000).year}'),
                           onTap: () async {
                             _matchOverlay!.remove();
                             _matchOverlay = null;

@@ -1,20 +1,22 @@
+import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/store_entry.dart' as doc;
+import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
-import 'package:espy/proto/library.pb.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class GameEntryEditDialog extends StatelessWidget {
-  static Future<void> show(BuildContext context, GameEntry entry) async {
+  static Future<void> show(BuildContext context, LibraryEntry entry) async {
     showDialog(
       context: context,
       builder: (context) => GameEntryEditDialog(entry),
     );
   }
 
-  final GameEntry gameEntry;
+  final LibraryEntry entry;
 
-  GameEntryEditDialog(this.gameEntry);
+  GameEntryEditDialog(this.entry);
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +42,7 @@ class GameEntryEditDialog extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
-                  controller: TextEditingController()
-                    ..text = gameEntry.game.name,
+                  controller: TextEditingController()..text = entry.name,
                   readOnly: true,
                   decoration: InputDecoration(
                     labelText: 'Title',
@@ -53,7 +54,7 @@ class GameEntryEditDialog extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
                   controller: TextEditingController()
-                    ..text = '${gameEntry.game.firstReleaseDate}',
+                    ..text = '${entry.releaseDate}',
                   readOnly: true,
                   decoration: InputDecoration(
                     labelText: 'Release Date',
@@ -63,7 +64,7 @@ class GameEntryEditDialog extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: _StorefrontDropdown(gameEntry),
+                child: _StorefrontDropdown(entry),
               ),
             ],
           ),
@@ -76,7 +77,7 @@ class GameEntryEditDialog extends StatelessWidget {
 class _StorefrontDropdown extends StatefulWidget {
   _StorefrontDropdown(this._entry);
 
-  final GameEntry _entry;
+  final LibraryEntry _entry;
 
   @override
   _StorefrontDropdownState createState() => _StorefrontDropdownState(_entry);
@@ -85,7 +86,7 @@ class _StorefrontDropdown extends StatefulWidget {
 class _StorefrontDropdownState extends State<_StorefrontDropdown> {
   _StorefrontDropdownState(this._entry) : _chosenValue = _entry.storeEntry[0];
 
-  final GameEntry _entry;
+  final LibraryEntry _entry;
   StoreEntry _chosenValue;
 
   @override
@@ -100,7 +101,7 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
               for (final storeEntry in _entry.storeEntry)
                 DropdownMenuItem<StoreEntry>(
                   value: storeEntry,
-                  child: Text(storeEntry.store.toString()),
+                  child: Text(storeEntry.storefront),
                 ),
             ],
             hint: Text(
@@ -151,7 +152,15 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
 
                                 await context
                                     .read<GameLibraryModel>()
-                                    .unmatchEntry(_chosenValue, _entry.game);
+                                    // TODO: Fix this once we get rid of protobufs
+                                    // .unmatchEntry(_chosenValue, _entry.game);
+                                    .unmatchEntry(
+                                        doc.StoreEntry(
+                                          id: _chosenValue.id,
+                                          title: _chosenValue.title,
+                                          storefront: "steam",
+                                        ),
+                                        _entry);
                               },
                               child: Text('Confirm')),
                           TextButton(

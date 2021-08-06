@@ -1,5 +1,5 @@
-import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
@@ -73,7 +73,7 @@ class SearchDialogFieldState extends State<SearchDialogField> {
         final searchTerms = _searchController.text.toLowerCase().split(' ');
         final suggestions = [
           ...context
-              .read<GameDetailsModel>()
+              .read<GameTagsModel>()
               .tags
               .where((tag) => searchTerms.every((term) => tag
                   .toLowerCase()
@@ -87,20 +87,19 @@ class SearchDialogFieldState extends State<SearchDialogField> {
                   })),
           ...context
               .read<GameLibraryModel>()
-              .library
-              .entry
-              .where((entry) => searchTerms.every((term) => entry.game.name
+              .entries
+              .where((entry) => searchTerms.every((term) => entry.name
                   .toLowerCase()
                   .split(' ')
                   .any((word) => word.startsWith(term))))
               .take(4)
-              .map((entry) => _Suggestion(entry.game.name, Icons.games, () {
+              .map((entry) => _Suggestion(entry.name, Icons.games, () {
                     context
                         .read<EspyRouterDelegate>()
-                        .showGameDetails('${entry.game.id}');
+                        .showGameDetails('${entry.id}');
                   })),
           ...context
-              .read<GameDetailsModel>()
+              .read<GameTagsModel>()
               .collections
               .where((collection) => searchTerms.every((term) => collection.name
                   .toLowerCase()
@@ -116,7 +115,7 @@ class SearchDialogFieldState extends State<SearchDialogField> {
                         .addCollectionFilter(collection);
                   })),
           ...context
-              .read<GameDetailsModel>()
+              .read<GameTagsModel>()
               .companies
               .where((company) => searchTerms.every((term) => company.name
                   .toLowerCase()

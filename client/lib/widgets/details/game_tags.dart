@@ -1,14 +1,14 @@
+import 'package:espy/modules/documents/annotation.dart';
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_details_model.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
-import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company, Franchise;
-import 'package:espy/proto/library.pb.dart' show GameEntry;
 import 'package:espy/widgets/details/game_tags_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class GameTags extends StatelessWidget {
-  final GameEntry entry;
+  final LibraryEntry entry;
 
   GameTags(this.entry);
 
@@ -24,7 +24,7 @@ class GameTags extends StatelessWidget {
 }
 
 class GameChipsBar extends StatelessWidget {
-  final GameEntry entry;
+  final LibraryEntry entry;
 
   const GameChipsBar(this.entry);
 
@@ -37,18 +37,17 @@ class GameChipsBar extends StatelessWidget {
       spacing: 8.0,
       runSpacing: 4.0,
       children: [
-        for (final involved in entry.game.involvedCompanies)
-          if (involved.developer) CompanyChip(involved.company),
-        if (entry.game.hasCollection()) CollectionChip(entry.game.collection),
-        for (final franchise in entry.game.franchises) FranchiseChip(franchise),
-        for (final tag in entry.details.tag) TagChip(tag, entry),
+        for (final company in entry.companies) CompanyChip(company),
+        if (entry.collection != null) CollectionChip(entry.collection!),
+        for (final franchise in entry.franchises) FranchiseChip(franchise),
+        for (final tag in entry.userData.tags) TagChip(tag, entry),
       ],
     );
   }
 }
 
 class CompanyChip extends StatelessWidget {
-  final Company company;
+  final Annotation company;
 
   const CompanyChip(this.company);
 
@@ -67,7 +66,7 @@ class CompanyChip extends StatelessWidget {
 }
 
 class CollectionChip extends StatelessWidget {
-  final Collection collection;
+  final Annotation collection;
 
   const CollectionChip(this.collection);
 
@@ -86,7 +85,7 @@ class CollectionChip extends StatelessWidget {
 }
 
 class FranchiseChip extends StatelessWidget {
-  final Franchise franchise;
+  final Annotation franchise;
 
   const FranchiseChip(this.franchise);
 
@@ -102,7 +101,7 @@ class FranchiseChip extends StatelessWidget {
 
 class TagChip extends StatelessWidget {
   final String tag;
-  final GameEntry entry;
+  final LibraryEntry entry;
 
   const TagChip(this.tag, this.entry);
 
@@ -118,8 +117,8 @@ class TagChip extends StatelessWidget {
         Navigator.pop(context);
       },
       onDeleted: () {
-        if (entry.details.tag.isEmpty) return;
-        entry.details.tag.remove(tag);
+        if (entry.userData.tags.isEmpty) return;
+        entry.userData.tags.remove(tag);
         context.read<GameDetailsModel>().postDetails(entry);
       },
     );

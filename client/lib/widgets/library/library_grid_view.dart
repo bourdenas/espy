@@ -1,7 +1,7 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
-import 'package:espy/proto/library.pb.dart';
 import 'package:espy/widgets/library/filter_chips.dart';
 import 'package:espy/widgets/library/tags_context_menu.dart';
 import 'package:flutter/gestures.dart';
@@ -33,7 +33,7 @@ class LibraryGridView extends StatelessWidget {
                       enableFeedback: true,
                       onTap: () => context
                           .read<EspyRouterDelegate>()
-                          .showGameDetails('${entry.game.id}'),
+                          .showGameDetails('${entry.id}'),
                       child: Listener(
                         child: GameCard(
                           entry: entry,
@@ -56,7 +56,7 @@ class GameCard extends StatelessWidget {
     required this.entry,
   }) : super(key: key);
 
-  final GameEntry entry;
+  final LibraryEntry entry;
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +69,13 @@ class GameCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: GridTileBar(
           backgroundColor: Colors.black45,
-          title: GameTitleText(entry.game.name),
+          title: GameTitleText(entry.name),
           subtitle: Row(children: [
-            GameTitleText(
-                '${DateTime.fromMillisecondsSinceEpoch(entry.game.firstReleaseDate.seconds.toInt() * 1000).year}'),
+            if (entry.releaseDate != null)
+              GameTitleText(
+                  '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate!.toInt() * 1000).year}'),
             Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
-            GameTitleText(entry.storeEntry.map((e) => e.store).join(', ')),
+            GameTitleText(entry.storeEntry.map((e) => e.storefront).join(', ')),
           ]),
         ),
       ),
@@ -83,10 +84,10 @@ class GameCard extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         clipBehavior: Clip.antiAlias,
         child: Hero(
-          tag: '${entry.game.id}_cover',
-          child: entry.game.cover.imageId.isNotEmpty
+          tag: '${entry.id}_cover',
+          child: entry.cover != null && entry.cover!.isNotEmpty
               ? Image.network(
-                  '${Urls.imageProvider}/t_cover_big/${entry.game.cover.imageId}.jpg',
+                  '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
                   fit: BoxFit.fitHeight,
                 )
               : Image.asset('assets/images/placeholder.png'),
