@@ -29,15 +29,15 @@ class GameLibraryModel extends ChangeNotifier {
               LibraryEntry.fromJson(snapshot.data()!),
           toFirestore: (entry, _) => entry.toJson(),
         )
-        .limit(10)
+        .orderBy('release_date', descending: true)
+        .limit(20)
         .snapshots()
         .listen((snapshot) {
       entries = snapshot.docs
           .map(
             (doc) => doc.data(),
           )
-          .toList()
-            ..sort((l, r) => -l.releaseDate!.compareTo(r.releaseDate!));
+          .toList();
       notifyListeners();
     });
   }
