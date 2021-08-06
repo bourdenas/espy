@@ -34,7 +34,7 @@ class LibraryEntry {
           id: Int64(json['id']!),
           name: json['name']!,
           cover: json['cover'],
-          releaseDate: json['release_date'],
+          releaseDate: Int64(json['release_date'] ?? 0),
           collection: json.containsKey('collection')
               ? Collection.fromJson(json['collection'])
               : null,
@@ -119,7 +119,7 @@ class Collection {
 
   Collection.fromJson(Map<String, dynamic> json)
       : this(
-          id: json['id'],
+          id: Int64(json['id']),
           name: json['name'],
         );
 
@@ -142,7 +142,7 @@ class Franchise {
 
   Franchise.fromJson(Map<String, dynamic> json)
       : this(
-          id: json['id'],
+          id: Int64(json['id']),
           name: json['name'],
         );
 
@@ -165,7 +165,7 @@ class Company {
 
   Company.fromJson(Map<String, dynamic> json)
       : this(
-          id: json['id'],
+          id: Int64(json['id']),
           name: json['name'],
         );
 
