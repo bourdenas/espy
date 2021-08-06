@@ -1,4 +1,3 @@
-import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/library/library_grid_view.dart';
 import 'package:espy/widgets/library/library_list_view.dart';
