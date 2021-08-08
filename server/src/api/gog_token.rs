@@ -24,6 +24,13 @@ pub struct GogToken {
 }
 
 impl GogToken {
+    pub fn new(oauth_code: &str) -> Self {
+        GogToken {
+            oauth_code: String::from(oauth_code),
+            ..Default::default()
+        }
+    }
+
     /// Creates a GogToken for authenticating a user to the service. The
     /// authentication code is used to retrieve an access token that is used when
     /// calling any GOG API for retrieving user information.
@@ -57,7 +64,10 @@ impl GogToken {
     /// function to produce a new GogToken.
     pub async fn validate(&mut self) -> Result<(), Status> {
         if self.access_token.is_empty() || self.refresh_token.is_empty() {
-            return Err(Status::invalid_argument("Invalid GogToken: {:?}"));
+            return Err(Status::invalid_argument(&format!(
+                "Invalid GogToken: {:?}",
+                self
+            )));
         }
 
         if self.is_fresh_token() {
