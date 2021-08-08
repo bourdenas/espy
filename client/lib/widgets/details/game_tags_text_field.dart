@@ -117,7 +117,7 @@ class GameTagsTextFieldState extends State<GameTagsTextField> {
 
     // NB: I don't get it why just "entry.details.tag.add(tag);"
     // fails and I need to clone GameDetails to edit it.
-    entry.userData.tags.add(tag);
+    entry.userData = GameUserData(tags: entry.userData.tags + [tag]);
 
     _tagsController.clear();
     _tagsFocusNode.requestFocus();

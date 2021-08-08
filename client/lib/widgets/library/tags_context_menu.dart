@@ -36,7 +36,7 @@ Future<void> showTagsContextMenu(
   if (entry.userData.tags.contains(selectedTag)) {
     entry.userData.tags.remove(selectedTag);
   } else {
-    entry.userData.tags.add(selectedTag);
+    entry.userData = GameUserData(tags: entry.userData.tags + [selectedTag]);
   }
   context.read<GameDetailsModel>().postDetails(entry);
 }
