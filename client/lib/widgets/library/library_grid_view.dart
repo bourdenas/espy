@@ -73,7 +73,7 @@ class GameCard extends StatelessWidget {
           subtitle: Row(children: [
             if (entry.releaseDate != null)
               GameTitleText(
-                  '${DateTime.fromMillisecondsSinceEpoch((entry.releaseDate?.toInt() ?? 0) * 1000).year}'),
+                  '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
             Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
             GameTitleText(entry.storeEntry.map((e) => e.storefront).join(', ')),
           ]),

@@ -1,7 +1,5 @@
-import 'package:fixnum/fixnum.dart';
-
 class StoreEntry {
-  final Int64 id;
+  final int id;
   final String title;
   final String storefront;
 
@@ -18,7 +16,7 @@ class StoreEntry {
 
   StoreEntry.fromJson(Map<String, dynamic> json)
       : this(
-          id: Int64(json['id']!),
+          id: json['id']!,
           title: json['title']!,
           storefront: json['storefront_name']!,
           url: json['url'],
@@ -29,7 +27,7 @@ class StoreEntry {
     return {
       'id': id,
       'title': title,
-      'storefront': storefront,
+      'storefront_name': storefront,
       if (url != null) 'url': url,
       if (image != null) 'image': image,
     };

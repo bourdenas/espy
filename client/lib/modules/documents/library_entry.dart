@@ -1,12 +1,11 @@
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:fixnum/fixnum.dart';
 
 class LibraryEntry {
-  final Int64 id;
+  final int id;
   final String name;
+  final int releaseDate;
   final String? cover;
-  final Int64? releaseDate;
 
   final Annotation? collection;
   final List<Annotation> franchises;
@@ -14,13 +13,13 @@ class LibraryEntry {
 
   final List<StoreEntry> storeEntry;
 
-  final GameUserData userData;
+  GameUserData userData;
 
-  const LibraryEntry({
+  LibraryEntry({
     required this.id,
     required this.name,
     this.cover,
-    this.releaseDate,
+    this.releaseDate = 0,
     this.collection,
     this.franchises = const [],
     this.companies = const [],
@@ -30,10 +29,10 @@ class LibraryEntry {
 
   LibraryEntry.fromJson(Map<String, dynamic> json)
       : this(
-          id: Int64(json['id']!),
+          id: json['id']!,
           name: json['name']!,
+          releaseDate: json['release_date'] ?? 0,
           cover: json['cover'],
-          releaseDate: Int64(json['release_date'] ?? 0),
           collection: json.containsKey('collection')
               ? Annotation.fromJson(json['collection'])
               : null,
@@ -64,22 +63,22 @@ class LibraryEntry {
     return {
       'id': id,
       'name': name,
+      'release_date': releaseDate,
       if (cover != null) 'cover': cover,
-      if (releaseDate != null) 'release_date': releaseDate,
-      if (collection != null) 'collection': collection,
+      if (collection != null) 'collection': collection!.toJson(),
       if (franchises.isNotEmpty)
-        'store_entry': [
+        'franchises': [
           for (final entry in franchises) entry.toJson(),
         ],
       if (companies.isNotEmpty)
-        'store_entry': [
+        'companies': [
           for (final entry in companies) entry.toJson(),
         ],
       if (storeEntry.isNotEmpty)
         'store_entry': [
           for (final entry in storeEntry) entry.toJson(),
         ],
-      'userData': userData.toJson(),
+      'user_data': userData.toJson(),
     };
   }
 }
@@ -93,12 +92,14 @@ class GameUserData {
 
   GameUserData.fromJson(Map<String, dynamic> json)
       : this(
-          tags: json['tags'],
+          tags: json.containsKey('tags')
+              ? [for (final tag in json['tags']) tag]
+              : [],
         );
 
   Map<String, dynamic> toJson() {
     return {
-      'tags': tags,
+      if (tags.isNotEmpty) 'tags': tags,
     };
   }
 }

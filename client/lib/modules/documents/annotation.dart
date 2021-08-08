@@ -1,7 +1,5 @@
-import 'package:fixnum/fixnum.dart';
-
 class Annotation {
-  final Int64 id;
+  final int id;
   final String name;
 
   const Annotation({
@@ -11,7 +9,7 @@ class Annotation {
 
   Annotation.fromJson(Map<String, dynamic> json)
       : this(
-          id: Int64(json['id']),
+          id: json['id'],
           name: json['name'],
         );
 

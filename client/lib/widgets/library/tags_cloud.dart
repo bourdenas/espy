@@ -19,7 +19,7 @@ class TagsCloud extends StatelessWidget {
             runSpacing: 16.0,
             children: [
               for (final tag in tags)
-                TagChip(tag, LibraryEntry(id: Int64(0), name: "foo")),
+                TagChip(tag, LibraryEntry(id: 0, name: "foo")),
             ],
           ),
         ),

@@ -64,7 +64,7 @@ class LibraryTableView extends StatelessWidget {
                                 ],
                               )),
                               DataCell(Text(
-                                  '${DateTime.fromMillisecondsSinceEpoch((entry.releaseDate?.toInt() ?? 0) * 1000).year}')),
+                                  '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}')),
                             ],
                           ))
                       .toList(),
