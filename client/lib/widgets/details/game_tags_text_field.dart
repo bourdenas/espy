@@ -1,5 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/game_details_model.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -32,7 +32,7 @@ class GameTagsTextFieldState extends State<GameTagsTextField> {
           width: 200,
           child: TextField(
             onSubmitted: (tag) => setState(() {
-              _postTag(tag);
+              _addTag(tag);
             }),
             controller: _tagsController,
             focusNode: _tagsFocusNode,
@@ -100,7 +100,7 @@ class GameTagsTextFieldState extends State<GameTagsTextField> {
                       for (final tag in suggestions)
                         ListTile(
                           title: Text(tag),
-                          onTap: () => _postTag(tag),
+                          onTap: () => _addTag(tag),
                         ),
                     ],
                   ),
@@ -109,7 +109,7 @@ class GameTagsTextFieldState extends State<GameTagsTextField> {
             ));
   }
 
-  void _postTag(String tag) {
+  void _addTag(String tag) {
     if (tag.isEmpty) {
       _tagsFocusNode.requestFocus();
       return;
@@ -121,6 +121,6 @@ class GameTagsTextFieldState extends State<GameTagsTextField> {
 
     _tagsController.clear();
     _tagsFocusNode.requestFocus();
-    context.read<GameDetailsModel>().postDetails(entry);
+    context.read<GameLibraryModel>().postDetails(entry);
   }
 }

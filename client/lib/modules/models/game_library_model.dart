@@ -15,11 +15,22 @@ class GameLibraryModel extends ChangeNotifier {
   void update(String userId) async {
     if (userId.isNotEmpty && userId != _userId) {
       _userId = userId;
-      await fetch();
+      await _fetch();
     }
   }
 
-  Future<void> fetch() async {
+  void postDetails(LibraryEntry entry) async {
+    entry.userData.tags.sort();
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('library')
+        .doc(entry.id.toString())
+        .set(entry.toJson());
+  }
+
+  Future<void> _fetch() async {
     FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
@@ -82,7 +93,7 @@ class GameLibraryModel extends ChangeNotifier {
       return false;
     }
 
-    fetch();
+    _fetch();
     return true;
   }
 
@@ -104,7 +115,7 @@ class GameLibraryModel extends ChangeNotifier {
       return false;
     }
 
-    fetch();
+    _fetch();
     return true;
   }
 }

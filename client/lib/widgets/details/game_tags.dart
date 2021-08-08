@@ -1,7 +1,7 @@
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/appbar_search_model.dart';
-import 'package:espy/modules/models/game_details_model.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:espy/widgets/details/game_tags_text_field.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +31,7 @@ class GameChipsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Force to render the view when GameDetails (e.g. game tags) are updated.
-    context.watch<GameDetailsModel>();
+    // context.watch<GameLibraryModel>();
 
     return Wrap(
       spacing: 8.0,
@@ -119,7 +119,7 @@ class TagChip extends StatelessWidget {
       onDeleted: () {
         if (entry.userData.tags.isEmpty) return;
         entry.userData.tags.remove(tag);
-        context.read<GameDetailsModel>().postDetails(entry);
+        context.read<GameLibraryModel>().postDetails(entry);
       },
     );
   }

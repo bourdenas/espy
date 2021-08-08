@@ -1,5 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/game_details_model.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -38,5 +38,5 @@ Future<void> showTagsContextMenu(
   } else {
     entry.userData = GameUserData(tags: entry.userData.tags + [selectedTag]);
   }
-  context.read<GameDetailsModel>().postDetails(entry);
+  context.read<GameLibraryModel>().postDetails(entry);
 }
