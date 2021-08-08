@@ -28,10 +28,11 @@ class GameLibraryModel extends ChangeNotifier {
         .collection('library')
         .doc(entry.id.toString())
         .set(entry.toJson());
+    notifyListeners();
   }
 
   Future<void> _fetch() async {
-    FirebaseFirestore.instance
+    final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
         .collection('library')
@@ -42,15 +43,10 @@ class GameLibraryModel extends ChangeNotifier {
         )
         .orderBy('release_date', descending: true)
         .limit(20)
-        .snapshots()
-        .listen((snapshot) {
-      entries = snapshot.docs
-          .map(
-            (doc) => doc.data(),
-          )
-          .toList();
-      notifyListeners();
-    });
+        .get();
+
+    entries = snapshot.docs.map((doc) => doc.data()).toList();
+    notifyListeners();
   }
 
   Future<List<LibraryEntry>> searchByTitle(String title) async {
