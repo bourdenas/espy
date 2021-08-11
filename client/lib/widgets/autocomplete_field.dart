@@ -17,12 +17,14 @@ class AutocompleteField extends StatefulWidget {
   final double width;
   final String hintText;
   final Icon? icon;
-  final List<Suggestion> Function(String) createSuggestions;
+  final List<Suggestion> Function(String text) createSuggestions;
+  final void Function(String text, Suggestion? suggestion) onSubmit;
 
   AutocompleteField({
     required this.width,
     required this.hintText,
     required this.createSuggestions,
+    required this.onSubmit,
     this.icon,
   });
 
@@ -31,6 +33,7 @@ class AutocompleteField extends StatefulWidget {
         width: width,
         hintText: hintText,
         createSuggestions: createSuggestions,
+        onSubmit: onSubmit,
         icon: icon,
       );
 }
@@ -40,11 +43,13 @@ class AutocompleteFieldState extends State<AutocompleteField> {
   final String hintText;
   final Icon? icon;
   final List<Suggestion> Function(String) createSuggestions;
+  final void Function(String text, Suggestion? suggestion) onSubmit;
 
   AutocompleteFieldState({
     required this.width,
     required this.hintText,
     required this.createSuggestions,
+    required this.onSubmit,
     this.icon,
   });
 
@@ -65,9 +70,7 @@ class AutocompleteFieldState extends State<AutocompleteField> {
           onKey: handleKey,
           child: TextField(
             key: UniqueKey(),
-            onSubmitted: (term) => setState(() {
-              _matchSearchTerm(term);
-            }),
+            onSubmitted: (term) => _submit(term),
             controller: _searchController,
             // focusNode: _searchFocusNode,
             autofocus: true,
@@ -148,7 +151,7 @@ class AutocompleteFieldState extends State<AutocompleteField> {
                   .map<ListTile>((entry) => ListTile(
                         leading: entry.value.icon,
                         title: Text(entry.value.text),
-                        onTap: () => _invokeSuggestion(entry.value),
+                        onTap: () => entry.value.onTap(),
                         selected: entry.key == _selectedIndex,
                       ))
                   .toList(),
@@ -162,20 +165,14 @@ class AutocompleteFieldState extends State<AutocompleteField> {
   var _selectedIndex = 0;
   var _suggestions = [];
 
-  void _invokeSuggestion(Suggestion suggestion) {
-    suggestion.onTap();
-    Navigator.of(context).pop();
-  }
+  void _submit(String term) {
+    onSubmit(
+        term,
+        _selectedIndex < _suggestions.length
+            ? _suggestions[_selectedIndex]
+            : null);
 
-  void _matchSearchTerm(String term) {
-    if (term.isEmpty) {
-      _searchFocusNode.requestFocus();
-      return;
-    }
-
-    if (_selectedIndex < _suggestions.length) {
-      _suggestions[_selectedIndex].onTap();
-    }
-    Navigator.of(context).pop();
+    _searchController.clear();
+    _searchFocusNode.requestFocus();
   }
 }
