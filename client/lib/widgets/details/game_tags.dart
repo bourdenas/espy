@@ -3,7 +3,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
-import 'package:espy/widgets/details/game_tags_text_field.dart';
+import 'package:espy/widgets/details/game_tags_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +17,7 @@ class GameTags extends StatelessWidget {
     return Column(children: [
       GameChipsBar(entry),
       Center(
-        child: GameTagsTextField(entry),
+        child: GameTagsField(entry),
       )
     ]);
   }
