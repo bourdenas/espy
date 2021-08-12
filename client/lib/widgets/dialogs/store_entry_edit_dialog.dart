@@ -163,8 +163,10 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
                       for (final game in suggestions)
                         ListTile(
                           leading: CircleAvatar(
-                              foregroundImage: NetworkImage(
-                                  '${Urls.imageProvider}/t_thumb/${game.cover!.imageId}.jpg')),
+                              foregroundImage: game.cover != null
+                                  ? NetworkImage(
+                                      '${Urls.imageProvider}/t_thumb/${game.cover!.imageId}.jpg')
+                                  : null),
                           title: Text(game.name),
                           trailing: Text(
                               '${DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000).year}'),
