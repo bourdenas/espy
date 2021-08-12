@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
 
 class GameLibraryModel extends ChangeNotifier {
-  // Library library = Library.create();
   List<LibraryEntry> entries = [];
   String _userId = '';
 
@@ -49,7 +49,7 @@ class GameLibraryModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<LibraryEntry>> searchByTitle(String title) async {
+  Future<List<GameEntry>> searchByTitle(String title) async {
     var response = await http.post(
       Uri.parse('${Urls.espyBackend}/search'),
       headers: {
@@ -61,35 +61,33 @@ class GameLibraryModel extends ChangeNotifier {
     );
 
     if (response.statusCode != 200) {
-      print('searchByTitle (error): $response');
+      print(
+          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return [];
     }
 
-    // TODO: Make this work again.
-    // final entries = igdb.GameResult.fromBuffer(response.bodyBytes);
-    // return entries.games;
-    return [];
+    final jsonObj = jsonDecode(response.body) as List<dynamic>;
+    return jsonObj.map((obj) => GameEntry.fromJson(obj)).toList();
   }
 
-  Future<bool> matchEntry(
-      StoreEntry storeEntry, LibraryEntry libraryEntry) async {
+  Future<bool> matchEntry(StoreEntry storeEntry, GameEntry gameEntry) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$_userId/match'),
+      Uri.parse('${Urls.espyBackend}/library/$_userId/recon'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
-        'encoded_store_entry': storeEntry.toJson(),
-        'encoded_game': libraryEntry.toJson(),
+        'store_entry': storeEntry.toJson(),
+        'game_entry': gameEntry.toJson(),
       }),
     );
 
     if (response.statusCode != 200) {
-      print('matchEntry (error): $response');
+      print(
+          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return false;
     }
 
-    _fetch();
     return true;
   }
 

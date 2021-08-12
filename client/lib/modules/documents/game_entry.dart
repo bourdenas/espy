@@ -1,12 +1,11 @@
 import 'package:espy/modules/documents/annotation.dart';
-import 'package:fixnum/fixnum.dart';
 
 class GameEntry {
-  final Int64 id;
+  final int id;
   final String name;
-  final String summary;
 
-  final Int64? releaseDate;
+  final String summary;
+  final int releaseDate;
 
   final Annotation? collection;
   final List<Annotation> franchises;
@@ -19,8 +18,8 @@ class GameEntry {
   const GameEntry({
     required this.id,
     required this.name,
-    required this.summary,
-    this.releaseDate,
+    this.summary = '',
+    this.releaseDate = 0,
     this.collection,
     this.franchises = const [],
     this.companies = const [],
@@ -31,10 +30,10 @@ class GameEntry {
 
   GameEntry.fromJson(Map<String, dynamic> json)
       : this(
-          id: Int64(json['id']!),
+          id: json['id']!,
           name: json['name']!,
-          summary: json['summary']!,
-          releaseDate: Int64(json['release_date'] ?? 0),
+          summary: json['summary'] ?? '',
+          releaseDate: json['release_date'] ?? 0,
           collection: json.containsKey('collection')
               ? Annotation.fromJson(json['collection'])
               : null,
@@ -71,7 +70,7 @@ class GameEntry {
     return {
       'id': id,
       'name': name,
-      'summary': summary,
+      if (summary.isNotEmpty) 'summary': summary,
       if (releaseDate != null) 'release_date': releaseDate,
       if (collection != null) 'collection': collection!.toJson(),
       if (franchises.isNotEmpty)
