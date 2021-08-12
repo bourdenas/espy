@@ -16,6 +16,10 @@ pub fn routes(
         .or(post_search(Arc::clone(&igdb)))
         .or(post_match(igdb))
         .or(post_unmatch())
+        .or_else(|e| async {
+            println!("Request rejected: {:?}", e);
+            Err(e)
+        })
 }
 
 /// POST /library/{user_id}/sync
