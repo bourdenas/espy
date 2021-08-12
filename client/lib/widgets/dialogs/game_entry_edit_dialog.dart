@@ -19,6 +19,8 @@ class GameEntryEditDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final release =
+        DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000);
     return AlertDialog(
       content: Stack(
         clipBehavior: Clip.none,
@@ -53,7 +55,7 @@ class GameEntryEditDialog extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
                   controller: TextEditingController()
-                    ..text = '${entry.releaseDate}',
+                    ..text = '${release.day}/${release.month}/${release.year} ',
                   readOnly: true,
                   decoration: InputDecoration(
                     labelText: 'Release Date',
