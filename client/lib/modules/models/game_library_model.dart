@@ -61,7 +61,8 @@ class GameLibraryModel extends ChangeNotifier {
     );
 
     if (response.statusCode != 200) {
-      print('searchByTitle (error): $response');
+      print(
+          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return [];
     }
 
@@ -71,22 +72,22 @@ class GameLibraryModel extends ChangeNotifier {
 
   Future<bool> matchEntry(StoreEntry storeEntry, GameEntry gameEntry) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$_userId/match'),
+      Uri.parse('${Urls.espyBackend}/library/$_userId/recon'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
-        'encoded_store_entry': storeEntry.toJson(),
-        'encoded_game': gameEntry.toJson(),
+        'store_entry': storeEntry.toJson(),
+        'game_entry': gameEntry.toJson(),
       }),
     );
 
     if (response.statusCode != 200) {
-      print('matchEntry (error): $response');
+      print(
+          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return false;
     }
 
-    _fetch();
     return true;
   }
 
