@@ -34,14 +34,14 @@ pub async fn post_sync(
     }
 }
 
-pub async fn post_match(
+pub async fn post_recon(
     user_id: String,
-    match_msg: models::Match,
+    recon: models::Recon,
     igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    println!("POST /library/{}/match", &user_id);
+    println!("POST /library/{}/recon", &user_id);
 
-    // let recon_service = Reconciler::new(Arc::clone(&igdb));
+    // let recon_service = Reconciler::new(igdb);
     // if let Err(_) = recon_service.update_entry(&mut entry).await {
     //     return Ok(StatusCode::INTERNAL_SERVER_ERROR);
     // }
@@ -52,7 +52,7 @@ pub async fn post_match(
 #[deprecated(note = "TBR by direct client calls to Firestore.")]
 pub async fn post_unmatch(
     user_id: String,
-    match_msg: models::Match,
+    recon: models::Recon,
 ) -> Result<impl warp::Reply, Infallible> {
     println!("[deprecated] POST /library/{}/unmatch", &user_id);
 
