@@ -7,6 +7,9 @@ use serde::{Deserialize, Serialize};
 pub struct GameEntry {
     pub id: u64,
     pub name: String,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub summary: String,
 
     #[serde(default)]
