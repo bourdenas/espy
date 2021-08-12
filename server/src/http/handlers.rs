@@ -23,9 +23,8 @@ pub async fn post_sync(
             return Ok(StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
-    let result = user.sync(&keys).await;
 
-    match result {
+    match user.sync(&keys).await {
         Ok(()) => Ok(StatusCode::OK),
         Err(err) => {
             eprintln!("{}", err);
@@ -37,16 +36,22 @@ pub async fn post_sync(
 pub async fn post_recon(
     user_id: String,
     recon: models::Recon,
+    firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
     println!("POST /library/{}/recon", &user_id);
 
-    // let recon_service = Reconciler::new(igdb);
-    // if let Err(_) = recon_service.update_entry(&mut entry).await {
-    //     return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-    // }
-
-    Ok(StatusCode::OK)
+    let mgr = library::LibraryManager::new(&user_id, firestore);
+    match mgr
+        .manual_recon(Reconciler::new(igdb), recon.store_entry, recon.game_entry)
+        .await
+    {
+        Ok(()) => Ok(StatusCode::OK),
+        Err(err) => {
+            eprintln!("{}", err);
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 #[deprecated(note = "TBR by direct client calls to Firestore.")]

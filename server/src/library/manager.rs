@@ -1,5 +1,5 @@
 use crate::api::{FirestoreApi, GogApi, SteamApi};
-use crate::documents::{LibraryEntry, StoreEntry};
+use crate::documents::{GameEntry, LibraryEntry, StoreEntry};
 use crate::library::Reconciler;
 use crate::traits;
 use crate::Status;
@@ -95,7 +95,12 @@ impl LibraryManager {
             let firestore = Arc::clone(&self.firestore);
             let user_id = self.user_id.clone();
             tokio::spawn(async move {
-                if let Err(status) = LibraryManager::store_match(firestore, &user_id, entry_match) {
+                if let Err(status) = Self::store_match(
+                    firestore,
+                    &user_id,
+                    entry_match.store_entry,
+                    entry_match.game_entry.unwrap(),
+                ) {
                     eprintln!("Error handling recon match: {}", status);
                 }
             });
@@ -104,17 +109,31 @@ impl LibraryManager {
         Ok(())
     }
 
-    /// Handles library Firestore updates on successful matching of game entry.
+    pub async fn manual_recon(
+        &self,
+        recon_service: Reconciler,
+        store_entry: StoreEntry,
+        game_entry: GameEntry,
+    ) -> Result<(), Status> {
+        // Retrieve full details GameEntry from recon service.
+        let game_entry = recon_service.get_entry(game_entry.id).await?;
+
+        Self::store_match(
+            Arc::clone(&self.firestore),
+            &self.user_id,
+            store_entry,
+            game_entry,
+        )
+    }
+
+    /// Handles library Firestore updates on successful matching input
+    /// StoreEntry with GameEntry.
     fn store_match(
         firestore: Arc<Mutex<FirestoreApi>>,
         user_id: &str,
-        m: crate::library::reconciler::Match,
+        store_entry: StoreEntry,
+        game_entry: GameEntry,
     ) -> Result<(), Status> {
-        if let None = &m.game_entry {
-            return Ok(());
-        }
-
-        let game_entry = m.game_entry.unwrap();
         let firestore = firestore.lock().unwrap();
 
         // Store GameEntry to 'games' collection. Might overwrite an existing
@@ -133,7 +152,7 @@ impl LibraryManager {
             collection: game_entry.collection,
             franchises: game_entry.franchises,
             companies: game_entry.companies,
-            store_entry: vec![m.store_entry],
+            store_entry: vec![store_entry],
             user_data: None,
         };
 

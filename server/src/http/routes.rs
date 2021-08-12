@@ -12,9 +12,9 @@ pub fn routes(
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     get_images()
-        .or(post_sync(keys, firestore))
+        .or(post_sync(keys, Arc::clone(&firestore)))
         .or(post_search(Arc::clone(&igdb)))
-        .or(post_recon(igdb))
+        .or(post_recon(firestore, igdb))
         .or(post_unmatch())
         .or_else(|e| async {
             println!("Request rejected: {:?}", e);
@@ -36,11 +36,13 @@ fn post_sync(
 
 /// POST /library/{user_id}/recon
 fn post_recon(
+    firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "recon")
         .and(warp::post())
         .and(recon_body())
+        .and(with_firestore(firestore))
         .and(with_igdb(igdb))
         .and_then(handlers::post_recon)
 }
