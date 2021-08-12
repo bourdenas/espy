@@ -12,10 +12,14 @@ pub fn routes(
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     get_images()
-        .or(post_sync(keys, firestore))
+        .or(post_sync(keys, Arc::clone(&firestore)))
         .or(post_search(Arc::clone(&igdb)))
-        .or(post_match(igdb))
+        .or(post_recon(firestore, igdb))
         .or(post_unmatch())
+        .or_else(|e| async {
+            println!("Request rejected: {:?}", e);
+            Err(e)
+        })
 }
 
 /// POST /library/{user_id}/sync
@@ -30,22 +34,24 @@ fn post_sync(
         .and_then(handlers::post_sync)
 }
 
-/// POST /library/{user_id}/match
-fn post_match(
+/// POST /library/{user_id}/recon
+fn post_recon(
+    firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "match")
+    warp::path!("library" / String / "recon")
         .and(warp::post())
-        .and(match_body())
+        .and(recon_body())
+        .and(with_firestore(firestore))
         .and(with_igdb(igdb))
-        .and_then(handlers::post_match)
+        .and_then(handlers::post_recon)
 }
 
 /// POST /library/{user_id}/unmatch
 fn post_unmatch() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "unmatch")
         .and(warp::post())
-        .and(match_body())
+        .and(recon_body())
         .and_then(handlers::post_unmatch)
 }
 
@@ -85,7 +91,7 @@ fn with_keys(
     warp::any().map(move || Arc::clone(&keys))
 }
 
-fn match_body() -> impl Filter<Extract = (models::Match,), Error = warp::Rejection> + Clone {
+fn recon_body() -> impl Filter<Extract = (models::Recon,), Error = warp::Rejection> + Clone {
     warp::body::content_length_limit(64 * 1024).and(warp::body::json())
 }
 

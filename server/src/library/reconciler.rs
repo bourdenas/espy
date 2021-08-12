@@ -1,6 +1,5 @@
 use crate::api::IgdbApi;
 use crate::documents::{self, GameEntry, StoreEntry};
-use crate::espy;
 use crate::igdb;
 use crate::Status;
 use futures::stream::{self, StreamExt};
@@ -34,11 +33,9 @@ impl Reconciler {
         drop(tx);
     }
 
-    pub async fn update_entry(&self, game_entry: &mut espy::GameEntry) -> Result<(), Status> {
-        if let Some(game) = &mut game_entry.game {
-            self.igdb.retrieve_game_info(game).await?;
-        }
-        Ok(())
+    /// Returns IGDB GameEntry matching input [`id`].
+    pub async fn get_entry(&self, id: u64) -> Result<GameEntry, Status> {
+        get_entry(&self.igdb, id).await
     }
 }
 
@@ -48,7 +45,7 @@ async fn recon_task(task: Task) {
     let entry_match = match resolve(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => Match {
             store_entry: task.store_entry,
-            game_entry,
+            game_entry: Some(game_entry),
         },
         Err(e) => {
             println!("Failed to resolve '{}': {}", task.store_entry.title, e);
@@ -64,26 +61,35 @@ async fn recon_task(task: Task) {
     }
 }
 
-/// Returns a game entry from IGDB that matches the input store entry.
-async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<Option<GameEntry>, Status> {
+/// Returns a GameEntry from IGDB that matches the input [`store_entry`].
+async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<GameEntry, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
     let igdb_external_game = igdb.match_external(store_entry).await?;
     if let None = igdb_external_game {
-        return Ok(None);
+        return Err(Status::not_found(&format!(
+            "Failed to resolve external entry with id={}",
+            store_entry.id
+        )));
     }
 
-    let game_entry = igdb
-        .get_game_by_id(igdb_external_game.unwrap().game.unwrap().id)
-        .await?;
+    get_entry(igdb, igdb_external_game.unwrap().game.unwrap().id).await
+}
+
+/// Returns a GameEntry from IGDB that matches the input [`id`].
+async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
+    let game_entry = igdb.get_game_by_id(id).await?;
     if let None = game_entry {
-        return Ok(None);
+        return Err(Status::not_found(&format!(
+            "Failed to retrieve game entry with id={}",
+            id
+        )));
     }
 
     let mut game_entry = game_entry.unwrap();
     igdb.retrieve_game_info(&mut game_entry).await?;
 
-    Ok(Some(convert(game_entry)))
+    Ok(convert(game_entry))
 }
 
 fn convert(igdb_game: igdb::Game) -> GameEntry {
