@@ -70,19 +70,12 @@ pub async fn post_search(
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
     println!("POST /search body: {:?}", &search);
 
-    let candidates = match library::search::get_candidates(&igdb, &search.title).await {
-        Ok(result) => result,
-        Err(_) => return Ok(Box::new(StatusCode::NOT_FOUND)),
-    };
-
-    let result = igdb::GameResult {
-        games: candidates.into_iter().map(|c| c.game).collect(),
-    };
-
-    let mut bytes = vec![];
-    match result.encode(&mut bytes) {
-        Ok(_) => Ok(Box::new(bytes)),
-        Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
+    match library::search::get_candidates(&igdb, &search.title).await {
+        Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
+        Err(err) => {
+            eprintln!("{}", err);
+            Ok(Box::new(StatusCode::NOT_FOUND))
+        }
     }
 }
 
