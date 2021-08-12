@@ -1,14 +1,20 @@
 use crate::api::IgdbApi;
+use crate::documents;
 use crate::igdb;
 use crate::Status;
 
 /// Returns scored Candidates of igdb.Game entries that match the input title.
-pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<Candidate>, Status> {
+pub async fn get_candidates(
+    igdb: &IgdbApi,
+    title: &str,
+) -> Result<Vec<documents::GameEntry>, Status> {
     let mut result = match igdb.search_by_title(title).await {
         Ok(r) => r,
         Err(e) => {
-            println!("Failed to recon '{}': {}", title, e);
-            igdb::GameResult::default()
+            return Err(Status::not_found(&format!(
+                "Failed to recon '{}': {}",
+                title, e
+            )))
         }
     };
 
@@ -30,7 +36,26 @@ pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<Candidate
         .collect::<Vec<Candidate>>();
     candidates.sort_by(|a, b| a.score.cmp(&b.score));
 
-    Ok(candidates)
+    Ok(candidates
+        .into_iter()
+        .map(|c| documents::GameEntry {
+            id: c.game.id,
+            name: c.game.name,
+            release_date: match c.game.first_release_date {
+                Some(date) => Some(date.seconds),
+                None => None,
+            },
+            cover: match c.game.cover {
+                Some(cover) => Some(documents::Image {
+                    image_id: cover.image_id,
+                    height: cover.height,
+                    width: cover.width,
+                }),
+                None => None,
+            },
+            ..Default::default()
+        })
+        .collect())
 }
 
 // Internal struct that is only exposed for debug reasons (search by title) in
