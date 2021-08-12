@@ -71,7 +71,7 @@ class GameEntry {
       'id': id,
       'name': name,
       if (summary.isNotEmpty) 'summary': summary,
-      if (releaseDate != null) 'release_date': releaseDate,
+      if (releaseDate > 0) 'release_date': releaseDate,
       if (collection != null) 'collection': collection!.toJson(),
       if (franchises.isNotEmpty)
         'franchises': [

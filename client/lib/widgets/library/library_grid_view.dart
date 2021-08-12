@@ -71,7 +71,7 @@ class GameCard extends StatelessWidget {
           backgroundColor: Colors.black45,
           title: GameTitleText(entry.name),
           subtitle: Row(children: [
-            if (entry.releaseDate != null)
+            if (entry.releaseDate > 0)
               GameTitleText(
                   '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
             Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
