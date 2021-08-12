@@ -117,12 +117,12 @@ fn convert(igdb_game: igdb::Game) -> GameEntry {
         companies: igdb_game
             .involved_companies
             .into_iter()
-            .map(|company| documents::Annotation {
-                id: company.id,
-                name: match company.company {
-                    Some(company) => company.name,
-                    None => String::new(),
-                },
+            .filter_map(|involved_company| match involved_company.company {
+                Some(company) => Some(documents::Annotation {
+                    id: company.id,
+                    name: company.name,
+                }),
+                None => None,
             })
             .collect(),
 
