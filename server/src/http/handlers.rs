@@ -11,77 +11,6 @@ use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
 use warp::http::StatusCode;
 
-#[deprecated(note = "TBR by direct client calls to Firestore.")]
-pub async fn get_library(user_id: String) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("[deprecated] GET /library/{}", &user_id);
-
-    let library = espy::Library::default();
-
-    let mut bytes = vec![];
-    match library.encode(&mut bytes) {
-        Ok(_) => Ok(Box::new(bytes)),
-        Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
-    }
-}
-
-#[deprecated(note = "TBR by direct client calls to Firestore.")]
-pub async fn get_settings(
-    user_id: String,
-    firestore: Arc<Mutex<FirestoreApi>>,
-) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("[deprecated] GET /library/{}/settings", &user_id);
-
-    let user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
-        Err(e) => {
-            eprintln!("GET /library/{}/settings: {}", &user_id, e);
-            return Ok(Box::new(StatusCode::INTERNAL_SERVER_ERROR));
-        }
-    };
-
-    let settings = models::Settings {
-        steam_user_id: match user.steam_user_id() {
-            Some(id) => String::from(id),
-            None => String::default(),
-        },
-        gog_auth_code: match user.gog_auth_code() {
-            Some(code) => String::from(code),
-            None => String::default(),
-        },
-    };
-
-    Ok(Box::new(warp::reply::json(&settings)))
-}
-
-#[deprecated(note = "TBR by direct client calls to Firestore.")]
-pub async fn post_settings(
-    user_id: String,
-    settings: models::Settings,
-    firestore: Arc<Mutex<FirestoreApi>>,
-) -> Result<impl warp::Reply, Infallible> {
-    println!("[deprecated] POST /library/{}/settings", &user_id);
-
-    let mut user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
-        Err(e) => {
-            eprintln!("POST /library/{}/settings: {}", &user_id, e);
-            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
-
-    let result = user
-        .update(&settings.steam_user_id, &settings.gog_auth_code)
-        .await;
-
-    match result {
-        Ok(()) => Ok(StatusCode::OK),
-        Err(err) => {
-            eprintln!("{}", err);
-            Ok(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
-}
-
 pub async fn post_sync(
     user_id: String,
     keys: Arc<util::keys::Keys>,
@@ -105,33 +34,6 @@ pub async fn post_sync(
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
-}
-
-#[deprecated(note = "TBR by direct client calls to Firestore.")]
-pub async fn post_details(
-    user_id: String,
-    game_id: u64,
-    details: models::Details,
-) -> Result<impl warp::Reply, Infallible> {
-    println!(
-        "[deprecated] POST /library/{}/details/{} body: {:?}",
-        &user_id, game_id, &details
-    );
-
-    let mut library = espy::Library::default();
-
-    let entry = library.entry.iter_mut().find(|entry| match &entry.game {
-        Some(game) => game.id == game_id,
-        None => false,
-    });
-
-    if let None = entry {
-        return Ok(StatusCode::NOT_FOUND);
-    }
-    let entry = entry.unwrap();
-    entry.details = Some(espy::GameDetails { tag: details.tags });
-
-    Ok(StatusCode::OK)
 }
 
 pub async fn post_match(

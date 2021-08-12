@@ -11,43 +11,11 @@ pub fn routes(
     igdb: Arc<IgdbApi>,
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    get_library()
-        .or(get_settings(firestore.clone()))
-        .or(post_settings(firestore.clone()))
+    get_images()
         .or(post_sync(keys, firestore))
-        .or(post_details())
-        .or(post_match(igdb.clone()))
+        .or(post_search(Arc::clone(&igdb)))
+        .or(post_match(igdb))
         .or(post_unmatch())
-        .or(post_search(igdb))
-        .or(get_images())
-}
-
-/// GET /library/{user_id}
-fn get_library() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String)
-        .and(warp::get())
-        .and_then(handlers::get_library)
-}
-
-/// GET /library/{user_id}/settings
-fn get_settings(
-    firestore: Arc<Mutex<FirestoreApi>>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "settings")
-        .and(warp::get())
-        .and(with_firestore(firestore))
-        .and_then(handlers::get_settings)
-}
-
-/// POST /library/{user_id}/settings
-fn post_settings(
-    firestore: Arc<Mutex<FirestoreApi>>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "settings")
-        .and(warp::post())
-        .and(settings_body())
-        .and(with_firestore(firestore))
-        .and_then(handlers::post_settings)
 }
 
 /// POST /library/{user_id}/sync
@@ -60,14 +28,6 @@ fn post_sync(
         .and(with_keys(keys))
         .and(with_firestore(firestore))
         .and_then(handlers::post_sync)
-}
-
-/// POST /library/{user_id}/details/{id}
-fn post_details() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "details" / u64)
-        .and(warp::post())
-        .and(details_body())
-        .and_then(handlers::post_details)
 }
 
 /// POST /library/{user_id}/match
@@ -123,14 +83,6 @@ fn with_keys(
     keys: Arc<util::keys::Keys>,
 ) -> impl Filter<Extract = (Arc<util::keys::Keys>,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&keys))
-}
-
-fn settings_body() -> impl Filter<Extract = (models::Settings,), Error = warp::Rejection> + Clone {
-    warp::body::content_length_limit(32 * 1024).and(warp::body::json())
-}
-
-fn details_body() -> impl Filter<Extract = (models::Details,), Error = warp::Rejection> + Clone {
-    warp::body::content_length_limit(32 * 1024).and(warp::body::json())
 }
 
 fn match_body() -> impl Filter<Extract = (models::Match,), Error = warp::Rejection> + Clone {
