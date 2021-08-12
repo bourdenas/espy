@@ -1,5 +1,5 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:flutter/foundation.dart';
@@ -144,7 +144,7 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
     super.dispose();
   }
 
-  OverlayEntry _createMatchSuggestions(Iterable<LibraryEntry> suggestions) {
+  OverlayEntry _createMatchSuggestions(Iterable<GameEntry> suggestions) {
     final size = context.size!;
 
     return OverlayEntry(
@@ -164,7 +164,7 @@ class _GameMatchTextFieldState extends State<_GameMatchTextField> {
                         ListTile(
                           leading: CircleAvatar(
                               foregroundImage: NetworkImage(
-                                  '${Urls.imageProvider}/t_thumb/${game.cover}.jpg')),
+                                  '${Urls.imageProvider}/t_thumb/${game.cover!.imageId}.jpg')),
                           title: Text(game.name),
                           trailing: Text(
                               '${DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000).year}'),
