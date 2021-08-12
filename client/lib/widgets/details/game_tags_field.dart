@@ -17,12 +17,17 @@ class GameTagsField extends StatelessWidget {
       hintText: 'Tag...',
       icon: Icon(Icons.tag),
       createSuggestions: (text) {
-        final prefix = text.toLowerCase();
+        final searchTerms = text.toLowerCase().split(' ');
         return [
           ...context
               .read<GameTagsIndex>()
               .tags
-              .where((tag) => tag.toLowerCase().startsWith(prefix))
+              .where(
+                (tag) => searchTerms.every((term) => tag
+                    .toLowerCase()
+                    .split(' ')
+                    .any((word) => word.startsWith(term))),
+              )
               .take(3)
               .map(
                 (tag) => Suggestion(

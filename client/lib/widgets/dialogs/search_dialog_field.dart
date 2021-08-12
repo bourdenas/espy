@@ -21,10 +21,12 @@ class SearchDialogField extends StatelessWidget {
           ...context
               .read<GameTagsIndex>()
               .tags
-              .where((tag) => searchTerms.every((term) => tag
-                  .toLowerCase()
-                  .split(' ')
-                  .any((word) => word.startsWith(term))))
+              .where(
+                (tag) => searchTerms.every((term) => tag
+                    .toLowerCase()
+                    .split(' ')
+                    .any((word) => word.startsWith(term))),
+              )
               .take(4)
               .map(
                 (tag) => Suggestion(
