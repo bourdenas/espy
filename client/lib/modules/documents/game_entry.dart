@@ -4,8 +4,8 @@ import 'package:fixnum/fixnum.dart';
 class GameEntry {
   final Int64 id;
   final String name;
-  final String summary;
 
+  final String summary;
   final Int64? releaseDate;
 
   final Annotation? collection;
@@ -19,7 +19,7 @@ class GameEntry {
   const GameEntry({
     required this.id,
     required this.name,
-    required this.summary,
+    this.summary = '',
     this.releaseDate,
     this.collection,
     this.franchises = const [],
@@ -33,7 +33,7 @@ class GameEntry {
       : this(
           id: Int64(json['id']!),
           name: json['name']!,
-          summary: json['summary']!,
+          summary: json['summary'] ?? '',
           releaseDate: Int64(json['release_date'] ?? 0),
           collection: json.containsKey('collection')
               ? Annotation.fromJson(json['collection'])
@@ -71,7 +71,7 @@ class GameEntry {
     return {
       'id': id,
       'name': name,
-      'summary': summary,
+      if (summary.isNotEmpty) 'summary': summary,
       if (releaseDate != null) 'release_date': releaseDate,
       if (collection != null) 'collection': collection!.toJson(),
       if (franchises.isNotEmpty)
