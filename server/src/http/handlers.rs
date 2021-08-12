@@ -1,11 +1,9 @@
 use crate::api::{FirestoreApi, IgdbApi};
-use crate::espy;
 use crate::http::models;
 use crate::igdb;
 use crate::library;
 use crate::library::{Reconciler, User};
 use crate::util;
-use prost::bytes::Bytes;
 use prost::Message;
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
@@ -43,48 +41,10 @@ pub async fn post_match(
 ) -> Result<impl warp::Reply, Infallible> {
     println!("POST /library/{}/match", &user_id);
 
-    let store_entry = match espy::StoreEntry::decode(Bytes::from(match_msg.encoded_store_entry)) {
-        Ok(msg) => msg,
-        Err(e) => {
-            eprintln!("post_match StoreEntry decoding error: {}", e);
-            return Ok(StatusCode::BAD_REQUEST);
-        }
-    };
-    let game = match igdb::Game::decode(Bytes::from(match_msg.encoded_game)) {
-        Ok(msg) => msg,
-        Err(e) => {
-            eprintln!("post_match Game decoding error: {}", e);
-            return Ok(StatusCode::BAD_REQUEST);
-        }
-    };
-
-    let mut library = espy::Library::default();
-
-    library
-        .unreconciled_store_entry
-        .retain(|e| !(e.id == store_entry.id && e.store == store_entry.store));
-
-    let entry = library.entry.iter_mut().find(|e| match &e.game {
-        Some(g) => g.id == game.id,
-        None => false,
-    });
-
-    match entry {
-        Some(entry) => entry.store_entry.push(store_entry),
-        None => {
-            let mut entry = espy::GameEntry {
-                game: Some(game),
-                store_entry: vec![store_entry],
-                ..Default::default()
-            };
-            let recon_service = Reconciler::new(Arc::clone(&igdb));
-
-            if let Err(_) = recon_service.update_entry(&mut entry).await {
-                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-            }
-            library.entry.push(entry);
-        }
-    }
+    // let recon_service = Reconciler::new(Arc::clone(&igdb));
+    // if let Err(_) = recon_service.update_entry(&mut entry).await {
+    //     return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+    // }
 
     Ok(StatusCode::OK)
 }
@@ -95,39 +55,6 @@ pub async fn post_unmatch(
     match_msg: models::Match,
 ) -> Result<impl warp::Reply, Infallible> {
     println!("[deprecated] POST /library/{}/unmatch", &user_id);
-
-    let store_entry = match espy::StoreEntry::decode(Bytes::from(match_msg.encoded_store_entry)) {
-        Ok(msg) => msg,
-        Err(e) => {
-            eprintln!("post_unmatch StoreEntry decoding error: {}", e);
-            return Ok(StatusCode::BAD_REQUEST);
-        }
-    };
-    let game = match igdb::Game::decode(Bytes::from(match_msg.encoded_game)) {
-        Ok(msg) => msg,
-        Err(e) => {
-            eprintln!("post_unmatch Game decoding error: {}", e);
-            return Ok(StatusCode::BAD_REQUEST);
-        }
-    };
-
-    let mut library = espy::Library::default();
-
-    // There's no remove_if so I need to iterate the vector twice. Once to find
-    // the game entry and remove the request's storefront from it and a second
-    // one to remove the game entry if it no longer has a store entry.
-    let entry = library.entry.iter_mut().find(|e| match &e.game {
-        Some(g) => g.id == game.id,
-        None => false,
-    });
-    if let Some(entry) = entry {
-        entry
-            .store_entry
-            .retain(|se| !(se.id == store_entry.id && se.store == store_entry.store));
-    }
-    // NB: It'd be nice if retain() allowed for modifying elements.
-    library.entry.retain(|e| !e.store_entry.is_empty());
-    library.unreconciled_store_entry.push(store_entry);
 
     Ok(StatusCode::OK)
 }
