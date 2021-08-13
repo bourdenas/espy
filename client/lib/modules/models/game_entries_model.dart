@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/library_filters_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
@@ -8,8 +6,7 @@ class GameEntriesModel extends ChangeNotifier {
   List<LibraryEntry> _entries = [];
   LibraryFilter _filter = LibraryFilter();
 
-  UnmodifiableListView<LibraryEntry> get games =>
-      UnmodifiableListView(_entries.where((e) => _filter.apply(e)));
+  Iterable<LibraryEntry> get games => _entries.where((e) => _filter.apply(e));
 
   void update(List<LibraryEntry> entries, LibraryFilter filter) {
     _entries = entries;
