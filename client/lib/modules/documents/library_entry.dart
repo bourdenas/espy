@@ -11,7 +11,7 @@ class LibraryEntry {
   final List<Annotation> franchises;
   final List<Annotation> companies;
 
-  final List<StoreEntry> storeEntry;
+  final List<StoreEntry> storeEntries;
 
   GameUserData userData;
 
@@ -23,7 +23,7 @@ class LibraryEntry {
     this.collection,
     this.franchises = const [],
     this.companies = const [],
-    this.storeEntry = const [],
+    this.storeEntries = const [],
     this.userData = const GameUserData(),
   });
 
@@ -48,7 +48,7 @@ class LibraryEntry {
                     Annotation.fromJson(entry),
                 ]
               : [],
-          storeEntry: json.containsKey('store_entry')
+          storeEntries: json.containsKey('store_entry')
               ? [
                   for (final entry in json['store_entry'])
                     StoreEntry.fromJson(entry),
@@ -74,9 +74,9 @@ class LibraryEntry {
         'companies': [
           for (final entry in companies) entry.toJson(),
         ],
-      if (storeEntry.isNotEmpty)
+      if (storeEntries.isNotEmpty)
         'store_entry': [
-          for (final entry in storeEntry) entry.toJson(),
+          for (final entry in storeEntries) entry.toJson(),
         ],
       'user_data': userData.toJson(),
     };

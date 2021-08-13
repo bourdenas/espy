@@ -85,7 +85,7 @@ class _StorefrontDropdown extends StatefulWidget {
 }
 
 class _StorefrontDropdownState extends State<_StorefrontDropdown> {
-  _StorefrontDropdownState(this._entry) : _chosenValue = _entry.storeEntry[0];
+  _StorefrontDropdownState(this._entry) : _chosenValue = _entry.storeEntries[0];
 
   final LibraryEntry _entry;
   StoreEntry _chosenValue;
@@ -99,7 +99,7 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
           DropdownButton<StoreEntry>(
             value: _chosenValue,
             items: [
-              for (final storeEntry in _entry.storeEntry)
+              for (final storeEntry in _entry.storeEntries)
                 DropdownMenuItem<StoreEntry>(
                   value: storeEntry,
                   child: Text(storeEntry.storefront),
@@ -145,7 +145,7 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
                                         "Unmatching '${_chosenValue.title}'...")));
                                 Navigator.of(context).pop();
 
-                                if (_entry.storeEntry.length == 1) {
+                                if (_entry.storeEntries.length == 1) {
                                   context
                                       .read<EspyRouterDelegate>()
                                       .showLibrary();
