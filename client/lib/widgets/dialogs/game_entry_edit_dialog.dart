@@ -151,9 +151,10 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
                                       .showLibrary();
                                 }
 
-                                await context
+                                context
                                     .read<GameLibraryModel>()
                                     .unmatchEntry(_chosenValue, _entry);
+                                Navigator.pop(context);
                               },
                               child: Text('Confirm')),
                           TextButton(

@@ -91,25 +91,36 @@ class GameLibraryModel extends ChangeNotifier {
     return true;
   }
 
-  Future<bool> unmatchEntry(
+  Future<void> unmatchEntry(
       StoreEntry storeEntry, LibraryEntry libraryEntry) async {
-    var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$_userId/unmatch'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({
-        'encoded_store_entry': storeEntry.toJson(),
-        'encoded_game': libraryEntry.toJson(),
-      }),
-    );
+    libraryEntry.storeEntries
+        .removeWhere((entry) => entry.storefront == storeEntry.storefront);
 
-    if (response.statusCode != 200) {
-      print('unmatchEntry (error): $response');
-      return false;
+    if (libraryEntry.storeEntries.isEmpty) {
+      entries.removeWhere((entry) => entry.id == libraryEntry.id);
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_userId)
+          .collection('library')
+          .doc(libraryEntry.id.toString())
+          .delete();
+    } else {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_userId)
+          .collection('library')
+          .doc(libraryEntry.id.toString())
+          .set(libraryEntry.toJson());
     }
 
-    _fetch();
-    return true;
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('unknown')
+        .doc(storeEntry.id.toString())
+        .set(storeEntry.toJson());
+
+    notifyListeners();
   }
 }
