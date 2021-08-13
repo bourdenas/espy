@@ -1,5 +1,6 @@
 // import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:espy/constants/config.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
@@ -18,7 +19,7 @@ class GameDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      final layout = constraints.maxWidth < 1200
+      final layout = Config.isMobile(constraints)
           ? _Layout.singleColumn
           : _Layout.twoColumns;
       return Scaffold(

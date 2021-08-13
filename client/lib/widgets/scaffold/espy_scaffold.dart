@@ -1,11 +1,12 @@
+import 'package:espy/constants/config.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/widgets/dialogs/auth_dialog.dart';
+import 'package:espy/widgets/dialogs/search_dialog.dart';
+import 'package:espy/widgets/library/game_library.dart'
+    show GameLibrary, LibraryView;
 import 'package:espy/widgets/scaffold/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/scaffold/espy_navigation_rail.dart'
     show EspyNavigationRail;
-import 'package:espy/widgets/library/game_library.dart'
-    show GameLibrary, LibraryView;
-import 'package:espy/widgets/dialogs/search_dialog.dart';
 import 'package:espy/widgets/scaffold/searchbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +30,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
     return LayoutBuilder(builder: (context, constraints) {
       final auth = context.watch<UserModel>();
       return Row(children: [
-        if (constraints.maxWidth > 800 && auth.signedIn)
+        if (Config.isNotMobile(constraints) && auth.signedIn)
           EspyNavigationRail(constraints.maxWidth > 3200),
         Expanded(
           child: Scaffold(
@@ -39,7 +40,8 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                   Text('espy'),
                   Padding(
                       padding: EdgeInsets.symmetric(
-                          horizontal: constraints.maxWidth > 800 ? 32 : 16)),
+                          horizontal:
+                              Config.isNotMobile(constraints) ? 32 : 16)),
                   Expanded(
                     child: auth.signedIn ? Searchbar() : Container(),
                   ),
@@ -75,7 +77,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                 ],
               ),
             ),
-            drawer: constraints.maxWidth <= 800 ? EspyDrawer() : null,
+            drawer: Config.isMobile(constraints) ? EspyDrawer() : null,
             body: auth.signedIn ? GameLibrary(view: _view) : EmptyLibrary(),
             floatingActionButton: auth.signedIn
                 ? FloatingActionButton(
