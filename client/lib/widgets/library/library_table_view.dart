@@ -59,7 +59,7 @@ class LibraryTableView extends StatelessWidget {
                                 runSpacing: 4.0,
                                 children: [
                                   for (final tag in entry.userData.tags)
-                                    TagChip(tag, entry)
+                                    TagChip(tag: tag)
                                 ],
                               )),
                               DataCell(Text(

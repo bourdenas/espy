@@ -1,4 +1,3 @@
-import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +16,7 @@ class TagsCloud extends StatelessWidget {
             spacing: 16.0,
             runSpacing: 16.0,
             children: [
-              for (final tag in tags)
-                TagChip(tag, LibraryEntry(id: 0, name: "foo")),
+              for (final tag in tags) TagChip(tag: tag),
             ],
           ),
         ),

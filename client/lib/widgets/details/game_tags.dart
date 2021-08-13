@@ -40,7 +40,7 @@ class GameChipsBar extends StatelessWidget {
         for (final company in entry.companies) CompanyChip(company),
         if (entry.collection != null) CollectionChip(entry.collection!),
         for (final franchise in entry.franchises) FranchiseChip(franchise),
-        for (final tag in entry.userData.tags) TagChip(tag, entry),
+        for (final tag in entry.userData.tags) TagChip(tag: tag, entry: entry),
       ],
     );
   }
@@ -101,9 +101,9 @@ class FranchiseChip extends StatelessWidget {
 
 class TagChip extends StatelessWidget {
   final String tag;
-  final LibraryEntry entry;
+  final LibraryEntry? entry;
 
-  const TagChip(this.tag, this.entry);
+  const TagChip({required this.tag, this.entry});
 
   @override
   Widget build(BuildContext context) {
@@ -116,11 +116,13 @@ class TagChip extends StatelessWidget {
         // be poping always.
         Navigator.pop(context);
       },
-      onDeleted: () {
-        if (entry.userData.tags.isEmpty) return;
-        entry.userData.tags.remove(tag);
-        context.read<GameLibraryModel>().postDetails(entry);
-      },
+      onDeleted: entry != null
+          ? () {
+              if (entry!.userData.tags.isEmpty) return;
+              entry!.userData.tags.remove(tag);
+              context.read<GameLibraryModel>().postDetails(entry!);
+            }
+          : null,
     );
   }
 }
