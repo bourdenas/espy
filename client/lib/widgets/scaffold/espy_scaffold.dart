@@ -1,4 +1,4 @@
-import 'package:espy/constants/config.dart';
+import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/widgets/dialogs/auth_dialog.dart';
 import 'package:espy/widgets/dialogs/search_dialog.dart';
@@ -18,7 +18,7 @@ class EspyScaffold extends StatefulWidget {
 
 class _EspyScaffoldState extends State<EspyScaffold> {
   List<bool> _viewSelection = [true, false, false];
-  final List<LibraryView> _libraryViews = const [
+  List<LibraryView> _libraryViews = const [
     LibraryView.GRID,
     LibraryView.LIST,
     LibraryView.TABLE
@@ -29,9 +29,12 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       final auth = context.watch<UserModel>();
+      final appConfig = context.read<AppConfig>();
+      appConfig.windowWidth = constraints.maxWidth;
+
       return Row(children: [
-        if (Config.isNotMobile(constraints) && auth.signedIn)
-          EspyNavigationRail(constraints.maxWidth > 3200),
+        if (appConfig.isNotMobile && auth.signedIn)
+          EspyNavigationRail(appConfig.windowWidth > 3200),
         Expanded(
           child: Scaffold(
             appBar: AppBar(
@@ -40,15 +43,16 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                   Text('espy'),
                   Padding(
                       padding: EdgeInsets.symmetric(
-                          horizontal:
-                              Config.isNotMobile(constraints) ? 32 : 16)),
+                          horizontal: appConfig.isNotMobile ? 32 : 16)),
                   Expanded(
-                    child: auth.signedIn ? Searchbar() : Container(),
+                    child: appConfig.isNotMobile && auth.signedIn
+                        ? Searchbar()
+                        : Container(),
                   ),
                   Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
                   if (auth.signedIn)
                     ToggleButtons(
-                      children: const [
+                      children: [
                         Icon(Icons.grid_4x4),
                         Icon(Icons.list),
                         Icon(Icons.table_view),
@@ -56,8 +60,8 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                       isSelected: _viewSelection,
                       onPressed: (index) {
                         setState(() {
-                          _viewSelection =
-                              List<bool>.generate(3, (i) => i == index);
+                          _viewSelection = List<bool>.generate(
+                              _libraryViews.length, (i) => i == index);
                           _view = _libraryViews[index];
                         });
                       },
@@ -68,16 +72,17 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                       child: Text("Sign In"),
                       onPressed: () => AuthDialog.show(context),
                     )
-                  else
+                  else if (appConfig.isNotMobile) ...[
                     TextButton(
                       child: Text("Sign Out"),
                       onPressed: () => auth.signOut(),
                     ),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
+                    Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
+                  ],
                 ],
               ),
             ),
-            drawer: Config.isMobile(constraints) ? EspyDrawer() : null,
+            drawer: appConfig.isMobile ? EspyDrawer() : null,
             body: auth.signedIn ? GameLibrary(view: _view) : EmptyLibrary(),
             floatingActionButton: auth.signedIn
                 ? FloatingActionButton(

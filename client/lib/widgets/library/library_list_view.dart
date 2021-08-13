@@ -1,4 +1,5 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/details/game_tags.dart';
@@ -39,14 +40,16 @@ class LibraryListView extends StatelessWidget {
                         title: Text(entry.name),
                         subtitle: Text(
                             '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
-                        trailing: Wrap(
-                          spacing: 8.0,
-                          runSpacing: 4.0,
-                          children: [
-                            for (final tag in entry.userData.tags)
-                              TagChip(tag: tag)
-                          ],
-                        ),
+                        trailing: context.read<AppConfig>().isNotMobile
+                            ? Wrap(
+                                spacing: 8.0,
+                                runSpacing: 4.0,
+                                children: [
+                                  for (final tag in entry.userData.tags)
+                                    TagChip(tag: tag)
+                                ],
+                              )
+                            : null,
                         onTap: () => context
                             .read<EspyRouterDelegate>()
                             .showGameDetails('${entry.id}'),
