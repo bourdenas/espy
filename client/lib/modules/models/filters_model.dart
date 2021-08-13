@@ -2,7 +2,7 @@ import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
-class LibraryFiltersModel extends ChangeNotifier {
+class FiltersModel extends ChangeNotifier {
   LibraryFilter _filter = LibraryFilter();
 
   void update(String searchPhrase) {

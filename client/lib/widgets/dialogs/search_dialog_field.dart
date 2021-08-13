@@ -1,6 +1,6 @@
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/library_filters_model.dart';
+import 'package:espy/modules/models/filters_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/autocomplete_field.dart';
 import 'package:flutter/material.dart';
@@ -33,9 +33,9 @@ class SearchDialogField extends StatelessWidget {
                   text: tag,
                   icon: Icon(Icons.tag),
                   onTap: () {
-                    context.read<LibraryFiltersModel>().clearFilter();
+                    context.read<FiltersModel>().clearFilter();
                     context.read<EspyRouterDelegate>().showLibrary();
-                    context.read<LibraryFiltersModel>().addTagFilter(tag);
+                    context.read<FiltersModel>().addTagFilter(tag);
                     Navigator.of(context).pop();
                   },
                 ),
@@ -73,10 +73,10 @@ class SearchDialogField extends StatelessWidget {
                   text: collection.name,
                   icon: Icon(Icons.circle),
                   onTap: () {
-                    context.read<LibraryFiltersModel>().clearFilter();
+                    context.read<FiltersModel>().clearFilter();
                     context.read<EspyRouterDelegate>().showLibrary();
                     context
-                        .read<LibraryFiltersModel>()
+                        .read<FiltersModel>()
                         .addCollectionFilter(collection);
                     Navigator.of(context).pop();
                   },
@@ -95,11 +95,9 @@ class SearchDialogField extends StatelessWidget {
                   text: company.name,
                   icon: Icon(Icons.business),
                   onTap: () {
-                    context.read<LibraryFiltersModel>().clearFilter();
+                    context.read<FiltersModel>().clearFilter();
                     context.read<EspyRouterDelegate>().showLibrary();
-                    context
-                        .read<LibraryFiltersModel>()
-                        .addCompanyFilter(company);
+                    context.read<FiltersModel>().addCompanyFilter(company);
                     Navigator.of(context).pop();
                   },
                 ),

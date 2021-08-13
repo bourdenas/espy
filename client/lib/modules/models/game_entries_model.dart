@@ -1,5 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/library_filters_model.dart';
+import 'package:espy/modules/models/filters_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class GameEntriesModel extends ChangeNotifier {

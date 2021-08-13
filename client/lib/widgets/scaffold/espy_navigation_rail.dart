@@ -1,5 +1,5 @@
 import 'package:espy/modules/models/appbar_search_model.dart';
-import 'package:espy/modules/models/library_filters_model.dart';
+import 'package:espy/modules/models/filters_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/dialogs/settings_dialog.dart';
@@ -73,13 +73,13 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
         }
 
         if (index == 0) {
-          context.read<LibraryFiltersModel>().clearFilter();
+          context.read<FiltersModel>().clearFilter();
           context.read<EspyRouterDelegate>().showLibrary();
         } else if (index == 1) {
-          context.read<LibraryFiltersModel>().clearFilter();
+          context.read<FiltersModel>().clearFilter();
           context.read<EspyRouterDelegate>().showUnmatchedEntries();
         } else if (index == 2) {
-          context.read<LibraryFiltersModel>().clearFilter();
+          context.read<FiltersModel>().clearFilter();
           context.read<EspyRouterDelegate>().showTags();
         } else if (index == 3) {
           setState(() {});

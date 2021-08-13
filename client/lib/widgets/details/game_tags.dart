@@ -2,7 +2,7 @@ import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/modules/models/library_filters_model.dart';
+import 'package:espy/modules/models/filters_model.dart';
 import 'package:espy/widgets/details/game_tags_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -57,7 +57,7 @@ class CompanyChip extends StatelessWidget {
       label: Text('${company.name} (${company.id})'),
       backgroundColor: Colors.red[900],
       onPressed: () {
-        context.read<LibraryFiltersModel>().addCompanyFilter(company);
+        context.read<FiltersModel>().addCompanyFilter(company);
         context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
       },
@@ -76,7 +76,7 @@ class CollectionChip extends StatelessWidget {
       label: Text('${collection.name} (${collection.id})'),
       backgroundColor: Colors.indigo[800],
       onPressed: () {
-        context.read<LibraryFiltersModel>().addCollectionFilter(collection);
+        context.read<FiltersModel>().addCollectionFilter(collection);
         context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
       },
@@ -110,7 +110,7 @@ class TagChip extends StatelessWidget {
     return InputChip(
       label: Text(tag),
       onPressed: () {
-        context.read<LibraryFiltersModel>().addTagFilter(tag);
+        context.read<FiltersModel>().addTagFilter(tag);
         context.read<AppBarSearchModel>().clear();
         // TODO: Depending which screen the TagChip is present, this shouldn't
         // be poping always.
