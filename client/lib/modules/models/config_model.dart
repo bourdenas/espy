@@ -5,4 +5,6 @@ class AppConfig extends ChangeNotifier {
 
   get isMobile => windowWidth <= 800;
   get isNotMobile => windowWidth > 800;
+
+  get tagsTitleBar => false;
 }
