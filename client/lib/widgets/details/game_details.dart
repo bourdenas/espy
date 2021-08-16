@@ -3,9 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:espy/widgets/dialogs/game_entry_edit_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GameDetails extends StatelessWidget {
   final LibraryEntry entry;
@@ -17,39 +19,38 @@ class GameDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final layout = constraints.maxWidth < 1200
-          ? _Layout.singleColumn
-          : _Layout.twoColumns;
-      return Scaffold(
-        body: FutureBuilder(
-          future: FirebaseFirestore.instance
-              .collection('games')
-              .doc('${entry.id}')
-              .get(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Text("Something went wrong: ${snapshot.error}");
-            } else if (!snapshot.hasData) {
-              return Text("Document does not exist");
-            } else if (snapshot.connectionState == ConnectionState.done &&
-                snapshot.hasData) {
-              // Cannot believe people are using json by choice! WTF is going on here?
-              final skata = (snapshot.data! as DocumentSnapshot).data()
-                  as Map<String, dynamic>;
-              final gameEntry = GameEntry.fromJson(skata);
-              return GameEntryView(
-                gameEntry: gameEntry,
-                libraryEntry: entry,
-                layout: layout,
-              );
-            }
+    final layout = context.read<AppConfig>().isMobile
+        ? _Layout.singleColumn
+        : _Layout.twoColumns;
 
-            return Text("loading");
-          },
-        ),
-      );
-    });
+    return Scaffold(
+      body: FutureBuilder(
+        future: FirebaseFirestore.instance
+            .collection('games')
+            .doc('${entry.id}')
+            .get(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Text("Something went wrong: ${snapshot.error}");
+          } else if (!snapshot.hasData) {
+            return Text("Document does not exist");
+          } else if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData) {
+            // Cannot believe people are using json by choice! WTF is going on here?
+            final skata = (snapshot.data! as DocumentSnapshot).data()
+                as Map<String, dynamic>;
+            final gameEntry = GameEntry.fromJson(skata);
+            return GameEntryView(
+              gameEntry: gameEntry,
+              libraryEntry: entry,
+              layout: layout,
+            );
+          }
+
+          return Text("loading");
+        },
+      ),
+    );
   }
 }
 

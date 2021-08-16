@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
@@ -19,6 +20,7 @@ Future<void> main() async {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => EspyRouterDelegate()),
+      ChangeNotifierProvider(create: (context) => AppConfig()),
       ChangeNotifierProvider(
           create: (context) => UserModel()..signInAuthenticatedUser()),
       ChangeNotifierProvider(create: (context) => AppBarSearchModel()),

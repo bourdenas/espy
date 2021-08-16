@@ -1,5 +1,7 @@
+import 'package:espy/modules/models/config_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class Suggestion {
   final String text;
@@ -73,7 +75,7 @@ class AutocompleteFieldState extends State<AutocompleteField> {
             onSubmitted: (term) => _submit(term),
             controller: _searchController,
             // focusNode: _searchFocusNode,
-            autofocus: true,
+            autofocus: context.read<AppConfig>().isNotMobile,
             decoration: InputDecoration(
               prefixIcon: icon,
               hintText: hintText,

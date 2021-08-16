@@ -1,4 +1,5 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/details/game_tags.dart';
@@ -11,6 +12,7 @@ class LibraryTableView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Force to render the view when GameDetails (e.g. game tags) are updated.
     // context.watch<GameLibraryModel>();
+    final appConfig = context.read<AppConfig>();
 
     return Column(
       children: [
@@ -26,10 +28,10 @@ class LibraryTableView extends StatelessWidget {
               children: [
                 DataTable(
                   dividerThickness: 0,
-                  sortColumnIndex: 2,
+                  sortColumnIndex: appConfig.isNotMobile ? 2 : 1,
                   columns: [
                     DataColumn(label: Text('TITLE')),
-                    DataColumn(label: Text('TAGS')),
+                    if (appConfig.isNotMobile) DataColumn(label: Text('TAGS')),
                     DataColumn(
                       label: Text('YEAR'),
                       numeric: true,
@@ -54,14 +56,15 @@ class LibraryTableView extends StatelessWidget {
                                     .read<EspyRouterDelegate>()
                                     .showGameDetails('${entry.id}'),
                               ),
-                              DataCell(Wrap(
-                                spacing: 8.0,
-                                runSpacing: 4.0,
-                                children: [
-                                  for (final tag in entry.userData.tags)
-                                    TagChip(tag, entry)
-                                ],
-                              )),
+                              if (appConfig.isNotMobile)
+                                DataCell(Wrap(
+                                  spacing: 8.0,
+                                  runSpacing: 4.0,
+                                  children: [
+                                    for (final tag in entry.userData.tags)
+                                      TagChip(tag: tag)
+                                  ],
+                                )),
                               DataCell(Text(
                                   '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}')),
                             ],
