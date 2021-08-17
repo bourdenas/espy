@@ -1,5 +1,6 @@
 import 'dart:html';
 
+import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/routing/espy_route_information_parser.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class _EspyAppState extends State<EspyApp> {
     _routerDelegate = context.watch<EspyRouterDelegate>();
     return MaterialApp.router(
       title: 'espy',
-      theme: ThemeData.dark(),
+      theme: context.watch<AppConfig>().theme,
       routerDelegate: _routerDelegate!,
       routeInformationParser: _routeInformationParser,
       debugShowCheckedModeBanner: false,
