@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/widgets/dialogs/auth_dialog.dart';
@@ -103,13 +105,20 @@ class _EspyScaffoldState extends State<EspyScaffold> {
 class EmptyLibrary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Material(
           child: Center(
-            child: Text(
-                'Connect your storefront accounts in settings to retrieve your game library.'),
+            child: SizedBox(
+              width: min(screenSize.width * .9, 800),
+              child: Image.asset(
+                'assets/images/espy-logo_800.png',
+                fit: BoxFit.fitWidth,
+              ),
+            ),
           ),
         ),
       ],
