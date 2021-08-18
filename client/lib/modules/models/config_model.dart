@@ -11,7 +11,7 @@ class AppConfig extends ChangeNotifier {
 
   get theme => ThemeData(
         brightness: Brightness.dark,
-        primaryColor: foregroundColour,
+        primaryColor: backgrounColour,
         backgroundColor: backgrounColour,
       );
 
