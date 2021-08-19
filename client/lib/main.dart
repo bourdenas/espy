@@ -15,6 +15,8 @@ import 'package:espy/widgets/espy_app.dart'
     if (dart.library.js) 'package:espy/widgets/espy_app_web.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp();
 
   runApp(MultiProvider(
