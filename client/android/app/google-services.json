@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "478783154654-0kf23uvh2ma5l90ip176hg0s02s745f3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bourdenas.espy",
+            "certificate_hash": "61ffb233759c86372a237cfef6fe1c15a15c91fd"
+          }
+        },
+        {
+          "client_id": "478783154654-k0sb9gj6vfoev52n18a2lq3un735klv0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bourdenas.espy",
+            "certificate_hash": "b0a73d748a2fceaa471f65b90f8b95fbef8b18f6"
+          }
+        },
+        {
           "client_id": "478783154654-76raalev7s759i6mqhcncln90ioj0ppd.apps.googleusercontent.com",
           "client_type": 3
         }
