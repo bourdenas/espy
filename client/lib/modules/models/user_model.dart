@@ -25,7 +25,7 @@ class UserModel extends ChangeNotifier {
       try {
         googleSignInAccount = await _googleSignIn.signIn();
       } catch (e) {
-        print(e);
+        print('Failed to sign-in with error: $e');
       }
     }
     if (googleSignInAccount == null) {
