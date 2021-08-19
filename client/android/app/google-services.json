@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "478783154654",
+    "project_id": "espy-library",
+    "storage_bucket": "espy-library.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478783154654:android:c8ddd354962fa57620954f",
+        "android_client_info": {
+          "package_name": "com.bourdenas.espy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "478783154654-76raalev7s759i6mqhcncln90ioj0ppd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDv2v4XhewVMrHoq12MFKmllmaXQVe9Y9g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "478783154654-76raalev7s759i6mqhcncln90ioj0ppd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
