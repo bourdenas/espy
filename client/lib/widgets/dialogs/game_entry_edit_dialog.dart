@@ -137,29 +137,31 @@ class _StorefrontDropdownState extends State<_StorefrontDropdown> {
                             'Are you sure you want to unmatch this store entry?'),
                         actions: [
                           TextButton(
-                              onPressed: () async {
-                                ScaffoldMessenger.of(context)
-                                    .hideCurrentSnackBar();
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text(
-                                        "Unmatching '${_chosenValue.title}'...")));
-                                Navigator.of(context).pop();
+                            child: Text('Confirm'),
+                            onPressed: () async {
+                              ScaffoldMessenger.of(context)
+                                  .hideCurrentSnackBar();
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(
+                                      "Unmatching '${_chosenValue.title}'...")));
+                              Navigator.of(context).pop();
 
-                                if (_entry.storeEntries.length == 1) {
-                                  context
-                                      .read<EspyRouterDelegate>()
-                                      .showLibrary();
-                                }
-
+                              if (_entry.storeEntries.length == 1) {
                                 context
-                                    .read<GameLibraryModel>()
-                                    .unmatchEntry(_chosenValue, _entry);
-                                Navigator.pop(context);
-                              },
-                              child: Text('Confirm')),
+                                    .read<EspyRouterDelegate>()
+                                    .showLibrary();
+                              }
+
+                              context
+                                  .read<GameLibraryModel>()
+                                  .unmatchEntry(_chosenValue, _entry);
+                              Navigator.pop(context);
+                            },
+                          ),
                           TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text('Cancel')),
+                            child: Text('Cancel'),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
                         ],
                       );
                     });
