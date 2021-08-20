@@ -1,5 +1,5 @@
-import 'package:espy/constants/menu_items.dart' show menu_items;
-import 'package:espy/modules/routing/espy_router_delegate.dart';
+import 'package:espy/widgets/scaffold/menu_items.dart' show menuItems;
+import 'package:espy/modules/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,19 +8,29 @@ class EspyDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserModel>();
+
     return Drawer(
       child: ListView(
-        // Important: Remove any padding from the ListView.
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            child: Text('User'),
+            child: CircleAvatar(
+              child: user.signedIn
+                  ? ClipOval(
+                      child: Image.network(user.user.photoURL),
+                    )
+                  : Icon(Icons.person),
+            ),
           ),
-          for (final item in menu_items)
+          for (final item in menuItems)
             ListTile(
-              leading: Icon(item.icon),
               title: Text(item.label),
-              onTap: () => context.read<EspyRouterDelegate>().showLibrary(),
+              leading: Icon(item.icon),
+              onTap: () {
+                item.onTap(context);
+                Navigator.pop(context);
+              },
             ),
         ],
       ),
