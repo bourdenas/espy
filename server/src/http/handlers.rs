@@ -1,10 +1,8 @@
 use crate::api::{FirestoreApi, IgdbApi};
 use crate::http::models;
-use crate::igdb;
 use crate::library;
 use crate::library::{Reconciler, User};
 use crate::util;
-use prost::Message;
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
 use warp::http::StatusCode;
@@ -52,16 +50,6 @@ pub async fn post_recon(
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
-}
-
-#[deprecated(note = "TBR by direct client calls to Firestore.")]
-pub async fn post_unmatch(
-    user_id: String,
-    recon: models::Recon,
-) -> Result<impl warp::Reply, Infallible> {
-    println!("[deprecated] POST /library/{}/unmatch", &user_id);
-
-    Ok(StatusCode::OK)
 }
 
 pub async fn post_search(

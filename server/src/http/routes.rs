@@ -15,7 +15,6 @@ pub fn routes(
         .or(post_sync(keys, Arc::clone(&firestore)))
         .or(post_search(Arc::clone(&igdb)))
         .or(post_recon(firestore, igdb))
-        .or(post_unmatch())
         .or_else(|e| async {
             println!("Request rejected: {:?}", e);
             Err(e)
@@ -45,14 +44,6 @@ fn post_recon(
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
         .and_then(handlers::post_recon)
-}
-
-/// POST /library/{user_id}/unmatch
-fn post_unmatch() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "unmatch")
-        .and(warp::post())
-        .and(recon_body())
-        .and_then(handlers::post_unmatch)
 }
 
 /// POST /match/search
