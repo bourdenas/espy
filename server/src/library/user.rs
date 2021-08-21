@@ -129,13 +129,24 @@ impl User {
     async fn gog_token<'a>(&'a mut self) -> Option<&'a mut api::GogToken> {
         match &mut self.data.keys {
             Some(keys) => match &mut keys.gog_token {
-                Some(token) => match token.validate().await {
-                    Ok(()) => Some(token),
-                    Err(status) => {
-                        eprintln!("Failed to validate GOG toke: {}", status);
-                        None
+                Some(token) => {
+                    if token.access_token.is_empty() {
+                        *token = match api::GogToken::from_oauth_code(&token.oauth_code).await {
+                            Ok(token) => token,
+                            Err(e) => {
+                                eprintln!("Failed to validate GOG token. {}", e);
+                                api::GogToken::new(&token.oauth_code)
+                            }
+                        }
                     }
-                },
+                    match token.validate().await {
+                        Ok(()) => Some(token),
+                        Err(status) => {
+                            eprintln!("Failed to validate GOG toke: {}", status);
+                            None
+                        }
+                    }
+                }
                 None => None,
             },
             None => None,
