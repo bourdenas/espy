@@ -1,5 +1,4 @@
-import 'package:espy/modules/models/game_details_model.dart';
-import 'package:espy/proto/library.pb.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +6,7 @@ import 'package:provider/provider.dart';
 class TagsCloud extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final tags = context.read<GameDetailsModel>().tags;
+    final tags = context.read<GameTagsModel>().tags;
 
     return Column(
       children: [
@@ -17,7 +16,7 @@ class TagsCloud extends StatelessWidget {
             spacing: 16.0,
             runSpacing: 16.0,
             children: [
-              for (final tag in tags) TagChip(tag, GameEntry()),
+              for (final tag in tags) TagChip(tag: tag),
             ],
           ),
         ),

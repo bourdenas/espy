@@ -1,11 +1,11 @@
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/intents/search_intent.dart';
-import 'package:espy/proto/library.pb.dart' as pb;
-import 'package:espy/widgets/details/game_details.dart' show GameDetails;
+import 'package:espy/widgets/details/game_details.dart' as widget;
 import 'package:espy/widgets/dialogs/search_dialog.dart';
 import 'package:flutter/material.dart';
 
 class GameDetailsPage extends Page {
-  final pb.GameEntry entry;
+  final LibraryEntry entry;
 
   GameDetailsPage({required this.entry}) : super(key: ValueKey(entry));
 
@@ -17,7 +17,7 @@ class GameDetailsPage extends Page {
         return Actions(actions: {
           SearchIntent: CallbackAction<SearchIntent>(
               onInvoke: (intent) => SearchDialog.show(context)),
-        }, child: GameDetails(entry: entry));
+        }, child: widget.GameDetails(entry));
       },
     );
   }

@@ -1,8 +1,8 @@
-import 'package:espy/proto/igdbapi.pb.dart' show Collection, Company;
-import 'package:espy/proto/library.pb.dart';
+import 'package:espy/modules/documents/annotation.dart';
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
-class LibraryFiltersModel extends ChangeNotifier {
+class FiltersModel extends ChangeNotifier {
   LibraryFilter _filter = LibraryFilter();
 
   void update(String searchPhrase) {
@@ -12,22 +12,22 @@ class LibraryFiltersModel extends ChangeNotifier {
 
   LibraryFilter get filter => _filter;
 
-  void addCompanyFilter(Company company) {
+  void addCompanyFilter(Annotation company) {
     _filter.companies.add(company);
     notifyListeners();
   }
 
-  void removeCompanyFilter(Company company) {
+  void removeCompanyFilter(Annotation company) {
     _filter.companies.remove(company);
     notifyListeners();
   }
 
-  void addCollectionFilter(Collection collection) {
+  void addCollectionFilter(Annotation collection) {
     _filter.collections.add(collection);
     notifyListeners();
   }
 
-  void removeCollectionFilter(Collection collection) {
+  void removeCollectionFilter(Annotation collection) {
     _filter.collections.remove(collection);
     notifyListeners();
   }
@@ -50,15 +50,15 @@ class LibraryFiltersModel extends ChangeNotifier {
 
 class LibraryFilter {
   String _titleSearchPhrase = '';
-  Set<Company> companies = {};
-  Set<Collection> collections = {};
+  Set<Annotation> companies = {};
+  Set<Annotation> collections = {};
   Set<String> tags = {};
 
   set titleSearchPhrase(String phrase) {
     _titleSearchPhrase = phrase;
   }
 
-  bool apply(GameEntry entry) {
+  bool apply(LibraryEntry entry) {
     return _filterCompany(entry) &&
         _filterCollection(entry) &&
         _filterTag(entry) &&
@@ -71,22 +71,23 @@ class LibraryFilter {
     tags.clear();
   }
 
-  bool _filterCompany(GameEntry entry) {
+  bool _filterCompany(LibraryEntry entry) {
     return companies.isEmpty ||
-        companies.every((company) => entry.game.involvedCompanies
-            .any((ic) => ic.developer && company.id == ic.company.id));
+        companies.every((filter) =>
+            entry.companies.any((company) => company.id == filter.id));
   }
 
-  bool _filterCollection(GameEntry entry) {
+  bool _filterCollection(LibraryEntry entry) {
     return collections.isEmpty ||
-        collections.every((collection) => collection == entry.game.collection);
+        collections.every((filter) => filter.id == entry.collection?.id);
   }
 
-  bool _filterTag(GameEntry entry) {
-    return tags.isEmpty || tags.every((tag) => entry.details.tag.contains(tag));
+  bool _filterTag(LibraryEntry entry) {
+    return tags.isEmpty ||
+        tags.every((filter) => entry.userData.tags.contains(filter));
   }
 
-  bool _filterTitle(GameEntry entry) {
-    return entry.game.name.toLowerCase().contains(_titleSearchPhrase);
+  bool _filterTitle(LibraryEntry entry) {
+    return entry.name.toLowerCase().contains(_titleSearchPhrase);
   }
 }

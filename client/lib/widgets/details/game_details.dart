@@ -1,46 +1,96 @@
 // import 'dart:ui' as ui;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/proto/library.pb.dart';
+import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:espy/widgets/dialogs/game_entry_edit_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GameDetails extends StatelessWidget {
-  final GameEntry entry;
+  final LibraryEntry entry;
 
-  GameDetails({Key? key, required this.entry}) : super(key: key);
+  GameDetails(
+    this.entry, {
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final layout = constraints.maxWidth < 1200
-          ? _Layout.singleColumn
-          : _Layout.twoColumns;
-      return Scaffold(
-          body: CustomScrollView(
-        slivers: [
-          _HeaderSliver(entry, layout),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                return Column(children: [
-                  if (layout == _Layout.singleColumn) ...[
-                    Padding(padding: const EdgeInsets.all(16)),
-                    _GameTitle(entry),
-                  ],
-                  Container(
-                    padding: const EdgeInsets.all(32),
-                    child: SelectableText(entry.game.summary),
-                  )
-                ]);
-              },
-              childCount: 1,
-            ),
+    final layout = context.read<AppConfig>().isMobile
+        ? _Layout.singleColumn
+        : _Layout.twoColumns;
+
+    return Scaffold(
+      body: FutureBuilder(
+        future: FirebaseFirestore.instance
+            .collection('games')
+            .doc('${entry.id}')
+            .get(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Text("Something went wrong: ${snapshot.error}");
+          } else if (!snapshot.hasData) {
+            return Text("Document does not exist");
+          } else if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData) {
+            // Cannot believe people are using json by choice! WTF is going on here?
+            final skata = (snapshot.data! as DocumentSnapshot).data()
+                as Map<String, dynamic>;
+            final gameEntry = GameEntry.fromJson(skata);
+            return GameEntryView(
+              gameEntry: gameEntry,
+              libraryEntry: entry,
+              layout: layout,
+            );
+          }
+
+          return Text("loading");
+        },
+      ),
+    );
+  }
+}
+
+class GameEntryView extends StatelessWidget {
+  const GameEntryView({
+    Key? key,
+    required this.gameEntry,
+    required this.libraryEntry,
+    required this.layout,
+  }) : super(key: key);
+
+  final GameEntry gameEntry;
+  final LibraryEntry libraryEntry;
+  final _Layout layout;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        _HeaderSliver(libraryEntry, layout),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return Column(children: [
+                if (layout == _Layout.singleColumn) ...[
+                  Padding(padding: const EdgeInsets.all(16)),
+                  _GameTitle(libraryEntry),
+                ],
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  child: SelectableText(gameEntry.summary),
+                )
+              ]);
+            },
+            childCount: 1,
           ),
-          _ScreenshotsSliver(entry, layout),
-        ],
-      ));
-    });
+        ),
+        _ScreenshotsSliver(gameEntry, layout),
+      ],
+    );
   }
 }
 
@@ -50,10 +100,10 @@ enum _Layout {
 }
 
 class _HeaderSliver extends StatelessWidget {
-  final GameEntry entry;
+  final LibraryEntry libraryEntry;
   final _Layout layout;
 
-  const _HeaderSliver(this.entry, this.layout);
+  const _HeaderSliver(this.libraryEntry, this.layout);
 
   @override
   Widget build(BuildContext context) {
@@ -88,9 +138,9 @@ class _HeaderSliver extends StatelessWidget {
                   clipBehavior: Clip.none,
                   children: [
                     Hero(
-                      tag: '${entry.game.id}_cover',
+                      tag: '${libraryEntry.id}_cover',
                       child: Image.network(
-                        '${Urls.imageProvider}/t_cover_big/${entry.game.cover.imageId}.jpg',
+                        '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -102,7 +152,7 @@ class _HeaderSliver extends StatelessWidget {
                         child: Icon(Icons.edit),
                         backgroundColor: Color.fromARGB(64, 255, 255, 255),
                         onPressed: () {
-                          GameEntryEditDialog.show(context, entry);
+                          GameEntryEditDialog.show(context, libraryEntry);
                         },
                       ),
                     ),
@@ -111,7 +161,7 @@ class _HeaderSliver extends StatelessWidget {
                 if (layout == _Layout.twoColumns) ...[
                   Padding(padding: EdgeInsets.all(8)),
                   Expanded(
-                    child: _GameTitle(entry),
+                    child: _GameTitle(libraryEntry),
                   ),
                 ],
               ],
@@ -124,9 +174,9 @@ class _HeaderSliver extends StatelessWidget {
 }
 
 class _GameTitle extends StatelessWidget {
-  final GameEntry entry;
+  final LibraryEntry libraryEntry;
 
-  _GameTitle(this.entry);
+  _GameTitle(this.libraryEntry);
 
   @override
   Widget build(BuildContext context) {
@@ -135,14 +185,14 @@ class _GameTitle extends StatelessWidget {
         Row(children: [
           Expanded(
             child: Text(
-              entry.game.name,
+              libraryEntry.name,
               style: Theme.of(context).textTheme.headline3,
               textAlign: TextAlign.center,
             ),
           ),
         ]),
         Padding(padding: EdgeInsets.all(16)),
-        GameTags(entry),
+        GameTags(libraryEntry),
       ],
     );
   }
@@ -160,11 +210,11 @@ class _ScreenshotsSliver extends StatelessWidget {
       crossAxisCount: layout == _Layout.twoColumns ? 2 : 1,
       mainAxisSpacing: 8,
       crossAxisSpacing: 8,
-      childAspectRatio: entry.game.screenshots.isNotEmpty
-          ? entry.game.screenshots[0].width / entry.game.screenshots[0].height
+      childAspectRatio: entry.screenshots.isNotEmpty
+          ? entry.screenshots[0].width / entry.screenshots[0].height
           : 1,
       children: [
-        for (final screenshot in entry.game.screenshots)
+        for (final screenshot in entry.screenshots)
           GridTile(
             child: Material(
               elevation: 10,

@@ -1,11 +1,12 @@
-import 'package:espy/modules/models/game_details_model.dart';
-import 'package:espy/proto/library.pb.dart';
+import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 Future<void> showTagsContextMenu(
-    BuildContext context, PointerDownEvent event, GameEntry entry) async {
+    BuildContext context, PointerDownEvent event, LibraryEntry entry) async {
   if (event.kind != PointerDeviceKind.mouse ||
       event.buttons != kSecondaryMouseButton) {
     return;
@@ -16,12 +17,12 @@ Future<void> showTagsContextMenu(
   final selectedTag = await showMenu<String>(
     context: context,
     items: context
-        .read<GameDetailsModel>()
-        .allTags
+        .read<GameTagsIndex>()
+        .tags
         .map((tag) => CheckedPopupMenuItem(
               child: Text(tag),
               value: tag,
-              checked: entry.details.tag.contains(tag),
+              checked: entry.userData.tags.contains(tag),
             ))
         .toList(),
     position:
@@ -32,14 +33,10 @@ Future<void> showTagsContextMenu(
     return;
   }
 
-  if (entry.details.tag.contains(selectedTag)) {
-    entry.details.tag.remove(selectedTag);
+  if (entry.userData.tags.contains(selectedTag)) {
+    entry.userData.tags.remove(selectedTag);
   } else {
-    // NB: I don't get it why just "entry.details.tag.add(tag);"
-    // fails and I need to clone GameDetails to edit it.
-    entry.details = GameDetails()
-      ..mergeFromMessage(entry.details)
-      ..tag.add(selectedTag);
+    entry.userData = GameUserData(tags: entry.userData.tags + [selectedTag]);
   }
-  context.read<GameDetailsModel>().postDetails(entry);
+  context.read<GameLibraryModel>().postDetails(entry);
 }

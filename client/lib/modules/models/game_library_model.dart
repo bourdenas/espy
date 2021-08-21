@@ -1,50 +1,55 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/proto/igdbapi.pb.dart' as igdb;
-import 'package:espy/proto/library.pb.dart';
+import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/store_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
 
 class GameLibraryModel extends ChangeNotifier {
-  Library library = Library.create();
+  List<LibraryEntry> entries = [];
   String _userId = '';
 
   void update(String userId) async {
     if (userId.isNotEmpty && userId != _userId) {
       _userId = userId;
-      await fetch();
+      await _fetch();
     }
   }
 
-  Future<void> fetch() async {
-    final response =
-        await http.get(Uri.parse('${Urls.espyBackend}/library/$_userId'));
+  void postDetails(LibraryEntry entry) async {
+    entry.userData.tags.sort();
 
-    if (response.statusCode == 200) {
-      final lib = Library.fromBuffer(response.bodyBytes);
-      _update(lib);
-    } else {
-      print('Failed to load game library');
-    }
-  }
-
-  /// Updates the model with new entries from input [Library].
-  void _update(Library lib) {
-    library = lib;
-    library.entry.sort((a, b) => -a.game.firstReleaseDate.seconds
-        .compareTo(b.game.firstReleaseDate.seconds));
-
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('library')
+        .doc(entry.id.toString())
+        .set(entry.toJson());
     notifyListeners();
   }
 
-  /// Removes all games from the model.
-  void clear() {
-    library.clear();
+  Future<void> _fetch() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('library')
+        .withConverter<LibraryEntry>(
+          fromFirestore: (snapshot, _) =>
+              LibraryEntry.fromJson(snapshot.data()!),
+          toFirestore: (entry, _) => entry.toJson(),
+        )
+        .orderBy('release_date', descending: true)
+        .limit(20)
+        .get();
+
+    entries = snapshot.docs.map((doc) => doc.data()).toList();
     notifyListeners();
   }
 
-  Future<List<igdb.Game>> searchByTitle(String title) async {
+  Future<List<GameEntry>> searchByTitle(String title) async {
     var response = await http.post(
       Uri.parse('${Urls.espyBackend}/search'),
       headers: {
@@ -56,53 +61,66 @@ class GameLibraryModel extends ChangeNotifier {
     );
 
     if (response.statusCode != 200) {
-      print('searchByTitle (error): $response');
+      print(
+          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return [];
     }
 
-    final entries = igdb.GameResult.fromBuffer(response.bodyBytes);
-    return entries.games;
+    final jsonObj = jsonDecode(response.body) as List<dynamic>;
+    return jsonObj.map((obj) => GameEntry.fromJson(obj)).toList();
   }
 
-  Future<bool> matchEntry(StoreEntry storeEntry, igdb.Game game) async {
+  Future<bool> matchEntry(StoreEntry storeEntry, GameEntry gameEntry) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$_userId/match'),
+      Uri.parse('${Urls.espyBackend}/library/$_userId/recon'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
-        'encoded_store_entry': storeEntry.writeToBuffer(),
-        'encoded_game': game.writeToBuffer(),
+        'store_entry': storeEntry.toJson(),
+        'game_entry': gameEntry.toJson(),
       }),
     );
 
     if (response.statusCode != 200) {
-      print('matchEntry (error): $response');
+      print(
+          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return false;
     }
 
-    fetch();
     return true;
   }
 
-  Future<bool> unmatchEntry(StoreEntry storeEntry, igdb.Game game) async {
-    var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$_userId/unmatch'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({
-        'encoded_store_entry': storeEntry.writeToBuffer(),
-        'encoded_game': game.writeToBuffer(),
-      }),
-    );
+  Future<void> unmatchEntry(
+      StoreEntry storeEntry, LibraryEntry libraryEntry) async {
+    libraryEntry.storeEntries
+        .removeWhere((entry) => entry.storefront == storeEntry.storefront);
 
-    if (response.statusCode != 200) {
-      print('unmatchEntry (error): $response');
-      return false;
+    if (libraryEntry.storeEntries.isEmpty) {
+      entries.removeWhere((entry) => entry.id == libraryEntry.id);
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_userId)
+          .collection('library')
+          .doc(libraryEntry.id.toString())
+          .delete();
+    } else {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_userId)
+          .collection('library')
+          .doc(libraryEntry.id.toString())
+          .set(libraryEntry.toJson());
     }
 
-    fetch();
-    return true;
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('unknown')
+        .doc(storeEntry.id.toString())
+        .set(storeEntry.toJson());
+
+    notifyListeners();
   }
 }

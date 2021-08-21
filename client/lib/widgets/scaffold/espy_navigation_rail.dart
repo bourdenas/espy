@@ -1,8 +1,5 @@
-import 'package:espy/modules/models/appbar_search_model.dart';
-import 'package:espy/modules/models/library_filters_model.dart';
+import 'package:espy/widgets/scaffold/menu_items.dart';
 import 'package:espy/modules/models/user_model.dart';
-import 'package:espy/modules/routing/espy_router_delegate.dart';
-import 'package:espy/widgets/dialogs/settings_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -43,48 +40,16 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
         ),
       ]),
       groupAlignment: 0,
-      destinations: [
-        NavigationRailDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: Text('Library'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.cloud_off_outlined),
-          selectedIcon: Icon(Icons.cloud_off),
-          label: Text('Unmatched'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.bubble_chart_outlined),
-          selectedIcon: Icon(Icons.bubble_chart),
-          label: Text('Tags'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings),
-          label: Text('Settings'),
-        ),
-      ],
+      destinations: menuItems
+          .map((e) => NavigationRailDestination(
+                label: Text(e.label),
+                icon: Icon(e.icon),
+                selectedIcon: Icon(e.selectedIcon),
+              ))
+          .toList(),
       onDestinationSelected: (index) {
         _selectedIndex = index;
-
-        if (index != 3) {
-          context.read<AppBarSearchModel>().clear();
-        }
-
-        if (index == 0) {
-          context.read<LibraryFiltersModel>().clearFilter();
-          context.read<EspyRouterDelegate>().showLibrary();
-        } else if (index == 1) {
-          context.read<LibraryFiltersModel>().clearFilter();
-          context.read<EspyRouterDelegate>().showUnmatchedEntries();
-        } else if (index == 2) {
-          context.read<LibraryFiltersModel>().clearFilter();
-          context.read<EspyRouterDelegate>().showTags();
-        } else if (index == 3) {
-          setState(() {});
-          SettingsDialog.show(context);
-        }
+        menuItems[_selectedIndex].onTap(context);
       },
     );
   }
