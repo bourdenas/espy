@@ -1,3 +1,4 @@
+mod library_ops;
 mod manager;
 mod reconciler;
 pub mod search;
