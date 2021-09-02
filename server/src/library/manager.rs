@@ -90,7 +90,7 @@ impl LibraryManager {
     }
 
     /// Reconciles entries in the unknown collection of user's library.
-    pub async fn reconcile(&self, recon_service: Reconciler) -> Result<(), Status> {
+    pub async fn match_unknown(&self, recon_service: Reconciler) -> Result<(), Status> {
         let unknown_entries =
             LibraryOps::read_unknown_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
 

@@ -9,6 +9,9 @@ struct Opts {
     #[clap(short, long, default_value = "")]
     user: String,
 
+    /// Espy user name for managing a game library.
+    #[clap(short, long)]
+    refresh: bool,
     /// JSON file that contains application keys for espy service.
     #[clap(long, default_value = "keys.json")]
     key_store: String,
@@ -39,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     user.sync(&keys).await?;
 
     let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
-    mgr.reconcile(library::Reconciler::new(Arc::new(igdb)))
+    mgr.match_unknown(library::Reconciler::new(Arc::new(igdb)))
         .await?;
 
     Ok(())
