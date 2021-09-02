@@ -9,9 +9,14 @@ struct Opts {
     #[clap(short, long, default_value = "")]
     user: String,
 
-    /// Espy user name for managing a game library.
-    #[clap(short, long)]
+    /// If set it tries to reconcile unknown entries with IGDB entries.
+    #[clap(long)]
+    recon: bool,
+
+    /// If set it refreshes user's library with IGDB data.
+    #[clap(long)]
     refresh: bool,
+
     /// JSON file that contains application keys for espy service.
     #[clap(long, default_value = "keys.json")]
     key_store: String,
@@ -43,9 +48,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     user.sync(&keys).await?;
 
     let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
-    mgr.match_unknown(library::Reconciler::new(Arc::clone(&igdb)))
-        .await?;
-
+    if opts.recon {
+        mgr.match_unknown(library::Reconciler::new(Arc::clone(&igdb)))
+            .await?;
+    }
     if opts.refresh {
         mgr.refresh_entries(library::Reconciler::new(Arc::clone(&igdb)))
             .await?;
