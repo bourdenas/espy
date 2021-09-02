@@ -22,9 +22,9 @@ impl IgdbApi {
         }
     }
 
-    // Authenticate with twtich/igdb OAuth2 server and retrieve session token.
-    // Authentication is valid for the lifetime of this instane or until the
-    // retrieved token expires.
+    /// Authenticate with twtich/igdb OAuth2 server and retrieve session token.
+    /// Authentication is valid for the lifetime of this instane or until the
+    /// retrieved token expires.
     pub async fn connect(&mut self) -> Result<(), Status> {
         let uri = format!(
             "{}?client_id={}&client_secret={}&grant_type=client_credentials",
@@ -42,8 +42,8 @@ impl IgdbApi {
         Ok(())
     }
 
-    // Returns matching candidates by searching based on game title from the
-    // igdb/games endpoint.
+    /// Returns matching candidates by searching based on game title from the
+    /// igdb/games endpoint.
     pub async fn search_by_title(&self, title: &str) -> Result<igdb::GameResult, Status> {
         Ok(self
             .post(GAMES_ENDPOINT, &format!("search \"{}\"; fields *;", title))
@@ -135,7 +135,7 @@ impl IgdbApi {
         Ok(())
     }
 
-    // Returns game image cover based on id from the igdb/covers endpoint.
+    /// Returns game image cover based on id from the igdb/covers endpoint.
     pub async fn get_cover(&self, cover_id: u64) -> Result<Option<igdb::Cover>, Status> {
         let mut result: igdb::CoverResult = self
             .post(
@@ -150,7 +150,7 @@ impl IgdbApi {
         }
     }
 
-    // Returns game collection based on id from the igdb/collections endpoint.
+    /// Returns game collection based on id from the igdb/collections endpoint.
     async fn get_collection(&self, collection_id: u64) -> Result<Option<igdb::Collection>, Status> {
         let mut result: igdb::CollectionResult = self
             .post(
@@ -165,7 +165,7 @@ impl IgdbApi {
         }
     }
 
-    // Returns game screenshots based on id from the igdb/screenshots endpoint.
+    /// Returns game screenshots based on id from the igdb/screenshots endpoint.
     async fn get_artwork(&self, artwork_ids: &[u64]) -> Result<igdb::ArtworkResult, Status> {
         Ok(self
             .post(
@@ -182,7 +182,7 @@ impl IgdbApi {
             .await?)
     }
 
-    // Returns game screenshots based on id from the igdb/screenshots endpoint.
+    /// Returns game screenshots based on id from the igdb/screenshots endpoint.
     async fn get_screenshots(
         &self,
         screenshot_ids: &[u64],
@@ -202,7 +202,7 @@ impl IgdbApi {
             .await?)
     }
 
-    // Returns game franchices based on id from the igdb/frachises endpoint.
+    /// Returns game franchices based on id from the igdb/frachises endpoint.
     async fn get_franchises(&self, franchise_ids: &[u64]) -> Result<igdb::FranchiseResult, Status> {
         Ok(self
             .post(
@@ -219,11 +219,12 @@ impl IgdbApi {
             .await?)
     }
 
-    // Returns game companies involved in the making of the game.
+    /// Returns game companies involved in the making of the game.
     async fn get_companies(
         &self,
         company_ids: &[u64],
     ) -> Result<igdb::InvolvedCompanyResult, Status> {
+        // Collect all involved companies for a game entry.
         let mut ic_result: igdb::InvolvedCompanyResult = self
             .post(
                 INVOLVED_COMPANIES_ENDPOINT,
@@ -238,6 +239,8 @@ impl IgdbApi {
             )
             .await?;
 
+        // Collect company data for involved companies that were developers in
+        // the game entry.
         let company_result: igdb::CompanyResult = self
             .post(
                 COMPANIES_ENDPOINT,
@@ -272,8 +275,9 @@ impl IgdbApi {
         Ok(ic_result)
     }
 
-    // Sends a POST request to an IGDB service endpoint. It expects to reach a
-    // protobuf endpoint and tries to decode the response into a protobuf Message.
+    /// Sends a POST request to an IGDB service endpoint. It expects to reach a
+    /// protobuf endpoint and tries to decode the response into an apropriate
+    /// protobuf type.
     async fn post<T: Message + Default>(&self, endpoint: &str, body: &str) -> Result<T, Status> {
         let token = self
             .oauth_token

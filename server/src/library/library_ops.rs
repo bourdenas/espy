@@ -8,8 +8,8 @@ pub struct LibraryOps {}
 impl LibraryOps {
     /// Store storefront entries to user's library under unknown entries.
     ///
-    /// Writes [`StoreEntry`] documents under collection `users/{user}/unknown`
-    /// in Firestore.
+    /// Writes `StoreEntry` documents under collection `users/{user}/unknown` in
+    /// Firestore.
     pub fn write_unknown_entries(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -27,8 +27,8 @@ impl LibraryOps {
 
     /// Read unknown storefront entries in user's library.
     ///
-    /// Reads [`StoreEntry`] documents under collection `users/{user}/unknown`
-    /// in Firestore.
+    /// Reads `StoreEntry` documents under collection `users/{user}/unknown` in
+    /// Firestore.
     pub fn read_unknown_entries(
         firestore: &FirestoreApi,
         user_id: &str,

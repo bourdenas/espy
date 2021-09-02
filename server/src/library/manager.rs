@@ -50,7 +50,7 @@ impl LibraryManager {
     /// This operation updates
     ///   (a) the `users/{user}/storefronts/{storefront_name}` document to
     ///   contain all storefront game ids owned by the user.
-    ///   (b) the `users/{user}/unknown` collection with [StoreEntry] documents
+    ///   (b) the `users/{user}/unknown` collection with 'StoreEntry` documents
     ///   that correspond to new found entries.
     async fn sync_storefront<T: traits::Storefront>(
         &self,
@@ -124,10 +124,10 @@ impl LibraryManager {
         Ok(())
     }
 
-    /// Manual matching of a [`StoreEntry`] to a [`GameEntry`] and saving it in
-    /// the user's library.
+    /// Manual matching of a `StoreEntry` to a `GameEntry` and saving it in the
+    /// user's library.
     ///
-    /// Uses the [`Reconciler`] to retrieve full details for [`GameEntry`].
+    /// Uses the `Reconciler` to retrieve full details for `GameEntry`.
     pub async fn manual_recon(
         &self,
         recon_service: Reconciler,

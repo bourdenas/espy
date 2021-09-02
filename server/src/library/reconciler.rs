@@ -20,7 +20,10 @@ impl Reconciler {
         Reconciler { igdb }
     }
 
-    /// Matches store entries with IGDB entries.
+    /// Matches input `entries` with IGDB GameEntries.
+    ///
+    /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
+    /// successful or failed matches.
     pub async fn reconcile(&self, tx: mpsc::Sender<Match>, entries: Vec<StoreEntry>) {
         let fut = stream::iter(entries.into_iter().map(|store_entry| Task {
             store_entry: store_entry,
@@ -33,7 +36,7 @@ impl Reconciler {
         drop(tx);
     }
 
-    /// Returns IGDB GameEntry matching input [`id`].
+    /// Returns IGDB GameEntry matching input `id`.
     pub async fn get_entry(&self, id: u64) -> Result<GameEntry, Status> {
         get_entry(&self.igdb, id).await
     }
@@ -61,7 +64,7 @@ async fn recon_task(task: Task) {
     }
 }
 
-/// Returns a GameEntry from IGDB that matches the input [`store_entry`].
+/// Returns a GameEntry from IGDB that matches the input `store_entry`.
 async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<GameEntry, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
@@ -76,7 +79,7 @@ async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<GameEntry, 
     get_entry(igdb, igdb_external_game.unwrap().game.unwrap().id).await
 }
 
-/// Returns a GameEntry from IGDB that matches the input [`id`].
+/// Returns a GameEntry from IGDB that matches the input `id`.
 async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
     let game_entry = igdb.get_game_by_id(id).await?;
     if let None = game_entry {
