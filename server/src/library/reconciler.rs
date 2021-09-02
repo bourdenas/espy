@@ -64,7 +64,7 @@ async fn recon_task(task: Task) {
     }
 }
 
-/// Returns a GameEntry from IGDB that matches the input `store_entry`.
+/// Returns a `GameEntry` from IGDB that matches the input `store_entry`.
 async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<GameEntry, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
@@ -79,7 +79,7 @@ async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<GameEntry, 
     get_entry(igdb, igdb_external_game.unwrap().game.unwrap().id).await
 }
 
-/// Returns a GameEntry from IGDB that matches the input `id`.
+/// Returns a `GameEntry` from IGDB that matches the input `id`.
 async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
     let game_entry = igdb.get_game_by_id(id).await?;
     if let None = game_entry {
@@ -95,6 +95,8 @@ async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
     Ok(convert(game_entry))
 }
 
+/// Converts an IGDB `Game` protobuf into a `GameEntry` document stored in
+/// Firestore.
 fn convert(igdb_game: igdb::Game) -> GameEntry {
     GameEntry {
         id: igdb_game.id,
@@ -127,10 +129,13 @@ fn convert(igdb_game: igdb::Game) -> GameEntry {
             .involved_companies
             .into_iter()
             .filter_map(|involved_company| match involved_company.company {
-                Some(company) => Some(documents::Annotation {
-                    id: company.id,
-                    name: company.name,
-                }),
+                Some(company) => match company.name.is_empty() {
+                    false => Some(documents::Annotation {
+                        id: company.id,
+                        name: company.name,
+                    }),
+                    true => None,
+                },
                 None => None,
             })
             .collect(),
