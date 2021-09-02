@@ -16,10 +16,6 @@ path = "src/http_server.rs"
 name = "sync_library"
 path = "src/sync_library.rs"
 
-[[bin]] 
-name = "espy"
-path = "src/main.rs"
-
 [dependencies]
 clap = "3.0.0-beta.2"
 futures = "0.3"
