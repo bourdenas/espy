@@ -89,6 +89,41 @@ impl LibraryManager {
         Ok(())
     }
 
+    /// Refreshes game entries info from IGDB in user's library.
+    pub async fn refresh_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
+        let library_entries =
+            LibraryOps::read_library_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
+
+        let (tx, mut rx) = mpsc::channel(32);
+
+        tokio::spawn(async move {
+            recon_service.refresh(tx, library_entries).await;
+        });
+
+        while let Some(refresh) = rx.recv().await {
+            println!("  received refresh for {}", &refresh.library_entry.name);
+
+            if let None = &refresh.game_entry {
+                continue;
+            }
+
+            let firestore = Arc::clone(&self.firestore);
+            let user_id = self.user_id.clone();
+            tokio::spawn(async move {
+                if let Err(status) = LibraryOps::update_library_entry(
+                    &firestore.lock().unwrap(),
+                    &user_id,
+                    refresh.library_entry,
+                    refresh.game_entry.unwrap(),
+                ) {
+                    eprintln!("Error handling library entry refresh: {}", status);
+                }
+            });
+        }
+
+        Ok(())
+    }
+
     /// Reconciles entries in the unknown collection of user's library.
     pub async fn match_unknown(&self, recon_service: Reconciler) -> Result<(), Status> {
         let unknown_entries =
@@ -116,7 +151,7 @@ impl LibraryManager {
                     entry_match.store_entry,
                     entry_match.game_entry.unwrap(),
                 ) {
-                    eprintln!("Error handling recon match: {}", status);
+                    eprintln!("Error handling matching unknown entry: {}", status);
                 }
             });
         }
