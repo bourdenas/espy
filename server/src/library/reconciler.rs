@@ -1,18 +1,26 @@
 use crate::api::IgdbApi;
-use crate::documents::{self, GameEntry, StoreEntry};
+use crate::documents::{self, GameEntry, LibraryEntry, StoreEntry};
 use crate::igdb;
 use crate::Status;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 
-pub struct Reconciler {
-    igdb: Arc<IgdbApi>,
+// The result of a refresh operation on a `library_entry`.
+pub struct Refresh {
+    pub library_entry: LibraryEntry,
+    pub game_entry: Option<GameEntry>,
 }
 
+// The result of a reconcile operation on a `store_entry` with a `game_entry`
+// from IGDB.
 pub struct Match {
     pub store_entry: StoreEntry,
     pub game_entry: Option<GameEntry>,
+}
+
+pub struct Reconciler {
+    igdb: Arc<IgdbApi>,
 }
 
 impl Reconciler {
@@ -24,13 +32,33 @@ impl Reconciler {
     ///
     /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
     /// successful or failed matches.
-    pub async fn reconcile(&self, tx: mpsc::Sender<Match>, entries: Vec<StoreEntry>) {
-        let fut = stream::iter(entries.into_iter().map(|store_entry| Task {
+    pub async fn refresh(&self, tx: mpsc::Sender<Refresh>, library_entries: Vec<LibraryEntry>) {
+        let fut = stream::iter(
+            library_entries
+                .into_iter()
+                .map(|library_entry| RefreshTask {
+                    library_entry: library_entry,
+                    igdb: Arc::clone(&self.igdb),
+                    tx: tx.clone(),
+                }),
+        )
+        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, refresh_task);
+
+        fut.await;
+        drop(tx);
+    }
+
+    /// Matches input `entries` with IGDB GameEntries.
+    ///
+    /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
+    /// successful or failed matches.
+    pub async fn reconcile(&self, tx: mpsc::Sender<Match>, store_entries: Vec<StoreEntry>) {
+        let fut = stream::iter(store_entries.into_iter().map(|store_entry| MatchingTask {
             store_entry: store_entry,
             igdb: Arc::clone(&self.igdb),
             tx: tx.clone(),
         }))
-        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, recon_task);
+        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, match_task);
 
         fut.await;
         drop(tx);
@@ -44,7 +72,31 @@ impl Reconciler {
 
 const IGDB_CONNECTIONS_LIMIT: usize = 8;
 
-async fn recon_task(task: Task) {
+/// Performs a single `RefreshTask` to producea `Refresh` and transmits it over
+/// its task's channel.
+async fn refresh_task(task: RefreshTask) {
+    let entry_match = match get_entry(&task.igdb, task.library_entry.id).await {
+        Ok(game_entry) => Refresh {
+            library_entry: task.library_entry,
+            game_entry: Some(game_entry),
+        },
+        Err(e) => {
+            println!("Failed to resolve '{}': {}", task.library_entry.name, e);
+            Refresh {
+                library_entry: task.library_entry,
+                game_entry: None,
+            }
+        }
+    };
+
+    if let Err(e) = task.tx.send(entry_match).await {
+        eprintln!("{}", e);
+    }
+}
+
+/// Performs a single `MatchingTask` to producea `Match` and transmits it over
+/// its task's channel.
+async fn match_task(task: MatchingTask) {
     let entry_match = match resolve(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => Match {
             store_entry: task.store_entry,
@@ -171,8 +223,15 @@ fn convert(igdb_game: igdb::Game) -> GameEntry {
     }
 }
 
+/// Library entry refresh task structure.
+struct RefreshTask {
+    library_entry: LibraryEntry,
+    igdb: Arc<IgdbApi>,
+    tx: mpsc::Sender<Refresh>,
+}
+
 /// Reconciliation task structure.
-struct Task {
+struct MatchingTask {
     store_entry: StoreEntry,
     igdb: Arc<IgdbApi>,
     tx: mpsc::Sender<Match>,
