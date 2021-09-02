@@ -32,6 +32,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let mut igdb = api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
+    let igdb = Arc::new(igdb);
 
     let firestore = Arc::new(Mutex::new(
         api::FirestoreApi::from_credentials(&opts.firestore_credentials)
@@ -42,8 +43,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     user.sync(&keys).await?;
 
     let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
-    mgr.match_unknown(library::Reconciler::new(Arc::new(igdb)))
+    mgr.match_unknown(library::Reconciler::new(Arc::clone(&igdb)))
         .await?;
+
+    if opts.refresh {
+        mgr.refresh_entries(library::Reconciler::new(Arc::clone(&igdb)))
+            .await?;
+    }
 
     Ok(())
 }
