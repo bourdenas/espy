@@ -39,6 +39,20 @@ impl LibraryOps {
         }
     }
 
+    /// Returns user's matched game library entries.
+    ///
+    /// Reads `LibraryEntry` documents under collection `users/{user}/library` in
+    /// Firestore.
+    pub fn read_library_entries(
+        firestore: &FirestoreApi,
+        user_id: &str,
+    ) -> Result<Vec<LibraryEntry>, Status> {
+        match firestore.list::<LibraryEntry>(&format!("users/{}/library", user_id)) {
+            Ok(entries) => Ok(entries),
+            Err(e) => Err(Status::internal("LibraryManager.read_library_entries: ", e)),
+        }
+    }
+
     /// Writes all store game ids owned by user from specified storefront.
     ///
     /// Writes `users/{user}/storefront/{storefront_name}` document in
@@ -131,6 +145,43 @@ impl LibraryOps {
             &format!("users/{}/library", user_id),
             Some(&library_entry.id.to_string()),
             &library_entry,
+        )?;
+
+        Ok(())
+    }
+
+    /// Updates a `game_entry` and the associated `library_entry` on Firestore.
+    ///
+    /// The `library_entry` is updated with the input `game_entry` data but
+    /// maintains existing user date (tags, store entries).
+    pub fn update_library_entry(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        library_entry: LibraryEntry,
+        game_entry: GameEntry,
+    ) -> Result<(), Status> {
+        // Store GameEntry to 'games' collection. Might overwrite an existing
+        // one. That's ok as this is a fresher version.
+        firestore.write("games", Some(&game_entry.id.to_string()), &game_entry)?;
+
+        // Store GameEntries to 'users/{user}/library' collection.
+        firestore.write(
+            &format!("users/{}/library", user_id),
+            Some(&library_entry.id.to_string()),
+            &LibraryEntry {
+                id: game_entry.id,
+                name: game_entry.name,
+                cover: match game_entry.cover {
+                    Some(cover) => Some(cover.image_id),
+                    None => None,
+                },
+                release_date: game_entry.release_date,
+                collection: game_entry.collection,
+                franchises: game_entry.franchises,
+                companies: game_entry.companies,
+                store_entry: library_entry.store_entry,
+                user_data: library_entry.user_data,
+            },
         )?;
 
         Ok(())
