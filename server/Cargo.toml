@@ -13,8 +13,8 @@ name = "http_server"
 path = "src/http_server.rs"
 
 [[bin]] 
-name = "recon_library"
-path = "src/recon_library.rs"
+name = "sync_library"
+path = "src/sync_library.rs"
 
 [[bin]] 
 name = "espy"
