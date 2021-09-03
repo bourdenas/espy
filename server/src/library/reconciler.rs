@@ -1,6 +1,7 @@
 use crate::api::IgdbApi;
 use crate::documents::{self, GameEntry, LibraryEntry, StoreEntry};
 use crate::igdb;
+use crate::library::search;
 use crate::Status;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
@@ -97,13 +98,31 @@ async fn refresh_task(task: RefreshTask) {
 /// Performs a single `MatchingTask` to producea `Match` and transmits it over
 /// its task's channel.
 async fn match_task(task: MatchingTask) {
-    let entry_match = match resolve(&task.igdb, &task.store_entry).await {
-        Ok(game_entry) => Match {
-            store_entry: task.store_entry,
-            game_entry: game_entry,
+    let entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
+        Ok(game_entry) => match game_entry {
+            Some(game_entry) => Match {
+                store_entry: task.store_entry,
+                game_entry: Some(game_entry),
+            },
+            None => match match_by_title(&task.igdb, &task.store_entry).await {
+                Ok(game_entry) => Match {
+                    store_entry: task.store_entry,
+                    game_entry: game_entry,
+                },
+                Err(e) => {
+                    println!("match_by_title '{}' failed: {}", task.store_entry.title, e);
+                    Match {
+                        store_entry: task.store_entry,
+                        game_entry: None,
+                    }
+                }
+            },
         },
         Err(e) => {
-            println!("Failed to resolve '{}': {}", task.store_entry.title, e);
+            println!(
+                "match_by_external_id '{}' failed: {}",
+                task.store_entry.title, e
+            );
             Match {
                 store_entry: task.store_entry,
                 game_entry: None,
@@ -118,12 +137,29 @@ async fn match_task(task: MatchingTask) {
 
 /// Returns a `GameEntry` from IGDB matching the external storefront id in
 /// `store_entry`.
-async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<Option<GameEntry>, Status> {
+async fn match_by_external_id(
+    igdb: &IgdbApi,
+    store_entry: &StoreEntry,
+) -> Result<Option<GameEntry>, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
     let igdb_external_game = igdb.match_external(store_entry).await?;
     match igdb_external_game {
         Some(external_game) => Ok(Some(get_entry(igdb, external_game.game.unwrap().id).await?)),
+        None => Ok(None),
+    }
+}
+
+/// Returns a `GameEntry` from IGDB matching the title in `store_entry`.
+async fn match_by_title(
+    igdb: &IgdbApi,
+    store_entry: &StoreEntry,
+) -> Result<Option<GameEntry>, Status> {
+    println!("Searching '{}'", &store_entry.title);
+
+    let candidates = search::get_candidates(igdb, &store_entry.title).await?;
+    match candidates.into_iter().next() {
+        Some(game_entry) => Ok(Some(get_entry(igdb, game_entry.id).await?)),
         None => Ok(None),
     }
 }
