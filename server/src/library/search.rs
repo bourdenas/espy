@@ -3,7 +3,9 @@ use crate::documents;
 use crate::igdb;
 use crate::Status;
 
-/// Returns scored Candidates of igdb.Game entries that match the input title.
+/// Returns `GameEntry` candidates from IGDB entries matching input title.
+///
+/// The candidates are ordered in descending order of matching criteria.
 pub async fn get_candidates(
     igdb: &IgdbApi,
     title: &str,
