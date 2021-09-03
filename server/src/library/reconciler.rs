@@ -100,7 +100,7 @@ async fn match_task(task: MatchingTask) {
     let entry_match = match resolve(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => Match {
             store_entry: task.store_entry,
-            game_entry: Some(game_entry),
+            game_entry: game_entry,
         },
         Err(e) => {
             println!("Failed to resolve '{}': {}", task.store_entry.title, e);
@@ -116,19 +116,16 @@ async fn match_task(task: MatchingTask) {
     }
 }
 
-/// Returns a `GameEntry` from IGDB that matches the input `store_entry`.
-async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<GameEntry, Status> {
+/// Returns a `GameEntry` from IGDB matching the external storefront id in
+/// `store_entry`.
+async fn resolve(igdb: &IgdbApi, store_entry: &StoreEntry) -> Result<Option<GameEntry>, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
     let igdb_external_game = igdb.match_external(store_entry).await?;
-    if let None = igdb_external_game {
-        return Err(Status::not_found(&format!(
-            "Failed to resolve external entry with id={}",
-            store_entry.id
-        )));
+    match igdb_external_game {
+        Some(external_game) => Ok(Some(get_entry(igdb, external_game.game.unwrap().id).await?)),
+        None => Ok(None),
     }
-
-    get_entry(igdb, igdb_external_game.unwrap().game.unwrap().id).await
 }
 
 /// Returns a `GameEntry` from IGDB that matches the input `id`.
