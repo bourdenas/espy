@@ -57,10 +57,10 @@ impl IgdbApi {
         let category: u8 = match store_entry.storefront_name.as_ref() {
             "steam" => 1,
             "gog" => 5,
-            _ => 0,
+            _ => return Ok(None),
         };
 
-        let mut result: igdb::ExternalGameResult = self
+        let result: igdb::ExternalGameResult = self
             .post(
                 EXTERNAL_GAMES_ENDPOINT,
                 &format!(
@@ -70,21 +70,15 @@ impl IgdbApi {
             )
             .await?;
 
-        match result.externalgames.is_empty() {
-            false => Ok(Some(result.externalgames.remove(0))),
-            true => Ok(None),
-        }
+        Ok(result.externalgames.into_iter().next())
     }
 
     pub async fn get_game_by_id(&self, id: u64) -> Result<Option<igdb::Game>, Status> {
-        let mut result: igdb::GameResult = self
+        let result: igdb::GameResult = self
             .post(GAMES_ENDPOINT, &format!("fields *; where id={};", id))
             .await?;
 
-        match result.games.is_empty() {
-            false => Ok(Some(result.games.remove(0))),
-            true => Ok(None),
-        }
+        Ok(result.games.into_iter().next())
     }
 
     /// Retrieves igdb.Game fields that are relevant to espy. For instance, cover
@@ -137,32 +131,26 @@ impl IgdbApi {
 
     /// Returns game image cover based on id from the igdb/covers endpoint.
     pub async fn get_cover(&self, cover_id: u64) -> Result<Option<igdb::Cover>, Status> {
-        let mut result: igdb::CoverResult = self
+        let result: igdb::CoverResult = self
             .post(
                 COVERS_ENDPOINT,
                 &format!("fields *; where id={};", cover_id),
             )
             .await?;
 
-        match result.covers.is_empty() {
-            false => Ok(Some(result.covers.remove(0))),
-            true => Ok(None),
-        }
+        Ok(result.covers.into_iter().next())
     }
 
     /// Returns game collection based on id from the igdb/collections endpoint.
     async fn get_collection(&self, collection_id: u64) -> Result<Option<igdb::Collection>, Status> {
-        let mut result: igdb::CollectionResult = self
+        let result: igdb::CollectionResult = self
             .post(
                 COLLECTIONS_ENDPOINT,
                 &format!("fields *; where id={};", collection_id),
             )
             .await?;
 
-        match result.collections.is_empty() {
-            false => Ok(Some(result.collections.remove(0))),
-            true => Ok(None),
-        }
+        Ok(result.collections.into_iter().next())
     }
 
     /// Returns game screenshots based on id from the igdb/screenshots endpoint.
