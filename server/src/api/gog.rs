@@ -73,6 +73,8 @@ impl Storefront for GogApi {
                 break;
             }
         }
+        println!("gog games: {}", store_entries.len());
+
         Ok(store_entries)
     }
 }
