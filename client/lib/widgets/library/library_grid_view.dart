@@ -121,15 +121,15 @@ class TagsTileBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridTileBar(
       backgroundColor: Colors.black45,
-      title: Wrap(
-        spacing: 2.0,
-        runSpacing: 4.0,
+      title: ListView(
+        scrollDirection: Axis.horizontal,
         children: [
-          for (final tag in entry.userData.tags) TagChip(tag: tag),
+          for (final tag in entry.userData.tags)
+            Padding(
+              padding: const EdgeInsets.all(2),
+              child: TagChip(tag: tag),
+            ),
         ],
-      ),
-      subtitle: Row(
-        children: [],
       ),
     );
   }
