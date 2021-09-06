@@ -31,16 +31,6 @@ List<MenuItem> menuItems = [
     },
   ),
   MenuItem(
-    label: 'Unmatched',
-    icon: Icons.cloud_off_outlined,
-    selectedIcon: Icons.cloud_off,
-    onTap: (context) {
-      context.read<AppBarSearchModel>().clear();
-      context.read<FiltersModel>().clearFilter();
-      context.read<EspyRouterDelegate>().showUnmatchedEntries();
-    },
-  ),
-  MenuItem(
     label: 'Tags',
     icon: Icons.bubble_chart_outlined,
     selectedIcon: Icons.bubble_chart,
@@ -48,6 +38,16 @@ List<MenuItem> menuItems = [
       context.read<AppBarSearchModel>().clear();
       context.read<FiltersModel>().clearFilter();
       context.read<EspyRouterDelegate>().showTags();
+    },
+  ),
+  MenuItem(
+    label: 'Unmatched',
+    icon: Icons.cloud_off_outlined,
+    selectedIcon: Icons.cloud_off,
+    onTap: (context) {
+      context.read<AppBarSearchModel>().clear();
+      context.read<FiltersModel>().clearFilter();
+      context.read<EspyRouterDelegate>().showUnmatchedEntries();
     },
   ),
   MenuItem(
