@@ -42,7 +42,6 @@ class GameLibraryModel extends ChangeNotifier {
           toFirestore: (entry, _) => entry.toJson(),
         )
         .orderBy('release_date', descending: true)
-        .limit(20)
         .get();
 
     entries = snapshot.docs.map((doc) => doc.data()).toList();
