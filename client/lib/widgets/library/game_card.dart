@@ -24,7 +24,11 @@ class GameCard extends StatelessWidget {
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
         ),
         clipBehavior: Clip.antiAlias,
-        child: appConfig.tagsTitleBar ? TagsTileBar(entry) : InfoTileBar(entry),
+        child: appConfig.cardDecoration == CardDecoration.TAGS
+            ? TagsTileBar(entry)
+            : appConfig.cardDecoration == CardDecoration.INFO
+                ? InfoTileBar(entry)
+                : null,
       ),
       child: Material(
         elevation: 10,
