@@ -15,19 +15,6 @@ class GameLibraryModel extends ChangeNotifier {
   void update(String userId) async {
     if (userId.isNotEmpty && userId != _userId) {
       _userId = userId;
-
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(_userId)
-          .collection('library')
-          .withConverter<LibraryEntry>(
-            fromFirestore: (snapshot, _) =>
-                LibraryEntry.fromJson(snapshot.data()!),
-            toFirestore: (entry, _) => entry.toJson(),
-          )
-          .orderBy('release_date', descending: true)
-          .snapshots()
-          .listen((data) => _onLibraryChanges(data.docChanges));
     }
   }
 
@@ -65,6 +52,49 @@ class GameLibraryModel extends ChangeNotifier {
         .set(entry.toJson());
     notifyListeners();
   }
+
+  Future<void> fetch() async {
+    if (_isFetching) {
+      return;
+    }
+
+    _isFetching = true;
+    final snapshot = _lastDocument == null
+        ? await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_userId)
+            .collection('library')
+            .withConverter<LibraryEntry>(
+              fromFirestore: (snapshot, _) =>
+                  LibraryEntry.fromJson(snapshot.data()!),
+              toFirestore: (entry, _) => entry.toJson(),
+            )
+            .orderBy('release_date', descending: true)
+            .limit(10)
+            .get()
+        : await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_userId)
+            .collection('library')
+            .withConverter<LibraryEntry>(
+              fromFirestore: (snapshot, _) =>
+                  LibraryEntry.fromJson(snapshot.data()!),
+              toFirestore: (entry, _) => entry.toJson(),
+            )
+            .orderBy('release_date', descending: true)
+            .startAfterDocument(_lastDocument!)
+            .limit(10)
+            .get();
+
+    entries.addAll(snapshot.docs.map((doc) => doc.data()));
+    _lastDocument = snapshot.docs[snapshot.docs.length - 1];
+
+    notifyListeners();
+    _isFetching = false;
+  }
+
+  bool _isFetching = false;
+  QueryDocumentSnapshot? _lastDocument;
 
   Future<List<GameEntry>> searchByTitle(String title) async {
     var response = await http.post(
