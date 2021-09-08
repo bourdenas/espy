@@ -15,8 +15,43 @@ class GameLibraryModel extends ChangeNotifier {
   void update(String userId) async {
     if (userId.isNotEmpty && userId != _userId) {
       _userId = userId;
-      await _fetch();
+
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(_userId)
+          .collection('library')
+          .withConverter<LibraryEntry>(
+            fromFirestore: (snapshot, _) =>
+                LibraryEntry.fromJson(snapshot.data()!),
+            toFirestore: (entry, _) => entry.toJson(),
+          )
+          .orderBy('release_date', descending: true)
+          .snapshots()
+          .listen((data) => _onLibraryChanges(data.docChanges));
     }
+  }
+
+  void _onLibraryChanges(List<DocumentChange<LibraryEntry>> changes) {
+    for (final entryChange in changes) {
+      print('modification ${entryChange.type}');
+      if (entryChange.type == DocumentChangeType.removed) {
+        entries.removeWhere((entry) {
+          return entryChange.doc.data()!.id == entry.id;
+        });
+      } else if (entryChange.type == DocumentChangeType.modified) {
+        int index = entries.indexWhere((entry) {
+          return entryChange.doc.data()!.id == entry.id;
+        });
+
+        if (index >= 0) {
+          entries[index] = entryChange.doc.data()!;
+        }
+      } else if (entryChange.type == DocumentChangeType.added) {
+        entries.add(entryChange.doc.data()!);
+      }
+    }
+
+    notifyListeners();
   }
 
   void postDetails(LibraryEntry entry) async {
@@ -28,23 +63,6 @@ class GameLibraryModel extends ChangeNotifier {
         .collection('library')
         .doc(entry.id.toString())
         .set(entry.toJson());
-    notifyListeners();
-  }
-
-  Future<void> _fetch() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(_userId)
-        .collection('library')
-        .withConverter<LibraryEntry>(
-          fromFirestore: (snapshot, _) =>
-              LibraryEntry.fromJson(snapshot.data()!),
-          toFirestore: (entry, _) => entry.toJson(),
-        )
-        .orderBy('release_date', descending: true)
-        .get();
-
-    entries = snapshot.docs.map((doc) => doc.data()).toList();
     notifyListeners();
   }
 
