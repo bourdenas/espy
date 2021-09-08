@@ -92,13 +92,13 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                         });
                       },
                     ),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
                   if (!auth.signedIn)
                     TextButton(
                       child: Text("Sign In"),
                       onPressed: () => AuthDialog.show(context),
                     )
                   else if (appConfig.isNotMobile) ...[
+                    Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
                     TextButton(
                       child: Text("Sign Out"),
                       onPressed: () => auth.signOut(),
