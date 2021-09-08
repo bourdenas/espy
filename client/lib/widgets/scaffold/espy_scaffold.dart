@@ -5,7 +5,7 @@ import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/widgets/dialogs/auth_dialog.dart';
 import 'package:espy/widgets/dialogs/search_dialog.dart';
 import 'package:espy/widgets/library/game_library.dart'
-    show GameLibrary, LibraryView;
+    show GameLibrary, LibraryLayout;
 import 'package:espy/widgets/scaffold/espy_drawer.dart' show EspyDrawer;
 import 'package:espy/widgets/scaffold/espy_navigation_rail.dart'
     show EspyNavigationRail;
@@ -18,14 +18,19 @@ class EspyScaffold extends StatefulWidget {
   State<StatefulWidget> createState() => _EspyScaffoldState();
 }
 
+class _LibraryView {
+  final LibraryLayout layout;
+  final IconData iconData;
+
+  const _LibraryView(this.layout, this.iconData);
+}
+
 class _EspyScaffoldState extends State<EspyScaffold> {
-  List<bool> _viewSelection = [true, false, false];
-  List<LibraryView> _libraryViews = const [
-    LibraryView.GRID,
-    LibraryView.LIST,
-    LibraryView.TABLE
+  List<_LibraryView> _views = const [
+    _LibraryView(LibraryLayout.GRID, Icons.photo),
+    _LibraryView(LibraryLayout.LIST, Icons.list),
   ];
-  LibraryView _view = LibraryView.GRID;
+  int _viewIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -55,16 +60,12 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                   if (auth.signedIn)
                     ToggleButtons(
                       children: [
-                        Icon(Icons.grid_4x4),
-                        Icon(Icons.list),
-                        Icon(Icons.table_view),
+                        Icon(_views[_viewIndex].iconData),
                       ],
-                      isSelected: _viewSelection,
-                      onPressed: (index) {
+                      isSelected: [false],
+                      onPressed: (_) {
                         setState(() {
-                          _viewSelection = List<bool>.generate(
-                              _libraryViews.length, (i) => i == index);
-                          _view = _libraryViews[index];
+                          _viewIndex = (_viewIndex + 1) % _views.length;
                         });
                       },
                     ),
@@ -85,7 +86,9 @@ class _EspyScaffoldState extends State<EspyScaffold> {
               ),
             ),
             drawer: appConfig.isMobile ? EspyDrawer() : null,
-            body: auth.signedIn ? GameLibrary(view: _view) : EmptyLibrary(),
+            body: auth.signedIn
+                ? GameLibrary(view: _views[_viewIndex].layout)
+                : EmptyLibrary(),
             floatingActionButton: auth.signedIn
                 ? FloatingActionButton(
                     tooltip: 'Search',
