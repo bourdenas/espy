@@ -1,6 +1,7 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:espy/widgets/library/filter_chips.dart';
@@ -9,12 +10,33 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class LibraryListView extends StatelessWidget {
+class LibraryListView extends StatefulWidget {
+  @override
+  _LibraryListViewState createState() => _LibraryListViewState();
+}
+
+class _LibraryListViewState extends State<LibraryListView> {
+  int _visibleRows = 0;
+
+  void _updateColRow(BuildContext context) {
+    _visibleRows = (context.size!.height / 64).ceil();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      _updateColRow(context);
+
+      if (_visibleRows * 2 > context.read<GameEntriesModel>().games.length) {
+        context.read<GameLibraryModel>().fetch(limit: _visibleRows * 2);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Force to render the view when GameDetails (e.g. game tags) are updated.
-    // context.watch<GameLibraryModel>();
-
     return Column(
       children: [
         Container(
@@ -33,10 +55,12 @@ class LibraryListView extends StatelessWidget {
                     (entry) => Listener(
                       child: ListTile(
                         leading: Hero(
-                            tag: '${entry.id}_cover',
-                            child: CircleAvatar(
-                                foregroundImage: NetworkImage(
-                                    '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'))),
+                          tag: '${entry.id}_cover',
+                          child: CircleAvatar(
+                            foregroundImage: NetworkImage(
+                                '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'),
+                          ),
+                        ),
                         title: Text(entry.name),
                         subtitle: Text(
                             '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
@@ -55,7 +79,7 @@ class LibraryListView extends StatelessWidget {
                             .showGameDetails('${entry.id}'),
                       ),
                       onPointerDown: (PointerDownEvent event) async =>
-                          await showTagsContextMenu(context, event, entry),
+                          showTagsContextMenu(context, event, entry),
                     ),
                   )
                   .toList(),
