@@ -39,66 +39,78 @@ class _LibraryListViewState extends State<LibraryListView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(16),
-          child: FilterChips(),
-        ),
-        Expanded(
-          child: NotificationListener<ScrollNotification>(
-            onNotification: (ScrollNotification scrollInfo) {
-              if (scrollInfo.metrics.maxScrollExtent -
-                      scrollInfo.metrics.pixels <
-                  8 * LibraryListView.tileHeight) {
-                context.read<GameLibraryModel>().fetch(limit: _visibleRows);
-              }
-              return true;
-            },
-            child: Scrollbar(
-              child: ListView(
-                restorationId: 'list_view_game_entries_offset',
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: context
-                    .watch<GameEntriesModel>()
-                    .games
-                    .map(
-                      (entry) => Listener(
-                        child: ListTile(
-                          leading: Hero(
-                            tag: '${entry.id}_cover',
-                            child: CircleAvatar(
-                              foregroundImage: NetworkImage(
-                                  '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'),
+    final games = context.watch<GameEntriesModel>().games;
+
+    return NotificationListener<SizeChangedLayoutNotification>(
+      onNotification: (SizeChangedLayoutNotification notification) {
+        _updateColRow(context);
+        if (_visibleRows > games.length) {
+          context.read<GameLibraryModel>().fetch(limit: _visibleRows);
+        }
+
+        return true;
+      },
+      child: SizeChangedLayoutNotifier(
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(16),
+              child: FilterChips(),
+            ),
+            Expanded(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (ScrollNotification scrollInfo) {
+                  if (scrollInfo.metrics.maxScrollExtent -
+                          scrollInfo.metrics.pixels <
+                      2 * LibraryListView.tileHeight) {
+                    context.read<GameLibraryModel>().fetch(limit: _visibleRows);
+                  }
+                  return true;
+                },
+                child: Scrollbar(
+                  child: ListView(
+                    restorationId: 'list_view_game_entries_offset',
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: games
+                        .map(
+                          (entry) => Listener(
+                            child: ListTile(
+                              leading: Hero(
+                                tag: '${entry.id}_cover',
+                                child: CircleAvatar(
+                                  foregroundImage: NetworkImage(
+                                      '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'),
+                                ),
+                              ),
+                              title: Text(entry.name),
+                              subtitle: Text(
+                                  '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
+                              trailing: context.read<AppConfig>().isNotMobile
+                                  ? Wrap(
+                                      spacing: 8.0,
+                                      runSpacing: 4.0,
+                                      children: [
+                                        for (final tag in entry.userData.tags)
+                                          TagChip(tag: tag)
+                                      ],
+                                    )
+                                  : null,
+                              onTap: () => context
+                                  .read<EspyRouterDelegate>()
+                                  .showGameDetails('${entry.id}'),
                             ),
+                            onPointerDown: (PointerDownEvent event) async =>
+                                showTagsContextMenu(context, event, entry),
                           ),
-                          title: Text(entry.name),
-                          subtitle: Text(
-                              '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
-                          trailing: context.read<AppConfig>().isNotMobile
-                              ? Wrap(
-                                  spacing: 8.0,
-                                  runSpacing: 4.0,
-                                  children: [
-                                    for (final tag in entry.userData.tags)
-                                      TagChip(tag: tag)
-                                  ],
-                                )
-                              : null,
-                          onTap: () => context
-                              .read<EspyRouterDelegate>()
-                              .showGameDetails('${entry.id}'),
-                        ),
-                        onPointerDown: (PointerDownEvent event) async =>
-                            showTagsContextMenu(context, event, entry),
-                      ),
-                    )
-                    .toList(),
+                        )
+                        .toList(),
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
