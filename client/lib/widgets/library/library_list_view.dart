@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LibraryListView extends StatefulWidget {
+  static const tileHeight = 64;
+
   @override
   _LibraryListViewState createState() => _LibraryListViewState();
 }
@@ -19,7 +21,7 @@ class _LibraryListViewState extends State<LibraryListView> {
   int _visibleRows = 0;
 
   void _updateColRow(BuildContext context) {
-    _visibleRows = (context.size!.height / 64).ceil();
+    _visibleRows = (context.size!.height / LibraryListView.tileHeight).ceil();
   }
 
   @override
@@ -44,45 +46,55 @@ class _LibraryListViewState extends State<LibraryListView> {
           child: FilterChips(),
         ),
         Expanded(
-          child: Scrollbar(
-            child: ListView(
-              restorationId: 'list_view_game_entries_offset',
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: context
-                  .watch<GameEntriesModel>()
-                  .games
-                  .map(
-                    (entry) => Listener(
-                      child: ListTile(
-                        leading: Hero(
-                          tag: '${entry.id}_cover',
-                          child: CircleAvatar(
-                            foregroundImage: NetworkImage(
-                                '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'),
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (ScrollNotification scrollInfo) {
+              if (scrollInfo.metrics.maxScrollExtent -
+                      scrollInfo.metrics.pixels <
+                  8 * LibraryListView.tileHeight) {
+                context.read<GameLibraryModel>().fetch(limit: _visibleRows);
+              }
+              return true;
+            },
+            child: Scrollbar(
+              child: ListView(
+                restorationId: 'list_view_game_entries_offset',
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: context
+                    .watch<GameEntriesModel>()
+                    .games
+                    .map(
+                      (entry) => Listener(
+                        child: ListTile(
+                          leading: Hero(
+                            tag: '${entry.id}_cover',
+                            child: CircleAvatar(
+                              foregroundImage: NetworkImage(
+                                  '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'),
+                            ),
                           ),
+                          title: Text(entry.name),
+                          subtitle: Text(
+                              '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
+                          trailing: context.read<AppConfig>().isNotMobile
+                              ? Wrap(
+                                  spacing: 8.0,
+                                  runSpacing: 4.0,
+                                  children: [
+                                    for (final tag in entry.userData.tags)
+                                      TagChip(tag: tag)
+                                  ],
+                                )
+                              : null,
+                          onTap: () => context
+                              .read<EspyRouterDelegate>()
+                              .showGameDetails('${entry.id}'),
                         ),
-                        title: Text(entry.name),
-                        subtitle: Text(
-                            '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
-                        trailing: context.read<AppConfig>().isNotMobile
-                            ? Wrap(
-                                spacing: 8.0,
-                                runSpacing: 4.0,
-                                children: [
-                                  for (final tag in entry.userData.tags)
-                                    TagChip(tag: tag)
-                                ],
-                              )
-                            : null,
-                        onTap: () => context
-                            .read<EspyRouterDelegate>()
-                            .showGameDetails('${entry.id}'),
+                        onPointerDown: (PointerDownEvent event) async =>
+                            showTagsContextMenu(context, event, entry),
                       ),
-                      onPointerDown: (PointerDownEvent event) async =>
-                          showTagsContextMenu(context, event, entry),
-                    ),
-                  )
-                  .toList(),
+                    )
+                    .toList(),
+              ),
             ),
           ),
         ),
