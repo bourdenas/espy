@@ -36,9 +36,13 @@ class _LibraryGridViewState extends State<LibraryGridView> {
 
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       _updateColRow(context);
-      context
-          .read<GameLibraryModel>()
-          .fetch(limit: _cardsPerRow * (_visibleRows + 1));
+
+      if (_cardsPerRow * (_visibleRows + 1) >
+          context.read<GameEntriesModel>().games.length) {
+        context
+            .read<GameLibraryModel>()
+            .fetch(limit: _cardsPerRow * (_visibleRows + 1));
+      }
     });
   }
 
