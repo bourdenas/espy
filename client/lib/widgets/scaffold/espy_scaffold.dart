@@ -94,13 +94,13 @@ class _EspyScaffoldState extends State<EspyScaffold> {
                     ),
                   if (!auth.signedIn)
                     TextButton(
-                      child: Text("Sign In"),
+                      child: Text('Sign In'),
                       onPressed: () => AuthDialog.show(context),
                     )
                   else if (appConfig.isNotMobile) ...[
                     Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
                     TextButton(
-                      child: Text("Sign Out"),
+                      child: Text('Sign Out'),
                       onPressed: () => auth.signOut(),
                     ),
                     Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
@@ -110,7 +110,9 @@ class _EspyScaffoldState extends State<EspyScaffold> {
             ),
             drawer: appConfig.isMobile ? EspyDrawer() : null,
             body: auth.signedIn
-                ? GameLibrary(view: _libraryViews[_libraryViewIndex].layout)
+                ? GameLibrary(
+                    key: UniqueKey(),
+                    view: _libraryViews[_libraryViewIndex].layout)
                 : EmptyLibrary(),
             floatingActionButton: auth.signedIn
                 ? FloatingActionButton(
