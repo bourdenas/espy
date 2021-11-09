@@ -20,8 +20,13 @@ path = "src/sync_library.rs"
 name = "firestore_util"
 path = "src/firestore_util.rs"
 
+[[bin]] 
+name = "egs_demo"
+path = "src/egs_demo.rs"
+
 [dependencies]
 clap = "3.0.0-beta.2"
+egs-api = "0.4"
 futures = "0.3"
 itertools = "0.10.0"
 prost = "0.8"
