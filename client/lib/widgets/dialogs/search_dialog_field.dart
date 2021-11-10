@@ -22,6 +22,28 @@ class SearchDialogField extends StatelessWidget {
         return [
           ...context
               .read<GameTagsIndex>()
+              .stores
+              .where(
+                (store) => searchTerms.every((term) => store
+                    .toLowerCase()
+                    .split(' ')
+                    .any((word) => word.startsWith(term))),
+              )
+              .take(4)
+              .map(
+                (tag) => Suggestion(
+                  text: tag,
+                  icon: Icon(Icons.storefront),
+                  onTap: () {
+                    context.read<FiltersModel>().clearFilter();
+                    context.read<EspyRouterDelegate>().showLibrary();
+                    context.read<FiltersModel>().addStoreFilter(tag);
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+          ...context
+              .read<GameTagsIndex>()
               .tags
               .where(
                 (tag) => searchTerms.every((term) => tag

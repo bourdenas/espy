@@ -42,6 +42,16 @@ class FiltersModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addStoreFilter(String store) {
+    _filter.stores.add(store);
+    notifyListeners();
+  }
+
+  void removeStoreFilter(String store) {
+    _filter.stores.remove(store);
+    notifyListeners();
+  }
+
   void clearFilter() {
     _filter.clear();
     notifyListeners();
@@ -53,6 +63,7 @@ class LibraryFilter {
   Set<Annotation> companies = {};
   Set<Annotation> collections = {};
   Set<String> tags = {};
+  Set<String> stores = {};
 
   set titleSearchPhrase(String phrase) {
     _titleSearchPhrase = phrase;
@@ -62,6 +73,7 @@ class LibraryFilter {
     return _filterCompany(entry) &&
         _filterCollection(entry) &&
         _filterTag(entry) &&
+        _filterStore(entry) &&
         _filterTitle(entry);
   }
 
@@ -85,6 +97,12 @@ class LibraryFilter {
   bool _filterTag(LibraryEntry entry) {
     return tags.isEmpty ||
         tags.every((filter) => entry.userData.tags.contains(filter));
+  }
+
+  bool _filterStore(LibraryEntry entry) {
+    return stores.isEmpty ||
+        stores.every((filter) =>
+            entry.storeEntries.any((store) => store.storefront == filter));
   }
 
   bool _filterTitle(LibraryEntry entry) {

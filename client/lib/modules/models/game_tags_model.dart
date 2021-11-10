@@ -8,12 +8,14 @@ class GameTagsIndex extends ChangeNotifier {
   Map<int, Annotation> _companies = {};
   Map<int, Annotation> _collections = {};
   SplayTreeSet<String> _tags = SplayTreeSet<String>();
+  SplayTreeSet<String> _stores = SplayTreeSet<String>();
 
   UnmodifiableListView<Annotation> get companies =>
       UnmodifiableListView(_companies.values);
   UnmodifiableListView<Annotation> get collections =>
       UnmodifiableListView(_collections.values);
   UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
+  UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
 
   void update(List<LibraryEntry> entries) {
     _tags.clear();
@@ -22,6 +24,7 @@ class GameTagsIndex extends ChangeNotifier {
       if (entry.collection != null)
         _collections[entry.collection!.id] = entry.collection!;
       _tags.addAll(entry.userData.tags);
+      _stores.addAll(entry.storeEntries.map((e) => e.storefront));
     }
 
     notifyListeners();
@@ -40,6 +43,8 @@ class GameTagsModel extends ChangeNotifier {
           .where((c) => c.name.toLowerCase().contains(_searchPhrase)));
   UnmodifiableListView<String> get tags => UnmodifiableListView(
       _index!.tags.where((tag) => tag.toLowerCase().contains(_searchPhrase)));
+  UnmodifiableListView<String> get stores => UnmodifiableListView(_index!.stores
+      .where((store) => store.toLowerCase().contains(_searchPhrase)));
 
   void update(GameTagsIndex index, String searchPhrase) {
     _index = index;
