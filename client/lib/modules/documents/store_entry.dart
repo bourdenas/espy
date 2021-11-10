@@ -1,5 +1,5 @@
 class StoreEntry {
-  final int id;
+  final String id;
   final String title;
   final String storefront;
 
