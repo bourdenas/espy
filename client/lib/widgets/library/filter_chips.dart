@@ -8,10 +8,20 @@ class FilterChips extends StatelessWidget {
     final filter = context.watch<FiltersModel>().filter;
 
     return Row(children: [
+      for (final store in filter.stores) ...[
+        InputChip(
+          label: Text(store),
+          backgroundColor: Colors.purple[800],
+          onDeleted: () {
+            context.read<FiltersModel>().removeStoreFilter(store);
+          },
+        ),
+        Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
+      ],
       for (final company in filter.companies) ...[
         InputChip(
           label: Text('${company.name}'),
-          backgroundColor: Colors.red[900],
+          backgroundColor: Colors.red[800],
           onDeleted: () {
             context.read<FiltersModel>().removeCompanyFilter(company);
           },
