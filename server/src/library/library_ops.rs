@@ -18,7 +18,7 @@ impl LibraryOps {
         for entry in entries {
             firestore.write(
                 &format!("users/{}/unknown", user_id),
-                Some(&entry.id.to_string()),
+                Some(&entry.id),
                 entry,
             )?;
         }
@@ -119,11 +119,7 @@ impl LibraryOps {
         //
         // Delete matched StoreEntries from 'users/{user}/unknown'
         for store_entry in &library_entry.store_entry {
-            firestore.delete(&format!(
-                "users/{}/unknown/{}",
-                user_id,
-                store_entry.id.to_string()
-            ))?;
+            firestore.delete(&format!("users/{}/unknown/{}", user_id, store_entry.id))?;
         }
 
         // Check if game is already in user's library.
