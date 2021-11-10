@@ -1,5 +1,3 @@
-import 'dart:js';
-
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/config_model.dart';
