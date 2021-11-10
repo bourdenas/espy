@@ -15,7 +15,6 @@ class GameLibraryModel extends ChangeNotifier {
   void update(String userId) async {
     if (userId.isNotEmpty && userId != _userId) {
       _userId = userId;
-      await _fetch();
     }
   }
 
@@ -31,7 +30,13 @@ class GameLibraryModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _fetch() async {
+  Future<void> fetchAll() async {
+    if (_isFinished) {
+      return;
+    }
+
+    _isFetching = true;
+
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
@@ -42,12 +47,63 @@ class GameLibraryModel extends ChangeNotifier {
           toFirestore: (entry, _) => entry.toJson(),
         )
         .orderBy('release_date', descending: true)
-        .limit(20)
+        .startAfterDocument(_lastDocument!)
         .get();
 
-    entries = snapshot.docs.map((doc) => doc.data()).toList();
+    _isFinished = true;
+
+    entries.addAll(snapshot.docs.map((doc) => doc.data()));
+    _lastDocument = snapshot.docs[snapshot.docs.length - 1];
+
     notifyListeners();
+    _isFetching = false;
   }
+
+  Future<void> fetch({int limit = 10}) async {
+    if (_isFetching || _isFinished) {
+      return;
+    }
+
+    _isFetching = true;
+    final snapshot = _lastDocument == null
+        ? await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_userId)
+            .collection('library')
+            .withConverter<LibraryEntry>(
+              fromFirestore: (snapshot, _) =>
+                  LibraryEntry.fromJson(snapshot.data()!),
+              toFirestore: (entry, _) => entry.toJson(),
+            )
+            .orderBy('release_date', descending: true)
+            .limit(limit)
+            .get()
+        : await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_userId)
+            .collection('library')
+            .withConverter<LibraryEntry>(
+              fromFirestore: (snapshot, _) =>
+                  LibraryEntry.fromJson(snapshot.data()!),
+              toFirestore: (entry, _) => entry.toJson(),
+            )
+            .orderBy('release_date', descending: true)
+            .startAfterDocument(_lastDocument!)
+            .limit(limit)
+            .get();
+
+    _isFinished = snapshot.docs.isEmpty;
+
+    entries.addAll(snapshot.docs.map((doc) => doc.data()));
+    _lastDocument = snapshot.docs[snapshot.docs.length - 1];
+
+    notifyListeners();
+    _isFetching = false;
+  }
+
+  bool _isFetching = false;
+  bool _isFinished = false;
+  QueryDocumentSnapshot? _lastDocument;
 
   Future<List<GameEntry>> searchByTitle(String title) async {
     var response = await http.post(

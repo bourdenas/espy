@@ -8,6 +8,7 @@ class Urls {
           ? 'http://10.0.2.2:3030'
           : 'http://localhost:3030';
   static final imageProvider = kIsWeb
-      ? 'http://localhost:3030/images'
+      ? 'https://images.igdb.com/igdb/image/upload'
+      // ? 'http://localhost:3030/images'
       : 'https://images.igdb.com/igdb/image/upload';
 }

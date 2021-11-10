@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 
 class AppConfig extends ChangeNotifier {
   double windowWidth = 0;
+  CardDecoration cardDecoration = CardDecoration.TAGS;
 
   get isMobile => windowWidth <= 800;
   get isNotMobile => windowWidth > 800;
-
-  get tagsTitleBar => false;
 
   get theme => ThemeData(
         brightness: Brightness.dark,
@@ -17,4 +16,10 @@ class AppConfig extends ChangeNotifier {
 
   get foregroundColour => Color(0xFF66A3BB);
   get backgrounColour => Color(0xFF253A47);
+}
+
+enum CardDecoration {
+  EMPTY,
+  INFO,
+  TAGS,
 }

@@ -25,20 +25,22 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
     final user = context.watch<UserModel>();
     return NavigationRail(
       extended: extended,
-      labelType: NavigationRailLabelType.selected,
+      labelType: !extended ? NavigationRailLabelType.selected : null,
       selectedIndex: _selectedIndex,
-      leading: Column(children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            child: user.signedIn
-                ? ClipOval(
-                    child: Image.network(user.user.photoURL),
-                  )
-                : Icon(Icons.person),
+      leading: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CircleAvatar(
+              child: user.signedIn
+                  ? ClipOval(
+                      child: Image.network(user.user.photoURL),
+                    )
+                  : Icon(Icons.person),
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
       groupAlignment: 0,
       destinations: menuItems
           .map((e) => NavigationRailDestination(

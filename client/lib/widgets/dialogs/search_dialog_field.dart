@@ -11,6 +11,8 @@ class SearchDialogField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<GameLibraryModel>().fetchAll();
+
     return AutocompleteField(
       width: 400,
       hintText: 'Search...',

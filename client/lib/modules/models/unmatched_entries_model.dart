@@ -19,7 +19,6 @@ class UnknownEntriesModel extends ChangeNotifier {
           fromFirestore: (snapshot, _) => StoreEntry.fromJson(snapshot.data()!),
           toFirestore: (entry, _) => entry.toJson(),
         )
-        .limit(5)
         .snapshots()
         .listen((snapshot) {
       _entries = snapshot.docs

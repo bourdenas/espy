@@ -57,6 +57,7 @@ class CompanyChip extends StatelessWidget {
       label: Text('${company.name} (${company.id})'),
       backgroundColor: Colors.red[900],
       onPressed: () {
+        context.read<GameLibraryModel>().fetchAll();
         context.read<FiltersModel>().addCompanyFilter(company);
         context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
@@ -76,6 +77,7 @@ class CollectionChip extends StatelessWidget {
       label: Text('${collection.name} (${collection.id})'),
       backgroundColor: Colors.indigo[800],
       onPressed: () {
+        context.read<GameLibraryModel>().fetchAll();
         context.read<FiltersModel>().addCollectionFilter(collection);
         context.read<AppBarSearchModel>().clear();
         Navigator.pop(context);
@@ -109,7 +111,8 @@ class TagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InputChip(
       label: Text(tag),
-      onPressed: () {
+      onPressed: () async {
+        context.read<GameLibraryModel>().fetchAll();
         context.read<FiltersModel>().addTagFilter(tag);
         context.read<AppBarSearchModel>().clear();
         // TODO: Depending which screen the TagChip is present, this shouldn't
