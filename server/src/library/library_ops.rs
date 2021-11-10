@@ -61,7 +61,7 @@ impl LibraryOps {
         firestore: &FirestoreApi,
         user_id: &str,
         name: &str,
-        ids: &[i64],
+        ids: &[String],
     ) -> Result<(), Status> {
         match firestore.write(
             &format!("users/{}/storefronts", user_id),
@@ -79,7 +79,7 @@ impl LibraryOps {
     /// Returns all store game ids owned by user from specified storefront.
     ///
     /// Reads `users/{user}/storefront/{storefront_name}` document in Firestore.
-    pub fn read_storefront_ids(firestore: &FirestoreApi, user_id: &str, name: &str) -> Vec<i64> {
+    pub fn read_storefront_ids(firestore: &FirestoreApi, user_id: &str, name: &str) -> Vec<String> {
         match firestore.read::<Storefront>(&format!("users/{}/storefronts", user_id), name) {
             Ok(storefront) => storefront.owned_games,
             Err(_) => vec![],
@@ -199,5 +199,5 @@ struct Storefront {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    owned_games: Vec<i64>,
+    owned_games: Vec<String>,
 }

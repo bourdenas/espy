@@ -33,7 +33,7 @@ impl Storefront for SteamApi {
             .games
             .into_iter()
             .map(|entry| StoreEntry {
-                id: entry.appid,
+                id: format!("steam_{}", entry.appid),
                 title: entry.name,
                 storefront_name: String::from("steam"),
                 ..Default::default()

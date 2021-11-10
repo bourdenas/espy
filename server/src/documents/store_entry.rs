@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// an IGDB entry.
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct StoreEntry {
-    pub id: i64,
+    pub id: String,
     pub title: String,
     pub storefront_name: String,
 

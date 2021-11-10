@@ -61,7 +61,7 @@ impl Storefront for GogApi {
 
             store_entries.extend(product_list_page.products.into_iter().map(|product| {
                 StoreEntry {
-                    id: product.id as i64,
+                    id: format!("gog_{}", product.id),
                     title: product.title,
                     storefront_name: String::from("gog"),
                     url: product.url,
