@@ -30,7 +30,7 @@ impl EgsApi {
                     .records
                     .into_iter()
                     .map(|record| StoreEntry {
-                        id: 0,
+                        id: format!("epic_{}", record.catalog_item_id),
                         title: record.sandbox_name,
                         storefront_name: String::from("epic"),
                         ..Default::default()
