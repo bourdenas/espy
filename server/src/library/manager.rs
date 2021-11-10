@@ -57,7 +57,7 @@ impl LibraryManager {
         storefront_name: &str,
         api: &T,
     ) -> Result<(), Status> {
-        let mut game_ids = HashSet::<i64>::new();
+        let mut game_ids = HashSet::<String>::new();
         {
             game_ids.extend(
                 LibraryOps::read_storefront_ids(
@@ -78,12 +78,12 @@ impl LibraryManager {
         let firestore = &self.firestore.lock().unwrap();
         LibraryOps::write_unknown_entries(firestore, &self.user_id, &store_entries)?;
 
-        game_ids.extend(store_entries.iter().map(|store_entry| store_entry.id));
+        game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
         LibraryOps::write_storefront_ids(
             firestore,
             &self.user_id,
             storefront_name,
-            &game_ids.into_iter().collect::<Vec<i64>>(),
+            &game_ids.into_iter().collect::<Vec<_>>(),
         )?;
 
         Ok(())
