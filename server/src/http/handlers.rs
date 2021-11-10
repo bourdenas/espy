@@ -22,7 +22,7 @@ pub async fn post_sync(
         }
     };
 
-    match user.sync(&keys).await {
+    match user.sync(&keys, None).await {
         Ok(()) => Ok(StatusCode::OK),
         Err(err) => {
             eprintln!("{}", err);

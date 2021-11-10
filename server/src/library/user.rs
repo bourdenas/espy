@@ -100,9 +100,17 @@ impl User {
         Ok(())
     }
 
-    /// Synchronises user library with connected storefronts to retrieve updates.
-    /// Note: It does not try to reconcile retrieve entries.
-    pub async fn sync(&mut self, keys: &util::keys::Keys) -> Result<(), Status> {
+    /// Synchronises user library with connected storefronts to retrieve
+    /// updates.
+    ///
+    /// NOTE: It does not try to reconcile retrieve entries.
+    /// NOTE: `egs_sid` is too ephemeral to be stored in Firestore so it is
+    /// provided as an optional argument.
+    pub async fn sync(
+        &mut self,
+        keys: &util::keys::Keys,
+        egs_sid: Option<String>,
+    ) -> Result<(), Status> {
         let gog_api = match self.gog_token().await {
             Some(token) => Some(api::GogApi::new(token.clone())),
             None => None,
@@ -118,8 +126,18 @@ impl User {
             None => None,
         };
 
+        let egs_api = match egs_sid {
+            Some(egs_sid) => match api::EgsApi::connect(&egs_sid).await {
+                Ok(egs_api) => Some(egs_api),
+                Err(status) => {
+                    return Err(Status::internal("User.sync:", status));
+                }
+            },
+            None => None,
+        };
+
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.sync_library(steam_api, gog_api).await?;
+        mgr.sync_library(steam_api, gog_api, egs_api).await?;
 
         Ok(())
     }
