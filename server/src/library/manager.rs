@@ -1,4 +1,4 @@
-use crate::api::{FirestoreApi, GogApi, SteamApi};
+use crate::api::{EgsApi, FirestoreApi, GogApi, SteamApi};
 use crate::documents::{GameEntry, StoreEntry};
 use crate::library::library_ops::LibraryOps;
 use crate::library::Reconciler;
@@ -33,12 +33,16 @@ impl LibraryManager {
         &self,
         steam_api: Option<SteamApi>,
         gog_api: Option<GogApi>,
+        egs_api: Option<EgsApi>,
     ) -> Result<(), Status> {
         if let Some(api) = steam_api {
             self.sync_storefront("steam", &api).await?;
         }
         if let Some(api) = gog_api {
             self.sync_storefront("gog", &api).await?;
+        }
+        if let Some(api) = egs_api {
+            self.sync_storefront("epic", &api).await?;
         }
 
         Ok(())
