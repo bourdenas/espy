@@ -5,21 +5,22 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class GameTagsIndex extends ChangeNotifier {
-  Set<Annotation> _companies = {};
-  Set<Annotation> _collections = {};
+  Map<int, Annotation> _companies = {};
+  Map<int, Annotation> _collections = {};
   SplayTreeSet<String> _tags = SplayTreeSet<String>();
 
   UnmodifiableListView<Annotation> get companies =>
-      UnmodifiableListView(_companies);
+      UnmodifiableListView(_companies.values);
   UnmodifiableListView<Annotation> get collections =>
-      UnmodifiableListView(_collections);
+      UnmodifiableListView(_collections.values);
   UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
 
   void update(List<LibraryEntry> entries) {
     _tags.clear();
     for (final entry in entries) {
-      _companies.addAll(entry.companies);
-      if (entry.collection != null) _collections.add(entry.collection!);
+      _companies.addEntries(entry.companies.map((c) => MapEntry(c.id, c)));
+      if (entry.collection != null)
+        _collections[entry.collection!.id] = entry.collection!;
       _tags.addAll(entry.userData.tags);
     }
 
