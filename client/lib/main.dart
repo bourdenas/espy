@@ -3,7 +3,6 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/modules/models/filters_model.dart';
 import 'package:espy/modules/models/unmatched_entries_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
@@ -36,13 +35,6 @@ Future<void> main() async {
           return model!;
         },
       ),
-      ChangeNotifierProxyProvider<AppBarSearchModel, FiltersModel>(
-        create: (context) => FiltersModel(),
-        update: (context, appBarSearchModel, model) {
-          // print("LOG(INFO): updating LibraryFiltersModel");
-          return model!..update(appBarSearchModel.text);
-        },
-      ),
       ChangeNotifierProxyProvider<GameLibraryModel, GameTagsIndex>(
         create: (context) => GameTagsIndex(),
         update: (context, libraryModel, model) {
@@ -58,12 +50,11 @@ Future<void> main() async {
           return model!..update(indexModel, appBarSearchModel.text);
         },
       ),
-      ChangeNotifierProxyProvider2<GameLibraryModel, FiltersModel,
-          GameEntriesModel>(
+      ChangeNotifierProxyProvider<GameLibraryModel, GameEntriesModel>(
         create: (context) => GameEntriesModel(),
-        update: (context, libraryModel, filtersModel, model) {
+        update: (context, libraryModel, model) {
           // print("LOG(INFO): updating GameEntriesModel");
-          return model!..update(libraryModel.entries, filtersModel.filter);
+          return model!..update(libraryModel.entries);
         },
       ),
       ChangeNotifierProxyProvider<UserModel, UnknownEntriesModel>(

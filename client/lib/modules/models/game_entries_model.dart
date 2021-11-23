@@ -4,15 +4,14 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class GameEntriesModel extends ChangeNotifier {
   List<LibraryEntry> _entries = [];
-  LibraryFilter _filter = LibraryFilter();
 
-  Iterable<LibraryEntry> get games => _entries.where((e) => _filter.apply(e));
-
-  void update(List<LibraryEntry> entries, LibraryFilter filter) {
+  void update(List<LibraryEntry> entries) {
     _entries = entries;
-    _filter = filter;
     notifyListeners();
   }
+
+  Iterable<LibraryEntry> getEntries(LibraryFilter? filter) =>
+      _entries.where((e) => filter != null ? filter.apply(e) : true);
 
   LibraryEntry? getEntryById(String id) {
     final gameId = int.tryParse(id);

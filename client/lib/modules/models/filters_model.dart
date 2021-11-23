@@ -1,62 +1,5 @@
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:flutter/foundation.dart' show ChangeNotifier;
-
-class FiltersModel extends ChangeNotifier {
-  LibraryFilter _filter = LibraryFilter();
-
-  void update(String searchPhrase) {
-    _filter.titleSearchPhrase = searchPhrase;
-    notifyListeners();
-  }
-
-  LibraryFilter get filter => _filter;
-
-  void addCompanyFilter(Annotation company) {
-    _filter.companies.add(company);
-    notifyListeners();
-  }
-
-  void removeCompanyFilter(Annotation company) {
-    _filter.companies.remove(company);
-    notifyListeners();
-  }
-
-  void addCollectionFilter(Annotation collection) {
-    _filter.collections.add(collection);
-    notifyListeners();
-  }
-
-  void removeCollectionFilter(Annotation collection) {
-    _filter.collections.remove(collection);
-    notifyListeners();
-  }
-
-  void addTagFilter(String tag) {
-    _filter.tags.add(tag);
-    notifyListeners();
-  }
-
-  void removeTagFilter(String tag) {
-    _filter.tags.remove(tag);
-    notifyListeners();
-  }
-
-  void addStoreFilter(String store) {
-    _filter.stores.add(store);
-    notifyListeners();
-  }
-
-  void removeStoreFilter(String store) {
-    _filter.stores.remove(store);
-    notifyListeners();
-  }
-
-  void clearFilter() {
-    _filter.clear();
-    notifyListeners();
-  }
-}
 
 class LibraryFilter {
   String _titleSearchPhrase = '';
@@ -64,6 +7,13 @@ class LibraryFilter {
   Set<Annotation> collections = {};
   Set<String> tags = {};
   Set<String> stores = {};
+
+  bool get isActive =>
+      _titleSearchPhrase.isNotEmpty ||
+      companies.isNotEmpty ||
+      collections.isNotEmpty ||
+      tags.isNotEmpty ||
+      stores.isNotEmpty;
 
   set titleSearchPhrase(String phrase) {
     _titleSearchPhrase = phrase;
@@ -81,6 +31,7 @@ class LibraryFilter {
     companies.clear();
     collections.clear();
     tags.clear();
+    stores.clear();
   }
 
   bool _filterCompany(LibraryEntry entry) {
