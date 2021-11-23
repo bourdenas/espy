@@ -61,7 +61,7 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
           if (path.isDetailsPage)
             GameDetailsPage(
                 entry: context
-                    .watch<GameEntriesModel>()
+                    .read<GameEntriesModel>()
                     .getEntryById(path.gameId!)!),
         ],
         onPopPage: (route, result) {
