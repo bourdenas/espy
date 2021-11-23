@@ -44,6 +44,8 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
       shortcuts: {
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF):
             const SearchIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyG):
+            const HomeIntent(),
       },
       child: Navigator(
         key: navigatorKey,
