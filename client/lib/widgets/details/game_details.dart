@@ -44,30 +44,41 @@ class GameEntryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        _HeaderSliver(libraryEntry, layout),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return FutureBuilder(
-                future: FirebaseFirestore.instance
-                    .collection('games')
-                    .doc('${libraryEntry.id}')
-                    .get(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Text("Something went wrong: ${snapshot.error}");
-                  } else if (!snapshot.hasData) {
-                    return Text("Document does not exist");
-                  } else if (snapshot.connectionState == ConnectionState.done &&
-                      snapshot.hasData) {
-                    // Cannot believe people are using json by choice! WTF is going on here?
-                    final skata = (snapshot.data! as DocumentSnapshot).data()
-                        as Map<String, dynamic>;
-                    final gameEntry = GameEntry.fromJson(skata);
+    return FutureBuilder(
+      future: FirebaseFirestore.instance
+          .collection('games')
+          .doc('${libraryEntry.id}')
+          .get(),
+      builder: (context, snapshot) {
+        List<Widget> tailSlivers = [];
 
-                    return Column(children: [
+        if (snapshot.hasError) {
+          tailSlivers.add(SliverGrid.count(
+            crossAxisCount: 1,
+            children: [
+              Text("Something went wrong: ${snapshot.error}"),
+            ],
+          ));
+        } else if (!snapshot.hasData) {
+          tailSlivers.add(SliverGrid.count(
+            crossAxisCount: 1,
+            children: [
+              Text("Document does not exist"),
+            ],
+          ));
+        } else if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.hasData) {
+          // Cannot believe people are using json by choice! WTF is going on here?
+          final skata = (snapshot.data! as DocumentSnapshot).data()
+              as Map<String, dynamic>;
+          final gameEntry = GameEntry.fromJson(skata);
+
+          tailSlivers = [
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return Column(
+                    children: [
                       if (layout == _Layout.singleColumn) ...[
                         Padding(padding: const EdgeInsets.all(16)),
                         _GameTitle(libraryEntry),
@@ -76,18 +87,30 @@ class GameEntryView extends StatelessWidget {
                         padding: const EdgeInsets.all(32),
                         child: SelectableText(gameEntry.summary),
                       )
-                    ]);
-                  }
-
-                  return Text("loading");
+                    ],
+                  );
                 },
-              );
-            },
-            childCount: 1,
-          ),
-        ),
-        // _ScreenshotsSliver(gameEntry, layout),
-      ],
+                childCount: 1,
+              ),
+            ),
+            _ScreenshotsSliver(gameEntry, layout),
+          ];
+        } else {
+          tailSlivers.add(SliverGrid.count(
+            crossAxisCount: 1,
+            children: [
+              Center(child: CircularProgressIndicator()),
+            ],
+          ));
+        }
+
+        return CustomScrollView(
+          slivers: [
+            _HeaderSliver(libraryEntry, layout),
+            ...tailSlivers,
+          ],
+        );
+      },
     );
   }
 }
