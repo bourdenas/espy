@@ -24,31 +24,9 @@ class GameDetails extends StatelessWidget {
         : _Layout.twoColumns;
 
     return Scaffold(
-      body: FutureBuilder(
-        future: FirebaseFirestore.instance
-            .collection('games')
-            .doc('${entry.id}')
-            .get(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Text("Something went wrong: ${snapshot.error}");
-          } else if (!snapshot.hasData) {
-            return Text("Document does not exist");
-          } else if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.hasData) {
-            // Cannot believe people are using json by choice! WTF is going on here?
-            final skata = (snapshot.data! as DocumentSnapshot).data()
-                as Map<String, dynamic>;
-            final gameEntry = GameEntry.fromJson(skata);
-            return GameEntryView(
-              gameEntry: gameEntry,
-              libraryEntry: entry,
-              layout: layout,
-            );
-          }
-
-          return Text("loading");
-        },
+      body: GameEntryView(
+        libraryEntry: entry,
+        layout: layout,
       ),
     );
   }
@@ -57,12 +35,10 @@ class GameDetails extends StatelessWidget {
 class GameEntryView extends StatelessWidget {
   const GameEntryView({
     Key? key,
-    required this.gameEntry,
     required this.libraryEntry,
     required this.layout,
   }) : super(key: key);
 
-  final GameEntry gameEntry;
   final LibraryEntry libraryEntry;
   final _Layout layout;
 
@@ -74,21 +50,43 @@ class GameEntryView extends StatelessWidget {
         SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              return Column(children: [
-                if (layout == _Layout.singleColumn) ...[
-                  Padding(padding: const EdgeInsets.all(16)),
-                  _GameTitle(libraryEntry),
-                ],
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  child: SelectableText(gameEntry.summary),
-                )
-              ]);
+              return FutureBuilder(
+                future: FirebaseFirestore.instance
+                    .collection('games')
+                    .doc('${libraryEntry.id}')
+                    .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Text("Something went wrong: ${snapshot.error}");
+                  } else if (!snapshot.hasData) {
+                    return Text("Document does not exist");
+                  } else if (snapshot.connectionState == ConnectionState.done &&
+                      snapshot.hasData) {
+                    // Cannot believe people are using json by choice! WTF is going on here?
+                    final skata = (snapshot.data! as DocumentSnapshot).data()
+                        as Map<String, dynamic>;
+                    final gameEntry = GameEntry.fromJson(skata);
+
+                    return Column(children: [
+                      if (layout == _Layout.singleColumn) ...[
+                        Padding(padding: const EdgeInsets.all(16)),
+                        _GameTitle(libraryEntry),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.all(32),
+                        child: SelectableText(gameEntry.summary),
+                      )
+                    ]);
+                  }
+
+                  return Text("loading");
+                },
+              );
             },
             childCount: 1,
           ),
         ),
-        _ScreenshotsSliver(gameEntry, layout),
+        // _ScreenshotsSliver(gameEntry, layout),
       ],
     );
   }
