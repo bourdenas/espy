@@ -19,17 +19,15 @@ class GameLibrary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget viewWidget = LibraryPaginator(
-        view == LibraryLayout.GRID ? LibraryGridView() : LibraryListView());
-
     final path = context.watch<EspyRouterDelegate>().path;
 
     if (path.isUnmatchedPage) {
-      viewWidget = UnmatchedView();
+      return UnmatchedView();
     } else if (path.isTagsPage) {
-      viewWidget = TagsCloud();
+      return TagsCloud();
     }
 
-    return viewWidget;
+    return LibraryPaginator(
+        view == LibraryLayout.GRID ? LibraryGridView() : LibraryListView());
   }
 }
