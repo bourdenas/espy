@@ -1,4 +1,3 @@
-import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/models/filters_model.dart';
 import 'package:espy/modules/routing/espy_route_path.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +27,7 @@ class EspyRouteInformationParser extends RouteInformationParser<EspyRoutePath> {
         return EspyRoutePath.details(gameId);
       } else if (uri.pathSegments[0] == 'filter') {
         final encodedFilter = uri.pathSegments[1];
-        return EspyRoutePath.filter(_parseFilter(encodedFilter));
+        return EspyRoutePath.filter(LibraryFilter.decode(encodedFilter));
       }
     }
 
@@ -40,7 +39,7 @@ class EspyRouteInformationParser extends RouteInformationParser<EspyRoutePath> {
     if (path.isLibraryPage) {
       return RouteInformation(location: '/');
     } else if (path.isFilterPage) {
-      final encodedFilter = _encodeFilter(path.filter!);
+      final encodedFilter = path.filter!.encode();
       return RouteInformation(location: '/filter/$encodedFilter');
     } else if (path.isDetailsPage) {
       return RouteInformation(location: '/game/${path.gameId}');
@@ -51,41 +50,4 @@ class EspyRouteInformationParser extends RouteInformationParser<EspyRoutePath> {
     }
     return null;
   }
-}
-
-LibraryFilter _parseFilter(String encodedFilter) {
-  var filter = LibraryFilter();
-
-  final segments = encodedFilter.split('+');
-  for (final segment in segments) {
-    final term = segment.split('=');
-    if (term.length != 2) {
-      continue;
-    }
-
-    if (term[0] == 'cmp') {
-      filter.companies
-          .add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
-    } else if (term[0] == 'col') {
-      filter.collections
-          .add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
-    } else if (term[0] == 'tag') {
-      filter.tags.add(term[1]);
-    } else if (term[0] == 'str') {
-      filter.stores.add(term[1]);
-    }
-  }
-
-  return filter;
-}
-
-String _encodeFilter(LibraryFilter filter) {
-  final companies = filter.companies.map((c) => 'cmp=${c.id}').join('+');
-  final collections = filter.collections.map((c) => 'col=${c.id}').join('+');
-  final tags = filter.tags.map((tag) => 'tag=$tag').join('+');
-  final stores = filter.stores.map((store) => 'str=$store').join('+');
-
-  return [companies, collections, tags, stores]
-      .where((param) => param.isNotEmpty)
-      .join('+');
 }
