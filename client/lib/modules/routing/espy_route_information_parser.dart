@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/filters_model.dart';
+import 'package:espy/modules/routing/library_filter.dart';
 import 'package:espy/modules/routing/espy_route_path.dart';
 import 'package:flutter/material.dart';
 

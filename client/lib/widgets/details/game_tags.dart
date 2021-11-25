@@ -1,7 +1,7 @@
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/modules/models/filters_model.dart';
+import 'package:espy/modules/routing/library_filter.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/details/game_tags_field.dart';
 import 'package:flutter/material.dart';
