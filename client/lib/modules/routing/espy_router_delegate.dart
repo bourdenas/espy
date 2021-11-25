@@ -14,14 +14,17 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
   final GlobalKey<NavigatorState> navigatorKey;
 
   EspyRoutePath path = EspyRoutePath.library();
+  LibraryFilter? filter;
 
   void showLibrary() {
     path = EspyRoutePath.library();
+    filter = null;
     notifyListeners();
   }
 
   void showFilter(LibraryFilter filter) {
     path = EspyRoutePath.filter(filter);
+    this.filter = filter;
     notifyListeners();
   }
 
