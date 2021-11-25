@@ -1,6 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/intents/search_intent.dart';
-import 'package:espy/widgets/details/game_details.dart' as widget;
+import 'package:espy/widgets/details/game_details.dart';
 import 'package:espy/widgets/dialogs/search_dialog.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +17,7 @@ class GameDetailsPage extends Page {
         return Actions(actions: {
           SearchIntent: CallbackAction<SearchIntent>(
               onInvoke: (intent) => SearchDialog.show(context)),
-        }, child: widget.GameDetails(entry));
+        }, child: GameDetails(entry));
       },
     );
   }

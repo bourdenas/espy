@@ -1,4 +1,6 @@
+import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
+import 'package:espy/modules/routing/library_filter.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/pages/game_details_page.dart';
 import 'package:espy/modules/pages/game_library_page.dart';
@@ -12,9 +14,17 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
   final GlobalKey<NavigatorState> navigatorKey;
 
   EspyRoutePath path = EspyRoutePath.library();
+  LibraryFilter? filter;
 
   void showLibrary() {
     path = EspyRoutePath.library();
+    filter = null;
+    notifyListeners();
+  }
+
+  void showFilter(LibraryFilter filter) {
+    path = EspyRoutePath.filter(filter);
+    this.filter = filter;
     notifyListeners();
   }
 
@@ -44,6 +54,8 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
       shortcuts: {
         LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF):
             const SearchIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyG):
+            const HomeIntent(),
       },
       child: Navigator(
         key: navigatorKey,
@@ -52,14 +64,16 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
           if (path.isDetailsPage)
             GameDetailsPage(
                 entry: context
-                    .watch<GameEntriesModel>()
+                    .read<GameEntriesModel>()
                     .getEntryById(path.gameId!)!),
         ],
         onPopPage: (route, result) {
           if (!route.didPop(result)) {
             return false;
           }
-          showLibrary();
+          // TODO: Removing this avoid rebuilding the library view and has a
+          // smoother transition back to the library, however the navigation URL
+          // is not updated. showLibrary();
           return true;
         },
       ),
@@ -70,6 +84,8 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
   Future<void> setNewRoutePath(EspyRoutePath path) async {
     if (path.isLibraryPage) {
       showLibrary();
+    } else if (path.isFilterPage) {
+      showFilter(path.filter!);
     } else if (path.isDetailsPage) {
       showGameDetails(path.gameId!);
     } else if (path.isUnmatchedPage) {

@@ -14,7 +14,9 @@ class LibraryGridView extends LibraryView {
 
   @override
   Widget build(BuildContext context) {
-    final games = context.watch<GameEntriesModel>().games;
+    final filter =
+        context.select((EspyRouterDelegate delegate) => delegate.filter);
+    final games = context.watch<GameEntriesModel>().getEntries(filter);
 
     return Scrollbar(
       child: GridView.extent(

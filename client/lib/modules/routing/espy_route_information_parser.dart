@@ -1,3 +1,4 @@
+import 'package:espy/modules/routing/library_filter.dart';
 import 'package:espy/modules/routing/espy_route_path.dart';
 import 'package:flutter/material.dart';
 
@@ -22,8 +23,11 @@ class EspyRouteInformationParser extends RouteInformationParser<EspyRoutePath> {
       }
     } else if (uri.pathSegments.length == 2) {
       if (uri.pathSegments[0] == 'game') {
-        var gameId = uri.pathSegments[1];
+        final gameId = uri.pathSegments[1];
         return EspyRoutePath.details(gameId);
+      } else if (uri.pathSegments[0] == 'filter') {
+        final encodedFilter = uri.pathSegments[1];
+        return EspyRoutePath.filter(LibraryFilter.decode(encodedFilter));
       }
     }
 
@@ -34,6 +38,9 @@ class EspyRouteInformationParser extends RouteInformationParser<EspyRoutePath> {
   RouteInformation? restoreRouteInformation(EspyRoutePath path) {
     if (path.isLibraryPage) {
       return RouteInformation(location: '/');
+    } else if (path.isFilterPage) {
+      final encodedFilter = path.filter!.encode();
+      return RouteInformation(location: '/filter/$encodedFilter');
     } else if (path.isDetailsPage) {
       return RouteInformation(location: '/game/${path.gameId}');
     } else if (path.isUnmatchedPage) {

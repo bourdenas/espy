@@ -1,62 +1,5 @@
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:flutter/foundation.dart' show ChangeNotifier;
-
-class FiltersModel extends ChangeNotifier {
-  LibraryFilter _filter = LibraryFilter();
-
-  void update(String searchPhrase) {
-    _filter.titleSearchPhrase = searchPhrase;
-    notifyListeners();
-  }
-
-  LibraryFilter get filter => _filter;
-
-  void addCompanyFilter(Annotation company) {
-    _filter.companies.add(company);
-    notifyListeners();
-  }
-
-  void removeCompanyFilter(Annotation company) {
-    _filter.companies.remove(company);
-    notifyListeners();
-  }
-
-  void addCollectionFilter(Annotation collection) {
-    _filter.collections.add(collection);
-    notifyListeners();
-  }
-
-  void removeCollectionFilter(Annotation collection) {
-    _filter.collections.remove(collection);
-    notifyListeners();
-  }
-
-  void addTagFilter(String tag) {
-    _filter.tags.add(tag);
-    notifyListeners();
-  }
-
-  void removeTagFilter(String tag) {
-    _filter.tags.remove(tag);
-    notifyListeners();
-  }
-
-  void addStoreFilter(String store) {
-    _filter.stores.add(store);
-    notifyListeners();
-  }
-
-  void removeStoreFilter(String store) {
-    _filter.stores.remove(store);
-    notifyListeners();
-  }
-
-  void clearFilter() {
-    _filter.clear();
-    notifyListeners();
-  }
-}
 
 class LibraryFilter {
   String _titleSearchPhrase = '';
@@ -64,6 +7,13 @@ class LibraryFilter {
   Set<Annotation> collections = {};
   Set<String> tags = {};
   Set<String> stores = {};
+
+  bool get isActive =>
+      _titleSearchPhrase.isNotEmpty ||
+      companies.isNotEmpty ||
+      collections.isNotEmpty ||
+      tags.isNotEmpty ||
+      stores.isNotEmpty;
 
   set titleSearchPhrase(String phrase) {
     _titleSearchPhrase = phrase;
@@ -81,6 +31,43 @@ class LibraryFilter {
     companies.clear();
     collections.clear();
     tags.clear();
+    stores.clear();
+  }
+
+  String encode() {
+    return [
+      companies.map((c) => 'cmp=${c.id}').join('+'),
+      collections.map((c) => 'col=${c.id}').join('+'),
+      tags.map((tag) => 'tag=$tag').join('+'),
+      stores.map((store) => 'str=$store').join('+'),
+    ].where((param) => param.isNotEmpty).join('+');
+  }
+
+  LibraryFilter();
+  factory LibraryFilter.decode(String encodedFilter) {
+    var filter = LibraryFilter();
+
+    final segments = encodedFilter.split('+');
+    for (final segment in segments) {
+      final term = segment.split('=');
+      if (term.length != 2) {
+        continue;
+      }
+
+      if (term[0] == 'cmp') {
+        filter.companies
+            .add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
+      } else if (term[0] == 'col') {
+        filter.collections
+            .add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
+      } else if (term[0] == 'tag') {
+        filter.tags.add(term[1]);
+      } else if (term[0] == 'str') {
+        filter.stores.add(term[1]);
+      }
+    }
+
+    return filter;
   }
 
   bool _filterCompany(LibraryEntry entry) {

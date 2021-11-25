@@ -1,5 +1,4 @@
 import 'package:espy/modules/models/appbar_search_model.dart';
-import 'package:espy/modules/models/filters_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/dialogs/settings_dialog.dart';
 import 'package:flutter/material.dart' show BuildContext, IconData, Icons;
@@ -26,7 +25,6 @@ List<MenuItem> menuItems = [
     selectedIcon: Icons.home,
     onTap: (context) {
       context.read<AppBarSearchModel>().clear();
-      context.read<FiltersModel>().clearFilter();
       context.read<EspyRouterDelegate>().showLibrary();
     },
   ),
@@ -36,7 +34,6 @@ List<MenuItem> menuItems = [
     selectedIcon: Icons.bubble_chart,
     onTap: (context) {
       context.read<AppBarSearchModel>().clear();
-      context.read<FiltersModel>().clearFilter();
       context.read<EspyRouterDelegate>().showTags();
     },
   ),
@@ -46,7 +43,6 @@ List<MenuItem> menuItems = [
     selectedIcon: Icons.cloud_off,
     onTap: (context) {
       context.read<AppBarSearchModel>().clear();
-      context.read<FiltersModel>().clearFilter();
       context.read<EspyRouterDelegate>().showUnmatchedEntries();
     },
   ),
