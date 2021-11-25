@@ -1,11 +1,16 @@
-import 'package:espy/modules/models/filters_model.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class FilterChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final filter = context.watch<FiltersModel>().filter;
+    final filter =
+        context.select((EspyRouterDelegate delegate) => delegate.filter);
+
+    if (filter == null) {
+      return Row(children: []);
+    }
 
     return Row(children: [
       for (final store in filter.stores) ...[
@@ -13,7 +18,7 @@ class FilterChips extends StatelessWidget {
           label: Text(store),
           backgroundColor: Colors.purple[800],
           onDeleted: () {
-            context.read<FiltersModel>().removeStoreFilter(store);
+            context.read<EspyRouterDelegate>().showLibrary();
           },
         ),
         Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
@@ -23,7 +28,7 @@ class FilterChips extends StatelessWidget {
           label: Text('${company.name}'),
           backgroundColor: Colors.red[800],
           onDeleted: () {
-            context.read<FiltersModel>().removeCompanyFilter(company);
+            context.read<EspyRouterDelegate>().showLibrary();
           },
         ),
         Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
@@ -33,7 +38,7 @@ class FilterChips extends StatelessWidget {
           label: Text('${collection.name}'),
           backgroundColor: Colors.indigo[800],
           onDeleted: () {
-            context.read<FiltersModel>().removeCollectionFilter(collection);
+            context.read<EspyRouterDelegate>().showLibrary();
           },
         ),
         Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
@@ -42,7 +47,7 @@ class FilterChips extends StatelessWidget {
         InputChip(
           label: Text(tag),
           onDeleted: () {
-            context.read<FiltersModel>().removeTagFilter(tag);
+            context.read<EspyRouterDelegate>().showLibrary();
           },
         ),
         Padding(padding: EdgeInsets.symmetric(horizontal: 4)),

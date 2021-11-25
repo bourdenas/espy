@@ -1,4 +1,3 @@
-import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/library/filter_chips.dart';
 import 'package:espy/widgets/library/library_view.dart';
@@ -25,7 +24,7 @@ class _LibraryPaginatorState extends State<LibraryPaginator> {
 
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       final visibleEntries = _view.visibleEntries(context);
-      if (visibleEntries > context.read<GameEntriesModel>().games.length) {
+      if (visibleEntries > context.read<GameLibraryModel>().entries.length) {
         context
             .read<GameLibraryModel>()
             .fetch(limit: (visibleEntries * 1.5).ceil());
@@ -38,7 +37,7 @@ class _LibraryPaginatorState extends State<LibraryPaginator> {
     return NotificationListener<SizeChangedLayoutNotification>(
       onNotification: (SizeChangedLayoutNotification notification) {
         final visibleEntries = _view.visibleEntries(context);
-        if (visibleEntries > context.read<GameEntriesModel>().games.length) {
+        if (visibleEntries > context.read<GameLibraryModel>().entries.length) {
           context.read<GameLibraryModel>().fetch(limit: visibleEntries);
         }
 

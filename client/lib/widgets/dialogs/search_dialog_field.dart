@@ -31,14 +31,14 @@ class SearchDialogField extends StatelessWidget {
               )
               .take(4)
               .map(
-                (tag) => Suggestion(
-                  text: tag,
+                (store) => Suggestion(
+                  text: store,
                   icon: Icon(Icons.storefront),
                   onTap: () {
-                    context.read<FiltersModel>().clearFilter();
-                    context.read<EspyRouterDelegate>().showLibrary();
-                    context.read<FiltersModel>().addStoreFilter(tag);
                     Navigator.of(context).pop();
+                    context
+                        .read<EspyRouterDelegate>()
+                        .showFilter(LibraryFilter()..stores.add(store));
                   },
                 ),
               ),
@@ -57,10 +57,10 @@ class SearchDialogField extends StatelessWidget {
                   text: tag,
                   icon: Icon(Icons.tag),
                   onTap: () {
-                    context.read<FiltersModel>().clearFilter();
-                    context.read<EspyRouterDelegate>().showLibrary();
-                    context.read<FiltersModel>().addTagFilter(tag);
                     Navigator.of(context).pop();
+                    context
+                        .read<EspyRouterDelegate>()
+                        .showFilter(LibraryFilter()..tags.add(tag));
                   },
                 ),
               ),
@@ -97,12 +97,9 @@ class SearchDialogField extends StatelessWidget {
                   text: collection.name,
                   icon: Icon(Icons.circle),
                   onTap: () {
-                    context.read<FiltersModel>().clearFilter();
-                    context.read<EspyRouterDelegate>().showLibrary();
-                    context
-                        .read<FiltersModel>()
-                        .addCollectionFilter(collection);
                     Navigator.of(context).pop();
+                    context.read<EspyRouterDelegate>().showFilter(
+                        LibraryFilter()..collections.add(collection));
                   },
                 ),
               ),
@@ -119,10 +116,10 @@ class SearchDialogField extends StatelessWidget {
                   text: company.name,
                   icon: Icon(Icons.business),
                   onTap: () {
-                    context.read<FiltersModel>().clearFilter();
-                    context.read<EspyRouterDelegate>().showLibrary();
-                    context.read<FiltersModel>().addCompanyFilter(company);
                     Navigator.of(context).pop();
+                    context
+                        .read<EspyRouterDelegate>()
+                        .showFilter(LibraryFilter()..companies.add(company));
                   },
                 ),
               ),

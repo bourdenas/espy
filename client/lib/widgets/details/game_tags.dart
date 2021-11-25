@@ -1,8 +1,8 @@
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/appbar_search_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/filters_model.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/details/game_tags_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -58,9 +58,9 @@ class CompanyChip extends StatelessWidget {
       backgroundColor: Colors.red[900],
       onPressed: () {
         context.read<GameLibraryModel>().fetchAll();
-        context.read<FiltersModel>().addCompanyFilter(company);
-        context.read<AppBarSearchModel>().clear();
-        Navigator.pop(context);
+        context
+            .read<EspyRouterDelegate>()
+            .showFilter(LibraryFilter()..companies.add(company));
       },
     );
   }
@@ -78,9 +78,9 @@ class CollectionChip extends StatelessWidget {
       backgroundColor: Colors.indigo[800],
       onPressed: () {
         context.read<GameLibraryModel>().fetchAll();
-        context.read<FiltersModel>().addCollectionFilter(collection);
-        context.read<AppBarSearchModel>().clear();
-        Navigator.pop(context);
+        context
+            .read<EspyRouterDelegate>()
+            .showFilter(LibraryFilter()..collections.add(collection));
       },
     );
   }
@@ -113,11 +113,9 @@ class TagChip extends StatelessWidget {
       label: Text(tag),
       onPressed: () async {
         context.read<GameLibraryModel>().fetchAll();
-        context.read<FiltersModel>().addTagFilter(tag);
-        context.read<AppBarSearchModel>().clear();
-        // TODO: Depending which screen the TagChip is present, this shouldn't
-        // be poping always.
-        Navigator.pop(context);
+        context
+            .read<EspyRouterDelegate>()
+            .showFilter(LibraryFilter()..tags.add(tag));
       },
       onDeleted: entry != null
           ? () {
