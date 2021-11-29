@@ -57,7 +57,6 @@ class CompanyChip extends StatelessWidget {
       label: Text('${company.name} (${company.id})'),
       backgroundColor: Colors.red[900],
       onPressed: () {
-        context.read<GameLibraryModel>().fetchAll();
         context
             .read<EspyRouterDelegate>()
             .showFilter(LibraryFilter()..companies.add(company));
@@ -77,7 +76,6 @@ class CollectionChip extends StatelessWidget {
       label: Text('${collection.name} (${collection.id})'),
       backgroundColor: Colors.indigo[800],
       onPressed: () {
-        context.read<GameLibraryModel>().fetchAll();
         context
             .read<EspyRouterDelegate>()
             .showFilter(LibraryFilter()..collections.add(collection));
@@ -112,7 +110,6 @@ class TagChip extends StatelessWidget {
     return InputChip(
       label: Text(tag),
       onPressed: () async {
-        context.read<GameLibraryModel>().fetchAll();
         context
             .read<EspyRouterDelegate>()
             .showFilter(LibraryFilter()..tags.add(tag));
