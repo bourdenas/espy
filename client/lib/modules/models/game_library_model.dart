@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/library.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GameLibraryModel extends ChangeNotifier {
   List<LibraryEntry> entries = [];
@@ -24,6 +26,22 @@ class GameLibraryModel extends ChangeNotifier {
     }
     _userId = userId;
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final encodedLibrary = prefs.getString(_userId);
+    if (encodedLibrary != null) {
+      print('found local library for user');
+      final jsonMap = jsonDecode(encodedLibrary) as Map<String, dynamic>;
+      entries = Library.fromJson(jsonMap).entries;
+    } else {
+      print('retrieving library from server');
+      await fetchLibrary();
+      await prefs.setString(_userId, jsonEncode(Library(entries)));
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> fetchLibrary() async {
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
@@ -38,7 +56,6 @@ class GameLibraryModel extends ChangeNotifier {
 
     entries.clear();
     entries.addAll(snapshot.docs.map((doc) => doc.data()));
-    notifyListeners();
   }
 
   void postDetails(LibraryEntry entry) async {
