@@ -1,33 +1,13 @@
 use crate::api;
+use crate::documents::{Keys, UserData};
 use crate::library::LibraryManager;
 use crate::util;
 use crate::Status;
-use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 
 pub struct User {
     data: UserData,
     firestore: Arc<Mutex<api::FirestoreApi>>,
-}
-
-#[derive(Serialize, Deserialize, Default, Debug)]
-struct UserData {
-    uid: String,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    keys: Option<Keys>,
-}
-
-#[derive(Serialize, Deserialize, Default, Debug)]
-struct Keys {
-    #[serde(default)]
-    #[serde(skip_serializing_if = "String::is_empty")]
-    steam_user_id: String,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    gog_token: Option<api::GogToken>,
 }
 
 impl User {
