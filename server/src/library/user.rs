@@ -4,6 +4,7 @@ use crate::library::LibraryManager;
 use crate::util;
 use crate::Status;
 use std::sync::{Arc, Mutex};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct User {
     data: UserData,
@@ -118,6 +119,14 @@ impl User {
 
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.sync_library(steam_api, gog_api, egs_api).await?;
+
+        self.data.last_update = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("SystemTime set before UNIX EPOCH!")
+            .as_secs();
+        if let Err(e) = self.save() {
+            return Err(Status::internal("User.sync:", e));
+        }
 
         Ok(())
     }
