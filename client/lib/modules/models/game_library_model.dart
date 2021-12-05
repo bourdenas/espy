@@ -3,19 +3,64 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/library.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
+import 'package:espy/modules/documents/user_data.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GameLibraryModel extends ChangeNotifier {
   List<LibraryEntry> entries = [];
   String _userId = '';
+  int _libraryVersion = 0;
 
-  void update(String userId) async {
-    if (userId.isNotEmpty && userId != _userId) {
-      _userId = userId;
+  void update(UserData? userData) async {
+    if (userData == null) {
+      _userId = '';
+      entries.clear();
+      return;
     }
+
+    if (userData.uid == _userId && userData.lastUpdate == _libraryVersion) {
+      return;
+    }
+    _userId = userData.uid;
+    _libraryVersion = userData.lastUpdate ?? 0;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final localVersion = prefs.getInt('${_userId}_version') ?? 0;
+    final encodedLibrary = prefs.getString(_userId);
+    if (_libraryVersion == localVersion && encodedLibrary != null) {
+      print('found local library for $_userId from $localVersion');
+      final jsonMap = jsonDecode(encodedLibrary) as Map<String, dynamic>;
+      entries = Library.fromJson(jsonMap).entries;
+    } else {
+      print('retrieving library for $_userId last updated @$_libraryVersion');
+      await fetchLibrary();
+      await prefs.setString(_userId, jsonEncode(Library(entries)));
+      await prefs.setInt('${_userId}_version', _libraryVersion);
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> fetchLibrary() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('library')
+        .withConverter<LibraryEntry>(
+          fromFirestore: (snapshot, _) =>
+              LibraryEntry.fromJson(snapshot.data()!),
+          toFirestore: (entry, _) => entry.toJson(),
+        )
+        .orderBy('release_date', descending: true)
+        .get();
+
+    entries.clear();
+    entries.addAll(snapshot.docs.map((doc) => doc.data()));
   }
 
   void postDetails(LibraryEntry entry) async {
@@ -29,81 +74,6 @@ class GameLibraryModel extends ChangeNotifier {
         .set(entry.toJson());
     notifyListeners();
   }
-
-  Future<void> fetchAll() async {
-    if (_isFinished) {
-      return;
-    }
-
-    _isFetching = true;
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(_userId)
-        .collection('library')
-        .withConverter<LibraryEntry>(
-          fromFirestore: (snapshot, _) =>
-              LibraryEntry.fromJson(snapshot.data()!),
-          toFirestore: (entry, _) => entry.toJson(),
-        )
-        .orderBy('release_date', descending: true)
-        .startAfterDocument(_lastDocument!)
-        .get();
-
-    _isFinished = true;
-
-    entries.addAll(snapshot.docs.map((doc) => doc.data()));
-    _lastDocument = snapshot.docs[snapshot.docs.length - 1];
-
-    notifyListeners();
-    _isFetching = false;
-  }
-
-  Future<void> fetch({int limit = 10}) async {
-    if (_isFetching || _isFinished) {
-      return;
-    }
-
-    _isFetching = true;
-    final snapshot = _lastDocument == null
-        ? await FirebaseFirestore.instance
-            .collection('users')
-            .doc(_userId)
-            .collection('library')
-            .withConverter<LibraryEntry>(
-              fromFirestore: (snapshot, _) =>
-                  LibraryEntry.fromJson(snapshot.data()!),
-              toFirestore: (entry, _) => entry.toJson(),
-            )
-            .orderBy('release_date', descending: true)
-            .limit(limit)
-            .get()
-        : await FirebaseFirestore.instance
-            .collection('users')
-            .doc(_userId)
-            .collection('library')
-            .withConverter<LibraryEntry>(
-              fromFirestore: (snapshot, _) =>
-                  LibraryEntry.fromJson(snapshot.data()!),
-              toFirestore: (entry, _) => entry.toJson(),
-            )
-            .orderBy('release_date', descending: true)
-            .startAfterDocument(_lastDocument!)
-            .limit(limit)
-            .get();
-
-    _isFinished = snapshot.docs.isEmpty;
-
-    entries.addAll(snapshot.docs.map((doc) => doc.data()));
-    _lastDocument = snapshot.docs[snapshot.docs.length - 1];
-
-    notifyListeners();
-    _isFetching = false;
-  }
-
-  bool _isFetching = false;
-  bool _isFinished = false;
-  QueryDocumentSnapshot? _lastDocument;
 
   Future<List<GameEntry>> searchByTitle(String title) async {
     var response = await http.post(

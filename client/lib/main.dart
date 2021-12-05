@@ -28,9 +28,9 @@ Future<void> main() async {
       ChangeNotifierProxyProvider<UserModel, GameLibraryModel>(
         create: (context) => GameLibraryModel(),
         update: (context, userModel, model) {
-          if (userModel.signedIn && model != null) {
+          if (userModel.signedIn) {
             // print("LOG(INFO): updating GameLibraryModel");
-            return model..update(userModel.user.uid);
+            return model!..update(userModel.userData);
           }
           return model!;
         },
