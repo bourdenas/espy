@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/user_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:flutter/material.dart';
@@ -9,14 +10,19 @@ import 'package:http/http.dart' as http;
 class UserModel extends ChangeNotifier {
   final _googleSignIn = GoogleSignIn();
   User? _user = FirebaseAuth.instance.currentUser;
-  String _steamUserId = '';
-  String _gogAuthCode = '';
+  UserData? _userData;
 
   get user => _user!;
   get signedIn => _user != null;
 
-  get steamUserId => _steamUserId;
-  get gogAuthCode => _gogAuthCode;
+  get steamUserId => _userData != null && _userData!.keys != null
+      ? _userData!.keys!.steamUserId
+      : '';
+  get gogAuthCode => _userData != null &&
+          _userData!.keys != null &&
+          _userData!.keys!.gogToken != null
+      ? _userData!.keys!.gogToken!.oauthCode
+      : '';
 
   /// Sign in user through Google authentication system.
   Future<bool> signInWithGoogle() async {
@@ -38,8 +44,6 @@ class UserModel extends ChangeNotifier {
     }
 
     await _fetchUserProfile();
-
-    notifyListeners();
     return true;
   }
 
@@ -52,8 +56,6 @@ class UserModel extends ChangeNotifier {
 
     _user = await _getUser(googleSignInAccount);
     await _fetchUserProfile();
-
-    notifyListeners();
   }
 
   Future<void> signOut() async {
@@ -65,8 +67,14 @@ class UserModel extends ChangeNotifier {
 
   Future<void> updateUserProfile(
       {String steamUserId = '', String gogAuthCode = ''}) async {
-    _steamUserId = steamUserId;
-    _gogAuthCode = gogAuthCode;
+    _userData = UserData(
+      uid: _user!.uid,
+      keys: Keys(
+        steamUserId: steamUserId,
+        gogToken: GogToken(oauthCode: gogAuthCode),
+      ),
+      lastUpdate: null,
+    );
 
     FirebaseFirestore.instance.collection('users').doc(_user!.uid).update({
       'keys': {
@@ -98,26 +106,30 @@ class UserModel extends ChangeNotifier {
       return;
     }
 
-    final snapshot = await FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('users')
         .doc(_user!.uid)
-        .get();
+        .withConverter<UserData>(
+          fromFirestore: (snapshot, _) => UserData.fromJson(snapshot.data()!),
+          toFirestore: (entry, _) => entry.toJson(),
+        )
+        .snapshots()
+        .listen((data) => _onUserUpdate(data.data()));
+  }
 
-    final doc = snapshot.data();
-    if (doc == null) {
+  void _onUserUpdate(UserData? userData) async {
+    if (userData == null) {
       // Create new user entry.
-      await FirebaseFirestore.instance.collection('users').doc(_user!.uid).set({
-        'uid': _user!.uid,
-      });
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_user!.uid)
+          .set(UserData(uid: _user!.uid, keys: null, lastUpdate: 0).toJson());
       return;
     }
 
-    if (doc['keys'] != null) {
-      _steamUserId = doc['keys']['steam_user_id'];
-      if (doc['keys']['gog_token'] != null) {
-        _gogAuthCode = doc['keys']['gog_token']['oauth_code'];
-      }
-    }
+    print('updating user...');
+    _userData = userData;
+    notifyListeners();
   }
 }
 
