@@ -30,7 +30,7 @@ Future<void> main() async {
         update: (context, userModel, model) {
           if (userModel.signedIn) {
             // print("LOG(INFO): updating GameLibraryModel");
-            return model!..update(userModel.user.uid);
+            return model!..update(userModel.userData);
           }
           return model!;
         },

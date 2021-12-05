@@ -6,6 +6,7 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
+import 'package:espy/modules/documents/user_data.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,29 +14,33 @@ import 'package:shared_preferences/shared_preferences.dart';
 class GameLibraryModel extends ChangeNotifier {
   List<LibraryEntry> entries = [];
   String _userId = '';
+  int _libraryVersion = 0;
 
-  void update(String userId) async {
-    if (userId.isEmpty) {
+  void update(UserData? userData) async {
+    if (userData == null) {
       _userId = '';
       entries.clear();
       return;
     }
 
-    if (userId == _userId) {
+    if (userData.uid == _userId && userData.lastUpdate == _libraryVersion) {
       return;
     }
-    _userId = userId;
+    _userId = userData.uid;
+    _libraryVersion = userData.lastUpdate ?? 0;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    final localVersion = prefs.getInt('${_userId}_version') ?? 0;
     final encodedLibrary = prefs.getString(_userId);
-    if (encodedLibrary != null) {
-      print('found local library for user');
+    if (_libraryVersion == localVersion && encodedLibrary != null) {
+      print('found local library for $_userId from $localVersion');
       final jsonMap = jsonDecode(encodedLibrary) as Map<String, dynamic>;
       entries = Library.fromJson(jsonMap).entries;
     } else {
-      print('retrieving library from server');
+      print('retrieving library for $_userId last updated @$_libraryVersion');
       await fetchLibrary();
       await prefs.setString(_userId, jsonEncode(Library(entries)));
+      await prefs.setInt('${_userId}_version', _libraryVersion);
     }
 
     notifyListeners();

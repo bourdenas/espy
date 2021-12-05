@@ -13,6 +13,7 @@ class UserModel extends ChangeNotifier {
   UserData? _userData;
 
   get user => _user!;
+  get userData => _userData;
   get signedIn => _user != null;
 
   get steamUserId => _userData != null && _userData!.keys != null
