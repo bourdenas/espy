@@ -74,7 +74,7 @@ class UserModel extends ChangeNotifier {
         steamUserId: steamUserId,
         gogToken: GogToken(oauthCode: gogAuthCode),
       ),
-      lastUpdate: null,
+      version: null,
     );
 
     FirebaseFirestore.instance.collection('users').doc(_user!.uid).update({
@@ -124,7 +124,7 @@ class UserModel extends ChangeNotifier {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(_user!.uid)
-          .set(UserData(uid: _user!.uid, keys: null, lastUpdate: 0).toJson());
+          .set(UserData(uid: _user!.uid, keys: null, version: 0).toJson());
       return;
     }
 

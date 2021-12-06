@@ -23,11 +23,11 @@ class GameLibraryModel extends ChangeNotifier {
       return;
     }
 
-    if (userData.uid == _userId && userData.lastUpdate == _libraryVersion) {
+    if (userData.uid == _userId && userData.version == _libraryVersion) {
       return;
     }
     _userId = userData.uid;
-    _libraryVersion = userData.lastUpdate ?? 0;
+    _libraryVersion = userData.version ?? 0;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final localVersion = prefs.getInt('${_userId}_version') ?? 0;
