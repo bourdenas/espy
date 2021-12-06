@@ -71,9 +71,10 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
           if (!route.didPop(result)) {
             return false;
           }
-          // TODO: Removing this avoid rebuilding the library view and has a
-          // smoother transition back to the library, however the navigation URL
-          // is not updated. showLibrary();
+          // TODO: This forces the rebuild of the previous page, which among
+          // other things breaks animations. However, it's the only way I could
+          // update the path state.
+          showLibrary();
           return true;
         },
       ),

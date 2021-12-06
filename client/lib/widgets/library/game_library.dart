@@ -19,7 +19,7 @@ class GameLibrary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final path = context.watch<EspyRouterDelegate>().path;
+    final path = context.watch<EspyRouterDelegate>().currentConfiguration;
 
     if (path.isUnmatchedPage) {
       return UnmatchedView();
