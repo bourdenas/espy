@@ -10,7 +10,7 @@ pub struct UserData {
     pub keys: Option<Keys>,
 
     #[serde(default)]
-    pub last_update: u64,
+    pub version: u64,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]

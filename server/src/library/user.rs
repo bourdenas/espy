@@ -120,10 +120,10 @@ impl User {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.sync_library(steam_api, gog_api, egs_api).await?;
 
-        self.data.last_update = SystemTime::now()
+        self.data.version = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("SystemTime set before UNIX EPOCH!")
-            .as_secs();
+            .as_millis() as u64;
         if let Err(e) = self.save() {
             return Err(Status::internal("User.sync:", e));
         }
