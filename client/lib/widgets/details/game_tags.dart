@@ -31,7 +31,7 @@ class GameChipsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Force to render the view when GameDetails (e.g. game tags) are updated.
-    // context.watch<GameLibraryModel>();
+    context.watch<GameLibraryModel>();
 
     return Wrap(
       spacing: 8.0,

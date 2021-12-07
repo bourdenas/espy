@@ -1,26 +1,26 @@
 class UserData {
   final String uid;
   final Keys? keys;
-  final int? lastUpdate;
+  final int? version;
 
   UserData({
     required this.uid,
     required this.keys,
-    required this.lastUpdate,
+    required this.version,
   });
 
   UserData.fromJson(Map<String, dynamic> json)
       : this(
           uid: json['uid']!,
           keys: json.containsKey('keys') ? Keys.fromJson(json['keys']) : null,
-          lastUpdate: json.containsKey('keys') ? json['last_update'] : null,
+          version: json.containsKey('keys') ? json['version'] : null,
         );
 
   Map<String, dynamic> toJson() {
     return {
       'uid': uid,
       if (keys != null) 'keys': keys!.toJson(),
-      if (lastUpdate != null) 'last_update': lastUpdate,
+      if (version != null) 'version': version,
     };
   }
 }

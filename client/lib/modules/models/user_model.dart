@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/user_data.dart';
@@ -11,6 +13,7 @@ class UserModel extends ChangeNotifier {
   final _googleSignIn = GoogleSignIn();
   User? _user = FirebaseAuth.instance.currentUser;
   UserData? _userData;
+  StreamSubscription<DocumentSnapshot<UserData>>? _listener;
 
   get user => _user!;
   get userData => _userData;
@@ -24,6 +27,14 @@ class UserModel extends ChangeNotifier {
           _userData!.keys!.gogToken != null
       ? _userData!.keys!.gogToken!.oauthCode
       : '';
+
+  @override
+  void dispose() {
+    if (_listener != null) {
+      _listener!.cancel();
+    }
+    super.dispose();
+  }
 
   /// Sign in user through Google authentication system.
   Future<bool> signInWithGoogle() async {
@@ -74,7 +85,7 @@ class UserModel extends ChangeNotifier {
         steamUserId: steamUserId,
         gogToken: GogToken(oauthCode: gogAuthCode),
       ),
-      lastUpdate: null,
+      version: null,
     );
 
     FirebaseFirestore.instance.collection('users').doc(_user!.uid).update({
@@ -107,7 +118,7 @@ class UserModel extends ChangeNotifier {
       return;
     }
 
-    FirebaseFirestore.instance
+    _listener = FirebaseFirestore.instance
         .collection('users')
         .doc(_user!.uid)
         .withConverter<UserData>(
@@ -124,7 +135,7 @@ class UserModel extends ChangeNotifier {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(_user!.uid)
-          .set(UserData(uid: _user!.uid, keys: null, lastUpdate: 0).toJson());
+          .set(UserData(uid: _user!.uid, keys: null, version: 0).toJson());
       return;
     }
 
