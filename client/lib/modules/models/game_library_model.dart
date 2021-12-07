@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class GameLibraryModel extends ChangeNotifier {
   List<LibraryEntry> entries = [];
   String _userId = '';
-  int _libraryVersion = 0;
+  int _firebaseLibraryVersion = 0;
 
   void update(UserData? userData) async {
     if (userData == null) {
@@ -23,30 +23,53 @@ class GameLibraryModel extends ChangeNotifier {
       return;
     }
 
-    if (userData.uid == _userId && userData.version == _libraryVersion) {
+    if (userData.uid == _userId &&
+        userData.version == _firebaseLibraryVersion) {
       return;
     }
     _userId = userData.uid;
-    _libraryVersion = userData.version ?? 0;
+    _firebaseLibraryVersion = userData.version ?? 0;
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final localVersion = prefs.getInt('${_userId}_version') ?? 0;
-    final encodedLibrary = prefs.getString(_userId);
-    if (_libraryVersion == localVersion && encodedLibrary != null) {
-      print('found local library for $_userId from $localVersion');
-      final jsonMap = jsonDecode(encodedLibrary) as Map<String, dynamic>;
-      entries = Library.fromJson(jsonMap).entries;
-    } else {
-      print('retrieving library for $_userId last updated @$_libraryVersion');
-      await fetchLibrary();
-      await prefs.setString(_userId, jsonEncode(Library(entries)));
-      await prefs.setInt('${_userId}_version', _libraryVersion);
-    }
-
+    await _loadLibrary();
     notifyListeners();
   }
 
-  Future<void> fetchLibrary() async {
+  Future<void> _loadLibrary() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final localVersion = prefs.getInt('${_userId}_version') ?? 0;
+    final encodedLibrary = prefs.getString(_userId);
+
+    if (_firebaseLibraryVersion == localVersion && encodedLibrary != null) {
+      print('found local library for $_userId @$localVersion');
+      final jsonMap = jsonDecode(encodedLibrary) as Map<String, dynamic>;
+      entries = Library.fromJson(jsonMap).entries;
+    } else {
+      print(
+          'retrieving library for $_userId last updated @$_firebaseLibraryVersion');
+      await _fetchLibrary();
+      await _saveLibraryLocally(_firebaseLibraryVersion);
+    }
+  }
+
+  Future<void> _saveLibraryLocally(int version) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userId, jsonEncode(Library(entries)));
+    await prefs.setInt('${_userId}_version', version);
+
+    if (version == _firebaseLibraryVersion) {
+      // No need to notify Firebase, version came from there.
+      return;
+    }
+
+    _firebaseLibraryVersion = version;
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .update({'version': version});
+  }
+
+  Future<void> _fetchLibrary() async {
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
@@ -72,6 +95,9 @@ class GameLibraryModel extends ChangeNotifier {
         .collection('library')
         .doc(entry.id.toString())
         .set(entry.toJson());
+
+    await _saveLibraryLocally(DateTime.now().millisecondsSinceEpoch);
+
     notifyListeners();
   }
 
@@ -146,6 +172,8 @@ class GameLibraryModel extends ChangeNotifier {
         .collection('unknown')
         .doc(storeEntry.id.toString())
         .set(storeEntry.toJson());
+
+    await _saveLibraryLocally(DateTime.now().millisecondsSinceEpoch);
 
     notifyListeners();
   }
