@@ -1,5 +1,4 @@
 import 'package:espy/modules/models/appbar_search_model.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -48,7 +47,7 @@ class _SearchbarState extends State<Searchbar> {
     return TextField(
       controller: _searchController,
       focusNode: _searchFocusNode,
-      autofocus: kIsWeb,
+      autofocus: true,
       decoration: InputDecoration(
         prefixIcon: IconButton(
           icon: _searchIcon,

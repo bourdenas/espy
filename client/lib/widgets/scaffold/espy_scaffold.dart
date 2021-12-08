@@ -1,7 +1,11 @@
 import 'dart:math';
 
+import 'package:espy/modules/intents/home_intent.dart';
+import 'package:espy/modules/intents/search_intent.dart';
+import 'package:espy/modules/intents/title_search_intent.dart';
 import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/user_model.dart';
+import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/dialogs/auth_dialog.dart';
 import 'package:espy/widgets/dialogs/search_dialog.dart';
 import 'package:espy/widgets/library/game_library.dart'
@@ -16,20 +20,6 @@ import 'package:provider/provider.dart';
 class EspyScaffold extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _EspyScaffoldState();
-}
-
-class _LibraryView {
-  final LibraryLayout layout;
-  final IconData iconData;
-
-  const _LibraryView(this.layout, this.iconData);
-}
-
-class _CardsView {
-  final CardDecoration decoration;
-  final IconData iconData;
-
-  const _CardsView(this.decoration, this.iconData);
 }
 
 class _EspyScaffoldState extends State<EspyScaffold> {
@@ -53,79 +43,97 @@ class _EspyScaffoldState extends State<EspyScaffold> {
       final appConfig = context.read<AppConfig>();
       appConfig.windowWidth = constraints.maxWidth;
 
-      return Row(children: [
-        if (appConfig.isNotMobile && auth.signedIn)
-          EspyNavigationRail(appConfig.windowWidth > 3200),
-        Expanded(
-          child: Scaffold(
-            appBar: AppBar(
-              title: Row(
-                children: [
-                  Text('espy'),
-                  Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: appConfig.isNotMobile ? 32 : 16)),
-                  Expanded(
-                    child: appConfig.isNotMobile && auth.signedIn
-                        ? Searchbar()
-                        : Container(),
-                  ),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
-                  if (auth.signedIn)
-                    ToggleButtons(
+      return Actions(
+        actions: {
+          TitleSearchIntent: CallbackAction<TitleSearchIntent>(
+              onInvoke: (intent) => setState(() {})),
+          SearchIntent: CallbackAction<SearchIntent>(
+              onInvoke: (intent) => SearchDialog.show(context)),
+          HomeIntent: CallbackAction<HomeIntent>(
+              onInvoke: (intent) =>
+                  context.read<EspyRouterDelegate>().showLibrary()),
+        },
+        child: Focus(
+          autofocus: true,
+          child: Row(
+            children: [
+              if (appConfig.isNotMobile && auth.signedIn)
+                EspyNavigationRail(appConfig.windowWidth > 3200),
+              Expanded(
+                child: Scaffold(
+                  appBar: AppBar(
+                    title: Row(
                       children: [
-                        Icon(_libraryViews[_libraryViewIndex].iconData),
-                        Icon(_cardViews[_cardViewIndex].iconData),
+                        Text('espy'),
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: appConfig.isNotMobile ? 32 : 16)),
+                        Expanded(
+                          child: appConfig.isNotMobile && auth.signedIn
+                              ? Searchbar()
+                              : Container(),
+                        ),
+                        Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
+                        if (auth.signedIn)
+                          ToggleButtons(
+                            children: [
+                              Icon(_libraryViews[_libraryViewIndex].iconData),
+                              Icon(_cardViews[_cardViewIndex].iconData),
+                            ],
+                            isSelected: [false, false],
+                            onPressed: (index) {
+                              setState(() {
+                                if (index == 0) {
+                                  _libraryViewIndex = (_libraryViewIndex + 1) %
+                                      _libraryViews.length;
+                                } else if (index == 1) {
+                                  _cardViewIndex =
+                                      (_cardViewIndex + 1) % _cardViews.length;
+                                  appConfig.cardDecoration =
+                                      _cardViews[_cardViewIndex].decoration;
+                                }
+                              });
+                            },
+                          ),
+                        if (!auth.signedIn)
+                          TextButton(
+                            child: Text('Sign In'),
+                            onPressed: () => AuthDialog.show(context),
+                          )
+                        else if (appConfig.isNotMobile) ...[
+                          Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16)),
+                          TextButton(
+                            child: Text('Sign Out'),
+                            onPressed: () => auth.signOut(),
+                          ),
+                          Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16)),
+                        ],
                       ],
-                      isSelected: [false, false],
-                      onPressed: (index) {
-                        setState(() {
-                          if (index == 0) {
-                            _libraryViewIndex =
-                                (_libraryViewIndex + 1) % _libraryViews.length;
-                          } else if (index == 1) {
-                            _cardViewIndex =
-                                (_cardViewIndex + 1) % _cardViews.length;
-                            appConfig.cardDecoration =
-                                _cardViews[_cardViewIndex].decoration;
-                          }
-                        });
-                      },
                     ),
-                  if (!auth.signedIn)
-                    TextButton(
-                      child: Text('Sign In'),
-                      onPressed: () => AuthDialog.show(context),
-                    )
-                  else if (appConfig.isNotMobile) ...[
-                    Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
-                    TextButton(
-                      child: Text('Sign Out'),
-                      onPressed: () => auth.signOut(),
-                    ),
-                    Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
-                  ],
-                ],
+                  ),
+                  drawer: appConfig.isMobile ? EspyDrawer() : null,
+                  body: auth.signedIn
+                      ? GameLibrary(
+                          key: UniqueKey(),
+                          view: _libraryViews[_libraryViewIndex].layout)
+                      : EmptyLibrary(),
+                  floatingActionButton: auth.signedIn
+                      ? FloatingActionButton(
+                          tooltip: 'Search',
+                          child: Icon(Icons.search),
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.blueAccent,
+                          onPressed: () => SearchDialog.show(context),
+                        )
+                      : null,
+                ),
               ),
-            ),
-            drawer: appConfig.isMobile ? EspyDrawer() : null,
-            body: auth.signedIn
-                ? GameLibrary(
-                    key: UniqueKey(),
-                    view: _libraryViews[_libraryViewIndex].layout)
-                : EmptyLibrary(),
-            floatingActionButton: auth.signedIn
-                ? FloatingActionButton(
-                    tooltip: 'Search',
-                    child: Icon(Icons.search),
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blueAccent,
-                    onPressed: () => SearchDialog.show(context),
-                  )
-                : null,
+            ],
           ),
         ),
-      ]);
+      );
     });
   }
 }
@@ -152,4 +160,18 @@ class EmptyLibrary extends StatelessWidget {
       ],
     );
   }
+}
+
+class _LibraryView {
+  final LibraryLayout layout;
+  final IconData iconData;
+
+  const _LibraryView(this.layout, this.iconData);
+}
+
+class _CardsView {
+  final CardDecoration decoration;
+  final IconData iconData;
+
+  const _CardsView(this.decoration, this.iconData);
 }

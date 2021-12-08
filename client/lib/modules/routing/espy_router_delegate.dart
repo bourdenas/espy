@@ -1,5 +1,6 @@
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
+import 'package:espy/modules/intents/title_search_intent.dart';
 import 'package:espy/modules/routing/library_filter.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/pages/game_details_page.dart';
@@ -52,9 +53,10 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
   Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: {
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF):
+        SingleActivator(LogicalKeyboardKey.slash): const TitleSearchIntent(),
+        SingleActivator(LogicalKeyboardKey.keyF, control: true):
             const SearchIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyG):
+        SingleActivator(LogicalKeyboardKey.keyG, control: true):
             const HomeIntent(),
       },
       child: Navigator(
