@@ -39,8 +39,9 @@ class EspyRouteInformationParser extends RouteInformationParser<EspyRoutePath> {
     if (path.isLibraryPage) {
       return RouteInformation(location: '/');
     } else if (path.isFilterPage) {
-      final encodedFilter = path.filter!.encode();
-      return RouteInformation(location: '/filter/$encodedFilter');
+      return RouteInformation(
+          location:
+              !path.filter!.isEmpty ? '/filter/${path.filter!.encode()}' : '/');
     } else if (path.isDetailsPage) {
       return RouteInformation(location: '/game/${path.gameId}');
     } else if (path.isUnmatchedPage) {

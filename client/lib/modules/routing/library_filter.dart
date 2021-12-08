@@ -8,7 +8,7 @@ class LibraryFilter {
   Set<String> tags = {};
   Set<String> stores = {};
 
-  bool get isActive =>
+  bool get isEmpty =>
       _titleSearchPhrase.isNotEmpty ||
       companies.isNotEmpty ||
       collections.isNotEmpty ||

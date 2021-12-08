@@ -71,10 +71,7 @@ class EspyRouterDelegate extends RouterDelegate<EspyRoutePath>
           if (!route.didPop(result)) {
             return false;
           }
-          // TODO: This forces the rebuild of the previous page, which among
-          // other things breaks animations. However, it's the only way I could
-          // update the path state.
-          showLibrary();
+          showFilter(filter ?? LibraryFilter());
           return true;
         },
       ),
