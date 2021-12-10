@@ -1,3 +1,4 @@
+import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/appbar_search_model.dart';
@@ -15,8 +16,7 @@ import 'package:espy/widgets/espy_app.dart'
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(MultiProvider(
     providers: [
