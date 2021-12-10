@@ -23,7 +23,7 @@ dependencies:
     sdk: flutter
   http:
   protobuf: ^2.0.0
-  provider: ^5.0.0
+  provider: ^6.0.0
   shared_preferences: ^2.0.0
   firebase_core: ^1.4.0
   firebase_auth: ^3.0.1
