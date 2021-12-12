@@ -20,7 +20,7 @@ Future<void> main() async {
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => AppConfig()),
+      ChangeNotifierProvider(create: (context) => AppConfig()..loadLocalPref()),
       ChangeNotifierProvider(create: (context) => EspyRouterDelegate()),
       ChangeNotifierProvider(
           create: (context) => UserModel()..signInAuthenticatedUser()),

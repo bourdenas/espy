@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/library/filter_chips.dart';
 import 'package:espy/widgets/library/library_grid_view.dart';
@@ -6,11 +7,6 @@ import 'package:espy/widgets/library/tags_cloud.dart';
 import 'package:espy/widgets/library/unmatched_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-enum LibraryLayout {
-  GRID,
-  LIST,
-}
 
 class GameLibrary extends StatelessWidget {
   final LibraryLayout view;
