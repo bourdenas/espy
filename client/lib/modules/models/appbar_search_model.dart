@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:flutter/material.dart';
 
 class AppBarSearchModel extends ChangeNotifier {

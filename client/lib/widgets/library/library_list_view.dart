@@ -5,7 +5,6 @@ import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:espy/widgets/library/library_view.dart';
 import 'package:espy/widgets/library/tags_context_menu.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
