@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/config_model.dart';
@@ -37,9 +38,10 @@ class GameCard extends StatelessWidget {
         child: Hero(
           tag: '${entry.id}_cover',
           child: entry.cover != null && entry.cover!.isNotEmpty
-              ? Image.network(
-                  '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
-                  fit: BoxFit.fitHeight,
+              ? CachedNetworkImage(
+                  imageUrl:
+                      '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+                  errorWidget: (context, url, error) => Icon(Icons.error),
                 )
               : Image.asset('assets/images/placeholder.png'),
         ),

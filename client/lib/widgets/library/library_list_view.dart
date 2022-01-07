@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
@@ -30,8 +31,9 @@ class LibraryListView extends LibraryView {
                   leading: Hero(
                     tag: '${entry.id}_cover',
                     child: CircleAvatar(
-                      foregroundImage: NetworkImage(
-                          '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'),
+                      foregroundImage: CachedNetworkImageProvider(
+                        '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg',
+                      ),
                     ),
                   ),
                   title: Text(entry.name),
