@@ -31,7 +31,7 @@ class _AuthDialogState extends State<AuthDialog> {
                   child: Center(
                     child: Text(
                       'Sign In',
-                      style: Theme.of(context).textTheme.headline3,
+                      style: Theme.of(context).textTheme.headline4,
                     ),
                   ),
                 ),
@@ -44,9 +44,13 @@ class _AuthDialogState extends State<AuthDialog> {
                             style: Theme.of(context).textTheme.headline5,
                           )
                         : ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.white),
+                            ),
                             child: Image.asset(
                               'assets/images/google_signin.png',
-                              height: 64,
+                              // height: 64,
                             ),
                             onPressed: () async {
                               await context
