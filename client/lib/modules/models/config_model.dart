@@ -60,5 +60,6 @@ enum CardDecoration {
 
 enum LibraryLayout {
   GRID,
+  EXPANDED_LIST,
   LIST,
 }

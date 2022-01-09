@@ -23,7 +23,6 @@ class LibraryListView extends LibraryView {
     return Scrollbar(
       child: ListView(
         restorationId: 'list_view_game_entries_offset',
-        padding: const EdgeInsets.symmetric(horizontal: 16),
         children: games
             .map(
               (entry) => Listener(

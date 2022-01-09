@@ -1,6 +1,7 @@
 import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/library/filter_chips.dart';
+import 'package:espy/widgets/library/library_expanded_list_view.dart';
 import 'package:espy/widgets/library/library_grid_view.dart';
 import 'package:espy/widgets/library/library_list_view.dart';
 import 'package:espy/widgets/library/tags_cloud.dart';
@@ -32,7 +33,9 @@ class GameLibrary extends StatelessWidget {
         Expanded(
           child: view == LibraryLayout.GRID
               ? LibraryGridView()
-              : LibraryListView(),
+              : view == LibraryLayout.EXPANDED_LIST
+                  ? LibraryExpandedListView()
+                  : LibraryListView(),
         ),
       ],
     );

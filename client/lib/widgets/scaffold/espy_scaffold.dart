@@ -24,6 +24,7 @@ class EspyScaffold extends StatefulWidget {
 class _EspyScaffoldState extends State<EspyScaffold> {
   List<_LibraryView> _libraryViews = const [
     _LibraryView(LibraryLayout.GRID, Icons.photo),
+    _LibraryView(LibraryLayout.EXPANDED_LIST, Icons.view_list),
     _LibraryView(LibraryLayout.LIST, Icons.list),
   ];
 
