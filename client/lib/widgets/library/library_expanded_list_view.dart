@@ -21,14 +21,9 @@ class LibraryExpandedListView extends LibraryView {
     final games = context.watch<GameEntriesModel>().getEntries(filter);
 
     Widget title(LibraryEntry entry) {
-      return Row(
-        children: [
-          Text(
-            entry.name,
-            // style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            style: Theme.of(context).textTheme.headline5,
-          ),
-        ],
+      return Text(
+        entry.name,
+        style: Theme.of(context).textTheme.headline5,
       );
     }
 
@@ -38,6 +33,7 @@ class LibraryExpandedListView extends LibraryView {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               title(entry),
               metadata(entry),
@@ -109,34 +105,14 @@ class LibraryExpandedListView extends LibraryView {
   }
 
   Widget tags(LibraryEntry entry) {
-    // return Expanded(
-    //   child: ListView(
-    //     shrinkWrap: true,
-    //     scrollDirection: Axis.horizontal,
-    //     children: [
-    //       for (final tag in entry.userData.tags)
-    //         Padding(
-    //           padding: const EdgeInsets.all(2),
-    //           child: TagChip(tag: tag),
-    //         ),
-    //     ],
-    //   ),
-    // );
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
+      child: Wrap(
+        spacing: 8.0,
+        runSpacing: 4.0,
         children: [
-          for (final store in entry.storeEntries)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: StoreChip(store),
-            ),
-          for (final tag in entry.userData.tags)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: TagChip(tag: tag),
-            ),
+          for (final store in entry.storeEntries) StoreChip(store),
+          for (final tag in entry.userData.tags) TagChip(tag: tag),
         ],
       ),
     );
