@@ -1,16 +1,13 @@
+import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/library/filter_chips.dart';
+import 'package:espy/widgets/library/library_expanded_list_view.dart';
 import 'package:espy/widgets/library/library_grid_view.dart';
 import 'package:espy/widgets/library/library_list_view.dart';
 import 'package:espy/widgets/library/tags_cloud.dart';
 import 'package:espy/widgets/library/unmatched_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-enum LibraryLayout {
-  GRID,
-  LIST,
-}
 
 class GameLibrary extends StatelessWidget {
   final LibraryLayout view;
@@ -27,16 +24,22 @@ class GameLibrary extends StatelessWidget {
       return TagsCloud();
     }
 
+    final filter =
+        context.select((EspyRouterDelegate delegate) => delegate.filter);
+
     return Column(
       children: [
-        Container(
-          padding: EdgeInsets.all(16),
-          child: FilterChips(),
-        ),
+        if (filter != null)
+          Container(
+            padding: EdgeInsets.all(16),
+            child: FilterChips(),
+          ),
         Expanded(
           child: view == LibraryLayout.GRID
               ? LibraryGridView()
-              : LibraryListView(),
+              : view == LibraryLayout.EXPANDED_LIST
+                  ? LibraryExpandedListView()
+                  : LibraryListView(),
         ),
       ],
     );

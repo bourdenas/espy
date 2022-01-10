@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/routing/library_filter.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
@@ -95,6 +96,25 @@ class FranchiseChip extends StatelessWidget {
       label: Text('${franchise.name} (${franchise.id})'),
       onPressed: () {},
       backgroundColor: Colors.yellow[800],
+    );
+  }
+}
+
+class StoreChip extends StatelessWidget {
+  final StoreEntry store;
+
+  const StoreChip(this.store);
+
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Text(store.storefront),
+      backgroundColor: Colors.purple[800],
+      onPressed: () {
+        context
+            .read<EspyRouterDelegate>()
+            .showFilter(LibraryFilter()..stores.add(store.storefront));
+      },
     );
   }
 }

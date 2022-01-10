@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
@@ -5,7 +6,6 @@ import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:espy/widgets/library/library_view.dart';
 import 'package:espy/widgets/library/tags_context_menu.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,7 +23,6 @@ class LibraryListView extends LibraryView {
     return Scrollbar(
       child: ListView(
         restorationId: 'list_view_game_entries_offset',
-        padding: const EdgeInsets.symmetric(horizontal: 16),
         children: games
             .map(
               (entry) => Listener(
@@ -31,8 +30,9 @@ class LibraryListView extends LibraryView {
                   leading: Hero(
                     tag: '${entry.id}_cover',
                     child: CircleAvatar(
-                      foregroundImage: NetworkImage(
-                          '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg'),
+                      foregroundImage: CachedNetworkImageProvider(
+                        '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg',
+                      ),
                     ),
                   ),
                   title: Text(entry.name),

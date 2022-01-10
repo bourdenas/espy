@@ -1,4 +1,5 @@
 // import 'dart:ui' as ui;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
@@ -160,9 +161,10 @@ class _HeaderSliver extends StatelessWidget {
                   children: [
                     Hero(
                       tag: '${libraryEntry.id}_cover',
-                      child: Image.network(
-                        '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
-                        fit: BoxFit.cover,
+                      child: CachedNetworkImage(
+                        imageUrl:
+                            '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                       ),
                     ),
                     Positioned(
@@ -242,9 +244,10 @@ class _ScreenshotsSliver extends StatelessWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4)),
               clipBehavior: Clip.antiAlias,
-              child: Image.network(
-                '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
-                fit: BoxFit.contain,
+              child: CachedNetworkImage(
+                imageUrl:
+                    '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
+                errorWidget: (context, url, error) => Icon(Icons.error),
               ),
             ),
           ),
