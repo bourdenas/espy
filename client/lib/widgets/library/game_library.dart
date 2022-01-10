@@ -24,12 +24,16 @@ class GameLibrary extends StatelessWidget {
       return TagsCloud();
     }
 
+    final filter =
+        context.select((EspyRouterDelegate delegate) => delegate.filter);
+
     return Column(
       children: [
-        Container(
-          padding: EdgeInsets.all(16),
-          child: FilterChips(),
-        ),
+        if (filter != null)
+          Container(
+            padding: EdgeInsets.all(16),
+            child: FilterChips(),
+          ),
         Expanded(
           child: view == LibraryLayout.GRID
               ? LibraryGridView()
