@@ -86,6 +86,7 @@ class LibraryExpandedListView extends LibraryView {
         child: CachedNetworkImage(
           imageUrl: '${Urls.imageProvider}/t_cover_med/${entry.cover}.jpg',
           errorWidget: (context, url, error) => Icon(Icons.error),
+          fit: BoxFit.fitHeight,
         ),
       ),
     );

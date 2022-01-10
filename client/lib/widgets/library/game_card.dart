@@ -42,6 +42,7 @@ class GameCard extends StatelessWidget {
                   imageUrl:
                       '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
                   errorWidget: (context, url, error) => Icon(Icons.error),
+                  fit: BoxFit.fitHeight,
                 )
               : Image.asset('assets/images/placeholder.png'),
         ),
