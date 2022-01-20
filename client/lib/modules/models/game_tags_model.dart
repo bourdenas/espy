@@ -4,7 +4,10 @@ import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
-class GameTagsIndex extends ChangeNotifier {
+/// Index of tags extracted from user's library.
+///
+/// The index is computed on-the-fly in the client.
+class GameTagsModel extends ChangeNotifier {
   Map<int, Annotation> _companies = {};
   Map<int, Annotation> _collections = {};
   SplayTreeSet<String> _tags = SplayTreeSet<String>();
@@ -26,29 +29,6 @@ class GameTagsIndex extends ChangeNotifier {
       _tags.addAll(entry.userData.tags);
       _stores.addAll(entry.storeEntries.map((e) => e.storefront));
     }
-
-    notifyListeners();
-  }
-}
-
-class GameTagsModel extends ChangeNotifier {
-  GameTagsIndex? _index;
-  String _searchPhrase = '';
-
-  UnmodifiableListView<Annotation> get companies =>
-      UnmodifiableListView(_index!.companies
-          .where((c) => c.name.toLowerCase().contains(_searchPhrase)));
-  UnmodifiableListView<Annotation> get collections =>
-      UnmodifiableListView(_index!.collections
-          .where((c) => c.name.toLowerCase().contains(_searchPhrase)));
-  UnmodifiableListView<String> get tags => UnmodifiableListView(
-      _index!.tags.where((tag) => tag.toLowerCase().contains(_searchPhrase)));
-  UnmodifiableListView<String> get stores => UnmodifiableListView(_index!.stores
-      .where((store) => store.toLowerCase().contains(_searchPhrase)));
-
-  void update(GameTagsIndex index, String searchPhrase) {
-    _index = index;
-    _searchPhrase = searchPhrase;
 
     notifyListeners();
   }

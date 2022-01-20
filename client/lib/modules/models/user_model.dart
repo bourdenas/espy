@@ -9,7 +9,31 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
+/// Model that manages user authentication & identity.
 class UserModel extends ChangeNotifier {
+  User? _user;
+  StreamSubscription<User?>? _userSubscription;
+
+  get user => _user;
+
+  UserModel() {
+    _userSubscription =
+        FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      _user = user;
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    if (_userSubscription != null) {
+      _userSubscription!.cancel();
+    }
+    super.dispose();
+  }
+}
+
+class OldUserModel extends ChangeNotifier {
   final _googleSignIn = GoogleSignIn();
   User? _user = FirebaseAuth.instance.currentUser;
   UserData? _userData;
@@ -60,9 +84,11 @@ class UserModel extends ChangeNotifier {
   }
 
   /// Sign in user without new interaction if already authenticated.
-  Future<void> signInAuthenticatedUser() async {
+  Future<void> signInUser() async {
+    print('trying to sign in user');
     final googleSignInAccount = await _googleSignIn.signInSilently();
     if (googleSignInAccount == null) {
+      print('  failed');
       return;
     }
 
