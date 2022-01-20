@@ -5,29 +5,15 @@ import 'package:espy/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
-class EspyMaterialApp extends StatefulWidget {
-  @override
-  State<EspyMaterialApp> createState() => _EspyMaterialAppState();
-}
-
-class _EspyMaterialAppState extends State<EspyMaterialApp> {
-  bool signed = false;
-
+class EspyMaterialApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'espy',
-      debugShowCheckedModeBanner: false,
       theme: context.watch<AppConfigModel>().theme,
-      initialRoute:
-          context.watch<UserModel>().user != null ? '/sign-in' : '/home',
+      home:
+          context.watch<UserModel>().user == null ? LoginPage() : LibraryPage(),
       routes: {
-        '/home': (context) {
-          return LibraryPage();
-        },
-        '/sign-in': (context) {
-          return LoginPage();
-        },
         '/profile': (context) {
           return ProfilePage();
         },

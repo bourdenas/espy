@@ -4,6 +4,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/unmatched_library_model.dart';
+import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -20,15 +21,15 @@ Future<void> main() async {
     providers: [
       ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref()),
       ChangeNotifierProvider(create: (_) => UserModel()),
-      // ChangeNotifierProxyProvider<UserModel, GameLibraryModel>(
-      //   create: (_) => GameLibraryModel(),
-      //   update: (_, userModel, model) {
-      //     if (userModel.signedIn) {
-      //       return model!..update(userModel.userData);
-      //     }
-      //     return model!;
-      //   },
-      // ),
+      ChangeNotifierProxyProvider<UserModel, UserDataModel>(
+        create: (_) => UserDataModel(),
+        update: (_, userModel, model) => model!..update(userModel.user.uid),
+      ),
+      ChangeNotifierProxyProvider<UserDataModel, GameLibraryModel>(
+        create: (_) => GameLibraryModel(),
+        update: (_, userDataModel, model) =>
+            model!..update(userDataModel.userData),
+      ),
       ChangeNotifierProxyProvider<GameLibraryModel, GameEntriesModel>(
         create: (_) => GameEntriesModel(),
         update: (_, libraryModel, model) {

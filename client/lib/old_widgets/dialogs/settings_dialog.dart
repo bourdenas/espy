@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/user_model.dart';
+import 'package:espy/modules/models/user_data_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -52,7 +52,7 @@ class SettingsDialog extends StatelessWidget {
                       Expanded(
                         child: TextFormField(
                           controller: _gogTextController
-                            ..text = context.watch<UserModel>().gogAuthCode,
+                            ..text = context.watch<UserDataModel>().gogAuthCode,
                           decoration: InputDecoration(
                             labelText: 'GOG auth token',
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
@@ -76,7 +76,7 @@ class SettingsDialog extends StatelessWidget {
                       Expanded(
                         child: TextFormField(
                           controller: _steamTextController
-                            ..text = context.watch<UserModel>().steamUserId,
+                            ..text = context.watch<UserDataModel>().steamUserId,
                           decoration: InputDecoration(
                             labelText: 'Steam auth token',
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
@@ -96,7 +96,7 @@ class SettingsDialog extends StatelessWidget {
           child: Text("Ok"),
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              await context.read<UserModel>().updateUserProfile(
+              await context.read<UserDataModel>().setUserData(
                     steamUserId: _steamTextController.text,
                     gogAuthCode: _gogTextController.text,
                   );
@@ -108,12 +108,12 @@ class SettingsDialog extends StatelessWidget {
           child: Text("Sync"),
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              await context.read<UserModel>().updateUserProfile(
+              await context.read<UserDataModel>().setUserData(
                     steamUserId: _steamTextController.text,
                     gogAuthCode: _gogTextController.text,
                   );
             }
-            await context.read<UserModel>().syncLibrary();
+            await context.read<UserDataModel>().syncLibrary();
           },
         ),
         TextButton(
