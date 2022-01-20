@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/config_model.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -75,7 +75,7 @@ class AutocompleteFieldState extends State<AutocompleteField> {
             onSubmitted: (term) => _submit(term),
             controller: _searchController,
             // focusNode: _searchFocusNode,
-            autofocus: context.read<AppConfig>().isNotMobile,
+            autofocus: context.read<AppConfigModel>().isNotMobile,
             decoration: InputDecoration(
               prefixIcon: icon,
               hintText: hintText,

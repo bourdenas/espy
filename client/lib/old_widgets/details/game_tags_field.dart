@@ -20,7 +20,7 @@ class GameTagsField extends StatelessWidget {
         final searchTerms = text.toLowerCase().split(' ');
         return [
           ...context
-              .read<GameTagsIndex>()
+              .read<GameTagsModel>()
               .tags
               .where(
                 (tag) => searchTerms.every((term) => tag

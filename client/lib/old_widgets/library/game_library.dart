@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/config_model.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/library/filter_chips.dart';
 import 'package:espy/widgets/library/library_expanded_list_view.dart';

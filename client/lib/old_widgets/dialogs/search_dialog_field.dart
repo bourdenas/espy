@@ -19,7 +19,7 @@ class SearchDialogField extends StatelessWidget {
         final searchTerms = text.toLowerCase().split(' ');
         return [
           ...context
-              .read<GameTagsIndex>()
+              .read<GameTagsModel>()
               .stores
               .where(
                 (store) => searchTerms.every((term) => store
@@ -41,7 +41,7 @@ class SearchDialogField extends StatelessWidget {
                 ),
               ),
           ...context
-              .read<GameTagsIndex>()
+              .read<GameTagsModel>()
               .tags
               .where(
                 (tag) => searchTerms.every((term) => tag
@@ -83,7 +83,7 @@ class SearchDialogField extends StatelessWidget {
                 ),
               ),
           ...context
-              .read<GameTagsIndex>()
+              .read<GameTagsModel>()
               .collections
               .where((collection) => searchTerms.every((term) => collection.name
                   .toLowerCase()
@@ -102,7 +102,7 @@ class SearchDialogField extends StatelessWidget {
                 ),
               ),
           ...context
-              .read<GameTagsIndex>()
+              .read<GameTagsModel>()
               .companies
               .where((company) => searchTerms.every((term) => company.name
                   .toLowerCase()

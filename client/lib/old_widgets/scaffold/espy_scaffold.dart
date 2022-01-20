@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/intents/title_search_intent.dart';
-import 'package:espy/modules/models/config_model.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/dialogs/auth_dialog.dart';
@@ -38,7 +38,7 @@ class _EspyScaffoldState extends State<EspyScaffold> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       final auth = context.watch<UserModel>();
-      final appConfig = context.read<AppConfig>();
+      final appConfig = context.read<AppConfigModel>();
       appConfig.windowWidth = constraints.maxWidth;
 
       return Actions(

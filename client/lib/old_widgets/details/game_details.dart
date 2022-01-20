@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/config_model.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:espy/widgets/dialogs/game_entry_edit_dialog.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +20,7 @@ class GameDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final layout = context.read<AppConfig>().isMobile
+    final layout = context.read<AppConfigModel>().isMobile
         ? _Layout.singleColumn
         : _Layout.twoColumns;
 
