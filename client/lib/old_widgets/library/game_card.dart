@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/config_model.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/widgets/details/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +16,7 @@ class GameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appConfig = context.watch<AppConfig>();
+    final appConfig = context.watch<AppConfigModel>();
 
     return GridTile(
       footer: Material(

@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/models/config_model.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/routing/espy_router_delegate.dart';
 import 'package:espy/widgets/details/game_tags.dart';
@@ -38,7 +38,7 @@ class LibraryListView extends LibraryView {
                   title: Text(entry.name),
                   subtitle: Text(
                       '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
-                  trailing: context.read<AppConfig>().isNotMobile
+                  trailing: context.read<AppConfigModel>().isNotMobile
                       ? Wrap(
                           spacing: 8.0,
                           runSpacing: 4.0,

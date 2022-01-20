@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/unmatched_entries_model.dart';
+import 'package:espy/modules/models/unmatched_library_model.dart';
 import 'package:espy/widgets/dialogs/store_entry_edit_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

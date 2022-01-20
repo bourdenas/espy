@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 class TagsCloud extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final tags = context.read<GameTagsModel>().tags;
+    final tags = context.read<GameTagsCloudFilterModel>().tags;
 
     return Column(
       children: [

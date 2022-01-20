@@ -17,7 +17,7 @@ Future<void> showTagsContextMenu(
   final selectedTag = await showMenu<String>(
     context: context,
     items: context
-        .read<GameTagsIndex>()
+        .read<GameTagsModel>()
         .tags
         .map((tag) => CheckedPopupMenuItem(
               child: Text(tag),
