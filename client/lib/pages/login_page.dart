@@ -10,7 +10,7 @@ class LoginPage extends StatelessWidget {
       providerConfigs: _providerConfigs,
       actions: [
         AuthStateChangeAction<SignedIn>((context, state) {
-          Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/');
         }),
       ],
     );
@@ -26,7 +26,7 @@ class ProfilePage extends StatelessWidget {
       providerConfigs: _providerConfigs,
       actions: [
         SignedOutAction((context) {
-          Navigator.pushReplacementNamed(context, '/sign-in');
+          Navigator.pushReplacementNamed(context, '/');
         }),
       ],
     );
