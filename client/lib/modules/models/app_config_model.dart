@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AppConfig extends ChangeNotifier {
+/// App configuration structure.
+class AppConfigModel extends ChangeNotifier {
   double windowWidth = 0;
   CardDecoration _cardDecoration = CardDecoration.TAGS;
   LibraryLayout _libraryLayout = LibraryLayout.GRID;
