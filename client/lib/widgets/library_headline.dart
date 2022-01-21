@@ -1,0 +1,83 @@
+import 'package:animate_do/animate_do.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/material.dart';
+
+class LibraryHeadline extends StatelessWidget {
+  const LibraryHeadline({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeIn(
+      duration: Duration(milliseconds: 500),
+      child: CarouselSlider(
+        options: CarouselOptions(
+          height: 575.0,
+          viewportFraction: 1.0,
+          onPageChanged: (index, reason) {},
+        ),
+        items: [
+          GestureDetector(
+            onTap: () {},
+            child: Stack(
+              children: [
+                ShaderMask(
+                  shaderCallback: (rect) {
+                    return LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black,
+                        Colors.black,
+                        Colors.transparent,
+                      ],
+                      stops: [0, 0.3, 0.5, 1],
+                    ).createShader(
+                      Rect.fromLTRB(0, 0, rect.width, rect.height),
+                    );
+                  },
+                  blendMode: BlendMode.dstIn,
+                  child: CachedNetworkImage(
+                    height: 560.0,
+                    imageUrl:
+                        'https://images.igdb.com/igdb/image/upload/t_cover_big/co21e6.jpg',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16.0,
+                            ),
+                            SizedBox(width: 4.0),
+                            Text(
+                              'recently added'.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20.0),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
