@@ -21,63 +21,73 @@ class LibraryHeadline extends StatelessWidget {
             onTap: () {},
             child: Stack(
               children: [
-                ShaderMask(
-                  shaderCallback: (rect) {
-                    return LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black,
-                        Colors.black,
-                        Colors.transparent,
-                      ],
-                      stops: [0, 0.3, 0.5, 1],
-                    ).createShader(
-                      Rect.fromLTRB(0, 0, rect.width, rect.height),
-                    );
-                  },
-                  blendMode: BlendMode.dstIn,
-                  child: CachedNetworkImage(
+                _fadeShader(
+                  CachedNetworkImage(
                     height: 560.0,
                     imageUrl:
                         'https://images.igdb.com/igdb/image/upload/t_cover_big/co21e6.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(bottom: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.calendar_today,
-                              size: 16.0,
-                            ),
-                            SizedBox(width: 4.0),
-                            Text(
-                              'recently added'.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 16.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 20.0),
-                    ],
-                  ),
-                ),
+                _carouselLabel(),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _carouselLabel() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(bottom: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 16.0,
+                ),
+                SizedBox(width: 4.0),
+                Text(
+                  'recently added'.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 16.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 20.0),
+        ],
+      ),
+    );
+  }
+
+  Widget _fadeShader(Widget child) {
+    return ShaderMask(
+      shaderCallback: (rect) {
+        return LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black,
+            Colors.black,
+            Colors.transparent,
+          ],
+          stops: [0, 0.3, 0.5, 1],
+        ).createShader(
+          Rect.fromLTRB(0, 0, rect.width, rect.height),
+        );
+      },
+      blendMode: BlendMode.dstIn,
+      child: child,
     );
   }
 }
