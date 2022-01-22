@@ -29,7 +29,7 @@ class LibrarySlate extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      Text('See More'),
+                      Text('Expand'),
                       Icon(Icons.arrow_forward_ios, size: 16.0)
                     ],
                   ),
