@@ -1,4 +1,5 @@
 import 'package:espy/modules/models/user_model.dart';
+import 'package:espy/dialogs/settings_dialog.dart';
 import 'package:espy/pages/library_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
@@ -169,7 +170,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         ListTile(
           key: Key('settingsListTile'),
           onTap: () {
-            Navigator.pushNamed(context, '/settings');
+            SettingsDialog.show(context);
           },
           leading: Icon(Icons.settings),
           title: Text('Settings'),

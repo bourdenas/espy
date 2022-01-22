@@ -50,12 +50,16 @@ class SettingsDialog extends StatelessWidget {
                         ),
                       ),
                       Expanded(
-                        child: TextFormField(
-                          controller: _gogTextController
-                            ..text = context.watch<UserDataModel>().gogAuthCode,
-                          decoration: InputDecoration(
-                            labelText: 'GOG auth token',
-                            floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        child: Container(
+                          width: 200.0,
+                          child: TextFormField(
+                            controller: _gogTextController
+                              ..text =
+                                  context.watch<UserDataModel>().gogAuthCode,
+                            decoration: InputDecoration(
+                              labelText: 'GOG auth token',
+                              floatingLabelBehavior: FloatingLabelBehavior.auto,
+                            ),
                           ),
                         ),
                       ),
