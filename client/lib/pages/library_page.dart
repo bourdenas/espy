@@ -100,7 +100,6 @@ class LibraryBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final entries = context.watch<GameEntriesModel>().getEntries(null);
-    print(entries.length);
 
     return Scaffold(
       body: entries.isNotEmpty ? library(context) : EmptyLibrary(),

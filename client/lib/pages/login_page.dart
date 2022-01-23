@@ -8,11 +8,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SignInScreen(
       providerConfigs: _providerConfigs,
-      actions: [
-        AuthStateChangeAction<SignedIn>((context, state) {
-          Navigator.pushReplacementNamed(context, '/');
-        }),
-      ],
+      actions: [],
     );
   }
 }
