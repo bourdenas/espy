@@ -1,8 +1,7 @@
-import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/dialogs/settings_dialog.dart';
 import 'package:espy/pages/library_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/src/provider.dart';
 
 class TopLevelPage extends StatefulWidget {
   @override
@@ -77,7 +76,7 @@ class _TopLevelPageState extends State<TopLevelPage>
   }
 
   Widget _sideMenu(BuildContext context) {
-    final user = context.watch<UserModel>().user;
+    final user = FirebaseAuth.instance.currentUser;
 
     return ListView(
       // mainAxisAlignment: MainAxisAlignment.center,
@@ -103,39 +102,40 @@ class _TopLevelPageState extends State<TopLevelPage>
           ),
         ),
         SizedBox(height: 64.0),
-        Row(
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: Image(
-                  image: NetworkImage(user.photoURL),
+        if (user != null)
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image(
+                    image: NetworkImage(user.photoURL!),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(width: 16.0),
-            Expanded(
-              flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user.displayName,
-                    style: Theme.of(context).textTheme.headline6!.copyWith(
-                          fontSize: 16.0,
-                        ),
-                  ),
-                  Text(
-                    user.email,
-                    style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                          color: Colors.white70,
-                        ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
+              SizedBox(width: 16.0),
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.displayName!,
+                      style: Theme.of(context).textTheme.headline6!.copyWith(
+                            fontSize: 16.0,
+                          ),
+                    ),
+                    Text(
+                      user.email!,
+                      style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                            color: Colors.white70,
+                          ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
         SizedBox(height: 32.0),
         ListTile(
           key: Key('libraryListTile'),

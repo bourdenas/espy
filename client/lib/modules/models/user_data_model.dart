@@ -3,17 +3,16 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/user_data.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-/// Model that manages user authentication & identity.
+/// Model that handles user profile data.
 class UserDataModel extends ChangeNotifier {
-  String? _userId;
-  UserData? _userData;
-  StreamSubscription<DocumentSnapshot<UserData>>? _userDataSubscription;
-
   get userData => _userData;
+
+  get userId => _userData!.uid;
   get steamUserId => _userData != null && _userData!.keys != null
       ? _userData!.keys!.steamUserId
       : '';
@@ -23,13 +22,16 @@ class UserDataModel extends ChangeNotifier {
       ? _userData!.keys!.gogToken!.oauthCode
       : '';
 
-  void update(String? userId) async {
-    _userId = userId;
-    await _fetchUserData();
+  UserDataModel() {
+    _userId = FirebaseAuth.instance.currentUser?.uid;
+    _fetchUserData();
   }
 
+  String? _userId;
+  UserData? _userData;
+
   /// Update Firestore with user's credentials to third-party data stores.
-  Future<void> setUserData(
+  Future<void> setUserKeys(
       {String steamUserId = '', String gogAuthCode = ''}) async {
     _userData = UserData(
       uid: _userId!,
@@ -80,21 +82,21 @@ class UserDataModel extends ChangeNotifier {
           toFirestore: (entry, _) => entry.toJson(),
         )
         .snapshots()
-        .listen((data) => _onUserDataUpdate(data.data()));
-  }
+        .listen((data) async {
+      UserData? userData = data.data();
 
-  void _onUserDataUpdate(UserData? userData) async {
-    if (userData == null) {
-      // Create new user entry.
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(_userId!)
-          .set(UserData(uid: _userId!, keys: null, version: null).toJson());
-      return;
-    }
+      if (userData == null) {
+        // Create new user entry.
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_userId!)
+            .set(UserData(uid: _userId!, keys: null, version: null).toJson());
+        return;
+      }
 
-    _userData = userData;
-    notifyListeners();
+      _userData = userData;
+      notifyListeners();
+    });
   }
 
   @override
@@ -104,4 +106,6 @@ class UserDataModel extends ChangeNotifier {
     }
     super.dispose();
   }
+
+  StreamSubscription<DocumentSnapshot<UserData>>? _userDataSubscription;
 }
