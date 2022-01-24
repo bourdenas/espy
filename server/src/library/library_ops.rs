@@ -6,43 +6,47 @@ use serde::{Deserialize, Serialize};
 pub struct LibraryOps {}
 
 impl LibraryOps {
-    /// Store storefront entries to user's library under unknown entries.
+    /// Store storefront entries to user's library under unmatched entries.
     ///
-    /// Writes `StoreEntry` documents under collection `users/{user}/unknown` in
-    /// Firestore.
-    pub fn write_unknown_entries(
+    /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
+    /// in Firestore.
+    pub fn write_unmatched_entries(
         firestore: &FirestoreApi,
         user_id: &str,
+        storefront_name: &str,
         entries: &[StoreEntry],
     ) -> Result<(), Status> {
         for entry in entries {
             firestore.write(
-                &format!("users/{}/unknown", user_id),
-                Some(&entry.id),
+                &format!("users/{}/unmatched", user_id),
+                Some(&format!("{}_{}", storefront_name, entry.id)),
                 entry,
             )?;
         }
         Ok(())
     }
 
-    /// Read unknown storefront entries in user's library.
+    /// Read unmatched storefront entries in user's library.
     ///
-    /// Reads `StoreEntry` documents under collection `users/{user}/unknown` in
-    /// Firestore.
-    pub fn read_unknown_entries(
+    /// Reads `StoreEntry` documents under collection `users/{user}/unmatched`
+    /// in Firestore.
+    pub fn read_unmatched_entries(
         firestore: &FirestoreApi,
         user_id: &str,
     ) -> Result<Vec<StoreEntry>, Status> {
-        match firestore.list::<StoreEntry>(&format!("users/{}/unknown", user_id)) {
+        match firestore.list::<StoreEntry>(&format!("users/{}/unmatched", user_id)) {
             Ok(entries) => Ok(entries),
-            Err(e) => Err(Status::internal("LibraryManager.read_unknown_entries: ", e)),
+            Err(e) => Err(Status::internal(
+                "LibraryManager.read_unmatched_entries: ",
+                e,
+            )),
         }
     }
 
     /// Returns user's matched game library entries.
     ///
-    /// Reads `LibraryEntry` documents under collection `users/{user}/library` in
-    /// Firestore.
+    /// Reads `LibraryEntry` documents under collection `users/{user}/library`
+    /// in Firestore.
     pub fn read_library_entries(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -117,9 +121,9 @@ impl LibraryOps {
         // TODO: The three operations below should be a transaction, but this is
         // not currently supported by this library.
         //
-        // Delete matched StoreEntries from 'users/{user}/unknown'
+        // Delete matched StoreEntries from 'users/{user}/unmatched'
         for store_entry in &library_entry.store_entry {
-            firestore.delete(&format!("users/{}/unknown/{}", user_id, store_entry.id))?;
+            firestore.delete(&format!("users/{}/unmatched/{}", user_id, store_entry.id))?;
         }
 
         // Check if game is already in user's library.

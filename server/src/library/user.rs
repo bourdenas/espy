@@ -162,7 +162,7 @@ impl User {
 
     /// Save user entry to Firestore. Returns the Firestore document id.
     fn save(&self) -> Result<String, Status> {
-        eprintln!("writing to firestore...");
+        eprintln!("updating user data to firestore...");
         self.firestore
             .lock()
             .unwrap()

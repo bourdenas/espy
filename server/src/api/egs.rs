@@ -30,9 +30,9 @@ impl EgsApi {
                     .records
                     .into_iter()
                     .map(|record| StoreEntry {
-                        id: format!("epic_{}", record.catalog_item_id),
+                        id: record.catalog_item_id,
                         title: record.sandbox_name,
-                        storefront_name: String::from("epic"),
+                        storefront_name: EgsApi::id(),
                         ..Default::default()
                     })
                     .collect(),
@@ -49,6 +49,10 @@ impl EgsApi {
 /// of the APIs.
 #[async_trait]
 impl Storefront for EgsApi {
+    fn id() -> String {
+        String::from("egs")
+    }
+
     async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
         println!("epic games: {}", self.games.len());
         Ok(self.games.clone())

@@ -36,13 +36,13 @@ impl LibraryManager {
         egs_api: Option<EgsApi>,
     ) -> Result<(), Status> {
         if let Some(api) = steam_api {
-            self.sync_storefront("steam", &api).await?;
+            self.sync_storefront(&api).await?;
         }
         if let Some(api) = gog_api {
-            self.sync_storefront("gog", &api).await?;
+            self.sync_storefront(&api).await?;
         }
         if let Some(api) = egs_api {
-            self.sync_storefront("epic", &api).await?;
+            self.sync_storefront(&api).await?;
         }
 
         Ok(())
@@ -56,18 +56,14 @@ impl LibraryManager {
     ///   contain all storefront game ids owned by the user.
     ///   (b) the `users/{user}/unknown` collection with 'StoreEntry` documents
     ///   that correspond to new found entries.
-    async fn sync_storefront<T: traits::Storefront>(
-        &self,
-        storefront_name: &str,
-        api: &T,
-    ) -> Result<(), Status> {
+    async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
         let mut game_ids = HashSet::<String>::new();
         {
             game_ids.extend(
                 LibraryOps::read_storefront_ids(
                     &self.firestore.lock().unwrap(),
                     &self.user_id,
-                    storefront_name,
+                    &T::id(),
                 )
                 .into_iter(),
             );
@@ -80,13 +76,13 @@ impl LibraryManager {
             .collect::<Vec<StoreEntry>>();
 
         let firestore = &self.firestore.lock().unwrap();
-        LibraryOps::write_unknown_entries(firestore, &self.user_id, &store_entries)?;
+        LibraryOps::write_unmatched_entries(firestore, &self.user_id, &T::id(), &store_entries)?;
 
         game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
         LibraryOps::write_storefront_ids(
             firestore,
             &self.user_id,
-            storefront_name,
+            &T::id(),
             &game_ids.into_iter().collect::<Vec<_>>(),
         )?;
 
@@ -130,13 +126,13 @@ impl LibraryManager {
 
     /// Reconciles entries in the unknown collection of user's library.
     pub async fn match_unknown(&self, recon_service: Reconciler) -> Result<(), Status> {
-        let unknown_entries =
-            LibraryOps::read_unknown_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
+        let unmatched_entries =
+            LibraryOps::read_unmatched_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
 
         let (tx, mut rx) = mpsc::channel(32);
 
         tokio::spawn(async move {
-            recon_service.reconcile(tx, unknown_entries).await;
+            recon_service.reconcile(tx, unmatched_entries).await;
         });
 
         while let Some(entry_match) = rx.recv().await {

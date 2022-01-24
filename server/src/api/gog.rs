@@ -33,6 +33,10 @@ impl GogApi {
 
 #[async_trait]
 impl Storefront for GogApi {
+    fn id() -> String {
+        String::from("gog")
+    }
+
     async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
         let mut store_entries: Vec<StoreEntry> = vec![];
 
@@ -61,9 +65,9 @@ impl Storefront for GogApi {
 
             store_entries.extend(product_list_page.products.into_iter().map(|product| {
                 StoreEntry {
-                    id: format!("gog_{}", product.id),
+                    id: format!("{}", product.id),
                     title: product.title,
-                    storefront_name: String::from("gog"),
+                    storefront_name: GogApi::id(),
                     url: product.url,
                     image: product.image,
                 }
