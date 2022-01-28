@@ -2,37 +2,30 @@ import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:espy/modules/documents/user_data.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 /// Model of all unreconciled entries in user's library.
 class UnmatchedLibraryModel extends ChangeNotifier {
-  String _userId = '';
+  String _uid = '';
   List<StoreEntry> _entries = [];
 
   UnmodifiableListView<StoreEntry> get entries =>
       UnmodifiableListView(_entries);
 
-  void update(UserData? userData) async {
-    if (userData == null) {
-      _userId = '';
-      _entries.clear();
+  void update(String uid) async {
+    if (uid == _uid) {
       return;
     }
+    _uid = uid;
 
-    if (userData.uid == _userId) {
-      return;
-    }
-    _userId = userData.uid;
-
-    await _loadUnknownEntries();
+    await _loadUnmatchedEntries();
   }
 
-  Future<void> _loadUnknownEntries() async {
+  Future<void> _loadUnmatchedEntries() async {
     FirebaseFirestore.instance
         .collection('users')
-        .doc(_userId)
-        .collection('unknown')
+        .doc(_uid)
+        .collection('unmatched')
         .withConverter<StoreEntry>(
           fromFirestore: (snapshot, _) => StoreEntry.fromJson(snapshot.data()!),
           toFirestore: (entry, _) => entry.toJson(),

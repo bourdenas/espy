@@ -40,7 +40,11 @@ Future<void> main() async {
       ChangeNotifierProxyProvider<UserDataModel, UnmatchedLibraryModel>(
         create: (_) => UnmatchedLibraryModel(),
         update: (_, userDataModel, model) {
-          return model!..update(userDataModel.userId);
+          if (userDataModel.userData != null) {
+            return model!..update(userDataModel.userId);
+          } else {
+            return model!;
+          }
         },
       ),
       ChangeNotifierProxyProvider<UnmatchedLibraryModel, UnmatchedEntriesModel>(
