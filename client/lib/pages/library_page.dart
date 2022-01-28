@@ -1,9 +1,5 @@
-import 'package:espy/modules/models/game_entries_model.dart';
-import 'package:espy/widgets/empty_library.dart';
-import 'package:espy/widgets/library_headline.dart';
-import 'package:espy/widgets/library_slate.dart';
+import 'package:espy/widgets/library_body.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/src/provider.dart';
 
 class LibraryPage extends StatefulWidget {
   final Function _showMenu;
@@ -92,42 +88,6 @@ class _LibraryPageState extends State<LibraryPage>
       ],
       backgroundColor: _colorTween.value,
       elevation: 0.0,
-    );
-  }
-}
-
-class LibraryBody extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final entries = context.watch<GameEntriesModel>().getEntries(null);
-
-    return Scaffold(
-      body: entries.isNotEmpty ? library(context) : EmptyLibrary(),
-    );
-  }
-
-  Widget library(BuildContext context) {
-    return SingleChildScrollView(
-      key: Key('libraryScrollView'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LibraryHeadline(),
-          LibrarySlate(
-            text: 'GOG',
-            onExpand: () => Navigator.pushNamed(context, 'gog'),
-          ),
-          LibrarySlate(
-            text: 'Steam',
-            onExpand: () => Navigator.pushNamed(context, 'steam'),
-          ),
-          LibrarySlate(
-            text: 'Epic',
-            onExpand: () => Navigator.pushNamed(context, 'epic'),
-          ),
-          SizedBox(height: 30.0),
-        ],
-      ),
     );
   }
 }
