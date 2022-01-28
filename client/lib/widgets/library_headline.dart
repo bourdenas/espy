@@ -22,22 +22,23 @@ class LibraryHeadline extends StatelessWidget {
           onPageChanged: (index, reason) {},
         ),
         items: [
-          GestureDetector(
-            onTap: () {},
-            child: Stack(
-              children: [
-                _fadeShader(
-                  CachedNetworkImage(
-                    height: 560.0,
-                    imageUrl:
-                        '${Urls.imageProvider}/t_cover_big/${entries.first.cover}.jpg',
-                    fit: BoxFit.cover,
+          for (final entry in entries.take(8))
+            GestureDetector(
+              onTap: () {},
+              child: Stack(
+                children: [
+                  _fadeShader(
+                    CachedNetworkImage(
+                      height: 560.0,
+                      imageUrl:
+                          '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
-                _carouselLabel(),
-              ],
+                  _carouselLabel(),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
