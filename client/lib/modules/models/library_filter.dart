@@ -2,6 +2,8 @@ import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 
 class LibraryFilter {
+  LibraryFilter({this.stores = const {}});
+
   String _titleSearchPhrase = '';
   Set<Annotation> companies = {};
   Set<Annotation> collections = {};
@@ -43,7 +45,6 @@ class LibraryFilter {
     ].where((param) => param.isNotEmpty).join('+');
   }
 
-  LibraryFilter();
   factory LibraryFilter.decode(String encodedFilter) {
     var filter = LibraryFilter();
 

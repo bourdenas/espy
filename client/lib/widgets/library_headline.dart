@@ -1,13 +1,18 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/src/provider.dart';
 
 class LibraryHeadline extends StatelessWidget {
   const LibraryHeadline({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final entries = context.watch<GameEntriesModel>().getEntries(null);
+
     return FadeIn(
       duration: Duration(milliseconds: 500),
       child: CarouselSlider(
@@ -25,7 +30,7 @@ class LibraryHeadline extends StatelessWidget {
                   CachedNetworkImage(
                     height: 560.0,
                     imageUrl:
-                        'https://images.igdb.com/igdb/image/upload/t_cover_big/co21e6.jpg',
+                        '${Urls.imageProvider}/t_cover_big/${entries.first.cover}.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -55,7 +60,7 @@ class LibraryHeadline extends StatelessWidget {
                 ),
                 SizedBox(width: 4.0),
                 Text(
-                  'recently added'.toUpperCase(),
+                  'latest release'.toUpperCase(),
                   style: TextStyle(
                     fontSize: 16.0,
                   ),

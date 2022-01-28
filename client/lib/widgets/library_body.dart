@@ -1,4 +1,6 @@
+import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/modules/models/unmatched_library_model.dart';
 import 'package:espy/widgets/empty_library.dart';
 import 'package:espy/widgets/library_headline.dart';
@@ -21,30 +23,58 @@ class LibraryBody extends StatelessWidget {
   }
 
   Widget library(BuildContext context) {
+    final entries = context.watch<GameEntriesModel>().getEntries(null);
+
+    final gogGames = context
+        .watch<GameEntriesModel>()
+        .getEntries(LibraryFilter(stores: {'gog'}))
+        .take(8)
+        .map((e) => SlateTileData(
+            image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
+        .toList();
+
+    final steamGames = context
+        .watch<GameEntriesModel>()
+        .getEntries(LibraryFilter(stores: {'steam'}))
+        .take(8)
+        .map((e) => SlateTileData(
+            image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
+        .toList();
+
+    final egsGames = context
+        .watch<GameEntriesModel>()
+        .getEntries(LibraryFilter(stores: {'egs'}))
+        .take(8)
+        .map((e) => SlateTileData(
+            image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
+        .toList();
+
     final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
-    print(unmatchedEntries.length);
 
     return SingleChildScrollView(
       key: Key('libraryScrollView'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LibraryHeadline(),
-          LibrarySlate(
-            text: 'GOG',
-            onExpand: () => Navigator.pushNamed(context, 'gog'),
-            tiles: [],
-          ),
-          // LibrarySlate(
-          //   text: 'Steam',
-          //   onExpand: () => Navigator.pushNamed(context, 'steam'),
-          //   tiles: [],
-          // ),
-          // LibrarySlate(
-          //   text: 'Epic',
-          //   onExpand: () => Navigator.pushNamed(context, 'epic'),
-          //   tiles: [],
-          // ),
+          if (entries.isNotEmpty) LibraryHeadline() else SizedBox(height: 64),
+          if (gogGames.isNotEmpty)
+            LibrarySlate(
+              text: 'GOG',
+              onExpand: () => Navigator.pushNamed(context, 'gog'),
+              tiles: gogGames,
+            ),
+          if (steamGames.isNotEmpty)
+            LibrarySlate(
+              text: 'Steam',
+              onExpand: () => Navigator.pushNamed(context, 'steam'),
+              tiles: steamGames,
+            ),
+          if (egsGames.isNotEmpty)
+            LibrarySlate(
+              text: 'Epic Game Store',
+              onExpand: () => Navigator.pushNamed(context, 'egs'),
+              tiles: egsGames,
+            ),
           if (unmatchedEntries.isNotEmpty)
             LibrarySlate(
               text: 'Unmatched Entries',

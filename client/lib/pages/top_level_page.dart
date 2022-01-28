@@ -78,9 +78,9 @@ class _TopLevelPageState extends State<TopLevelPage>
   Widget _sideMenu(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    return ListView(
-      // mainAxisAlignment: MainAxisAlignment.center,
-      // crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 32.0),
         GestureDetector(
