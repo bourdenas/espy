@@ -35,18 +35,19 @@ class SlateTile extends StatelessWidget {
                 errorWidget: (context, url, error) =>
                     Center(child: Icon(Icons.help_outline)),
               ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    width: 120,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(data.title!),
+              if (data.title != null)
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      width: 120,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(data.title!),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ),
         ),
