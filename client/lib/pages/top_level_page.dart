@@ -38,7 +38,7 @@ class _TopLevelPageState extends State<TopLevelPage>
   @override
   Widget build(BuildContext context) {
     return Material(
-      // color: Color(0xFF26262F),
+      color: Color(0xFF26262F),
       child: AnimatedBuilder(
           animation: _drawerTween,
           builder: (context, _) {
@@ -94,7 +94,6 @@ class _TopLevelPageState extends State<TopLevelPage>
               CircleAvatar(
                 child: Icon(
                   Icons.close,
-                  // color: kRichBlack,
                 ),
                 backgroundColor: Colors.white,
               ),

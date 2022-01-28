@@ -1,4 +1,5 @@
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/pages/game_list_page.dart';
 import 'package:espy/pages/login_page.dart';
 import 'package:espy/pages/top_level_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,11 +31,35 @@ class EspyMaterialApp extends StatelessWidget {
           return Scaffold();
         },
       ),
-      routes: {
-        '/profile': (context) {
-          return ProfilePage();
-        },
+      // routes: {
+      //   '/games': (context) {
+      //     return GameListPage();
+      //   },
+      //   '/profile': (context) {
+      //     return ProfilePage();
+      //   },
+      // },
+      navigatorObservers: [routeObserver],
+      onGenerateRoute: (RouteSettings settings) {
+        switch (settings.name) {
+          case '/games':
+            return MaterialPageRoute(
+                builder: (_) =>
+                    GameListPage(filter: settings.arguments as String));
+          case '/profile':
+            return MaterialPageRoute(builder: (_) => ProfilePage());
+          default:
+            return MaterialPageRoute(builder: (_) {
+              return Scaffold(
+                body: Center(
+                  child: Text('Page not found :('),
+                ),
+              );
+            });
+        }
       },
     );
   }
 }
+
+final RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();

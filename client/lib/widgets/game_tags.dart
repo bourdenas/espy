@@ -2,27 +2,24 @@ import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/modules/routing/library_filter.dart';
-import 'package:espy/modules/routing/espy_router_delegate.dart';
-import 'package:espy/widgets/details/game_tags_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GameTags extends StatelessWidget {
-  final LibraryEntry entry;
+// class GameTags extends StatelessWidget {
+//   final LibraryEntry entry;
 
-  GameTags(this.entry);
+//   GameTags(this.entry);
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: [
-      GameChipsBar(entry),
-      Center(
-        child: GameTagsField(entry),
-      )
-    ]);
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(children: [
+//       GameChipsBar(entry),
+//       Center(
+//         child: GameTagsField(entry),
+//       )
+//     ]);
+//   }
+// }
 
 class GameChipsBar extends StatelessWidget {
   final LibraryEntry entry;
@@ -57,11 +54,7 @@ class CompanyChip extends StatelessWidget {
     return InputChip(
       label: Text('${company.name} (${company.id})'),
       backgroundColor: Colors.red[900],
-      onPressed: () {
-        context
-            .read<EspyRouterDelegate>()
-            .showFilter(LibraryFilter()..companies.add(company));
-      },
+      onPressed: () {},
     );
   }
 }
@@ -76,11 +69,7 @@ class CollectionChip extends StatelessWidget {
     return InputChip(
       label: Text('${collection.name} (${collection.id})'),
       backgroundColor: Colors.indigo[800],
-      onPressed: () {
-        context
-            .read<EspyRouterDelegate>()
-            .showFilter(LibraryFilter()..collections.add(collection));
-      },
+      onPressed: () {},
     );
   }
 }
@@ -111,9 +100,11 @@ class StoreChip extends StatelessWidget {
       label: Text(store.storefront),
       backgroundColor: Colors.purple[800],
       onPressed: () {
-        context
-            .read<EspyRouterDelegate>()
-            .showFilter(LibraryFilter()..stores.add(store.storefront));
+        Navigator.pushNamed(
+          context,
+          '/games',
+          arguments: store.storefront,
+        );
       },
     );
   }
@@ -129,11 +120,7 @@ class TagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InputChip(
       label: Text(tag),
-      onPressed: () async {
-        context
-            .read<EspyRouterDelegate>()
-            .showFilter(LibraryFilter()..tags.add(tag));
-      },
+      onPressed: () {},
       onDeleted: entry != null
           ? () {
               if (entry!.userData.tags.isEmpty) return;
