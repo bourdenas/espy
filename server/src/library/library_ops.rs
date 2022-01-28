@@ -123,7 +123,11 @@ impl LibraryOps {
         //
         // Delete matched StoreEntries from 'users/{user}/unmatched'
         for store_entry in &library_entry.store_entry {
-            firestore.delete(&format!("users/{}/unmatched/{}", user_id, store_entry.id))?;
+            firestore.delete(&format!(
+                "users/{}/unmatched/{}",
+                user_id,
+                format!("{}_{}", store_entry.storefront_name, store_entry.id)
+            ))?;
         }
 
         // Check if game is already in user's library.

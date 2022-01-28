@@ -26,7 +26,7 @@ impl LibraryManager {
     /// Retrieves new entries from remote storefronts the user has access to and
     /// expands existing library entries.
     ///
-    /// New entries are added as unreconciled / unknown titles. Reconciliation
+    /// New entries are added as unreconciled / unmatched titles. Reconciliation
     /// with IGDB entries is a separate step that will be triggered
     /// independenlty.
     pub async fn sync_library(
@@ -54,7 +54,7 @@ impl LibraryManager {
     /// This operation updates
     ///   (a) the `users/{user}/storefronts/{storefront_name}` document to
     ///   contain all storefront game ids owned by the user.
-    ///   (b) the `users/{user}/unknown` collection with 'StoreEntry` documents
+    ///   (b) the `users/{user}/unmatched` collection with 'StoreEntry` documents
     ///   that correspond to new found entries.
     async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
         let mut game_ids = HashSet::<String>::new();
@@ -124,8 +124,8 @@ impl LibraryManager {
         Ok(())
     }
 
-    /// Reconciles entries in the unknown collection of user's library.
-    pub async fn match_unknown(&self, recon_service: Reconciler) -> Result<(), Status> {
+    /// Reconciles entries in the unmatched collection of user's library.
+    pub async fn match_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
         let unmatched_entries =
             LibraryOps::read_unmatched_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
 
@@ -151,7 +151,7 @@ impl LibraryManager {
                     entry_match.store_entry,
                     entry_match.game_entry.unwrap(),
                 ) {
-                    eprintln!("Error handling matching unknown entry: {}", status);
+                    eprintln!("Error handling matching entry: {}", status);
                 }
             });
         }

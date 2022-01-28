@@ -54,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
     if opts.recon {
-        mgr.match_unknown(library::Reconciler::new(Arc::clone(&igdb)))
+        mgr.match_entries(library::Reconciler::new(Arc::clone(&igdb)))
             .await?;
     }
     if opts.refresh {
