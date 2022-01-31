@@ -63,22 +63,22 @@ class LibraryBody extends StatelessWidget {
           if (gogGames.isNotEmpty)
             LibrarySlate(
               text: 'GOG',
-              onExpand: () =>
-                  Navigator.pushNamed(context, '/games', arguments: 'gog'),
+              onExpand: () => Navigator.pushNamed(context, '/games',
+                  arguments: LibraryFilter(stores: {'gog'}).encode()),
               tiles: gogGames,
             ),
           if (steamGames.isNotEmpty)
             LibrarySlate(
               text: 'Steam',
-              onExpand: () =>
-                  Navigator.pushNamed(context, '/games', arguments: 'steam'),
+              onExpand: () => Navigator.pushNamed(context, '/games',
+                  arguments: LibraryFilter(stores: {'steam'}).encode()),
               tiles: steamGames,
             ),
           if (egsGames.isNotEmpty)
             LibrarySlate(
               text: 'Epic Game Store',
-              onExpand: () =>
-                  Navigator.pushNamed(context, '/games', arguments: 'egs'),
+              onExpand: () => Navigator.pushNamed(context, '/games',
+                  arguments: LibraryFilter(stores: {'egs'}).encode()),
               tiles: egsGames,
             ),
           if (unmatchedEntries.isNotEmpty)
