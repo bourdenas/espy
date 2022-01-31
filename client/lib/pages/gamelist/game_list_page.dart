@@ -1,7 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
-import 'package:espy/widgets/game_list_card.dart';
+import 'package:espy/pages/gamelist/game_list_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
