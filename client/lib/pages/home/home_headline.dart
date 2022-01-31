@@ -6,8 +6,8 @@ import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
-class LibraryHeadline extends StatelessWidget {
-  const LibraryHeadline({Key? key}) : super(key: key);
+class HomeHeadline extends StatelessWidget {
+  const HomeHeadline({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
