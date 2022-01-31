@@ -1,5 +1,5 @@
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/pages/game_details_page.dart';
+import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/gamelist/game_list_page.dart';
 import 'package:espy/pages/login_page.dart';
 import 'package:espy/pages/top_level_page.dart';
