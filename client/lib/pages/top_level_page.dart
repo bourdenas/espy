@@ -1,5 +1,5 @@
 import 'package:espy/dialogs/settings_dialog.dart';
-import 'package:espy/pages/library_page.dart';
+import 'package:espy/pages/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -64,7 +64,7 @@ class _TopLevelPageState extends State<TopLevelPage>
                   alignment: Alignment.centerLeft,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(radius),
-                    child: LibraryPage(() {
+                    child: HomePage(() {
                       _drawerAnimationController.forward();
                     }),
                   ),
