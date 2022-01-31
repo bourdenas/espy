@@ -1,57 +1,11 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/widgets/game_tags.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/src/provider.dart';
-
-class GameDetailsPage extends StatelessWidget {
-  const GameDetailsPage({required this.id});
-
-  final String id;
-
-  @override
-  Widget build(BuildContext context) {
-    final libraryEntry = context.read<GameEntriesModel>().getEntryById(id);
-
-    return Scaffold(
-      body: FutureBuilder(
-        future: FirebaseFirestore.instance.collection('games').doc(id).get(),
-        builder: (context, snapshot) {
-          // if (snapshot.connectionState != ConnectionState.done) {}
-
-          if (snapshot.hasError) {
-            return Center(
-                child: Text("Something went wrong: ${snapshot.error}"));
-          }
-
-          if (snapshot.connectionState == ConnectionState.done &&
-              !snapshot.hasData) {
-            return Center(child: Text("Document does not exist"));
-          }
-
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.hasData) {
-            final jData = (snapshot.data! as DocumentSnapshot).data()
-                as Map<String, dynamic>;
-            final gameEntry = GameEntry.fromJson(jData);
-
-            return GameDetailsContent(
-              libraryEntry: libraryEntry!,
-              gameEntry: gameEntry,
-            );
-          }
-
-          return Center(child: CircularProgressIndicator());
-        },
-      ),
-    );
-  }
-}
 
 class GameDetailsContent extends StatelessWidget {
   const GameDetailsContent({
@@ -121,11 +75,30 @@ class GameDetailsContent extends StatelessWidget {
                       letterSpacing: 1.2,
                     ),
                   ),
+                  SizedBox(height: 16.0),
+                  screenshots(),
+                  SizedBox(height: 8.0),
                 ],
               ),
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  CarouselSlider screenshots() {
+    return CarouselSlider(
+      options: CarouselOptions(
+        enlargeCenterPage: true,
+        onPageChanged: (index, reason) {},
+      ),
+      items: [
+        for (final screenshot in gameEntry.screenshots)
+          CachedNetworkImage(
+            imageUrl: '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
+            errorWidget: (context, url, error) => Icon(Icons.error),
+          )
       ],
     );
   }
