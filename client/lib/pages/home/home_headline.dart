@@ -24,7 +24,13 @@ class HomeHeadline extends StatelessWidget {
         items: [
           for (final entry in entries.take(8))
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/details',
+                  arguments: '${entry.id}',
+                );
+              },
               child: Stack(
                 children: [
                   _fadeShader(
