@@ -18,7 +18,7 @@ class GameListCard extends StatelessWidget {
         Navigator.pushNamed(
           context,
           '/details',
-          arguments: entry.id,
+          arguments: '${entry.id}',
         );
       },
       child: Container(
