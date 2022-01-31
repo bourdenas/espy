@@ -1,4 +1,4 @@
-import 'package:espy/widgets/library_body.dart';
+import 'package:espy/pages/home/home_content.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           appBar: _appBar(),
           body: NotificationListener<ScrollNotification>(
             onNotification: _scrollListener,
-            child: LibraryBody(),
+            child: HomeContent(),
           ),
         );
       },

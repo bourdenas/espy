@@ -1,13 +1,13 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:espy/widgets/slates/slate_tile.dart';
+import 'package:espy/pages/home/slate_tile.dart';
 import 'package:flutter/material.dart';
 
-class LibrarySlate extends StatelessWidget {
+class HomeSlate extends StatelessWidget {
   final String text;
   final Function() onExpand;
   final List<SlateTileData> tiles;
 
-  const LibrarySlate({
+  const HomeSlate({
     Key? key,
     required this.text,
     required this.onExpand,
