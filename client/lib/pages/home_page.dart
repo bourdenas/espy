@@ -1,17 +1,16 @@
 import 'package:espy/widgets/library_body.dart';
 import 'package:flutter/material.dart';
 
-class LibraryPage extends StatefulWidget {
+class HomePage extends StatefulWidget {
   final Function _showMenu;
 
-  LibraryPage(Function this._showMenu);
+  HomePage(Function this._showMenu);
 
   @override
-  State<LibraryPage> createState() => _LibraryPageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _LibraryPageState extends State<LibraryPage>
-    with TickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _colorAnimationController;
   late Animation _colorTween;
 
