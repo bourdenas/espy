@@ -2,24 +2,26 @@ import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 
 class LibraryFilter {
-  LibraryFilter({this.stores = const {}});
+  LibraryFilter({
+    this.titleSearch = '',
+    this.companies = const {},
+    this.collections = const {},
+    this.tags = const {},
+    this.stores = const {},
+  });
 
-  String _titleSearchPhrase = '';
-  Set<Annotation> companies = {};
-  Set<Annotation> collections = {};
-  Set<String> tags = {};
-  Set<String> stores = {};
+  String titleSearch;
+  Set<Annotation> companies;
+  Set<Annotation> collections;
+  Set<String> tags;
+  Set<String> stores;
 
   bool get isNotEmpty =>
-      _titleSearchPhrase.isNotEmpty ||
+      titleSearch.isNotEmpty ||
       companies.isNotEmpty ||
       collections.isNotEmpty ||
       tags.isNotEmpty ||
       stores.isNotEmpty;
-
-  set titleSearchPhrase(String phrase) {
-    _titleSearchPhrase = phrase;
-  }
 
   bool apply(LibraryEntry entry) {
     return _filterCompany(entry) &&
@@ -27,13 +29,6 @@ class LibraryFilter {
         _filterTag(entry) &&
         _filterStore(entry) &&
         _filterTitle(entry);
-  }
-
-  void clear() {
-    companies.clear();
-    collections.clear();
-    tags.clear();
-    stores.clear();
   }
 
   String encode() {
@@ -46,7 +41,10 @@ class LibraryFilter {
   }
 
   factory LibraryFilter.decode(String encodedFilter) {
-    var filter = LibraryFilter();
+    final companies = Set<Annotation>();
+    final collections = Set<Annotation>();
+    final tags = Set<String>();
+    final stores = Set<String>();
 
     final segments = encodedFilter.split('+');
     for (final segment in segments) {
@@ -56,19 +54,22 @@ class LibraryFilter {
       }
 
       if (term[0] == 'cmp') {
-        filter.companies
-            .add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
+        companies.add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
       } else if (term[0] == 'col') {
-        filter.collections
-            .add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
+        collections.add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
       } else if (term[0] == 'tag') {
-        filter.tags.add(term[1]);
+        tags.add(term[1]);
       } else if (term[0] == 'str') {
-        filter.stores.add(term[1]);
+        stores.add(term[1]);
       }
     }
 
-    return filter;
+    return LibraryFilter(
+      companies: companies,
+      collections: collections,
+      tags: tags,
+      stores: stores,
+    );
   }
 
   bool _filterCompany(LibraryEntry entry) {
@@ -94,6 +95,6 @@ class LibraryFilter {
   }
 
   bool _filterTitle(LibraryEntry entry) {
-    return entry.name.toLowerCase().contains(_titleSearchPhrase);
+    return entry.name.toLowerCase().contains(titleSearch);
   }
 }

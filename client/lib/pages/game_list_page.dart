@@ -17,15 +17,15 @@ class GameListPage extends StatefulWidget {
 class _GameListPageState extends State<GameListPage> {
   @override
   Widget build(BuildContext context) {
-    final entries = context
-        .watch<GameEntriesModel>()
-        .getEntries(LibraryFilter(stores: {widget.filter}))
-        .toList();
+    final filter = LibraryFilter.decode(widget.filter);
+
+    final entries =
+        context.watch<GameEntriesModel>().getEntries(filter).toList();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('GOG Games'),
+        title: Text('Games'),
         backgroundColor: Colors.black.withOpacity(0.6),
         elevation: 0.0,
       ),
