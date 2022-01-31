@@ -64,7 +64,7 @@ class GameListCard extends StatelessWidget {
                           vertical: 2.0,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.redAccent,
+                          color: Colors.grey[800],
                           borderRadius: BorderRadius.circular(4.0),
                         ),
                         child: Text(
@@ -86,10 +86,10 @@ class GameListCard extends StatelessWidget {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        if (entry.collection != null)
+                        for (final company in entry.companies)
                           Padding(
                             padding: const EdgeInsets.all(2),
-                            child: CollectionChip(entry.collection!),
+                            child: CompanyChip(company),
                           ),
                       ],
                     ),
