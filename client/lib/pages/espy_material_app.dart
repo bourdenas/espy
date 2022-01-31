@@ -1,4 +1,5 @@
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/pages/game_details_page.dart';
 import 'package:espy/pages/game_list_page.dart';
 import 'package:espy/pages/login_page.dart';
 import 'package:espy/pages/top_level_page.dart';
@@ -46,6 +47,10 @@ class EspyMaterialApp extends StatelessWidget {
             return MaterialPageRoute(
                 builder: (_) =>
                     GameListPage(filter: settings.arguments as String));
+          case '/details':
+            return MaterialPageRoute(
+                builder: (_) =>
+                    GameDetailsPage(id: settings.arguments as String));
           case '/profile':
             return MaterialPageRoute(builder: (_) => ProfilePage());
           default:

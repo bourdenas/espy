@@ -5,21 +5,21 @@ import 'package:espy/modules/models/game_library_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// class GameTags extends StatelessWidget {
-//   final LibraryEntry entry;
+class GameTags extends StatelessWidget {
+  final LibraryEntry entry;
 
-//   GameTags(this.entry);
+  GameTags(this.entry);
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(children: [
-//       GameChipsBar(entry),
-//       Center(
-//         child: GameTagsField(entry),
-//       )
-//     ]);
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      GameChipsBar(entry),
+      // Center(
+      //   child: GameTagsField(entry),
+      // )
+    ]);
+  }
+}
 
 class GameChipsBar extends StatelessWidget {
   final LibraryEntry entry;

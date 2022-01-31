@@ -30,6 +30,7 @@ class LibraryBody extends StatelessWidget {
         .getEntries(LibraryFilter(stores: {'gog'}))
         .take(8)
         .map((e) => SlateTileData(
+            id: '${e.id}',
             image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
         .toList();
 
@@ -38,6 +39,7 @@ class LibraryBody extends StatelessWidget {
         .getEntries(LibraryFilter(stores: {'steam'}))
         .take(8)
         .map((e) => SlateTileData(
+            id: '${e.id}',
             image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
         .toList();
 
@@ -46,6 +48,7 @@ class LibraryBody extends StatelessWidget {
         .getEntries(LibraryFilter(stores: {'egs'}))
         .take(8)
         .map((e) => SlateTileData(
+            id: '${e.id}',
             image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
         .toList();
 
