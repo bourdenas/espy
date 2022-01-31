@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/library_filter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -53,8 +54,14 @@ class CompanyChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InputChip(
       label: Text('${company.name} (${company.id})'),
-      backgroundColor: Colors.red[900],
-      onPressed: () {},
+      backgroundColor: Colors.redAccent,
+      onPressed: () {
+        Navigator.pushNamed(
+          context,
+          '/games',
+          arguments: LibraryFilter(companies: {company}).encode(),
+        );
+      },
     );
   }
 }
@@ -69,7 +76,13 @@ class CollectionChip extends StatelessWidget {
     return InputChip(
       label: Text('${collection.name} (${collection.id})'),
       backgroundColor: Colors.indigo[800],
-      onPressed: () {},
+      onPressed: () {
+        Navigator.pushNamed(
+          context,
+          '/games',
+          arguments: LibraryFilter(collections: {collection}).encode(),
+        );
+      },
     );
   }
 }
@@ -103,7 +116,7 @@ class StoreChip extends StatelessWidget {
         Navigator.pushNamed(
           context,
           '/games',
-          arguments: store.storefront,
+          arguments: LibraryFilter(stores: {store.storefront}).encode(),
         );
       },
     );
