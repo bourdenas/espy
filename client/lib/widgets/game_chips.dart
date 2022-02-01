@@ -111,3 +111,13 @@ class TagChip extends StatelessWidget {
     );
   }
 }
+
+class ElipsisChip extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Icon(Icons.add),
+      onPressed: () {},
+    );
+  }
+}
