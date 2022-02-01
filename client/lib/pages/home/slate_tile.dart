@@ -33,7 +33,7 @@ class SlateTile extends StatelessWidget {
               if (data.image != null)
                 CachedNetworkImage(
                   fit: BoxFit.cover,
-                  imageUrl: data.image ?? '',
+                  imageUrl: data.image!,
                   placeholder: (context, url) => PlaceholderShimmer(),
                   errorWidget: (context, url, error) =>
                       Center(child: Icon(Icons.help_outline)),

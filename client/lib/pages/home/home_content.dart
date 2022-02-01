@@ -61,18 +61,18 @@ class HomeContent extends StatelessWidget {
           for (final filter in filters)
             if (filter.entries.isNotEmpty)
               HomeSlate(
-                text: filter.title,
+                title: filter.title,
                 onExpand: () => Navigator.pushNamed(context, '/games',
                     arguments: filter.filter.encode()),
                 tiles: filter.entries,
               ),
           if (unmatchedEntries.isNotEmpty)
             HomeSlate(
-              text: 'Unmatched Entries',
+              title: 'Unmatched Entries',
               onExpand: () => Navigator.pushNamed(context, 'unmatched'),
               tiles: unmatchedEntries
                   .take(appConfig.isMobile(context) ? 8 : 32)
-                  .map((e) => SlateTileData(title: e.title, image: e.image))
+                  .map((e) => SlateTileData(title: e.title, image: null))
                   .toList(),
             ),
           SizedBox(height: 30.0),
