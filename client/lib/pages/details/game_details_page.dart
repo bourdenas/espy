@@ -18,8 +18,6 @@ class GameDetailsPage extends StatelessWidget {
       body: FutureBuilder(
         future: FirebaseFirestore.instance.collection('games').doc(id).get(),
         builder: (context, snapshot) {
-          // if (snapshot.connectionState != ConnectionState.done) {}
-
           if (snapshot.hasError) {
             return Center(
                 child: Text("Something went wrong: ${snapshot.error}"));
