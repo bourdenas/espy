@@ -97,6 +97,9 @@ class GameDetailsContent extends StatelessWidget {
         for (final screenshot in gameEntry.screenshots)
           CachedNetworkImage(
             imageUrl: '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
+            placeholder: (context, url) => Center(
+              child: CircularProgressIndicator(),
+            ),
             errorWidget: (context, url, error) => Icon(Icons.error),
           )
       ],
