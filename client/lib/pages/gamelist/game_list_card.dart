@@ -81,19 +81,7 @@ class GameListCard extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 16.0),
-                  Container(
-                    height: 32,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        for (final company in entry.companies)
-                          Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: CompanyChip(company),
-                          ),
-                      ],
-                    ),
-                  ),
+                  GameChipsListView(entry),
                 ],
               ),
             )
