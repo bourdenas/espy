@@ -17,8 +17,9 @@ class HomeHeadline extends StatelessWidget {
       duration: Duration(milliseconds: 500),
       child: CarouselSlider(
         options: CarouselOptions(
-          height: 575.0,
-          viewportFraction: 1.0,
+          height: 480.0,
+          viewportFraction: 0.8,
+          enlargeCenterPage: true,
           onPageChanged: (index, reason) {},
         ),
         items: [
