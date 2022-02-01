@@ -75,7 +75,7 @@ class AutocompleteFieldState extends State<AutocompleteField> {
             onSubmitted: (term) => _submit(term),
             controller: _searchController,
             // focusNode: _searchFocusNode,
-            autofocus: context.read<AppConfigModel>().isNotMobile,
+            autofocus: !context.read<AppConfigModel>().isMobile(context),
             decoration: InputDecoration(
               prefixIcon: icon,
               hintText: hintText,

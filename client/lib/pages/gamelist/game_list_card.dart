@@ -6,21 +6,17 @@ import 'package:flutter/material.dart';
 
 class GameListCard extends StatelessWidget {
   GameListCard({
+    Key? key,
     required this.entry,
-  });
+  }) : super(key: key);
 
   final LibraryEntry entry;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/details',
-          arguments: '${entry.id}',
-        );
-      },
+      onTap: () =>
+          Navigator.pushNamed(context, '/details', arguments: '${entry.id}'),
       child: Container(
         padding: EdgeInsets.all(8.0),
         margin: EdgeInsets.only(bottom: 16.0),

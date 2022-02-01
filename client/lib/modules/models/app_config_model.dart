@@ -10,9 +10,6 @@ class AppConfigModel extends ChangeNotifier {
   get cardDecoration => _cardDecoration;
   get libraryLayout => _libraryLayout;
 
-  get isMobile => windowWidth <= 800;
-  get isNotMobile => windowWidth > 800;
-
   get theme => ThemeData(
         brightness: Brightness.dark,
         primaryColor: backgrounColour,
@@ -21,6 +18,9 @@ class AppConfigModel extends ChangeNotifier {
 
   get foregroundColour => Color(0xFF66A3BB);
   get backgrounColour => Color(0xFF253A47);
+
+  bool isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width <= 800;
 
   void nextCardDecoration() {
     _cardDecoration = CardDecoration

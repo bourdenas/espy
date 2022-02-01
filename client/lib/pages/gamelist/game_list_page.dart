@@ -1,7 +1,8 @@
-import 'package:animate_do/animate_do.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
-import 'package:espy/pages/gamelist/game_list_card.dart';
+import 'package:espy/pages/gamelist/game_list_view.dart';
+import 'package:espy/pages/gamelist/game_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
@@ -19,6 +20,7 @@ class _GameListPageState extends State<GameListPage> {
   Widget build(BuildContext context) {
     final filter = LibraryFilter.decode(widget.filter);
 
+    final appConfig = context.read<AppConfigModel>();
     final entries =
         context.watch<GameEntriesModel>().getEntries(filter).toList();
 
@@ -29,22 +31,9 @@ class _GameListPageState extends State<GameListPage> {
         backgroundColor: Colors.black.withOpacity(0.6),
         elevation: 0.0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: FadeInUp(
-          from: 20,
-          duration: Duration(milliseconds: 500),
-          child: ListView.builder(
-            key: Key('gameListView'),
-            itemCount: entries.length,
-            itemBuilder: (context, index) {
-              return GameListCard(
-                entry: entries[index],
-              );
-            },
-          ),
-        ),
-      ),
+      body: appConfig.isMobile(context)
+          ? GameListView(entries: entries)
+          : GameGridView(entries: entries),
     );
   }
 }
