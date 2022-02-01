@@ -30,20 +30,26 @@ class SlateTile extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
           child: Stack(
             children: [
-              CachedNetworkImage(
-                width: 120.0,
-                fit: BoxFit.cover,
-                imageUrl: data.image ?? '',
-                placeholder: (context, url) => PlaceholderShimmer(),
-                errorWidget: (context, url, error) =>
-                    Center(child: Icon(Icons.help_outline)),
-              ),
+              if (data.image != null)
+                CachedNetworkImage(
+                  fit: BoxFit.cover,
+                  imageUrl: data.image ?? '',
+                  placeholder: (context, url) => PlaceholderShimmer(),
+                  errorWidget: (context, url, error) =>
+                      Center(child: Icon(Icons.help_outline)),
+                )
+              else
+                SizedBox(
+                    width: 128,
+                    child: Center(
+                      child: Icon(Icons.help_outline),
+                    )),
               if (data.title != null)
                 Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Container(
-                      width: 120,
+                      width: 128,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(data.title!),
