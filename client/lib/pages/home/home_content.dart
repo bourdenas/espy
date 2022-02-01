@@ -1,5 +1,6 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/annotation.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/modules/models/unmatched_library_model.dart';
@@ -24,34 +25,27 @@ class HomeContent extends StatelessWidget {
   }
 
   Widget library(BuildContext context) {
-    final entries = context.watch<GameEntriesModel>().getEntries(null);
+    final model = context.watch<GameEntriesModel>();
+    final appConfig = context.watch<AppConfigModel>();
 
-    final gogGames = context
-        .watch<GameEntriesModel>()
-        .getEntries(LibraryFilter(stores: {'gog'}))
-        .take(8)
-        .map((e) => SlateTileData(
-            id: '${e.id}',
-            image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
-        .toList();
+    _SlateInfo filter(String title, LibraryFilter filter) {
+      final entries = model
+          .getEntries(filter)
+          .take(appConfig.isMobile(context) ? 8 : 32)
+          .map((e) => SlateTileData(
+              id: '${e.id}',
+              image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
+          .toList();
+      return _SlateInfo(title: title, filter: filter, entries: entries);
+    }
 
-    final steamGames = context
-        .watch<GameEntriesModel>()
-        .getEntries(LibraryFilter(stores: {'steam'}))
-        .take(8)
-        .map((e) => SlateTileData(
-            id: '${e.id}',
-            image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
-        .toList();
-
-    final egsGames = context
-        .watch<GameEntriesModel>()
-        .getEntries(LibraryFilter(stores: {'egs'}))
-        .take(8)
-        .map((e) => SlateTileData(
-            id: '${e.id}',
-            image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
-        .toList();
+    final filters = [
+      filter('GOG', LibraryFilter(stores: {'gog'})),
+      filter('Steam', LibraryFilter(stores: {'steam'})),
+      filter('EGS', LibraryFilter(stores: {'egs'})),
+      filter(
+          'Larian', LibraryFilter(companies: {Annotation(name: '', id: 510)})),
+    ];
 
     final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
 
@@ -60,49 +54,24 @@ class HomeContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (entries.isNotEmpty) HomeHeadline() else SizedBox(height: 64),
-          if (gogGames.isNotEmpty)
-            HomeSlate(
-              text: 'GOG',
-              onExpand: () => Navigator.pushNamed(context, '/games',
-                  arguments: LibraryFilter(stores: {'gog'}).encode()),
-              tiles: gogGames,
-            ),
-          if (steamGames.isNotEmpty)
-            HomeSlate(
-              text: 'Steam',
-              onExpand: () => Navigator.pushNamed(context, '/games',
-                  arguments: LibraryFilter(stores: {'steam'}).encode()),
-              tiles: steamGames,
-            ),
-          if (egsGames.isNotEmpty)
-            HomeSlate(
-              text: 'Epic Game Store',
-              onExpand: () => Navigator.pushNamed(context, '/games',
-                  arguments: LibraryFilter(stores: {'egs'}).encode()),
-              tiles: egsGames,
-            ),
-          HomeSlate(
-            text: 'Larian',
-            onExpand: () => Navigator.pushNamed(context, '/games',
-                arguments: LibraryFilter(
-                    companies: {Annotation(name: 'Larian', id: 510)}).encode()),
-            tiles: context
-                .watch<GameEntriesModel>()
-                .getEntries(LibraryFilter(
-                    companies: {Annotation(name: 'Larian', id: 510)}))
-                .take(8)
-                .map((e) => SlateTileData(
-                    id: '${e.id}',
-                    image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
-                .toList(),
-          ),
+          if (appConfig.isMobile(context))
+            HomeHeadline()
+          else
+            SizedBox(height: 64),
+          for (final filter in filters)
+            if (filter.entries.isNotEmpty)
+              HomeSlate(
+                text: filter.title,
+                onExpand: () => Navigator.pushNamed(context, '/games',
+                    arguments: filter.filter.encode()),
+                tiles: filter.entries,
+              ),
           if (unmatchedEntries.isNotEmpty)
             HomeSlate(
               text: 'Unmatched Entries',
               onExpand: () => Navigator.pushNamed(context, 'unmatched'),
               tiles: unmatchedEntries
-                  .take(8)
+                  .take(appConfig.isMobile(context) ? 8 : 32)
                   .map((e) => SlateTileData(title: e.title, image: e.image))
                   .toList(),
             ),
@@ -111,4 +80,16 @@ class HomeContent extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SlateInfo {
+  _SlateInfo({
+    required this.title,
+    required this.filter,
+    required this.entries,
+  });
+
+  String title;
+  LibraryFilter filter;
+  List<SlateTileData> entries = [];
 }
