@@ -2,7 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:espy/pages/home/slate_tile.dart';
 import 'package:flutter/material.dart';
 
-class HomeSlate extends StatelessWidget {
+class HomeSlate extends StatefulWidget {
   final String title;
   final Function() onExpand;
   final List<SlateTileData> tiles;
@@ -14,6 +14,11 @@ class HomeSlate extends StatelessWidget {
     required this.tiles,
   }) : super(key: key);
 
+  @override
+  State<HomeSlate> createState() => _HomeSlateState();
+}
+
+class _HomeSlateState extends State<HomeSlate> {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -31,7 +36,7 @@ class HomeSlate extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           InkWell(
-            onTap: onExpand,
+            onTap: widget.onExpand,
             child: Container(
               padding: EdgeInsets.symmetric(
                 horizontal: 8.0,
@@ -41,7 +46,7 @@ class HomeSlate extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: Text(
-                title,
+                widget.title,
                 style: Theme.of(context).textTheme.headline6,
               ),
             ),
@@ -49,14 +54,26 @@ class HomeSlate extends StatelessWidget {
           Row(
             children: [
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  _scrollController.animateTo(
+                    _scrollController.offset - 400.0,
+                    curve: Curves.easeOut,
+                    duration: const Duration(milliseconds: 300),
+                  );
+                },
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.arrow_back_ios, size: 16.0),
                 ),
               ),
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  _scrollController.animateTo(
+                    _scrollController.offset + 400.0,
+                    curve: Curves.easeOut,
+                    duration: const Duration(milliseconds: 300),
+                  );
+                },
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.arrow_forward_ios, size: 16.0),
@@ -75,14 +92,17 @@ class HomeSlate extends StatelessWidget {
       child: Container(
         height: 170.0,
         child: ListView.builder(
+          controller: _scrollController,
           scrollDirection: Axis.horizontal,
           padding: EdgeInsets.symmetric(horizontal: 16.0),
-          itemCount: tiles.length,
+          itemCount: widget.tiles.length,
           itemBuilder: (context, index) {
-            return SlateTile(data: tiles[index]);
+            return SlateTile(data: widget.tiles[index]);
           },
         ),
       ),
     );
   }
+
+  ScrollController _scrollController = new ScrollController();
 }
