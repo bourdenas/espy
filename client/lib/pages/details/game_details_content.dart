@@ -4,7 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/widgets/game_tags.dart';
+import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 
 class GameDetailsContent extends StatelessWidget {

@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/widgets/game_chips.dart';
+import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -97,7 +97,7 @@ class TagsTileBar extends StatelessWidget {
           for (final tag in entry.userData.tags)
             Padding(
               padding: const EdgeInsets.all(2),
-              child: TagChip(tag: tag),
+              child: TagChip(tag),
             ),
         ],
       ),
