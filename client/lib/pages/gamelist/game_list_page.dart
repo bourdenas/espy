@@ -3,6 +3,7 @@ import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/gamelist/game_list_view.dart';
 import 'package:espy/pages/gamelist/game_grid_view.dart';
+import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
@@ -27,7 +28,7 @@ class _GameListPageState extends State<GameListPage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('Games'),
+        title: GameChipsFilter(filter),
         backgroundColor: Colors.black.withOpacity(0.6),
         elevation: 0.0,
       ),

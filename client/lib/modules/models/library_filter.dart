@@ -16,6 +16,13 @@ class LibraryFilter {
   Set<String> tags;
   Set<String> stores;
 
+  bool get isEmpty =>
+      titleSearch.isEmpty &&
+      companies.isEmpty &&
+      collections.isEmpty &&
+      tags.isEmpty &&
+      stores.isEmpty;
+
   bool get isNotEmpty =>
       titleSearch.isNotEmpty ||
       companies.isNotEmpty ||

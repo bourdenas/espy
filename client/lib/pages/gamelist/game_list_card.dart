@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/widgets/game_tags.dart';
+import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 
 class GameListCard extends StatelessWidget {
