@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SlateTileData {
-  const SlateTileData({this.id, this.title, this.image});
+  const SlateTileData({this.title, this.image, required this.onTap});
 
-  final String? id;
   final String? title;
   final String? image;
+  final VoidCallback onTap;
 }
 
 class SlateTile extends StatelessWidget {
@@ -23,9 +23,7 @@ class SlateTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.only(right: 8.0),
       child: InkWell(
-        onTap: () {
-          Navigator.pushNamed(context, '/details', arguments: data.id);
-        },
+        onTap: data.onTap,
         child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
           child: Stack(

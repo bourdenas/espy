@@ -1,4 +1,5 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/dialogs/matching_dialog.dart';
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
@@ -32,9 +33,13 @@ class HomeContent extends StatelessWidget {
       final entries = model
           .getEntries(filter)
           .take(appConfig.isMobile(context) ? 8 : 32)
-          .map((e) => SlateTileData(
-              id: '${e.id}',
-              image: '${Urls.imageProvider}/t_cover_big/${e.cover}.jpg'))
+          .map(
+            (entry) => SlateTileData(
+              image: '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+              onTap: () => Navigator.pushNamed(context, '/details',
+                  arguments: '${entry.id}'),
+            ),
+          )
           .toList();
       return _SlateInfo(title: title, filter: filter, entries: entries);
     }
@@ -72,7 +77,11 @@ class HomeContent extends StatelessWidget {
               onExpand: () => Navigator.pushNamed(context, 'unmatched'),
               tiles: unmatchedEntries
                   .take(appConfig.isMobile(context) ? 8 : 32)
-                  .map((e) => SlateTileData(title: e.title, image: null))
+                  .map((entry) => SlateTileData(
+                        title: entry.title,
+                        image: null,
+                        onTap: () => MatchingDialog.show(context, entry),
+                      ))
                   .toList(),
             ),
           SizedBox(height: 30.0),

@@ -6,60 +6,70 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class StoreEntryEditDialog extends StatelessWidget {
-  static Future<void> show(BuildContext context, StoreEntry entry) async {
+class MatchingDialog extends StatefulWidget {
+  static void show(BuildContext context, StoreEntry entry) {
     showDialog(
       context: context,
-      builder: (context) => StoreEntryEditDialog(entry),
+      builder: (context) => MatchingDialog(entry),
     );
   }
 
   final StoreEntry storeEntry;
 
-  StoreEntryEditDialog(this.storeEntry);
+  MatchingDialog(this.storeEntry);
+
+  @override
+  State<MatchingDialog> createState() => _MatchingDialogState();
+}
+
+class _MatchingDialogState extends State<MatchingDialog>
+    with SingleTickerProviderStateMixin {
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 450));
+    _scalingAnimation = CurvedAnimation(
+        parent: _animationController, curve: Curves.elasticInOut);
+    _animationController.addListener(() {
+      setState(() {});
+    });
+    _animationController.forward();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      content: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            right: -40.0,
-            top: -40.0,
-            child: InkResponse(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: CircleAvatar(
-                child: Icon(Icons.close),
-              ),
-            ),
-          ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: TextEditingController()..text = storeEntry.title,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: 'Title',
-                    floatingLabelBehavior: FloatingLabelBehavior.auto,
-                  ),
+    return ScaleTransition(
+      scale: _scalingAnimation,
+      child: AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: TextEditingController()
+                  ..text = widget.storeEntry.title,
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'Title',
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: _GameMatchTextField(storeEntry),
-              ),
-            ],
-          ),
-        ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: _GameMatchTextField(widget.storeEntry),
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  late AnimationController _animationController;
+  late Animation<double> _scalingAnimation;
 }
 
 class _GameMatchTextField extends StatefulWidget {
