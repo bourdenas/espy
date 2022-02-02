@@ -170,7 +170,7 @@ class GameLibraryModel extends ChangeNotifier {
     await FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
-        .collection('unknown')
+        .collection('unmatched')
         .doc(storeEntry.id.toString())
         .set(storeEntry.toJson());
 
