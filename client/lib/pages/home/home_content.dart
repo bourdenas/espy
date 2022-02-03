@@ -1,5 +1,5 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/dialogs/matching_dialog.dart';
+import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
@@ -80,7 +80,7 @@ class HomeContent extends StatelessWidget {
                   .map((entry) => SlateTileData(
                         title: entry.title,
                         image: null,
-                        onTap: () => MatchingDialog.show(context, entry),
+                        onTap: () => SearchMatch.show(context, entry),
                       ))
                   .toList(),
             ),
