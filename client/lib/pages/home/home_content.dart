@@ -74,7 +74,7 @@ class HomeContent extends StatelessWidget {
           if (unmatchedEntries.isNotEmpty)
             HomeSlate(
               title: 'Unmatched Entries',
-              onExpand: () => Navigator.pushNamed(context, 'unmatched'),
+              onExpand: () => Navigator.pushNamed(context, '/unmatched'),
               tiles: unmatchedEntries
                   .take(appConfig.isMobile(context) ? 8 : 32)
                   .map((entry) => SlateTileData(

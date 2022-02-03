@@ -3,6 +3,7 @@ import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/gamelist/game_list_page.dart';
 import 'package:espy/pages/login_page.dart';
 import 'package:espy/pages/top_level_page.dart';
+import 'package:espy/pages/unmatched/unmatched_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
@@ -32,14 +33,6 @@ class EspyMaterialApp extends StatelessWidget {
           return Scaffold();
         },
       ),
-      // routes: {
-      //   '/games': (context) {
-      //     return GameListPage();
-      //   },
-      //   '/profile': (context) {
-      //     return ProfilePage();
-      //   },
-      // },
       navigatorObservers: [routeObserver],
       onGenerateRoute: (RouteSettings settings) {
         switch (settings.name) {
@@ -51,6 +44,8 @@ class EspyMaterialApp extends StatelessWidget {
             return MaterialPageRoute(
                 builder: (_) =>
                     GameDetailsPage(id: settings.arguments as String));
+          case '/unmatched':
+            return MaterialPageRoute(builder: (_) => UnmatchedPage());
           case '/profile':
             return MaterialPageRoute(builder: (_) => ProfilePage());
           default:
