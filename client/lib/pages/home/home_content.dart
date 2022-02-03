@@ -80,7 +80,7 @@ class HomeContent extends StatelessWidget {
                   .map((entry) => SlateTileData(
                         title: entry.title,
                         image: null,
-                        onTap: () => SearchMatch.show(context, entry),
+                        onTap: () => MatchingDialog.show(context, entry),
                       ))
                   .toList(),
             ),
