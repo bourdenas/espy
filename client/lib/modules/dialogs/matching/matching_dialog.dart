@@ -1,5 +1,4 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/dialogs/matching/matching_text_field.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
@@ -33,16 +32,6 @@ class _SearchMatchState extends State<SearchMatch> {
 
   Future<List<GameEntry>> _fetchMatches(String text) async {
     return context.read<GameLibraryModel>().searchByTitle(text);
-
-    // ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    // if (entries.isEmpty) {
-    //   ScaffoldMessenger.of(context)
-    //       .showSnackBar(SnackBar(content: Text('No matches were found.')));
-    // }
-    // setState(() {
-    //   _matchOverlay = _createMatchSuggestions(entries);
-    //   Overlay.of(context)!.insert(_matchOverlay!);
-    // });
   }
 }
 
@@ -62,8 +51,11 @@ class _MatchingDialogState extends State<MatchingDialog>
   void initState() {
     super.initState();
 
+    matches = widget.matches;
+
+    _matchController.text = widget.storeEntry.title;
     _animationController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 450));
+        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
     _scalingAnimation = CurvedAnimation(
         parent: _animationController, curve: Curves.elasticInOut);
     _animationController.addListener(() {
@@ -71,6 +63,14 @@ class _MatchingDialogState extends State<MatchingDialog>
     });
     _animationController.forward();
   }
+
+  @override
+  void dispose() {
+    _matchController.dispose();
+    super.dispose();
+  }
+
+  late Future<List<GameEntry>> matches;
 
   @override
   Widget build(BuildContext context) {
@@ -95,10 +95,22 @@ class _MatchingDialogState extends State<MatchingDialog>
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: MatchingTextField(widget.storeEntry),
+              child: TextField(
+                onSubmitted: (text) => setState(() {
+                  matches =
+                      context.read<GameLibraryModel>().searchByTitle(text);
+                }),
+                controller: _matchController,
+                focusNode: _matchFocusNode,
+                autofocus: true,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'match...',
+                ),
+              ),
             ),
             FutureBuilder(
-                future: widget.matches,
+                future: matches,
                 builder: (context, snapshot) {
                   Widget result = HomeSlate(title: 'Matches', tiles: [
                     for (var i = 0; i < 5; ++i) SlateTileData(),
@@ -106,6 +118,12 @@ class _MatchingDialogState extends State<MatchingDialog>
 
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     print('Looking up for matches...');
+                    Future.delayed(Duration.zero, () {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Looking up for matches...'),
+                        duration: Duration(seconds: 10),
+                      ));
+                    });
                   } else if (snapshot.hasError) {
                     result = Center(
                       child: Text('Something went wrong: ${snapshot.error}'),
@@ -114,6 +132,10 @@ class _MatchingDialogState extends State<MatchingDialog>
                     result = Center(child: Text('No data'));
                   } else if (snapshot.connectionState == ConnectionState.done &&
                       snapshot.hasData) {
+                    Future.delayed(Duration.zero, () {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                    });
+
                     final gameEntries = snapshot.data! as List<GameEntry>;
                     final tiles = gameEntries
                         .map((gameEntry) => SlateTileData(
@@ -141,6 +163,9 @@ class _MatchingDialogState extends State<MatchingDialog>
       ),
     );
   }
+
+  final TextEditingController _matchController = TextEditingController();
+  final FocusNode _matchFocusNode = FocusNode();
 
   late AnimationController _animationController;
   late Animation<double> _scalingAnimation;
