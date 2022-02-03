@@ -1,5 +1,5 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/dialogs/matching_dialog.dart';
+import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
@@ -74,7 +74,7 @@ class HomeContent extends StatelessWidget {
           if (unmatchedEntries.isNotEmpty)
             HomeSlate(
               title: 'Unmatched Entries',
-              onExpand: () => Navigator.pushNamed(context, 'unmatched'),
+              onExpand: () => Navigator.pushNamed(context, '/unmatched'),
               tiles: unmatchedEntries
                   .take(appConfig.isMobile(context) ? 8 : 32)
                   .map((entry) => SlateTileData(
