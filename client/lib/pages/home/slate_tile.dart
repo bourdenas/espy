@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SlateTileData {
-  const SlateTileData({this.title, this.image, required this.onTap});
+  const SlateTileData({this.title, this.image, this.onTap});
 
   final String? title;
   final String? image;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 }
 
 class SlateTile extends StatelessWidget {
@@ -38,7 +38,7 @@ class SlateTile extends StatelessWidget {
                 )
               else
                 SizedBox(
-                    width: 128,
+                    width: 120,
                     child: Center(
                       child: Icon(Icons.help_outline),
                     )),
@@ -47,7 +47,7 @@ class SlateTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Container(
-                      width: 128,
+                      width: 120,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(data.title!),

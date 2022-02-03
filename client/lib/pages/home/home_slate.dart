@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 
 class HomeSlate extends StatefulWidget {
   final String title;
-  final Function() onExpand;
+  final VoidCallback? onExpand;
   final List<SlateTileData> tiles;
 
   const HomeSlate({
     Key? key,
     required this.title,
-    required this.onExpand,
+    this.onExpand,
     required this.tiles,
   }) : super(key: key);
 
