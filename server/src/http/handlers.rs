@@ -39,12 +39,27 @@ pub async fn post_recon(
 ) -> Result<impl warp::Reply, Infallible> {
     println!("POST /library/{}/recon", &user_id);
 
-    let mgr = library::LibraryManager::new(&user_id, firestore);
+    let mgr = library::LibraryManager::new(&user_id, Arc::clone(&firestore));
     match mgr
         .manual_recon(Reconciler::new(igdb), recon.store_entry, recon.game_entry)
         .await
     {
-        Ok(()) => Ok(StatusCode::OK),
+        Ok(()) => {
+            let mut user = match User::new(firestore, &user_id) {
+                Ok(user) => user,
+                Err(e) => {
+                    eprintln!("POST /library/{}/settings: {}", &user_id, e);
+                    return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+                }
+            };
+            match user.update_version() {
+                Ok(_) => Ok(StatusCode::OK),
+                Err(status) => {
+                    eprintln!("{}", status);
+                    Ok(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(err) => {
             eprintln!("{}", err);
             Ok(StatusCode::INTERNAL_SERVER_ERROR)

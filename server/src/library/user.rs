@@ -81,6 +81,18 @@ impl User {
         Ok(())
     }
 
+    pub fn update_version(&mut self) -> Result<(), Status> {
+        self.data.version = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("SystemTime set before UNIX EPOCH!")
+            .as_millis() as u64;
+        if let Err(e) = self.save() {
+            return Err(Status::internal("User.sync:", e));
+        }
+
+        Ok(())
+    }
+
     /// Synchronises user library with connected storefronts to retrieve
     /// updates.
     ///
@@ -120,11 +132,7 @@ impl User {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.sync_library(steam_api, gog_api, egs_api).await?;
 
-        self.data.version = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("SystemTime set before UNIX EPOCH!")
-            .as_millis() as u64;
-        if let Err(e) = self.save() {
+        if let Err(e) = self.update_version() {
             return Err(Status::internal("User.sync:", e));
         }
 
