@@ -55,6 +55,8 @@ class SlateTile extends StatelessWidget {
                     ),
                   ],
                 ),
+              if (data.image == null && data.title == null)
+                PlaceholderShimmer(),
             ],
           ),
         ),

@@ -100,13 +100,16 @@ class _MatchingDialogState extends State<MatchingDialog>
             FutureBuilder(
                 future: widget.matches,
                 builder: (context, snapshot) {
-                  Widget result = HomeSlate(title: 'Matches', tiles: []);
+                  Widget result = HomeSlate(title: 'Matches', tiles: [
+                    for (var i = 0; i < 5; ++i) SlateTileData(),
+                  ]);
 
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     print('Looking up for matches...');
                   } else if (snapshot.hasError) {
                     result = Center(
-                        child: Text('Something went wrong: ${snapshot.error}'));
+                      child: Text('Something went wrong: ${snapshot.error}'),
+                    );
                   } else if (!snapshot.hasData) {
                     result = Center(child: Text('No data'));
                   } else if (snapshot.connectionState == ConnectionState.done &&
