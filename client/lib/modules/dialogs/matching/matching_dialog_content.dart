@@ -86,7 +86,22 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                           title: gameEntry.name,
                           image: gameEntry.cover != null
                               ? '${Urls.imageProvider}/t_cover_big/${gameEntry.cover!.imageId}.jpg'
-                              : null))
+                              : null,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text('Matching in progress...')));
+                            context
+                                .read<GameLibraryModel>()
+                                .matchEntry(widget.storeEntry, gameEntry)
+                                .then((success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(success
+                                          ? 'Matched successfully.'
+                                          : 'Failed to apply match.')));
+                            });
+                            Navigator.of(context).pop();
+                          }))
                       .toList();
 
                   result = tiles.isNotEmpty
