@@ -1,8 +1,8 @@
-import 'package:espy/widgets/dialogs/search_dialog_field.dart';
+import 'package:espy/modules/dialogs/search/search_dialog_field.dart';
 import 'package:flutter/material.dart';
 
 class SearchDialog extends StatelessWidget {
-  static Future<void> show(BuildContext context) async {
+  static void show(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => SearchDialog(),
