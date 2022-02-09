@@ -1,7 +1,6 @@
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/routing/library_filter.dart';
-import 'package:espy/modules/routing/espy_router_delegate.dart';
+import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/widgets/autocomplete_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -31,12 +30,14 @@ class SearchDialogField extends StatelessWidget {
               .map(
                 (store) => Suggestion(
                   text: store,
-                  icon: Icon(Icons.storefront),
+                  icon: Icon(
+                    Icons.storefront,
+                    color: Colors.deepPurpleAccent,
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    context
-                        .read<EspyRouterDelegate>()
-                        .showFilter(LibraryFilter()..stores.add(store));
+                    Navigator.pushNamed(context, '/games',
+                        arguments: LibraryFilter(stores: {store}).encode());
                   },
                 ),
               ),
@@ -53,12 +54,14 @@ class SearchDialogField extends StatelessWidget {
               .map(
                 (tag) => Suggestion(
                   text: tag,
-                  icon: Icon(Icons.tag),
+                  icon: Icon(
+                    Icons.tag,
+                    color: Colors.blueGrey,
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    context
-                        .read<EspyRouterDelegate>()
-                        .showFilter(LibraryFilter()..tags.add(tag));
+                    Navigator.pushNamed(context, '/games',
+                        arguments: LibraryFilter(tags: {tag}).encode());
                   },
                 ),
               ),
@@ -75,10 +78,9 @@ class SearchDialogField extends StatelessWidget {
                   text: entry.name,
                   icon: Icon(Icons.games),
                   onTap: () {
-                    context
-                        .read<EspyRouterDelegate>()
-                        .showGameDetails('${entry.id}');
                     Navigator.of(context).pop();
+                    Navigator.pushNamed(context, '/details',
+                        arguments: '${entry.id}');
                   },
                 ),
               ),
@@ -93,11 +95,15 @@ class SearchDialogField extends StatelessWidget {
               .map(
                 (collection) => Suggestion(
                   text: collection.name,
-                  icon: Icon(Icons.circle),
+                  icon: Icon(
+                    Icons.circle,
+                    color: Colors.indigoAccent,
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    context.read<EspyRouterDelegate>().showFilter(
-                        LibraryFilter()..collections.add(collection));
+                    Navigator.pushNamed(context, '/games',
+                        arguments:
+                            LibraryFilter(collections: {collection}).encode());
                   },
                 ),
               ),
@@ -112,12 +118,15 @@ class SearchDialogField extends StatelessWidget {
               .map(
                 (company) => Suggestion(
                   text: company.name,
-                  icon: Icon(Icons.business),
+                  icon: Icon(
+                    Icons.business,
+                    color: Colors.redAccent,
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    context
-                        .read<EspyRouterDelegate>()
-                        .showFilter(LibraryFilter()..companies.add(company));
+                    Navigator.pushNamed(context, '/games',
+                        arguments:
+                            LibraryFilter(companies: {company}).encode());
                   },
                 ),
               ),
