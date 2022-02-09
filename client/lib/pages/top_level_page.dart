@@ -1,4 +1,6 @@
 import 'package:espy/dialogs/settings_dialog.dart';
+import 'package:espy/modules/dialogs/search/search_dialog.dart';
+import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/pages/home/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -39,39 +41,48 @@ class _TopLevelPageState extends State<TopLevelPage>
   Widget build(BuildContext context) {
     return Material(
       color: Color(0xFF26262F),
-      child: AnimatedBuilder(
-          animation: _drawerTween,
-          builder: (context, _) {
-            double slide = 300.0 * _drawerTween.value;
-            double scale = 1.0 - (_drawerTween.value * 0.25);
-            double radius = _drawerTween.value * 30.0;
-            double rotate = _drawerTween.value * -0.139626;
+      child: Actions(
+        actions: {
+          SearchIntent: CallbackAction<SearchIntent>(
+              onInvoke: (intent) => SearchDialog.show(context)),
+        },
+        child: Focus(
+          autofocus: true,
+          child: AnimatedBuilder(
+              animation: _drawerTween,
+              builder: (context, _) {
+                double slide = 300.0 * _drawerTween.value;
+                double scale = 1.0 - (_drawerTween.value * 0.25);
+                double radius = _drawerTween.value * 30.0;
+                double rotate = _drawerTween.value * -0.139626;
 
-            return Stack(
-              children: [
-                Container(
-                  width: 220.0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: _sideMenu(context),
-                  ),
-                ),
-                Transform(
-                  transform: Matrix4.identity()
-                    ..translate(slide)
-                    ..scale(scale)
-                    ..rotateZ(rotate),
-                  alignment: Alignment.centerLeft,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(radius),
-                    child: HomePage(() {
-                      _drawerAnimationController.forward();
-                    }),
-                  ),
-                ),
-              ],
-            );
-          }),
+                return Stack(
+                  children: [
+                    Container(
+                      width: 220.0,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: _sideMenu(context),
+                      ),
+                    ),
+                    Transform(
+                      transform: Matrix4.identity()
+                        ..translate(slide)
+                        ..scale(scale)
+                        ..rotateZ(rotate),
+                      alignment: Alignment.centerLeft,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(radius),
+                        child: HomePage(() {
+                          _drawerAnimationController.forward();
+                        }),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+        ),
+      ),
     );
   }
 
