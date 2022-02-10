@@ -1,4 +1,5 @@
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
@@ -18,22 +19,50 @@ class SearchResults extends StatelessWidget {
     final storeChips = context
         .read<GameTagsModel>()
         .filterStores(searchTerms)
-        .map((store) => StoreChip(store))
+        .map((store) => StoreChip(
+              store,
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/games',
+                arguments: LibraryFilter(stores: {store}).encode(),
+              ),
+            ))
         .toList();
     final tagChips = context
         .read<GameTagsModel>()
         .filterTags(searchTerms)
-        .map((tag) => TagChip(tag))
+        .map((tag) => TagChip(
+              tag,
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/games',
+                arguments: LibraryFilter(tags: {tag}).encode(),
+              ),
+            ))
         .toList();
     final companyChips = context
         .read<GameTagsModel>()
         .filterCompanies(searchTerms)
-        .map((company) => CompanyChip(company))
+        .map((company) => CompanyChip(
+              company,
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/games',
+                arguments: LibraryFilter(companies: {company}).encode(),
+              ),
+            ))
         .toList();
     final collectionChips = context
         .read<GameTagsModel>()
         .filterCollections(searchTerms)
-        .map((collection) => CollectionChip(collection))
+        .map((collection) => CollectionChip(
+              collection,
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/games',
+                arguments: LibraryFilter(collections: {collection}).encode(),
+              ),
+            ))
         .toList();
 
     return Column(
