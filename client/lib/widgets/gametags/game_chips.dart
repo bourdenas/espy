@@ -1,5 +1,4 @@
 import 'package:espy/modules/documents/annotation.dart';
-import 'package:espy/modules/documents/store_entry.dart';
 import 'package:flutter/material.dart';
 
 class CompanyChip extends EspyChip {

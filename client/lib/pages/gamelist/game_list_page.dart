@@ -1,3 +1,6 @@
+import 'package:espy/modules/dialogs/search/search_dialog.dart';
+import 'package:espy/modules/intents/home_intent.dart';
+import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
@@ -25,16 +28,28 @@ class _GameListPageState extends State<GameListPage> {
     final entries =
         context.watch<GameEntriesModel>().getEntries(filter).toList();
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: GameChipsFilter(filter),
-        backgroundColor: Colors.black.withOpacity(0.6),
-        elevation: 0.0,
+    return Actions(
+      actions: {
+        SearchIntent: CallbackAction<SearchIntent>(
+            onInvoke: (intent) => SearchDialog.show(context)),
+        HomeIntent: CallbackAction<HomeIntent>(onInvoke: (intent) {
+          Navigator.pushNamed(context, '/home');
+        }),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            title: GameChipsFilter(filter),
+            backgroundColor: Colors.black.withOpacity(0.6),
+            elevation: 0.0,
+          ),
+          body: appConfig.isMobile(context)
+              ? GameListView(entries: entries)
+              : GameGridView(entries: entries),
+        ),
       ),
-      body: appConfig.isMobile(context)
-          ? GameListView(entries: entries)
-          : GameGridView(entries: entries),
     );
   }
 }

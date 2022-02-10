@@ -1,5 +1,8 @@
+import 'package:espy/modules/dialogs/search/search_dialog.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/home/home_content.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/src/provider.dart';
 
 class HomePage extends StatefulWidget {
   final Function _showMenu;
@@ -49,7 +52,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       builder: (context, _) {
         return Scaffold(
           extendBodyBehindAppBar: true,
-          appBar: _appBar(),
+          appBar: _appBar(context),
           body: NotificationListener<ScrollNotification>(
             onNotification: _scrollListener,
             child: HomeContent(),
@@ -59,7 +62,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  AppBar _appBar() {
+  AppBar _appBar(BuildContext context) {
+    final isMobile = context.watch<AppConfigModel>().isMobile(context);
+
     return AppBar(
       toolbarOpacity: 0.6,
       leading: IconButton(
@@ -82,7 +87,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           key: Key('searchButton'),
           icon: Icon(Icons.search),
           splashRadius: 20.0,
-          onPressed: () => Navigator.pushNamed(context, '/search'),
+          onPressed: () => isMobile
+              ? Navigator.pushNamed(context, '/search')
+              : SearchDialog.show(context),
         )
       ],
       backgroundColor: _colorTween.value,
