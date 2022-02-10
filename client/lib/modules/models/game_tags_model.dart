@@ -20,6 +20,35 @@ class GameTagsModel extends ChangeNotifier {
   UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
   UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
 
+  Iterable<Annotation> filterCompanies(Iterable<String> terms) {
+    return companies.where((company) => terms.every((term) => company.name
+        .toLowerCase()
+        .split(' ')
+        .any((word) => word.startsWith(term))));
+  }
+
+  Iterable<Annotation> filterCollections(Iterable<String> terms) {
+    return collections.where((collection) => terms.every((term) => collection
+        .name
+        .toLowerCase()
+        .split(' ')
+        .any((word) => word.startsWith(term))));
+  }
+
+  Iterable<String> filterTags(Iterable<String> terms) {
+    return tags.where(
+      (tag) => terms.every((term) =>
+          tag.toLowerCase().split(' ').any((word) => word.startsWith(term))),
+    );
+  }
+
+  Iterable<String> filterStores(Iterable<String> terms) {
+    return stores.where(
+      (store) => terms.every((term) =>
+          store.toLowerCase().split(' ').any((word) => word.startsWith(term))),
+    );
+  }
+
   void update(List<LibraryEntry> entries) {
     _tags.clear();
     for (final entry in entries) {

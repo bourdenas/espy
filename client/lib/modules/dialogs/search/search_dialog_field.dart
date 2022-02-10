@@ -19,13 +19,7 @@ class SearchDialogField extends StatelessWidget {
         return [
           ...context
               .read<GameTagsModel>()
-              .stores
-              .where(
-                (store) => searchTerms.every((term) => store
-                    .toLowerCase()
-                    .split(' ')
-                    .any((word) => word.startsWith(term))),
-              )
+              .filterStores(searchTerms)
               .take(4)
               .map(
                 (store) => Suggestion(
@@ -41,17 +35,7 @@ class SearchDialogField extends StatelessWidget {
                   },
                 ),
               ),
-          ...context
-              .read<GameTagsModel>()
-              .tags
-              .where(
-                (tag) => searchTerms.every((term) => tag
-                    .toLowerCase()
-                    .split(' ')
-                    .any((word) => word.startsWith(term))),
-              )
-              .take(4)
-              .map(
+          ...context.read<GameTagsModel>().filterTags(searchTerms).take(4).map(
                 (tag) => Suggestion(
                   text: tag,
                   icon: Icon(
@@ -86,11 +70,7 @@ class SearchDialogField extends StatelessWidget {
               ),
           ...context
               .read<GameTagsModel>()
-              .collections
-              .where((collection) => searchTerms.every((term) => collection.name
-                  .toLowerCase()
-                  .split(' ')
-                  .any((word) => word.startsWith(term))))
+              .filterCollections(searchTerms)
               .take(4)
               .map(
                 (collection) => Suggestion(
@@ -109,11 +89,7 @@ class SearchDialogField extends StatelessWidget {
               ),
           ...context
               .read<GameTagsModel>()
-              .companies
-              .where((company) => searchTerms.every((term) => company.name
-                  .toLowerCase()
-                  .split(' ')
-                  .any((word) => word.startsWith(term))))
+              .filterCompanies(searchTerms)
               .take(4)
               .map(
                 (company) => Suggestion(
