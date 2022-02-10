@@ -1,11 +1,48 @@
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/pages/gamelist/game_list_card.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
-class SearchResults extends StatelessWidget {
-  const SearchResults({
+class GameSearchResults extends StatelessWidget {
+  const GameSearchResults({
+    Key? key,
+    required this.query,
+  }) : super(key: key);
+
+  final String query;
+
+  @override
+  Widget build(BuildContext context) {
+    final searchTerms = query.toLowerCase().split(' ');
+    final matchedEntries = query.isNotEmpty
+        ? context
+            .read<GameLibraryModel>()
+            .entries
+            .where((entry) => searchTerms.every((term) => entry.name
+                .toLowerCase()
+                .split(' ')
+                .any((word) => word.startsWith(term))))
+            .toList()
+        : [];
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          return GameListCard(
+            entry: matchedEntries[index],
+          );
+        },
+        childCount: matchedEntries.length,
+      ),
+    );
+  }
+}
+
+class TagSearchResults extends StatelessWidget {
+  const TagSearchResults({
     Key? key,
     required this.query,
   }) : super(key: key);
@@ -65,39 +102,42 @@ class SearchResults extends StatelessWidget {
             ))
         .toList();
 
-    return Column(
-      children: [
-        if (tagChips.isNotEmpty)
-          ChipResults(
-            title: 'Tags',
-            color: Colors.blueGrey,
-            chips: tagChips,
-          ),
-        if (storeChips.isNotEmpty)
-          ChipResults(
-            title: 'Stores',
-            color: Colors.deepPurpleAccent,
-            chips: storeChips,
-          ),
-        if (companyChips.isNotEmpty)
-          ChipResults(
-            title: 'Companies',
-            color: Colors.redAccent,
-            chips: companyChips,
-          ),
-        if (collectionChips.isNotEmpty)
-          ChipResults(
-            title: 'Collections',
-            color: Colors.indigoAccent,
-            chips: collectionChips,
-          ),
-      ],
+    return SliverFixedExtentList(
+      itemExtent: 90.0,
+      delegate: SliverChildListDelegate(
+        [
+          if (tagChips.isNotEmpty)
+            _ChipResults(
+              title: 'Tags',
+              color: Colors.blueGrey,
+              chips: tagChips,
+            ),
+          if (storeChips.isNotEmpty)
+            _ChipResults(
+              title: 'Stores',
+              color: Colors.deepPurpleAccent,
+              chips: storeChips,
+            ),
+          if (companyChips.isNotEmpty)
+            _ChipResults(
+              title: 'Companies',
+              color: Colors.redAccent,
+              chips: companyChips,
+            ),
+          if (collectionChips.isNotEmpty)
+            _ChipResults(
+              title: 'Collections',
+              color: Colors.indigoAccent,
+              chips: collectionChips,
+            ),
+        ],
+      ),
     );
   }
 }
 
-class ChipResults extends StatelessWidget {
-  const ChipResults({
+class _ChipResults extends StatelessWidget {
+  const _ChipResults({
     Key? key,
     required this.title,
     required this.chips,
@@ -111,23 +151,23 @@ class ChipResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 16.0),
+      padding: EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: [
           Row(
             children: [
               Text(
-                'Search Result for ',
+                'Results for ',
                 style: TextStyle(
                   fontSize: 16.0,
                 ),
               ),
               Text(
                 title,
-                style: Theme.of(context)
-                    .textTheme
-                    .headline6
-                    ?.copyWith(color: color),
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: color,
+                ),
               )
             ],
           ),
