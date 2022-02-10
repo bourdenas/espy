@@ -5,6 +5,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/gamelist/game_list_page.dart';
 import 'package:espy/pages/login_page.dart';
+import 'package:espy/pages/search/search_page.dart';
 import 'package:espy/pages/top_level_page.dart';
 import 'package:espy/pages/unmatched/unmatched_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -64,6 +65,11 @@ class EspyMaterialApp extends StatelessWidget {
               return MaterialPageRoute(
                 builder: (_) =>
                     GameDetailsPage(id: settings.arguments as String),
+                settings: settings,
+              );
+            case '/search':
+              return MaterialPageRoute(
+                builder: (_) => SearchPage(),
                 settings: settings,
               );
             case '/unmatched':
