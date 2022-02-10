@@ -42,14 +42,6 @@ class _SearchTextFieldState extends State<SearchTextField> {
             cursorColor: Colors.white,
           ),
         ),
-        SizedBox(width: 16.0),
-        Expanded(
-          child: IconButton(
-            icon: Icon(Icons.filter_alt_outlined),
-            onPressed: () {},
-            splashRadius: 20.0,
-          ),
-        ),
       ],
     );
   }
