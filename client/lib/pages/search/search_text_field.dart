@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class SearchTextField extends StatelessWidget {
+class SearchTextField extends StatefulWidget {
   SearchTextField({
     Key? key,
     required this.onChanged,
@@ -9,6 +9,11 @@ class SearchTextField extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   @override
+  State<SearchTextField> createState() => _SearchTextFieldState();
+}
+
+class _SearchTextFieldState extends State<SearchTextField> {
+  @override
   Widget build(BuildContext context) {
     return Row(
       children: [
@@ -16,8 +21,9 @@ class SearchTextField extends StatelessWidget {
           flex: 6,
           child: TextField(
             key: Key('searchTextField'),
+            autofocus: true,
             controller: _searchController,
-            onChanged: onChanged,
+            onChanged: widget.onChanged,
             decoration: InputDecoration(
               hintText: 'Search...',
               prefixIcon: Icon(
