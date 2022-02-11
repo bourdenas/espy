@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/dialogs/edit/entry_edit_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
@@ -53,7 +54,7 @@ class GameDetailsContent extends StatelessWidget {
                     style: Theme.of(context).textTheme.headline4,
                   ),
                   SizedBox(height: 8.0),
-                  actionBar(),
+                  actionBar(context),
                   SizedBox(height: 16.0),
                   GameTags(libraryEntry),
                   SizedBox(height: 16.0),
@@ -106,7 +107,7 @@ class GameDetailsContent extends StatelessWidget {
     );
   }
 
-  Row actionBar() {
+  Row actionBar(BuildContext context) {
     return Row(
       children: [
         Container(
@@ -130,7 +131,7 @@ class GameDetailsContent extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: () {},
+              onPressed: () => EntryEditDialog.show(context, libraryEntry),
               icon: Icon(
                 Icons.edit,
                 size: 24.0,

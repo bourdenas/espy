@@ -6,16 +6,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
 class MatchingDialog extends StatefulWidget {
-  static void show(BuildContext context, StoreEntry entry) {
+  static void show(
+    BuildContext context,
+    StoreEntry storeEntry, {
+    void Function(GameEntry)? onMatch,
+  }) {
     showDialog(
       context: context,
-      builder: (context) => MatchingDialog(storeEntry: entry),
+      builder: (context) => MatchingDialog(
+        storeEntry: storeEntry,
+        onMatch: onMatch,
+      ),
     );
   }
 
-  const MatchingDialog({Key? key, required this.storeEntry}) : super(key: key);
+  const MatchingDialog({
+    Key? key,
+    required this.storeEntry,
+    this.onMatch,
+  }) : super(key: key);
 
   final StoreEntry storeEntry;
+  final void Function(GameEntry)? onMatch;
 
   @override
   State<MatchingDialog> createState() => _MatchingDialogState();
@@ -30,17 +42,17 @@ class _MatchingDialogState extends State<MatchingDialog> {
   Widget build(BuildContext context) {
     return MatchingDialogAnimation(
         widget.storeEntry,
-        context
-            .read<GameLibraryModel>()
-            .searchByTitle(widget.storeEntry.title));
+        context.read<GameLibraryModel>().searchByTitle(widget.storeEntry.title),
+        widget.onMatch);
   }
 }
 
 class MatchingDialogAnimation extends StatefulWidget {
-  MatchingDialogAnimation(this.storeEntry, this.matches);
+  MatchingDialogAnimation(this.storeEntry, this.matches, this.onMatch);
 
   final StoreEntry storeEntry;
   final Future<List<GameEntry>> matches;
+  final void Function(GameEntry)? onMatch;
 
   @override
   State<MatchingDialogAnimation> createState() =>
@@ -67,7 +79,11 @@ class _MatchingDialogAnimationState extends State<MatchingDialogAnimation>
   Widget build(BuildContext context) {
     return ScaleTransition(
       scale: _scalingAnimation,
-      child: MatchingDialogContent(widget.storeEntry, widget.matches),
+      child: MatchingDialogContent(
+        widget.storeEntry,
+        widget.matches,
+        onMatch: widget.onMatch,
+      ),
     );
   }
 
