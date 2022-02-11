@@ -8,11 +8,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
 class MatchingDialogContent extends StatefulWidget {
-  const MatchingDialogContent(this.storeEntry, this.matches, {Key? key})
-      : super(key: key);
+  const MatchingDialogContent(
+    this.storeEntry,
+    this.matches, {
+    Key? key,
+    this.onMatch,
+  }) : super(key: key);
 
   final StoreEntry storeEntry;
   final Future<List<GameEntry>> matches;
+  final void Function(GameEntry)? onMatch;
 
   @override
   State<MatchingDialogContent> createState() => _MatchingDialogContentState();
@@ -61,7 +66,6 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                 ]);
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  print('Looking up for matches...');
                   Future.delayed(Duration.zero, () {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text('Looking up for matches...'),
@@ -94,6 +98,10 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                                 .read<GameLibraryModel>()
                                 .matchEntry(widget.storeEntry, gameEntry)
                                 .then((success) {
+                              if (success && widget.onMatch != null) {
+                                widget.onMatch!(gameEntry);
+                              }
+
                               ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                       content: Text(success
