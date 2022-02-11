@@ -53,7 +53,7 @@ class GameDetailsContent extends StatelessWidget {
                     style: Theme.of(context).textTheme.headline4,
                   ),
                   SizedBox(height: 8.0),
-                  subtitle(),
+                  actionBar(),
                   SizedBox(height: 16.0),
                   GameTags(libraryEntry),
                   SizedBox(height: 16.0),
@@ -106,7 +106,7 @@ class GameDetailsContent extends StatelessWidget {
     );
   }
 
-  Row subtitle() {
+  Row actionBar() {
     return Row(
       children: [
         Container(
@@ -129,20 +129,32 @@ class GameDetailsContent extends StatelessWidget {
         SizedBox(width: 16.0),
         Row(
           children: [
-            Icon(
-              Icons.favorite_border_outlined,
-              color: Colors.red,
-              size: 24.0,
+            IconButton(
+              onPressed: () {},
+              icon: Icon(
+                Icons.edit,
+                size: 24.0,
+              ),
+              splashRadius: 20.0,
             ),
-            SizedBox(width: 16.0),
-            Container(
-              child: Image.asset('assets/images/gog-128.png'),
-              height: 24.0,
+            IconButton(
+              onPressed: () {},
+              icon: Icon(
+                Icons.favorite_border_outlined,
+                color: Colors.red,
+                size: 24.0,
+              ),
+              splashRadius: 20.0,
             ),
-            SizedBox(width: 16.0),
-            Container(
-              child: Image.asset('assets/images/steam-128.png'),
-              height: 24.0,
+            IconButton(
+              onPressed: () {},
+              icon: Image.asset('assets/images/gog-128.png'),
+              splashRadius: 20.0,
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: Image.asset('assets/images/steam-128.png'),
+              splashRadius: 20.0,
             ),
           ],
         ),
