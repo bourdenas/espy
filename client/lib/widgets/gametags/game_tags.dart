@@ -2,7 +2,6 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
-import 'package:espy/widgets/gametags/game_tags_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,17 +14,16 @@ class GameTags extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        GameChipsWrap(entry),
-        // GameTagsField(entry),
+        _GameChipsWrap(entry),
       ],
     );
   }
 }
 
-class GameChipsWrap extends StatelessWidget {
+class _GameChipsWrap extends StatelessWidget {
   final LibraryEntry entry;
 
-  const GameChipsWrap(this.entry);
+  const _GameChipsWrap(this.entry);
 
   @override
   Widget build(BuildContext context) {

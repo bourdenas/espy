@@ -2,10 +2,14 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:espy/widgets/gametags/game_tags_field.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GameDetailsContent extends StatelessWidget {
   const GameDetailsContent({
@@ -53,9 +57,17 @@ class GameDetailsContent extends StatelessWidget {
                     style: Theme.of(context).textTheme.headline4,
                   ),
                   SizedBox(height: 8.0),
-                  subtitle(),
+                  actionBar(context),
                   SizedBox(height: 16.0),
                   GameTags(libraryEntry),
+                  SizedBox(height: 16.0),
+                  if (!context.watch<AppConfigModel>().isMobile(context))
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GameTagsField(libraryEntry),
+                      ],
+                    ),
                   SizedBox(height: 16.0),
                   Text(
                     gameEntry.summary,
@@ -106,7 +118,7 @@ class GameDetailsContent extends StatelessWidget {
     );
   }
 
-  Row subtitle() {
+  Row actionBar(BuildContext context) {
     return Row(
       children: [
         Container(
@@ -129,20 +141,35 @@ class GameDetailsContent extends StatelessWidget {
         SizedBox(width: 16.0),
         Row(
           children: [
-            Icon(
-              Icons.favorite_border_outlined,
-              color: Colors.red,
-              size: 24.0,
+            IconButton(
+              onPressed: () => context.read<AppConfigModel>().isMobile(context)
+                  ? Navigator.pushNamed(context, '/edit',
+                      arguments: '${libraryEntry.id}')
+                  : EditEntryDialog.show(context, libraryEntry),
+              icon: Icon(
+                Icons.edit,
+                size: 24.0,
+              ),
+              splashRadius: 20.0,
             ),
-            SizedBox(width: 16.0),
-            Container(
-              child: Image.asset('assets/images/gog-128.png'),
-              height: 24.0,
+            IconButton(
+              onPressed: () {},
+              icon: Icon(
+                Icons.favorite_border_outlined,
+                color: Colors.red,
+                size: 24.0,
+              ),
+              splashRadius: 20.0,
             ),
-            SizedBox(width: 16.0),
-            Container(
-              child: Image.asset('assets/images/steam-128.png'),
-              height: 24.0,
+            IconButton(
+              onPressed: () {},
+              icon: Image.asset('assets/images/gog-128.png'),
+              splashRadius: 20.0,
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: Image.asset('assets/images/steam-128.png'),
+              splashRadius: 20.0,
             ),
           ],
         ),
