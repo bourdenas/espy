@@ -2,7 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/dialogs/edit/entry_edit_dialog.dart';
+import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
@@ -139,7 +139,7 @@ class GameDetailsContent extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: () => EntryEditDialog.show(context, libraryEntry),
+              onPressed: () => EditEntryDialog.show(context, libraryEntry),
               icon: Icon(
                 Icons.edit,
                 size: 24.0,
