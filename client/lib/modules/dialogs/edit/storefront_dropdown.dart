@@ -2,62 +2,11 @@ import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/widgets/gametags/game_tags.dart';
-import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class EntryEditDialog extends StatelessWidget {
-  static Future<void> show(BuildContext context, LibraryEntry entry) async {
-    showDialog(
-      context: context,
-      builder: (context) => EntryEditDialog(entry),
-    );
-  }
-
-  final LibraryEntry entry;
-
-  EntryEditDialog(this.entry);
-
-  @override
-  Widget build(BuildContext context) {
-    final release =
-        DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000);
-    return AlertDialog(
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              entry.name,
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ),
-          SizedBox(height: 16.0),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: GameTags(entry),
-          ),
-          SizedBox(height: 16.0),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Card(
-              child: ExpandablePanel(
-                header: Text('Storefronts'),
-                collapsed: Container(),
-                expanded: _StorefrontDropdown(entry),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StorefrontDropdown extends StatefulWidget {
-  _StorefrontDropdown(this.entry);
+class StorefrontDropdown extends StatefulWidget {
+  StorefrontDropdown(this.entry);
 
   final LibraryEntry entry;
 
@@ -66,7 +15,7 @@ class _StorefrontDropdown extends StatefulWidget {
       _StorefrontDropdownState(entry.storeEntries[0]);
 }
 
-class _StorefrontDropdownState extends State<_StorefrontDropdown> {
+class _StorefrontDropdownState extends State<StorefrontDropdown> {
   _StorefrontDropdownState(this.storeEntry);
 
   StoreEntry storeEntry;
