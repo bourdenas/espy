@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/storefront_dropdown.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/choice_tags.dart';
@@ -17,11 +19,26 @@ class EditEntryContent extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        SizedBox(height: 16.0),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(
-            entry.name,
-            style: Theme.of(context).textTheme.headline5,
+          child: Row(
+            children: [
+              CircleAvatar(
+                foregroundImage: CachedNetworkImageProvider(
+                  '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg',
+                ),
+              ),
+              SizedBox(width: 16.0),
+              Expanded(
+                child: Text(
+                  entry.name,
+                  style: Theme.of(context).textTheme.headline5,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(height: 16.0),
