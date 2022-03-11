@@ -2,6 +2,8 @@ import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,30 +29,26 @@ class EntryEditDialog extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: TextEditingController()..text = entry.name,
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: 'Title',
-                floatingLabelBehavior: FloatingLabelBehavior.auto,
-              ),
+            child: Text(
+              entry.name,
+              style: Theme.of(context).textTheme.headline4,
             ),
           ),
+          SizedBox(height: 16.0),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: TextEditingController()
-                ..text = '${release.day}/${release.month}/${release.year} ',
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: 'Release Date',
-                floatingLabelBehavior: FloatingLabelBehavior.auto,
+            child: GameTags(entry),
+          ),
+          SizedBox(height: 16.0),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Card(
+              child: ExpandablePanel(
+                header: Text('Storefronts'),
+                collapsed: Container(),
+                expanded: _StorefrontDropdown(entry),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: _StorefrontDropdown(entry),
           ),
         ],
       ),
