@@ -71,7 +71,7 @@ class HomeContent extends StatelessWidget {
                     arguments: filter.filter.encode()),
                 tiles: filter.entries,
               ),
-          if (unmatchedEntries.isNotEmpty)
+          if (filters.isEmpty && unmatchedEntries.isNotEmpty)
             HomeSlate(
               title: 'Unmatched Entries',
               onExpand: () => Navigator.pushNamed(context, '/unmatched'),

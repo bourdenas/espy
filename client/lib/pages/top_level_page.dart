@@ -164,7 +164,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         ),
         ListTile(
           key: Key('unmatchedListTile'),
-          onTap: () {},
+          onTap: () => Navigator.pushNamed(context, '/unmatched'),
           leading: Icon(Icons.device_unknown),
           title: Text('Unmatched Titles'),
           // selected: data.state == figure out,
