@@ -14,8 +14,8 @@ class GameTagsField extends StatelessWidget {
   Widget build(BuildContext context) {
     return AutocompleteField(
       width: 200,
-      hintText: 'Tag...',
-      icon: Icon(Icons.tag),
+      hintText: 'Label...',
+      icon: Icon(Icons.label),
       createSuggestions: (text) {
         final searchTerms = text.toLowerCase().split(' ');
         return [
@@ -35,6 +35,7 @@ class GameTagsField extends StatelessWidget {
                   onTap: () => _addTag(context, tag),
                 ),
               ),
+          Suggestion(text: text, onTap: () => _addTag(context, text)),
         ];
       },
       onSubmit: (text, suggestion) => _addTag(
