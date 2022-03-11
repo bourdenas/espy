@@ -1,0 +1,73 @@
+import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class ChoiceTags extends StatefulWidget {
+  final LibraryEntry entry;
+
+  ChoiceTags(this.entry);
+
+  @override
+  State<ChoiceTags> createState() => _ChoiceTagsState();
+}
+
+class _ChoiceTagsState extends State<ChoiceTags> {
+  Set<String> selectedTags = {};
+
+  @override
+  Widget build(BuildContext context) {
+    // Forces the widget to rebuild when library entries update (e.g. tags).
+    context.watch<GameLibraryModel>();
+
+    final onSelected = (bool selected, String tag) {
+      setState(() {
+        if (selected)
+          selectedTags.add(tag);
+        else
+          selectedTags.remove(tag);
+
+        widget.entry.userData = GameUserData(tags: selectedTags.toList());
+        context.read<GameLibraryModel>().postDetails(widget.entry);
+      });
+    };
+
+    selectedTags.addAll(widget.entry.userData.tags);
+
+    return Scrollbar(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: 150),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 4.0,
+                children: [
+                  for (final tag in selectedTags)
+                    ChoiceChip(
+                      label: Text(tag),
+                      selected: selectedTags.contains(tag),
+                      selectedColor: Colors.blueGrey,
+                      onSelected: (selected) => onSelected(selected, tag),
+                    ),
+                  for (final tag in context.read<GameTagsModel>().tags)
+                    if (!selectedTags.contains(tag))
+                      ChoiceChip(
+                        label: Text(tag),
+                        selected: false,
+                        selectedColor: Colors.blueGrey,
+                        onSelected: (selected) => onSelected(selected, tag),
+                      ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
