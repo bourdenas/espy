@@ -2,7 +2,6 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
-import 'package:espy/widgets/gametags/game_tags_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +15,6 @@ class GameTags extends StatelessWidget {
     return Column(
       children: [
         GameChipsWrap(entry),
-        // GameTagsField(entry),
       ],
     );
   }

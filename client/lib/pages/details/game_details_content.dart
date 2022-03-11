@@ -6,6 +6,7 @@ import 'package:espy/modules/dialogs/edit/entry_edit_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:espy/widgets/gametags/game_tags_field.dart';
 import 'package:flutter/material.dart';
 
 class GameDetailsContent extends StatelessWidget {
@@ -57,6 +58,13 @@ class GameDetailsContent extends StatelessWidget {
                   actionBar(context),
                   SizedBox(height: 16.0),
                   GameTags(libraryEntry),
+                  SizedBox(height: 16.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GameTagsField(libraryEntry),
+                    ],
+                  ),
                   SizedBox(height: 16.0),
                   Text(
                     gameEntry.summary,
