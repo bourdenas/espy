@@ -40,37 +40,35 @@ class _ChoiceTagsState extends State<ChoiceTags> {
 
     return Column(
       children: [
-        Scrollbar(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 150),
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  Wrap(
-                    spacing: 8.0,
-                    runSpacing: 4.0,
-                    children: [
-                      for (final tag in selectedTags)
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: 150),
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: [
+                    for (final tag in selectedTags)
+                      ChoiceChip(
+                        label: Text(tag),
+                        selected: selectedTags.contains(tag),
+                        selectedColor: Colors.blueGrey,
+                        onSelected: (selected) => onSelected(selected, tag),
+                      ),
+                    for (final tag in filteredTags)
+                      if (!selectedTags.contains(tag))
                         ChoiceChip(
                           label: Text(tag),
-                          selected: selectedTags.contains(tag),
+                          selected: false,
                           selectedColor: Colors.blueGrey,
                           onSelected: (selected) => onSelected(selected, tag),
                         ),
-                      for (final tag in filteredTags)
-                        if (!selectedTags.contains(tag))
-                          ChoiceChip(
-                            label: Text(tag),
-                            selected: false,
-                            selectedColor: Colors.blueGrey,
-                            onSelected: (selected) => onSelected(selected, tag),
-                          ),
-                    ],
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
