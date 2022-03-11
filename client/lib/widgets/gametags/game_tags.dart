@@ -14,16 +14,16 @@ class GameTags extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        GameChipsWrap(entry),
+        _GameChipsWrap(entry),
       ],
     );
   }
 }
 
-class GameChipsWrap extends StatelessWidget {
+class _GameChipsWrap extends StatelessWidget {
   final LibraryEntry entry;
 
-  const GameChipsWrap(this.entry);
+  const _GameChipsWrap(this.entry);
 
   @override
   Widget build(BuildContext context) {
