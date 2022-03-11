@@ -1,4 +1,4 @@
-import 'package:espy/modules/dialogs/edit/edit_entry_content.dart';
+import 'package:espy/pages/edit/edit_entry_content.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/material.dart';
 

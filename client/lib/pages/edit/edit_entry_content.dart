@@ -1,6 +1,7 @@
 import 'package:espy/modules/dialogs/edit/storefront_dropdown.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:espy/widgets/gametags/game_tags_field.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +27,8 @@ class EditEntryContent extends StatelessWidget {
         ),
         SizedBox(height: 16.0),
         GameTags(entry),
+        SizedBox(height: 16.0),
+        GameTagsField(entry),
         SizedBox(height: 16.0),
         Card(
           child: ExpandablePanel(
