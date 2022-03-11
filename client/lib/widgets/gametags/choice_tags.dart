@@ -15,6 +15,7 @@ class ChoiceTags extends StatefulWidget {
 
 class _ChoiceTagsState extends State<ChoiceTags> {
   Set<String> selectedTags = {};
+  String filter = '';
 
   @override
   Widget build(BuildContext context) {
@@ -34,40 +35,74 @@ class _ChoiceTagsState extends State<ChoiceTags> {
     };
 
     selectedTags.addAll(widget.entry.userData.tags);
+    final filteredTags =
+        context.read<GameTagsModel>().filterTags(filter.split(' '));
 
-    return Scrollbar(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: 150),
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
+    return Column(
+      children: [
+        Scrollbar(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: 150),
+              child: ListView(
+                shrinkWrap: true,
                 children: [
-                  for (final tag in selectedTags)
-                    ChoiceChip(
-                      label: Text(tag),
-                      selected: selectedTags.contains(tag),
-                      selectedColor: Colors.blueGrey,
-                      onSelected: (selected) => onSelected(selected, tag),
-                    ),
-                  for (final tag in context.read<GameTagsModel>().tags)
-                    if (!selectedTags.contains(tag))
-                      ChoiceChip(
-                        label: Text(tag),
-                        selected: false,
-                        selectedColor: Colors.blueGrey,
-                        onSelected: (selected) => onSelected(selected, tag),
-                      ),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 4.0,
+                    children: [
+                      for (final tag in selectedTags)
+                        ChoiceChip(
+                          label: Text(tag),
+                          selected: selectedTags.contains(tag),
+                          selectedColor: Colors.blueGrey,
+                          onSelected: (selected) => onSelected(selected, tag),
+                        ),
+                      for (final tag in filteredTags)
+                        if (!selectedTags.contains(tag))
+                          ChoiceChip(
+                            label: Text(tag),
+                            selected: false,
+                            selectedColor: Colors.blueGrey,
+                            onSelected: (selected) => onSelected(selected, tag),
+                          ),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextFormField(
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.label),
+              hintText: 'Label...',
+            ),
+            controller: _textController,
+            onChanged: (text) {
+              setState(() {
+                filter = text;
+              });
+            },
+            onFieldSubmitted: (text) {
+              setState(() {
+                selectedTags.add(text);
+
+                widget.entry.userData =
+                    GameUserData(tags: selectedTags.toList());
+                context.read<GameLibraryModel>().postDetails(widget.entry);
+                _textController.text = '';
+                filter = '';
+              });
+            },
+          ),
+        ),
+      ],
     );
   }
+
+  final TextEditingController _textController = TextEditingController();
 }
