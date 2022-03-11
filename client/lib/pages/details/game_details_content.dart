@@ -5,9 +5,11 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:espy/widgets/gametags/game_tags_field.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GameDetailsContent extends StatelessWidget {
   const GameDetailsContent({
@@ -59,12 +61,13 @@ class GameDetailsContent extends StatelessWidget {
                   SizedBox(height: 16.0),
                   GameTags(libraryEntry),
                   SizedBox(height: 16.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GameTagsField(libraryEntry),
-                    ],
-                  ),
+                  if (!context.watch<AppConfigModel>().isMobile(context))
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GameTagsField(libraryEntry),
+                      ],
+                    ),
                   SizedBox(height: 16.0),
                   Text(
                     gameEntry.summary,
@@ -139,7 +142,10 @@ class GameDetailsContent extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: () => EditEntryDialog.show(context, libraryEntry),
+              onPressed: () => context.read<AppConfigModel>().isMobile(context)
+                  ? Navigator.pushNamed(context, '/edit',
+                      arguments: '${libraryEntry.id}')
+                  : EditEntryDialog.show(context, libraryEntry),
               icon: Icon(
                 Icons.edit,
                 size: 24.0,
