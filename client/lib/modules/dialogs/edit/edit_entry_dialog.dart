@@ -17,7 +17,11 @@ class EditEntryDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      content: EditEntryContent(entry: entry),
+      content: SizedBox(
+        width: 300.0,
+        height: 500.0,
+        child: EditEntryContent(entry: entry),
+      ),
     );
   }
 }
