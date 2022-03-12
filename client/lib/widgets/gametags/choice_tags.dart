@@ -43,7 +43,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: 150),
+            constraints: BoxConstraints(maxHeight: 350),
             child: ListView(
               shrinkWrap: true,
               children: [
