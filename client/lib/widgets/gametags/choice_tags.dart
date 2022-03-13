@@ -51,21 +51,13 @@ class _ChoiceTagsState extends State<ChoiceTags> {
                   spacing: 8.0,
                   runSpacing: 4.0,
                   children: [
-                    for (final tag in selectedTags)
+                    for (final tag in filteredTags)
                       ChoiceChip(
                         label: Text(tag),
                         selected: selectedTags.contains(tag),
                         selectedColor: Colors.blueGrey,
                         onSelected: (selected) => onSelected(selected, tag),
                       ),
-                    for (final tag in filteredTags)
-                      if (!selectedTags.contains(tag))
-                        ChoiceChip(
-                          label: Text(tag),
-                          selected: false,
-                          selectedColor: Colors.blueGrey,
-                          onSelected: (selected) => onSelected(selected, tag),
-                        ),
                   ],
                 ),
               ],
