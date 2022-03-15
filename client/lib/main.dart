@@ -3,6 +3,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/unmatched_library_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -35,6 +36,13 @@ Future<void> main() async {
         create: (_) => GameTagsModel(),
         update: (_, libraryModel, model) {
           return model!..update(libraryModel.entries);
+        },
+      ),
+      ChangeNotifierProxyProvider2<GameLibraryModel, GameTagsModel,
+          HomeSlatesModel>(
+        create: (_) => HomeSlatesModel(),
+        update: (_, libraryModel, gameTagsModel, model) {
+          return model!..update(libraryModel.entries, gameTagsModel.tags);
         },
       ),
       ChangeNotifierProxyProvider<UserDataModel, UnmatchedLibraryModel>(
