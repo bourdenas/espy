@@ -17,6 +17,10 @@ name = "sync_library"
 path = "src/sync_library.rs"
 
 [[bin]] 
+name = "search_igdb"
+path = "src/search_igdb.rs"
+
+[[bin]] 
 name = "firestore_util"
 path = "src/firestore_util.rs"
 
