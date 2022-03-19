@@ -43,17 +43,15 @@ class _GameChipsWrap extends StatelessWidget {
               arguments: LibraryFilter(companies: {company}).encode(),
             ),
           ),
-        if (entry.collection != null)
+        for (final collection in entry.collections)
           CollectionChip(
-            entry.collection!,
+            collection,
             onPressed: () => Navigator.pushNamed(
               context,
               '/games',
-              arguments:
-                  LibraryFilter(collections: {entry.collection!}).encode(),
+              arguments: LibraryFilter(collections: {collection}).encode(),
             ),
           ),
-        for (final franchise in entry.franchises) FranchiseChip(franchise),
         for (final tag in entry.userData.tags)
           TagChip(
             tag,
@@ -99,23 +97,17 @@ class GameChipsListView extends StatelessWidget {
                 ),
               ),
             ),
-          if (entry.collection != null)
+          for (final collection in entry.collections)
             Padding(
               padding: const EdgeInsets.all(4.0),
               child: CollectionChip(
-                entry.collection!,
+                collection,
                 onPressed: () => Navigator.pushNamed(
                   context,
                   '/games',
-                  arguments:
-                      LibraryFilter(collections: {entry.collection!}).encode(),
+                  arguments: LibraryFilter(collections: {collection}).encode(),
                 ),
               ),
-            ),
-          for (final franchise in entry.franchises)
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: FranchiseChip(franchise),
             ),
           for (final tag in entry.userData.tags)
             Padding(
