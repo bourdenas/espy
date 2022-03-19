@@ -30,7 +30,7 @@ class GameDetailsPage extends StatelessWidget {
         child: Scaffold(
           body: FutureBuilder(
             future:
-                FirebaseFirestore.instance.collection('games').doc(id).get(),
+                FirebaseFirestore.instance.collection('games_v2').doc(id).get(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return Center(
