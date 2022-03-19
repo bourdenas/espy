@@ -143,14 +143,13 @@ async fn match_by_external_id(
 ) -> Result<Option<GameEntry>, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
-    let igdb_external_game = igdb.match_external(store_entry).await?;
-    match igdb_external_game {
-        Some(external_game) => Ok(Some(get_entry(igdb, external_game.game.unwrap().id).await?)),
+    match igdb.match_store_entry(store_entry).await? {
+        Some(game) => Ok(Some(convert(game))),
         None => Ok(None),
     }
 }
 
-/// Returns a `GameEntry` from IGDB matching the title in `store_entry`.
+/// Returns a `GameEntry` from IGDB matching the title in `StoreEntry`.
 async fn match_by_title(
     igdb: &IgdbApi,
     store_entry: &StoreEntry,
@@ -166,18 +165,13 @@ async fn match_by_title(
 
 /// Returns a `GameEntry` from IGDB that matches the input `id`.
 async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
-    let game_entry = igdb.get_game_by_id(id).await?;
-    if let None = game_entry {
-        return Err(Status::not_found(&format!(
+    match igdb.get_game_by_id(id).await? {
+        Some(game_entry) => Ok(convert(game_entry)),
+        None => Err(Status::not_found(&format!(
             "Failed to retrieve game entry with id={}",
             id
-        )));
+        ))),
     }
-
-    let mut game_entry = game_entry.unwrap();
-    igdb.retrieve_game_info(&mut game_entry).await?;
-
-    Ok(convert(game_entry))
 }
 
 /// Converts an IGDB `Game` protobuf into a `GameEntry` document stored in

@@ -51,10 +51,10 @@ impl IgdbApi {
             .await?)
     }
 
-    pub async fn match_external(
+    pub async fn match_store_entry(
         &self,
         store_entry: &StoreEntry,
-    ) -> Result<Option<igdb::ExternalGame>, Status> {
+    ) -> Result<Option<igdb::Game>, Status> {
         let category: u8 = match store_entry.storefront_name.as_ref() {
             "steam" => 1,
             "gog" => 5,
@@ -71,7 +71,12 @@ impl IgdbApi {
             )
             .await?;
 
-        Ok(result.externalgames.into_iter().next())
+        match result.externalgames.into_iter().next() {
+            Some(external_game) => self.get_game_by_id(external_game.game.unwrap().id).await,
+            None => Ok(None),
+        }
+
+        // Ok(result.externalgames.into_iter().next())
     }
 
     pub async fn get_game_by_id(&self, id: u64) -> Result<Option<igdb::Game>, Status> {
