@@ -23,17 +23,6 @@ class CollectionChip extends EspyChip {
         );
 }
 
-class FranchiseChip extends EspyChip {
-  FranchiseChip(Annotation franchise,
-      {VoidCallback? onPressed, VoidCallback? onDeleted})
-      : super(
-          label: franchise.name,
-          color: Colors.orangeAccent,
-          onPressed: onPressed ?? () {},
-          onDeleted: onDeleted,
-        );
-}
-
 class StoreChip extends EspyChip {
   StoreChip(String store, {VoidCallback? onPressed, VoidCallback? onDeleted})
       : super(

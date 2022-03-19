@@ -87,7 +87,8 @@ class LibraryFilter {
 
   bool _filterCollection(LibraryEntry entry) {
     return collections.isEmpty ||
-        collections.every((filter) => filter.id == entry.collection?.id);
+        collections.every((filter) =>
+            entry.collections.any((collection) => collection.id == filter.id));
   }
 
   bool _filterTag(LibraryEntry entry) {
