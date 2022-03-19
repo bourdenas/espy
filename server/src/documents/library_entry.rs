@@ -27,11 +27,11 @@ pub struct LibraryEntryV2 {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub store_entry: Vec<StoreEntry>,
+    pub store_entries: Vec<StoreEntry>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub owned_versions: Vec<LibraryEntryV2>,
+    pub owned_versions: Vec<u64>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
