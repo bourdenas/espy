@@ -45,12 +45,17 @@ impl IgdbApi {
 
     /// Returns matching candidates by searching based on game title from the
     /// igdb/games endpoint.
+    ///
+    /// Returns barebone candidates with not many of the relevant IGDB fields
+    /// populated to save on extra queries.
     pub async fn search_by_title(&self, title: &str) -> Result<igdb::GameResult, Status> {
         Ok(self
             .post(GAMES_ENDPOINT, &format!("search \"{}\"; fields *;", title))
             .await?)
     }
 
+    /// Returns a fully resolved IGDB Game based on the provided storefront
+    /// entry if found in IGDB.
     pub async fn match_store_entry(
         &self,
         store_entry: &StoreEntry,
@@ -75,10 +80,9 @@ impl IgdbApi {
             Some(external_game) => self.get_game_by_id(external_game.game.unwrap().id).await,
             None => Ok(None),
         }
-
-        // Ok(result.externalgames.into_iter().next())
     }
 
+    /// Returns a fully resolved IGDB Game matching the input IGDB Game id.
     pub async fn get_game_by_id(&self, id: u64) -> Result<Option<igdb::Game>, Status> {
         let result: igdb::GameResult = self
             .post(GAMES_ENDPOINT, &format!("fields *; where id={};", id))
@@ -96,21 +100,23 @@ impl IgdbApi {
         }
     }
 
-    pub async fn get_base_game(&self, game: igdb::Game) -> Result<Option<igdb::Game>, Status> {
-        if let Some(game) = game.parent_game {
+    /// Returns a fully resolved IGDB Game representing the base Game of `game`.
+    pub async fn get_base_game(&self, game: &igdb::Game) -> Result<Option<igdb::Game>, Status> {
+        if let Some(game) = &game.parent_game {
             let result: igdb::GameResult = self
                 .post(GAMES_ENDPOINT, &format!("fields *; where id={};", game.id))
                 .await?;
 
             return Ok(result.games.into_iter().next());
-        } else if let Some(game) = game.version_parent {
+        } else if let Some(game) = &game.version_parent {
             let result: igdb::GameResult = self
                 .post(GAMES_ENDPOINT, &format!("fields *; where id={};", game.id))
                 .await?;
 
             return Ok(result.games.into_iter().next());
         }
-        Ok(Some(game))
+
+        Ok(None)
     }
 
     /// Retrieves igdb.Game fields that are relevant to espy. For instance, cover
