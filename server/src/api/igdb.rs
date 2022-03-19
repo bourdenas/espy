@@ -2,6 +2,7 @@ use crate::documents::StoreEntry;
 use crate::igdb;
 use crate::util::rate_limiter::RateLimiter;
 use crate::Status;
+use async_recursion::async_recursion;
 use prost::Message;
 use serde::{Deserialize, Serialize};
 
@@ -78,15 +79,42 @@ impl IgdbApi {
             .post(GAMES_ENDPOINT, &format!("fields *; where id={};", id))
             .await?;
 
-        Ok(result.games.into_iter().next())
+        let game = result.games.into_iter().next();
+        if let None = game {
+            return Ok(None);
+        }
+
+        let game = game.unwrap();
+        match self.retrieve_game_info(game).await {
+            Ok(game) => Ok(Some(game)),
+            Err(e) => Err(e),
+        }
+    }
+
+    pub async fn get_base_game(&self, game: igdb::Game) -> Result<Option<igdb::Game>, Status> {
+        if let Some(game) = game.parent_game {
+            let result: igdb::GameResult = self
+                .post(GAMES_ENDPOINT, &format!("fields *; where id={};", game.id))
+                .await?;
+
+            return Ok(result.games.into_iter().next());
+        } else if let Some(game) = game.version_parent {
+            let result: igdb::GameResult = self
+                .post(GAMES_ENDPOINT, &format!("fields *; where id={};", game.id))
+                .await?;
+
+            return Ok(result.games.into_iter().next());
+        }
+        Ok(Some(game))
     }
 
     /// Retrieves igdb.Game fields that are relevant to espy. For instance, cover
-    /// images, screenshots, franchise info, etc.
+    /// images, screenshots, expansions, etc.
     ///
     /// IGDB returns Game entries only with relevant IDs for such items that need
     /// subsequent lookups in corresponding IGDB tables.
-    pub async fn retrieve_game_info(&self, game: &mut igdb::Game) -> Result<(), Status> {
+    #[async_recursion]
+    async fn retrieve_game_info(&self, mut game: igdb::Game) -> Result<igdb::Game, Status> {
         if let Some(cover) = &game.cover {
             if let Some(cover) = self.get_cover(cover.id).await? {
                 game.cover = Some(Box::new(cover));
@@ -126,7 +154,21 @@ impl IgdbApi {
                 .screenshots;
         }
 
-        Ok(())
+        for expansion in game.expansions.iter_mut() {
+            if let Some(game) = self.get_game_by_id(expansion.id).await? {
+                let game = self.retrieve_game_info(game).await?;
+                *expansion = game;
+            }
+        }
+
+        for remaster in game.remasters.iter_mut() {
+            if let Some(game) = self.get_game_by_id(remaster.id).await? {
+                let game = self.retrieve_game_info(game).await?;
+                *remaster = game;
+            }
+        }
+
+        Ok(game)
     }
 
     /// Returns game image cover based on id from the igdb/covers endpoint.
@@ -297,6 +339,8 @@ impl IgdbApi {
             Ok(msg) => Ok(msg),
             Err(err) => {
                 eprintln!("IGDB.POST error: {}", std::str::from_utf8(&bytes).unwrap());
+                println!("endpoint: '{}'", endpoint);
+                println!("body: '{}'", body);
                 Err(Status::internal("Failed to decode IGDB response", err))
             }
         }
