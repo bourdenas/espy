@@ -42,6 +42,7 @@ tonic = "0.6"
 warp = "0.3"
 firestore-db-and-auth = "0.6"
 async-trait = "0.1"
+async-recursion = "1.0.0"
 
 [build-dependencies]
 tonic-build = "0.6"
