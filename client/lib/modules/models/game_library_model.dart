@@ -171,7 +171,7 @@ class GameLibraryModel extends ChangeNotifier {
         .collection('users')
         .doc(_userId)
         .collection('unmatched')
-        .doc(storeEntry.id.toString())
+        .doc('${storeEntry.storefront}_${storeEntry.id}')
         .set(storeEntry.toJson());
 
     await _saveLibraryLocally(DateTime.now().millisecondsSinceEpoch);
