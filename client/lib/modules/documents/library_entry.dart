@@ -4,14 +4,15 @@ import 'package:espy/modules/documents/store_entry.dart';
 class LibraryEntry {
   final int id;
   final String name;
-  final int releaseDate;
   final String? cover;
 
-  final Annotation? collection;
-  final List<Annotation> franchises;
+  final int releaseDate;
+
+  final List<Annotation> collections;
   final List<Annotation> companies;
 
   final List<StoreEntry> storeEntries;
+  final List<int> ownedVersions;
 
   GameUserData userData;
 
@@ -20,10 +21,10 @@ class LibraryEntry {
     required this.name,
     this.cover,
     this.releaseDate = 0,
-    this.collection,
-    this.franchises = const [],
+    this.collections = const [],
     this.companies = const [],
     this.storeEntries = const [],
+    this.ownedVersions = const [],
     this.userData = const GameUserData(),
   });
 
@@ -31,14 +32,11 @@ class LibraryEntry {
       : this(
           id: json['id']!,
           name: json['name']!,
-          releaseDate: json['release_date'] ?? 0,
           cover: json['cover'],
-          collection: json.containsKey('collection')
-              ? Annotation.fromJson(json['collection'])
-              : null,
-          franchises: json.containsKey('franchises')
+          releaseDate: json['release_date'] ?? 0,
+          collections: json.containsKey('collections')
               ? [
-                  for (final entry in json['franchises'])
+                  for (final entry in json['collections'])
                     Annotation.fromJson(entry),
                 ]
               : [],
@@ -48,11 +46,14 @@ class LibraryEntry {
                     Annotation.fromJson(entry),
                 ]
               : [],
-          storeEntries: json.containsKey('store_entry')
+          storeEntries: json.containsKey('store_entries')
               ? [
-                  for (final entry in json['store_entry'])
+                  for (final entry in json['store_entries'])
                     StoreEntry.fromJson(entry),
                 ]
+              : [],
+          ownedVersions: json.containsKey('owned_versions')
+              ? [for (final version in json['owned_versions']) version]
               : [],
           userData: json.containsKey('user_data')
               ? GameUserData.fromJson(json['user_data'])
@@ -63,21 +64,21 @@ class LibraryEntry {
     return {
       'id': id,
       'name': name,
-      'release_date': releaseDate,
       if (cover != null) 'cover': cover,
-      if (collection != null) 'collection': collection!.toJson(),
-      if (franchises.isNotEmpty)
-        'franchises': [
-          for (final entry in franchises) entry.toJson(),
+      'release_date': releaseDate,
+      if (collections.isNotEmpty)
+        'collections': [
+          for (final entry in collections) entry.toJson(),
         ],
       if (companies.isNotEmpty)
         'companies': [
           for (final entry in companies) entry.toJson(),
         ],
       if (storeEntries.isNotEmpty)
-        'store_entry': [
+        'store_entries': [
           for (final entry in storeEntries) entry.toJson(),
         ],
+      if (ownedVersions.isNotEmpty) 'owned_versions': ownedVersions,
       'user_data': userData.toJson(),
     };
   }

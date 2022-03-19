@@ -5,10 +5,15 @@ class GameEntry {
   final String name;
 
   final String summary;
+  final String storyline;
   final int releaseDate;
 
-  final Annotation? collection;
-  final List<Annotation> franchises;
+  final List<GameEntry> expansions;
+  final List<GameEntry> remasters;
+  final List<int> versions;
+  final int? parent;
+
+  final List<Annotation> collections;
   final List<Annotation> companies;
 
   final GameImage? cover;
@@ -19,9 +24,13 @@ class GameEntry {
     required this.id,
     required this.name,
     this.summary = '',
+    this.storyline = '',
     this.releaseDate = 0,
-    this.collection,
-    this.franchises = const [],
+    this.expansions = const [],
+    this.remasters = const [],
+    this.versions = const [],
+    this.parent = null,
+    this.collections = const [],
     this.companies = const [],
     this.cover,
     this.screenshots = const [],
@@ -33,13 +42,27 @@ class GameEntry {
           id: json['id']!,
           name: json['name']!,
           summary: json['summary'] ?? '',
+          storyline: json['storyline'] ?? '',
           releaseDate: json['release_date'] ?? 0,
-          collection: json.containsKey('collection')
-              ? Annotation.fromJson(json['collection'])
-              : null,
-          franchises: json.containsKey('franchises')
+          expansions: json.containsKey('expansions')
               ? [
-                  for (final entry in json['franchises'])
+                  for (final entry in json['expansions'])
+                    GameEntry.fromJson(entry),
+                ]
+              : [],
+          remasters: json.containsKey('remasters')
+              ? [
+                  for (final entry in json['remasters'])
+                    GameEntry.fromJson(entry),
+                ]
+              : [],
+          versions: json.containsKey('versions')
+              ? [for (final version in json['versions']) version]
+              : [],
+          parent: json['parent'],
+          collections: json.containsKey('collections')
+              ? [
+                  for (final entry in json['collections'])
                     Annotation.fromJson(entry),
                 ]
               : [],
@@ -71,11 +94,21 @@ class GameEntry {
       'id': id,
       'name': name,
       if (summary.isNotEmpty) 'summary': summary,
+      if (storyline.isNotEmpty) 'storyline': storyline,
       if (releaseDate > 0) 'release_date': releaseDate,
-      if (collection != null) 'collection': collection!.toJson(),
-      if (franchises.isNotEmpty)
-        'franchises': [
-          for (final entry in franchises) entry.toJson(),
+      if (expansions.isNotEmpty)
+        'expansions': [
+          for (final entry in expansions) entry.toJson(),
+        ],
+      if (remasters.isNotEmpty)
+        'remasters': [
+          for (final entry in remasters) entry.toJson(),
+        ],
+      if (versions.isNotEmpty) 'versions': versions,
+      if (parent != null) 'parent': parent,
+      if (collections.isNotEmpty)
+        'collections': [
+          for (final entry in collections) entry.toJson(),
         ],
       if (companies.isNotEmpty)
         'companies': [
