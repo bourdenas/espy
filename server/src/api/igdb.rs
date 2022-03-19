@@ -237,13 +237,22 @@ impl IgdbApi {
                     ic_result
                         .involvedcompanies
                         .iter()
-                        .filter_map(|ic| match ic.developer {
-                            true => match &ic.company {
-                                Some(c) => Some(c.id.to_string()),
-                                None => None,
-                            },
-                            false => None,
+                        .map(|ic| match &ic.company {
+                            Some(c) => c.id.to_string(),
+                            None => "".to_string(),
                         })
+                        // TODO: Due to incomplete IGDB data filtering can leave
+                        // no company ids involved whihch results to a bad
+                        // request to IGDB. Temporarily removeing the developer
+                        // requirement until fixing properly.
+                        //
+                        // .filter_map(|ic| match ic.developer {
+                        //     true => match &ic.company {
+                        //         Some(c) => Some(c.id.to_string()),
+                        //         None => None,
+                        //     },
+                        //     false => None,
+                        // })
                         .collect::<Vec<_>>()
                         .join(",")
                 ),
