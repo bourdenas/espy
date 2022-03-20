@@ -40,7 +40,7 @@ pub struct LibraryEntry {
 }
 
 impl LibraryEntry {
-    pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>, owned_versions: &[u64]) -> Self {
+    pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>, owned_versions: Vec<u64>) -> Self {
         LibraryEntry {
             id: game.id,
             name: game.name,
@@ -52,7 +52,7 @@ impl LibraryEntry {
             collections: game.collections,
             companies: game.companies,
             store_entries: store_entries,
-            owned_versions: owned_versions.to_vec(),
+            owned_versions: owned_versions,
             user_data: None,
         }
     }

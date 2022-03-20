@@ -111,8 +111,8 @@ impl LibraryOps {
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: StoreEntry,
-        game_entry: GameEntry,
         owned_version: u64,
+        game_entry: GameEntry,
     ) -> Result<(), Status> {
         let mut library_entry =
             LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version]);

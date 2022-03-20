@@ -145,11 +145,17 @@ impl LibraryManager {
             let firestore = Arc::clone(&self.firestore);
             let user_id = self.user_id.clone();
             tokio::spawn(async move {
-                if let Err(status) = LibraryOps::store_entry_match(
+                let game_entry = entry_match.game_entry.unwrap();
+
+                if let Err(status) = LibraryOps::game_match_transaction(
                     &firestore.lock().unwrap(),
                     &user_id,
                     entry_match.store_entry,
-                    entry_match.game_entry.unwrap(),
+                    game_entry.id,
+                    match entry_match.base_game_entry {
+                        Some(base_game_entry) => base_game_entry,
+                        None => game_entry,
+                    },
                 ) {
                     eprintln!("Error handling matching entry: {}", status);
                 }
