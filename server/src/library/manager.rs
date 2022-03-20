@@ -189,6 +189,9 @@ impl LibraryManager {
     ///
     /// If the GameEntry is not already available in Firestore it attemps to
     /// retrieve it from IGDB.
+    ///
+    /// NOTE: The operation has side-effects, writes the retrieved GameEntry
+    /// from IGDB, if any, in Firestore.
     async fn retrieve_game_entry(
         &self,
         id: u64,
@@ -199,7 +202,9 @@ impl LibraryManager {
             Ok(entry) => entry,
             Err(_) => {
                 drop(firestore);
-                recon_service.retrieve(id).await?
+                let game_entry = recon_service.retrieve(id).await?;
+                LibraryOps::write_game_entry(&self.firestore.lock().unwrap(), &game_entry)?;
+                game_entry
             }
         };
 

@@ -92,7 +92,18 @@ impl LibraryOps {
 
     /// Returns a GameEntry doc based on `game_id` from Firestore.
     pub fn read_game_entry(firestore: &FirestoreApi, game_id: u64) -> Result<GameEntry, Status> {
-        firestore.read::<GameEntry>("games", &game_id.to_string())
+        firestore.read::<GameEntry>("games_v2", &game_id.to_string())
+    }
+
+    /// Writes a GameEntry doc in Firestore.
+    pub fn write_game_entry(
+        firestore: &FirestoreApi,
+        game_entry: &GameEntry,
+    ) -> Result<(), Status> {
+        match firestore.write("games_v2", Some(&game_entry.id.to_string()), game_entry) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(Status::internal("LibraryManager.write_game_entry: ", e)),
+        }
     }
 
     /// Handles library Firestore updates on successful matching input
