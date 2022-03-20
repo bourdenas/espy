@@ -194,9 +194,13 @@ impl LibraryManager {
         id: u64,
         recon_service: &Reconciler,
     ) -> Result<GameEntry, Status> {
-        let game_entry = match LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id) {
+        let firestore = self.firestore.lock().unwrap();
+        let game_entry = match LibraryOps::read_game_entry(&firestore, id) {
             Ok(entry) => entry,
-            Err(_) => recon_service.retrieve(id).await?,
+            Err(_) => {
+                drop(firestore);
+                recon_service.retrieve(id).await?
+            }
         };
 
         Ok(game_entry)
