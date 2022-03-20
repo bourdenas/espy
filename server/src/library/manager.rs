@@ -169,24 +169,26 @@ impl LibraryManager {
     /// user's library.
     ///
     /// Uses the `Reconciler` to retrieve full details for `GameEntry`.
-    pub async fn manual_recon(
+    pub async fn manual_match(
         &self,
         recon_service: Reconciler,
         store_entry: StoreEntry,
         game_entry: GameEntry,
     ) -> Result<(), Status> {
         // Retrieve full details GameEntry from recon service.
-        let game_entry = self
+        let mut game_entry = self
             .retrieve_game_entry(game_entry.id, &recon_service)
             .await?;
+        let owned_game_id = game_entry.id;
         if let Some(parent_id) = game_entry.parent {
-            let base_game_entry = self.retrieve_game_entry(parent_id, &recon_service).await?;
+            game_entry = self.retrieve_game_entry(parent_id, &recon_service).await?;
         }
 
-        LibraryOps::store_entry_match(
+        LibraryOps::game_match_transaction(
             &self.firestore.lock().unwrap(),
             &self.user_id,
             store_entry,
+            owned_game_id,
             game_entry,
         )
     }
