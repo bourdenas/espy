@@ -14,9 +14,43 @@ pub struct Refresh {
 
 // The result of a reconcile operation on a `store_entry` with a `game_entry`
 // from IGDB.
+#[derive(Default)]
 pub struct Match {
     pub store_entry: StoreEntry,
     pub game_entry: Option<GameEntry>,
+    pub base_game_entry: Option<GameEntry>,
+}
+
+impl Match {
+    async fn create(store_entry: StoreEntry, game_entry: GameEntry, igdb: &IgdbApi) -> Self {
+        Match {
+            store_entry,
+            base_game_entry: match game_entry.parent {
+                Some(parent_id) => match igdb.get_game_by_id(parent_id).await {
+                    Ok(game) => match game {
+                        Some(game) => Some(GameEntry::new(game)),
+                        None => None,
+                    },
+                    Err(_) => {
+                        eprintln!(
+                            "Failed to retrieve base game (id={}) for '{}'",
+                            parent_id, &game_entry.name
+                        );
+                        None
+                    }
+                },
+                None => None,
+            },
+            game_entry: Some(game_entry),
+        }
+    }
+
+    fn failed(store_entry: StoreEntry) -> Self {
+        Match {
+            store_entry,
+            ..Default::default()
+        }
+    }
 }
 
 pub struct Reconciler {
@@ -94,38 +128,31 @@ async fn refresh_task(task: RefreshTask) {
     }
 }
 
-/// Performs a single `MatchingTask` to producea `Match` and transmits it over
-/// its task's channel.
+/// Performs a `MatchingTask` to producea `Match` and transmits it over its
+/// task's channel.
 async fn match_task(task: MatchingTask) {
     let entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => match game_entry {
-            Some(game_entry) => Match {
-                store_entry: task.store_entry,
-                game_entry: Some(game_entry),
-            },
+            Some(game_entry) => Match::create(task.store_entry, game_entry, &task.igdb).await,
             None => match match_by_title(&task.igdb, &task.store_entry).await {
-                Ok(game_entry) => Match {
-                    store_entry: task.store_entry,
-                    game_entry: game_entry,
+                Ok(game_entry) => match game_entry {
+                    Some(game_entry) => {
+                        Match::create(task.store_entry, game_entry, &task.igdb).await
+                    }
+                    None => Match::failed(task.store_entry),
                 },
                 Err(e) => {
-                    println!("match_by_title '{}' failed: {}", task.store_entry.title, e);
-                    Match {
-                        store_entry: task.store_entry,
-                        game_entry: None,
-                    }
+                    eprintln!("match_by_title '{}' failed: {}", task.store_entry.title, e);
+                    Match::failed(task.store_entry)
                 }
             },
         },
         Err(e) => {
-            println!(
+            eprintln!(
                 "match_by_external_id '{}' failed: {}",
                 task.store_entry.title, e
             );
-            Match {
-                store_entry: task.store_entry,
-                game_entry: None,
-            }
+            Match::failed(task.store_entry)
         }
     };
 
