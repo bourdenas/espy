@@ -1,4 +1,5 @@
 use crate::documents::Annotation;
+use crate::documents::GameEntry;
 use crate::documents::StoreEntry;
 use serde::{Deserialize, Serialize};
 
@@ -36,6 +37,25 @@ pub struct LibraryEntry {
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_data: Option<GameUserData>,
+}
+
+impl LibraryEntry {
+    pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>, owned_versions: &[u64]) -> Self {
+        LibraryEntry {
+            id: game.id,
+            name: game.name,
+            cover: match game.cover {
+                Some(cover) => Some(cover.image_id),
+                None => None,
+            },
+            release_date: game.release_date,
+            collections: game.collections,
+            companies: game.companies,
+            store_entries: store_entries,
+            owned_versions: owned_versions.to_vec(),
+            user_data: None,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
