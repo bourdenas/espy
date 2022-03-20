@@ -90,6 +90,11 @@ impl LibraryOps {
         }
     }
 
+    /// Returns a GameEntry doc based on `game_id` from Firestore.
+    pub fn read_game_entry(firestore: &FirestoreApi, game_id: u64) -> Result<GameEntry, Status> {
+        firestore.read::<GameEntry>("games", &game_id.to_string())
+    }
+
     /// Handles library Firestore updates on successful matching input
     /// StoreEntry with GameEntry.
     pub fn store_entry_match(
@@ -111,10 +116,9 @@ impl LibraryOps {
                 None => None,
             },
             release_date: game_entry.release_date,
-            collection: game_entry.collection,
-            franchises: game_entry.franchises,
+            collections: game_entry.collections,
             companies: game_entry.companies,
-            store_entry: vec![store_entry],
+            store_entries: vec![store_entry],
             user_data: None,
         };
 
@@ -122,7 +126,7 @@ impl LibraryOps {
         // not currently supported by this library.
         //
         // Delete matched StoreEntries from 'users/{user}/unmatched'
-        for store_entry in &library_entry.store_entry {
+        for store_entry in &library_entry.store_entries {
             firestore.delete(&format!(
                 "users/{}/unmatched/{}",
                 user_id,
@@ -139,8 +143,8 @@ impl LibraryOps {
             // updates and merge existing user data for the entry (e.g. tags)
             // and other store entries.
             library_entry
-                .store_entry
-                .extend(existing.store_entry.into_iter());
+                .store_entries
+                .extend(existing.store_entries.into_iter());
             library_entry.user_data = existing.user_data;
         }
 

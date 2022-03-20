@@ -1,6 +1,5 @@
 use crate::api::IgdbApi;
-use crate::documents::{self, GameEntry, LibraryEntry, StoreEntry};
-use crate::igdb;
+use crate::documents::{GameEntry, LibraryEntry, StoreEntry};
 use crate::library::search;
 use crate::Status;
 use futures::stream::{self, StreamExt};
@@ -29,24 +28,9 @@ impl Reconciler {
         Reconciler { igdb }
     }
 
-    /// Matches input `entries` with IGDB GameEntries.
-    ///
-    /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
-    /// successful or failed matches.
-    pub async fn refresh(&self, tx: mpsc::Sender<Refresh>, library_entries: Vec<LibraryEntry>) {
-        let fut = stream::iter(
-            library_entries
-                .into_iter()
-                .map(|library_entry| RefreshTask {
-                    library_entry: library_entry,
-                    igdb: Arc::clone(&self.igdb),
-                    tx: tx.clone(),
-                }),
-        )
-        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, refresh_task);
-
-        fut.await;
-        drop(tx);
+    /// Returns a fully resolved IGDB GameEntry matching input `id`.
+    pub async fn retrieve(&self, id: u64) -> Result<GameEntry, Status> {
+        get_entry(&self.igdb, id).await
     }
 
     /// Matches input `entries` with IGDB GameEntries.
@@ -65,9 +49,24 @@ impl Reconciler {
         drop(tx);
     }
 
-    /// Returns IGDB GameEntry matching input `id`.
-    pub async fn get_entry(&self, id: u64) -> Result<GameEntry, Status> {
-        get_entry(&self.igdb, id).await
+    /// Matches input `entries` with IGDB GameEntries.
+    ///
+    /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
+    /// successful or failed matches.
+    pub async fn refresh(&self, tx: mpsc::Sender<Refresh>, library_entries: Vec<LibraryEntry>) {
+        let fut = stream::iter(
+            library_entries
+                .into_iter()
+                .map(|library_entry| RefreshTask {
+                    library_entry: library_entry,
+                    igdb: Arc::clone(&self.igdb),
+                    tx: tx.clone(),
+                }),
+        )
+        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, refresh_task);
+
+        fut.await;
+        drop(tx);
     }
 }
 
@@ -144,7 +143,7 @@ async fn match_by_external_id(
     println!("Resolving '{}'", &store_entry.title);
 
     match igdb.match_store_entry(store_entry).await? {
-        Some(game) => Ok(Some(convert(game))),
+        Some(game) => Ok(Some(GameEntry::new(game))),
         None => Ok(None),
     }
 }
@@ -166,87 +165,11 @@ async fn match_by_title(
 /// Returns a `GameEntry` from IGDB that matches the input `id`.
 async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
     match igdb.get_game_by_id(id).await? {
-        Some(game_entry) => Ok(convert(game_entry)),
+        Some(game_entry) => Ok(GameEntry::new(game_entry)),
         None => Err(Status::not_found(&format!(
             "Failed to retrieve game entry with id={}",
             id
         ))),
-    }
-}
-
-/// Converts an IGDB `Game` protobuf into a `GameEntry` document stored in
-/// Firestore.
-fn convert(igdb_game: igdb::Game) -> GameEntry {
-    GameEntry {
-        id: igdb_game.id,
-        name: igdb_game.name,
-        summary: igdb_game.summary,
-
-        release_date: match igdb_game.first_release_date {
-            Some(date) => Some(date.seconds),
-            None => None,
-        },
-
-        collection: match igdb_game.collection {
-            Some(collection) => Some(documents::Annotation {
-                id: collection.id,
-                name: collection.name,
-            }),
-            None => None,
-        },
-
-        franchises: igdb_game
-            .franchises
-            .into_iter()
-            .map(|franchise| documents::Annotation {
-                id: franchise.id,
-                name: franchise.name,
-            })
-            .collect(),
-
-        companies: igdb_game
-            .involved_companies
-            .into_iter()
-            .filter_map(|involved_company| match involved_company.company {
-                Some(company) => match company.name.is_empty() {
-                    false => Some(documents::Annotation {
-                        id: company.id,
-                        name: company.name,
-                    }),
-                    true => None,
-                },
-                None => None,
-            })
-            .collect(),
-
-        cover: match igdb_game.cover {
-            Some(cover) => Some(documents::Image {
-                image_id: cover.image_id,
-                height: cover.height,
-                width: cover.width,
-            }),
-            None => None,
-        },
-
-        screenshots: igdb_game
-            .screenshots
-            .into_iter()
-            .map(|image| documents::Image {
-                image_id: image.image_id,
-                height: image.height,
-                width: image.width,
-            })
-            .collect(),
-
-        artwork: igdb_game
-            .artworks
-            .into_iter()
-            .map(|image| documents::Image {
-                image_id: image.image_id,
-                height: image.height,
-                width: image.width,
-            })
-            .collect(),
     }
 }
 

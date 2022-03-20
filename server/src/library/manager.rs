@@ -159,7 +159,7 @@ impl LibraryManager {
         Ok(())
     }
 
-    /// Manual matching of a `StoreEntry` to a `GameEntry` and saving it in the
+    /// Match a `StoreEntry` to a specified `GameEntry` and saving it in the
     /// user's library.
     ///
     /// Uses the `Reconciler` to retrieve full details for `GameEntry`.
@@ -170,7 +170,12 @@ impl LibraryManager {
         game_entry: GameEntry,
     ) -> Result<(), Status> {
         // Retrieve full details GameEntry from recon service.
-        let game_entry = recon_service.get_entry(game_entry.id).await?;
+        let game_entry = self
+            .retrieve_game_entry(game_entry.id, &recon_service)
+            .await?;
+        if let Some(parent_id) = game_entry.parent {
+            let base_game_entry = self.retrieve_game_entry(parent_id, &recon_service).await?;
+        }
 
         LibraryOps::store_entry_match(
             &self.firestore.lock().unwrap(),
@@ -178,5 +183,22 @@ impl LibraryManager {
             store_entry,
             game_entry,
         )
+    }
+
+    /// Returns a GameEntry based on `id`.
+    ///
+    /// If the GameEntry is not already available in Firestore it attemps to
+    /// retrieve it from IGDB.
+    async fn retrieve_game_entry(
+        &self,
+        id: u64,
+        recon_service: &Reconciler,
+    ) -> Result<GameEntry, Status> {
+        let game_entry = match LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id) {
+            Ok(entry) => entry,
+            Err(_) => recon_service.retrieve(id).await?,
+        };
+
+        Ok(game_entry)
     }
 }
