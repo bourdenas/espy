@@ -106,37 +106,21 @@ impl LibraryOps {
         }
     }
 
-    /// Handles library Firestore updates on successful matching input
-    /// StoreEntry with GameEntry.
-    pub fn store_entry_match(
+    /// Handles Firestore library updates on successful match of a StoreEntry.
+    pub fn game_match_transaction(
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: StoreEntry,
         game_entry: GameEntry,
+        owned_version: u64,
     ) -> Result<(), Status> {
-        // Store GameEntry to 'games' collection. Might overwrite an existing
-        // one. That's ok as this is a fresher version.
-        firestore.write("games", Some(&game_entry.id.to_string()), &game_entry)?;
-
-        // Create LibraryEntry from IgdbEntry and StoreEntry.
-        let mut library_entry = LibraryEntry {
-            id: game_entry.id,
-            name: game_entry.name,
-            cover: match game_entry.cover {
-                Some(cover) => Some(cover.image_id),
-                None => None,
-            },
-            release_date: game_entry.release_date,
-            collections: game_entry.collections,
-            companies: game_entry.companies,
-            store_entries: vec![store_entry],
-            user_data: None,
-        };
+        let mut library_entry =
+            LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version]);
 
         // TODO: The three operations below should be a transaction, but this is
         // not currently supported by this library.
         //
-        // Delete matched StoreEntries from 'users/{user}/unmatched'
+        // Delete StoreEntry from unmatched.
         for store_entry in &library_entry.store_entries {
             firestore.delete(&format!(
                 "users/{}/unmatched/{}",
@@ -147,21 +131,21 @@ impl LibraryOps {
 
         // Check if game is already in user's library.
         if let Ok(existing) = firestore.read::<LibraryEntry>(
-            &format!("users/{}/library", user_id),
+            &format!("users/{}/library_v2", user_id),
             &library_entry.id.to_string(),
         ) {
-            // Use the most recently retrieved entry from IGDB to include any
-            // updates and merge existing user data for the entry (e.g. tags)
-            // and other store entries.
             library_entry
                 .store_entries
                 .extend(existing.store_entries.into_iter());
+            library_entry
+                .owned_versions
+                .extend(existing.owned_versions.into_iter());
             library_entry.user_data = existing.user_data;
         }
 
-        // Store GameEntries to 'users/{user}/library' collection.
+        // Store (updated) LibraryEntry to Firestore.
         firestore.write(
-            &format!("users/{}/library", user_id),
+            &format!("users/{}/library_v2", user_id),
             Some(&library_entry.id.to_string()),
             &library_entry,
         )?;
