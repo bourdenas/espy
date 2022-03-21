@@ -100,25 +100,6 @@ impl IgdbApi {
         }
     }
 
-    /// Returns a fully resolved IGDB Game representing the base Game of `game`.
-    pub async fn get_base_game(&self, game: &igdb::Game) -> Result<Option<igdb::Game>, Status> {
-        if let Some(game) = &game.parent_game {
-            let result: igdb::GameResult = self
-                .post(GAMES_ENDPOINT, &format!("fields *; where id={};", game.id))
-                .await?;
-
-            return Ok(result.games.into_iter().next());
-        } else if let Some(game) = &game.version_parent {
-            let result: igdb::GameResult = self
-                .post(GAMES_ENDPOINT, &format!("fields *; where id={};", game.id))
-                .await?;
-
-            return Ok(result.games.into_iter().next());
-        }
-
-        Ok(None)
-    }
-
     /// Retrieves igdb.Game fields that are relevant to espy. For instance, cover
     /// images, screenshots, expansions, etc.
     ///
