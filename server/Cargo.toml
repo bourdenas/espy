@@ -17,6 +17,10 @@ name = "sync_library"
 path = "src/sync_library.rs"
 
 [[bin]] 
+name = "search_igdb"
+path = "src/search_igdb.rs"
+
+[[bin]] 
 name = "firestore_util"
 path = "src/firestore_util.rs"
 
@@ -38,6 +42,7 @@ tonic = "0.6"
 warp = "0.3"
 firestore-db-and-auth = "0.6"
 async-trait = "0.1"
+async-recursion = "1.0.0"
 
 [build-dependencies]
 tonic-build = "0.6"

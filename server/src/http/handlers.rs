@@ -41,7 +41,7 @@ pub async fn post_recon(
 
     let mgr = library::LibraryManager::new(&user_id, Arc::clone(&firestore));
     match mgr
-        .manual_recon(Reconciler::new(igdb), recon.store_entry, recon.game_entry)
+        .manual_match(Reconciler::new(igdb), recon.store_entry, recon.game_entry)
         .await
     {
         Ok(()) => {

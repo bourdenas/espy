@@ -145,11 +145,17 @@ impl LibraryManager {
             let firestore = Arc::clone(&self.firestore);
             let user_id = self.user_id.clone();
             tokio::spawn(async move {
-                if let Err(status) = LibraryOps::store_entry_match(
+                let game_entry = entry_match.game_entry.unwrap();
+
+                if let Err(status) = LibraryOps::game_match_transaction(
                     &firestore.lock().unwrap(),
                     &user_id,
                     entry_match.store_entry,
-                    entry_match.game_entry.unwrap(),
+                    game_entry.id,
+                    match entry_match.base_game_entry {
+                        Some(base_game_entry) => base_game_entry,
+                        None => game_entry,
+                    },
                 ) {
                     eprintln!("Error handling matching entry: {}", status);
                 }
@@ -159,24 +165,59 @@ impl LibraryManager {
         Ok(())
     }
 
-    /// Manual matching of a `StoreEntry` to a `GameEntry` and saving it in the
+    /// Match a `StoreEntry` to a specified `GameEntry` and saving it in the
     /// user's library.
     ///
     /// Uses the `Reconciler` to retrieve full details for `GameEntry`.
-    pub async fn manual_recon(
+    pub async fn manual_match(
         &self,
         recon_service: Reconciler,
         store_entry: StoreEntry,
         game_entry: GameEntry,
     ) -> Result<(), Status> {
         // Retrieve full details GameEntry from recon service.
-        let game_entry = recon_service.get_entry(game_entry.id).await?;
+        let mut game_entry = self
+            .retrieve_game_entry(game_entry.id, &recon_service)
+            .await?;
+        let owned_game_id = game_entry.id;
+        if let Some(parent_id) = game_entry.parent {
+            game_entry = self.retrieve_game_entry(parent_id, &recon_service).await?;
+        }
 
-        LibraryOps::store_entry_match(
+        LibraryOps::game_match_transaction(
             &self.firestore.lock().unwrap(),
             &self.user_id,
             store_entry,
+            owned_game_id,
             game_entry,
         )
+    }
+
+    /// Returns a GameEntry based on `id`.
+    ///
+    /// If the GameEntry is not already available in Firestore it attemps to
+    /// retrieve it from IGDB.
+    ///
+    /// NOTE: The operation has side-effects, writes the retrieved GameEntry
+    /// from IGDB, if any, in Firestore.
+    async fn retrieve_game_entry(
+        &self,
+        id: u64,
+        recon_service: &Reconciler,
+    ) -> Result<GameEntry, Status> {
+        let game_entry = match self.read_from_firestore(id) {
+            Ok(entry) => entry,
+            Err(_) => {
+                let game_entry = recon_service.retrieve(id).await?;
+                LibraryOps::write_game_entry(&self.firestore.lock().unwrap(), &game_entry)?;
+                game_entry
+            }
+        };
+
+        Ok(game_entry)
+    }
+
+    fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
+        LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
     }
 }

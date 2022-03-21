@@ -1,6 +1,5 @@
 use crate::api::IgdbApi;
-use crate::documents::{self, GameEntry, LibraryEntry, StoreEntry};
-use crate::igdb;
+use crate::documents::{GameEntry, LibraryEntry, StoreEntry};
 use crate::library::search;
 use crate::Status;
 use futures::stream::{self, StreamExt};
@@ -15,9 +14,43 @@ pub struct Refresh {
 
 // The result of a reconcile operation on a `store_entry` with a `game_entry`
 // from IGDB.
+#[derive(Default)]
 pub struct Match {
     pub store_entry: StoreEntry,
     pub game_entry: Option<GameEntry>,
+    pub base_game_entry: Option<GameEntry>,
+}
+
+impl Match {
+    async fn create(store_entry: StoreEntry, game_entry: GameEntry, igdb: &IgdbApi) -> Self {
+        Match {
+            store_entry,
+            base_game_entry: match game_entry.parent {
+                Some(parent_id) => match igdb.get_game_by_id(parent_id).await {
+                    Ok(game) => match game {
+                        Some(game) => Some(GameEntry::new(game)),
+                        None => None,
+                    },
+                    Err(_) => {
+                        eprintln!(
+                            "Failed to retrieve base game (id={}) for '{}'",
+                            parent_id, &game_entry.name
+                        );
+                        None
+                    }
+                },
+                None => None,
+            },
+            game_entry: Some(game_entry),
+        }
+    }
+
+    fn failed(store_entry: StoreEntry) -> Self {
+        Match {
+            store_entry,
+            ..Default::default()
+        }
+    }
 }
 
 pub struct Reconciler {
@@ -27,6 +60,27 @@ pub struct Reconciler {
 impl Reconciler {
     pub fn new(igdb: Arc<IgdbApi>) -> Reconciler {
         Reconciler { igdb }
+    }
+
+    /// Returns a fully resolved IGDB GameEntry matching input `id`.
+    pub async fn retrieve(&self, id: u64) -> Result<GameEntry, Status> {
+        get_entry(&self.igdb, id).await
+    }
+
+    /// Matches input `entries` with IGDB GameEntries.
+    ///
+    /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
+    /// successful or failed matches.
+    pub async fn reconcile(&self, tx: mpsc::Sender<Match>, store_entries: Vec<StoreEntry>) {
+        let fut = stream::iter(store_entries.into_iter().map(|store_entry| MatchingTask {
+            store_entry: store_entry,
+            igdb: Arc::clone(&self.igdb),
+            tx: tx.clone(),
+        }))
+        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, match_task);
+
+        fut.await;
+        drop(tx);
     }
 
     /// Matches input `entries` with IGDB GameEntries.
@@ -47,27 +101,6 @@ impl Reconciler {
 
         fut.await;
         drop(tx);
-    }
-
-    /// Matches input `entries` with IGDB GameEntries.
-    ///
-    /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
-    /// successful or failed matches.
-    pub async fn reconcile(&self, tx: mpsc::Sender<Match>, store_entries: Vec<StoreEntry>) {
-        let fut = stream::iter(store_entries.into_iter().map(|store_entry| MatchingTask {
-            store_entry: store_entry,
-            igdb: Arc::clone(&self.igdb),
-            tx: tx.clone(),
-        }))
-        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, match_task);
-
-        fut.await;
-        drop(tx);
-    }
-
-    /// Returns IGDB GameEntry matching input `id`.
-    pub async fn get_entry(&self, id: u64) -> Result<GameEntry, Status> {
-        get_entry(&self.igdb, id).await
     }
 }
 
@@ -95,38 +128,31 @@ async fn refresh_task(task: RefreshTask) {
     }
 }
 
-/// Performs a single `MatchingTask` to producea `Match` and transmits it over
-/// its task's channel.
+/// Performs a `MatchingTask` to producea `Match` and transmits it over its
+/// task's channel.
 async fn match_task(task: MatchingTask) {
     let entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => match game_entry {
-            Some(game_entry) => Match {
-                store_entry: task.store_entry,
-                game_entry: Some(game_entry),
-            },
+            Some(game_entry) => Match::create(task.store_entry, game_entry, &task.igdb).await,
             None => match match_by_title(&task.igdb, &task.store_entry).await {
-                Ok(game_entry) => Match {
-                    store_entry: task.store_entry,
-                    game_entry: game_entry,
+                Ok(game_entry) => match game_entry {
+                    Some(game_entry) => {
+                        Match::create(task.store_entry, game_entry, &task.igdb).await
+                    }
+                    None => Match::failed(task.store_entry),
                 },
                 Err(e) => {
-                    println!("match_by_title '{}' failed: {}", task.store_entry.title, e);
-                    Match {
-                        store_entry: task.store_entry,
-                        game_entry: None,
-                    }
+                    eprintln!("match_by_title '{}' failed: {}", task.store_entry.title, e);
+                    Match::failed(task.store_entry)
                 }
             },
         },
         Err(e) => {
-            println!(
+            eprintln!(
                 "match_by_external_id '{}' failed: {}",
                 task.store_entry.title, e
             );
-            Match {
-                store_entry: task.store_entry,
-                game_entry: None,
-            }
+            Match::failed(task.store_entry)
         }
     };
 
@@ -143,14 +169,13 @@ async fn match_by_external_id(
 ) -> Result<Option<GameEntry>, Status> {
     println!("Resolving '{}'", &store_entry.title);
 
-    let igdb_external_game = igdb.match_external(store_entry).await?;
-    match igdb_external_game {
-        Some(external_game) => Ok(Some(get_entry(igdb, external_game.game.unwrap().id).await?)),
+    match igdb.match_store_entry(store_entry).await? {
+        Some(game) => Ok(Some(GameEntry::new(game))),
         None => Ok(None),
     }
 }
 
-/// Returns a `GameEntry` from IGDB matching the title in `store_entry`.
+/// Returns a `GameEntry` from IGDB matching the title in `StoreEntry`.
 async fn match_by_title(
     igdb: &IgdbApi,
     store_entry: &StoreEntry,
@@ -166,93 +191,12 @@ async fn match_by_title(
 
 /// Returns a `GameEntry` from IGDB that matches the input `id`.
 async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
-    let game_entry = igdb.get_game_by_id(id).await?;
-    if let None = game_entry {
-        return Err(Status::not_found(&format!(
+    match igdb.get_game_by_id(id).await? {
+        Some(game_entry) => Ok(GameEntry::new(game_entry)),
+        None => Err(Status::not_found(&format!(
             "Failed to retrieve game entry with id={}",
             id
-        )));
-    }
-
-    let mut game_entry = game_entry.unwrap();
-    igdb.retrieve_game_info(&mut game_entry).await?;
-
-    Ok(convert(game_entry))
-}
-
-/// Converts an IGDB `Game` protobuf into a `GameEntry` document stored in
-/// Firestore.
-fn convert(igdb_game: igdb::Game) -> GameEntry {
-    GameEntry {
-        id: igdb_game.id,
-        name: igdb_game.name,
-        summary: igdb_game.summary,
-
-        release_date: match igdb_game.first_release_date {
-            Some(date) => Some(date.seconds),
-            None => None,
-        },
-
-        collection: match igdb_game.collection {
-            Some(collection) => Some(documents::Annotation {
-                id: collection.id,
-                name: collection.name,
-            }),
-            None => None,
-        },
-
-        franchises: igdb_game
-            .franchises
-            .into_iter()
-            .map(|franchise| documents::Annotation {
-                id: franchise.id,
-                name: franchise.name,
-            })
-            .collect(),
-
-        companies: igdb_game
-            .involved_companies
-            .into_iter()
-            .filter_map(|involved_company| match involved_company.company {
-                Some(company) => match company.name.is_empty() {
-                    false => Some(documents::Annotation {
-                        id: company.id,
-                        name: company.name,
-                    }),
-                    true => None,
-                },
-                None => None,
-            })
-            .collect(),
-
-        cover: match igdb_game.cover {
-            Some(cover) => Some(documents::Image {
-                image_id: cover.image_id,
-                height: cover.height,
-                width: cover.width,
-            }),
-            None => None,
-        },
-
-        screenshots: igdb_game
-            .screenshots
-            .into_iter()
-            .map(|image| documents::Image {
-                image_id: image.image_id,
-                height: image.height,
-                width: image.width,
-            })
-            .collect(),
-
-        artwork: igdb_game
-            .artworks
-            .into_iter()
-            .map(|image| documents::Image {
-                image_id: image.image_id,
-                height: image.height,
-                width: image.width,
-            })
-            .collect(),
+        ))),
     }
 }
 

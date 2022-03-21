@@ -65,7 +65,6 @@ struct GameEntry {
     name: String,
     playtime_forever: i32,
     img_icon_url: String,
-    img_logo_url: String,
 }
 
 const STEAM_HOST: &str = "http://api.steampowered.com";

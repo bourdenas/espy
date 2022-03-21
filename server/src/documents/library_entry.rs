@@ -1,8 +1,9 @@
 use crate::documents::Annotation;
+use crate::documents::GameEntry;
 use crate::documents::StoreEntry;
 use serde::{Deserialize, Serialize};
 
-/// Document type under 'users/{user_id}/library/{game_id}' that represents a
+/// Document type under 'users/{user_id}/library_v2/{game_id}' that represents a
 /// game entry in user's library that has been matched with an IGDB entry.
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct LibraryEntry {
@@ -18,12 +19,8 @@ pub struct LibraryEntry {
     pub release_date: Option<i64>,
 
     #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub collection: Option<Annotation>,
-
-    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub franchises: Vec<Annotation>,
+    pub collections: Vec<Annotation>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -31,11 +28,39 @@ pub struct LibraryEntry {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub store_entry: Vec<StoreEntry>,
+    pub store_entries: Vec<StoreEntry>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub owned_versions: Vec<u64>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_data: Option<GameUserData>,
+}
+
+impl LibraryEntry {
+    pub fn new(
+        game: GameEntry,
+        store_entries: Vec<StoreEntry>,
+        owned_versions: Vec<u64>,
+        user_data: Option<GameUserData>,
+    ) -> Self {
+        LibraryEntry {
+            id: game.id,
+            name: game.name,
+            cover: match game.cover {
+                Some(cover) => Some(cover.image_id),
+                None => None,
+            },
+            release_date: game.release_date,
+            collections: game.collections,
+            companies: game.companies,
+            store_entries,
+            owned_versions,
+            user_data,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]

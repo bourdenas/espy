@@ -2,6 +2,7 @@ use crate::documents::StoreEntry;
 use crate::igdb;
 use crate::util::rate_limiter::RateLimiter;
 use crate::Status;
+use async_recursion::async_recursion;
 use prost::Message;
 use serde::{Deserialize, Serialize};
 
@@ -44,16 +45,21 @@ impl IgdbApi {
 
     /// Returns matching candidates by searching based on game title from the
     /// igdb/games endpoint.
+    ///
+    /// Returns barebone candidates with not many of the relevant IGDB fields
+    /// populated to save on extra queries.
     pub async fn search_by_title(&self, title: &str) -> Result<igdb::GameResult, Status> {
         Ok(self
             .post(GAMES_ENDPOINT, &format!("search \"{}\"; fields *;", title))
             .await?)
     }
 
-    pub async fn match_external(
+    /// Returns a fully resolved IGDB Game based on the provided storefront
+    /// entry if found in IGDB.
+    pub async fn match_store_entry(
         &self,
         store_entry: &StoreEntry,
-    ) -> Result<Option<igdb::ExternalGame>, Status> {
+    ) -> Result<Option<igdb::Game>, Status> {
         let category: u8 = match store_entry.storefront_name.as_ref() {
             "steam" => 1,
             "gog" => 5,
@@ -70,23 +76,37 @@ impl IgdbApi {
             )
             .await?;
 
-        Ok(result.externalgames.into_iter().next())
+        match result.externalgames.into_iter().next() {
+            Some(external_game) => self.get_game_by_id(external_game.game.unwrap().id).await,
+            None => Ok(None),
+        }
     }
 
+    /// Returns a fully resolved IGDB Game matching the input IGDB Game id.
     pub async fn get_game_by_id(&self, id: u64) -> Result<Option<igdb::Game>, Status> {
         let result: igdb::GameResult = self
             .post(GAMES_ENDPOINT, &format!("fields *; where id={};", id))
             .await?;
 
-        Ok(result.games.into_iter().next())
+        let game = result.games.into_iter().next();
+        if let None = game {
+            return Ok(None);
+        }
+
+        let game = game.unwrap();
+        match self.retrieve_game_info(game).await {
+            Ok(game) => Ok(Some(game)),
+            Err(e) => Err(e),
+        }
     }
 
     /// Retrieves igdb.Game fields that are relevant to espy. For instance, cover
-    /// images, screenshots, franchise info, etc.
+    /// images, screenshots, expansions, etc.
     ///
     /// IGDB returns Game entries only with relevant IDs for such items that need
     /// subsequent lookups in corresponding IGDB tables.
-    pub async fn retrieve_game_info(&self, game: &mut igdb::Game) -> Result<(), Status> {
+    #[async_recursion]
+    async fn retrieve_game_info(&self, mut game: igdb::Game) -> Result<igdb::Game, Status> {
         if let Some(cover) = &game.cover {
             if let Some(cover) = self.get_cover(cover.id).await? {
                 game.cover = Some(Box::new(cover));
@@ -126,7 +146,21 @@ impl IgdbApi {
                 .screenshots;
         }
 
-        Ok(())
+        for expansion in game.expansions.iter_mut() {
+            if let Some(game) = self.get_game_by_id(expansion.id).await? {
+                let game = self.retrieve_game_info(game).await?;
+                *expansion = game;
+            }
+        }
+
+        for remaster in game.remasters.iter_mut() {
+            if let Some(game) = self.get_game_by_id(remaster.id).await? {
+                let game = self.retrieve_game_info(game).await?;
+                *remaster = game;
+            }
+        }
+
+        Ok(game)
     }
 
     /// Returns game image cover based on id from the igdb/covers endpoint.
@@ -237,13 +271,22 @@ impl IgdbApi {
                     ic_result
                         .involvedcompanies
                         .iter()
-                        .filter_map(|ic| match ic.developer {
-                            true => match &ic.company {
-                                Some(c) => Some(c.id.to_string()),
-                                None => None,
-                            },
-                            false => None,
+                        .map(|ic| match &ic.company {
+                            Some(c) => c.id.to_string(),
+                            None => "".to_string(),
                         })
+                        // TODO: Due to incomplete IGDB data filtering can leave
+                        // no company ids involved whihch results to a bad
+                        // request to IGDB. Temporarily removeing the developer
+                        // requirement until fixing properly.
+                        //
+                        // .filter_map(|ic| match ic.developer {
+                        //     true => match &ic.company {
+                        //         Some(c) => Some(c.id.to_string()),
+                        //         None => None,
+                        //     },
+                        //     false => None,
+                        // })
                         .collect::<Vec<_>>()
                         .join(",")
                 ),
@@ -288,6 +331,8 @@ impl IgdbApi {
             Ok(msg) => Ok(msg),
             Err(err) => {
                 eprintln!("IGDB.POST error: {}", std::str::from_utf8(&bytes).unwrap());
+                println!("endpoint: '{}'", endpoint);
+                println!("body: '{}'", body);
                 Err(Status::internal("Failed to decode IGDB response", err))
             }
         }
