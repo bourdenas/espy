@@ -45,13 +45,13 @@ impl LibraryOps {
 
     /// Returns user's matched game library entries.
     ///
-    /// Reads `LibraryEntry` documents under collection `users/{user}/library`
-    /// in Firestore.
+    /// Reads `LibraryEntry` documents under collection
+    /// `users/{user}/library_v2` in Firestore.
     pub fn read_library_entries(
         firestore: &FirestoreApi,
         user_id: &str,
     ) -> Result<Vec<LibraryEntry>, Status> {
-        match firestore.list::<LibraryEntry>(&format!("users/{}/library", user_id)) {
+        match firestore.list::<LibraryEntry>(&format!("users/{}/library_v2", user_id)) {
             Ok(entries) => Ok(entries),
             Err(e) => Err(Status::internal("LibraryManager.read_library_entries: ", e)),
         }
@@ -115,7 +115,7 @@ impl LibraryOps {
         game_entry: GameEntry,
     ) -> Result<(), Status> {
         let mut library_entry =
-            LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version]);
+            LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version], None);
 
         // TODO: The three operations below should be a transaction, but this is
         // not currently supported by this library.
@@ -165,26 +165,18 @@ impl LibraryOps {
     ) -> Result<(), Status> {
         // Store GameEntry to 'games' collection. Might overwrite an existing
         // one. That's ok as this is a fresher version.
-        firestore.write("games", Some(&game_entry.id.to_string()), &game_entry)?;
+        LibraryOps::write_game_entry(firestore, &game_entry)?;
 
-        // Store GameEntries to 'users/{user}/library' collection.
+        // Store GameEntries to 'users/{user}/library_v2' collection.
         firestore.write(
-            &format!("users/{}/library", user_id),
+            &format!("users/{}/library_v2", user_id),
             Some(&library_entry.id.to_string()),
-            &LibraryEntry {
-                id: game_entry.id,
-                name: game_entry.name,
-                cover: match game_entry.cover {
-                    Some(cover) => Some(cover.image_id),
-                    None => None,
-                },
-                release_date: game_entry.release_date,
-                collection: game_entry.collection,
-                franchises: game_entry.franchises,
-                companies: game_entry.companies,
-                store_entry: library_entry.store_entry,
-                user_data: library_entry.user_data,
-            },
+            &LibraryEntry::new(
+                game_entry,
+                library_entry.store_entries,
+                library_entry.owned_versions,
+                library_entry.user_data,
+            ),
         )?;
 
         Ok(())

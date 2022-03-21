@@ -3,7 +3,7 @@ use crate::documents::GameEntry;
 use crate::documents::StoreEntry;
 use serde::{Deserialize, Serialize};
 
-/// Document type under 'users/{user_id}/library/{game_id}' that represents a
+/// Document type under 'users/{user_id}/library_v2/{game_id}' that represents a
 /// game entry in user's library that has been matched with an IGDB entry.
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct LibraryEntry {
@@ -40,7 +40,12 @@ pub struct LibraryEntry {
 }
 
 impl LibraryEntry {
-    pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>, owned_versions: Vec<u64>) -> Self {
+    pub fn new(
+        game: GameEntry,
+        store_entries: Vec<StoreEntry>,
+        owned_versions: Vec<u64>,
+        user_data: Option<GameUserData>,
+    ) -> Self {
         LibraryEntry {
             id: game.id,
             name: game.name,
@@ -51,9 +56,9 @@ impl LibraryEntry {
             release_date: game.release_date,
             collections: game.collections,
             companies: game.companies,
-            store_entries: store_entries,
-            owned_versions: owned_versions,
-            user_data: None,
+            store_entries,
+            owned_versions,
+            user_data,
         }
     }
 }
