@@ -205,11 +205,9 @@ impl LibraryManager {
         id: u64,
         recon_service: &Reconciler,
     ) -> Result<GameEntry, Status> {
-        let firestore = self.firestore.lock().unwrap();
-        let game_entry = match LibraryOps::read_game_entry(&firestore, id) {
+        let game_entry = match self.read_from_firestore(id) {
             Ok(entry) => entry,
             Err(_) => {
-                drop(firestore);
                 let game_entry = recon_service.retrieve(id).await?;
                 LibraryOps::write_game_entry(&self.firestore.lock().unwrap(), &game_entry)?;
                 game_entry
@@ -217,5 +215,9 @@ impl LibraryManager {
         };
 
         Ok(game_entry)
+    }
+
+    fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
+        LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
     }
 }
