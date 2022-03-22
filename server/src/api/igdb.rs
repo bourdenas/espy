@@ -148,14 +148,12 @@ impl IgdbApi {
 
         for expansion in game.expansions.iter_mut() {
             if let Some(game) = self.get_game_by_id(expansion.id).await? {
-                let game = self.retrieve_game_info(game).await?;
                 *expansion = game;
             }
         }
 
         for remaster in game.remasters.iter_mut() {
             if let Some(game) = self.get_game_by_id(remaster.id).await? {
-                let game = self.retrieve_game_info(game).await?;
                 *remaster = game;
             }
         }
