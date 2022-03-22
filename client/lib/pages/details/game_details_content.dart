@@ -6,6 +6,8 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/pages/home/home_slate.dart';
+import 'package:espy/pages/home/slate_tile.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:espy/widgets/gametags/game_tags_field.dart';
 import 'package:flutter/material.dart';
@@ -88,6 +90,10 @@ class GameDetailsContent extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 16.0),
+                  if (gameEntry.expansions.isNotEmpty) ...[
+                    expansions(context),
+                    SizedBox(height: 16.0),
+                  ],
                   screenshots(),
                   SizedBox(height: 8.0),
                 ],
@@ -96,6 +102,21 @@ class GameDetailsContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget expansions(BuildContext context) {
+    return HomeSlate(
+      title: 'Expansions',
+      tiles: gameEntry.expansions
+          .map((gameEntry) => SlateTileData(
+                image: gameEntry.cover != null
+                    ? '${Urls.imageProvider}/t_cover_big/${gameEntry.cover!.imageId}.jpg'
+                    : null,
+                onTap: () => Navigator.pushNamed(context, '/details',
+                    arguments: '${gameEntry.id}'),
+              ))
+          .toList(),
     );
   }
 
