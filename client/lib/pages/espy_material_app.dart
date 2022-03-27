@@ -9,6 +9,7 @@ import 'package:espy/pages/login_page.dart';
 import 'package:espy/pages/search/search_page.dart';
 import 'package:espy/pages/top_level_page.dart';
 import 'package:espy/pages/unmatched/unmatched_page.dart';
+import 'package:espy/widgets/webpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -71,6 +72,11 @@ class EspyMaterialApp extends StatelessWidget {
             case '/edit':
               return MaterialPageRoute(
                 builder: (_) => EditEntryPage(id: settings.arguments as String),
+                settings: settings,
+              );
+            case '/web':
+              return MaterialPageRoute(
+                builder: (_) => WebPage(url: settings.arguments as String),
                 settings: settings,
               );
             case '/search':
