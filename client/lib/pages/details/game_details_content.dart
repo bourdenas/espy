@@ -183,7 +183,8 @@ class GameDetailsContent extends StatelessWidget {
               splashRadius: 20.0,
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () => Navigator.pushNamed(context, '/web',
+                  arguments: '${libraryEntry.id}'),
               icon: Image.asset('assets/images/gog-128.png'),
               splashRadius: 20.0,
             ),
