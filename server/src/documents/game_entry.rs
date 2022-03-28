@@ -27,6 +27,14 @@ pub struct GameEntry {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub dlcs: Vec<GameEntry>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub remakes: Vec<GameEntry>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub remasters: Vec<GameEntry>,
 
     #[serde(default)]
@@ -80,10 +88,11 @@ pub enum WebsiteAuthority {
     Null = 0,
     Official = 1,
     Wikipedia = 2,
-    Gog = 3,
-    Steam = 4,
-    Egs = 5,
-    Youtube = 6,
+    Igdb = 3,
+    Gog = 4,
+    Steam = 5,
+    Egs = 6,
+    Youtube = 7,
 }
 
 impl Default for WebsiteAuthority {
@@ -107,6 +116,16 @@ impl GameEntry {
                 .expansions
                 .into_iter()
                 .map(|expansion| GameEntry::new(expansion))
+                .collect(),
+            dlcs: igdb_game
+                .dlcs
+                .into_iter()
+                .map(|dlc| GameEntry::new(dlc))
+                .collect(),
+            remakes: igdb_game
+                .remakes
+                .into_iter()
+                .map(|remake| GameEntry::new(remake))
                 .collect(),
             remasters: igdb_game
                 .remasters
@@ -185,7 +204,29 @@ impl GameEntry {
                     width: image.width,
                 })
                 .collect(),
-            websites: vec![],
+            websites: igdb_game
+                .websites
+                .into_iter()
+                .map(|website| Website {
+                    url: website.url,
+                    authority: match website.category {
+                        1 => WebsiteAuthority::Official,
+                        3 => WebsiteAuthority::Wikipedia,
+                        9 => WebsiteAuthority::Youtube,
+                        13 => WebsiteAuthority::Steam,
+                        16 => WebsiteAuthority::Gog,
+                        17 => WebsiteAuthority::Egs,
+                        _ => WebsiteAuthority::Null,
+                    },
+                })
+                .chain(
+                    vec![Website {
+                        url: igdb_game.url,
+                        authority: WebsiteAuthority::Igdb,
+                    }]
+                    .into_iter(),
+                )
+                .collect(),
         }
     }
 }

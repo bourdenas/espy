@@ -145,13 +145,28 @@ impl IgdbApi {
                 .await?
                 .screenshots;
         }
+        if game.websites.len() > 0 {
+            game.websites = self
+                .get_websites(&game.websites.iter().map(|f| f.id).collect::<Vec<_>>())
+                .await?
+                .websites;
+        }
 
         for expansion in game.expansions.iter_mut() {
             if let Some(game) = self.get_game_by_id(expansion.id).await? {
                 *expansion = game;
             }
         }
-
+        for dlc in game.dlcs.iter_mut() {
+            if let Some(game) = self.get_game_by_id(dlc.id).await? {
+                *dlc = game;
+            }
+        }
+        for remake in game.remakes.iter_mut() {
+            if let Some(game) = self.get_game_by_id(remake.id).await? {
+                *remake = game;
+            }
+        }
         for remaster in game.remasters.iter_mut() {
             if let Some(game) = self.get_game_by_id(remaster.id).await? {
                 *remaster = game;
@@ -213,6 +228,23 @@ impl IgdbApi {
                 &format!(
                     "fields *; where id = ({});",
                     screenshot_ids
+                        .iter()
+                        .map(|id| id.to_string())
+                        .collect::<Vec<String>>()
+                        .join(",")
+                ),
+            )
+            .await?)
+    }
+
+    /// Returns game websites based on id from the igdb/websites endpoint.
+    async fn get_websites(&self, website_ids: &[u64]) -> Result<igdb::WebsiteResult, Status> {
+        Ok(self
+            .post(
+                WEBSITES_ENDPOINT,
+                &format!(
+                    "fields *; where id = ({});",
+                    website_ids
                         .iter()
                         .map(|id| id.to_string())
                         .collect::<Vec<String>>()
@@ -346,6 +378,7 @@ const FRANCHISES_ENDPOINT: &str = "franchises.pb";
 const COLLECTIONS_ENDPOINT: &str = "collections.pb";
 const ARTWORKS_ENDPOINT: &str = "artworks.pb";
 const SCREENSHOTS_ENDPOINT: &str = "screenshots.pb";
+const WEBSITES_ENDPOINT: &str = "websites.pb";
 const COMPANIES_ENDPOINT: &str = "companies.pb";
 const INVOLVED_COMPANIES_ENDPOINT: &str = "involved_companies.pb";
 
