@@ -94,7 +94,7 @@ class GameDetailsContent extends StatelessWidget {
                     expansions(context),
                     SizedBox(height: 16.0),
                   ],
-                  screenshots(),
+                  screenshots(context),
                   SizedBox(height: 8.0),
                 ],
               ),
@@ -120,21 +120,47 @@ class GameDetailsContent extends StatelessWidget {
     );
   }
 
-  CarouselSlider screenshots() {
-    return CarouselSlider(
-      options: CarouselOptions(
-        enlargeCenterPage: true,
-        onPageChanged: (index, reason) {},
-      ),
-      items: [
-        for (final screenshot in gameEntry.screenshots)
-          CachedNetworkImage(
-            imageUrl: '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
-            placeholder: (context, url) => Center(
-              child: CircularProgressIndicator(),
-            ),
-            errorWidget: (context, url, error) => Icon(Icons.error),
-          )
+  Widget screenshots(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          margin: EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 2.0,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Text(
+                  "Screenshots",
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+              ),
+            ],
+          ),
+        ),
+        CarouselSlider(
+          options: CarouselOptions(
+            enlargeCenterPage: true,
+            onPageChanged: (index, reason) {},
+          ),
+          items: [
+            for (final screenshot in gameEntry.screenshots)
+              CachedNetworkImage(
+                imageUrl:
+                    '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
+                placeholder: (context, url) => Center(
+                  child: CircularProgressIndicator(),
+                ),
+                errorWidget: (context, url, error) => Icon(Icons.error),
+              )
+          ],
+        ),
       ],
     );
   }
