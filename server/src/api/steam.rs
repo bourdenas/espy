@@ -19,6 +19,10 @@ impl SteamApi {
 
 #[async_trait]
 impl Storefront for SteamApi {
+    fn id() -> String {
+        String::from("steam")
+    }
+
     async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
         let uri = format!(
             "{}{}?key={}&steamid={}&include_appinfo=true&format=json",
@@ -33,9 +37,9 @@ impl Storefront for SteamApi {
             .games
             .into_iter()
             .map(|entry| StoreEntry {
-                id: format!("steam_{}", entry.appid),
+                id: format!("{}", entry.appid),
                 title: entry.name,
-                storefront_name: String::from("steam"),
+                storefront_name: SteamApi::id(),
                 ..Default::default()
             })
             .collect())
@@ -61,7 +65,6 @@ struct GameEntry {
     name: String,
     playtime_forever: i32,
     img_icon_url: String,
-    img_logo_url: String,
 }
 
 const STEAM_HOST: &str = "http://api.steampowered.com";

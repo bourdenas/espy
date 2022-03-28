@@ -1,33 +1,14 @@
 use crate::api;
+use crate::documents::{Keys, UserData};
 use crate::library::LibraryManager;
 use crate::util;
 use crate::Status;
-use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct User {
     data: UserData,
     firestore: Arc<Mutex<api::FirestoreApi>>,
-}
-
-#[derive(Serialize, Deserialize, Default, Debug)]
-struct UserData {
-    uid: String,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    keys: Option<Keys>,
-}
-
-#[derive(Serialize, Deserialize, Default, Debug)]
-struct Keys {
-    #[serde(default)]
-    #[serde(skip_serializing_if = "String::is_empty")]
-    steam_user_id: String,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    gog_token: Option<api::GogToken>,
 }
 
 impl User {
@@ -100,6 +81,18 @@ impl User {
         Ok(())
     }
 
+    pub fn update_version(&mut self) -> Result<(), Status> {
+        self.data.version = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("SystemTime set before UNIX EPOCH!")
+            .as_millis() as u64;
+        if let Err(e) = self.save() {
+            return Err(Status::internal("User.sync:", e));
+        }
+
+        Ok(())
+    }
+
     /// Synchronises user library with connected storefronts to retrieve
     /// updates.
     ///
@@ -139,6 +132,10 @@ impl User {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.sync_library(steam_api, gog_api, egs_api).await?;
 
+        if let Err(e) = self.update_version() {
+            return Err(Status::internal("User.sync:", e));
+        }
+
         Ok(())
     }
 
@@ -173,7 +170,7 @@ impl User {
 
     /// Save user entry to Firestore. Returns the Firestore document id.
     fn save(&self) -> Result<String, Status> {
-        eprintln!("writing to firestore...");
+        eprintln!("updating user data to firestore...");
         self.firestore
             .lock()
             .unwrap()

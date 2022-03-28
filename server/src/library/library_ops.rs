@@ -6,48 +6,52 @@ use serde::{Deserialize, Serialize};
 pub struct LibraryOps {}
 
 impl LibraryOps {
-    /// Store storefront entries to user's library under unknown entries.
+    /// Store storefront entries to user's library under unmatched entries.
     ///
-    /// Writes `StoreEntry` documents under collection `users/{user}/unknown` in
-    /// Firestore.
-    pub fn write_unknown_entries(
+    /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
+    /// in Firestore.
+    pub fn write_unmatched_entries(
         firestore: &FirestoreApi,
         user_id: &str,
+        storefront_name: &str,
         entries: &[StoreEntry],
     ) -> Result<(), Status> {
         for entry in entries {
             firestore.write(
-                &format!("users/{}/unknown", user_id),
-                Some(&entry.id),
+                &format!("users/{}/unmatched", user_id),
+                Some(&format!("{}_{}", storefront_name, entry.id)),
                 entry,
             )?;
         }
         Ok(())
     }
 
-    /// Read unknown storefront entries in user's library.
+    /// Read unmatched storefront entries in user's library.
     ///
-    /// Reads `StoreEntry` documents under collection `users/{user}/unknown` in
-    /// Firestore.
-    pub fn read_unknown_entries(
+    /// Reads `StoreEntry` documents under collection `users/{user}/unmatched`
+    /// in Firestore.
+    pub fn read_unmatched_entries(
         firestore: &FirestoreApi,
         user_id: &str,
     ) -> Result<Vec<StoreEntry>, Status> {
-        match firestore.list::<StoreEntry>(&format!("users/{}/unknown", user_id)) {
+        match firestore.list::<StoreEntry>(&format!("users/{}/unmatched", user_id)) {
             Ok(entries) => Ok(entries),
-            Err(e) => Err(Status::internal("LibraryManager.read_unknown_entries: ", e)),
+            Err(e) => Err(Status::internal(
+                "LibraryManager.read_unmatched_entries: ",
+                e,
+            )),
         }
     }
 
     /// Returns user's matched game library entries.
     ///
-    /// Reads `LibraryEntry` documents under collection `users/{user}/library` in
-    /// Firestore.
+    /// Reads `LibraryEntry` documents under collection
+    /// `users/{user}/library_v2` in Firestore.
     pub fn read_library_entries(
         firestore: &FirestoreApi,
         user_id: &str,
     ) -> Result<Vec<LibraryEntry>, Status> {
-        match firestore.list::<LibraryEntry>(&format!("users/{}/library", user_id)) {
+        match firestore.list::<LibraryEntry>(&format!("users/{}/library_v2", user_id)) {
             Ok(entries) => Ok(entries),
             Err(e) => Err(Status::internal("LibraryManager.read_library_entries: ", e)),
         }
@@ -86,59 +90,62 @@ impl LibraryOps {
         }
     }
 
-    /// Handles library Firestore updates on successful matching input
-    /// StoreEntry with GameEntry.
-    pub fn store_entry_match(
+    /// Returns a GameEntry doc based on `game_id` from Firestore.
+    pub fn read_game_entry(firestore: &FirestoreApi, game_id: u64) -> Result<GameEntry, Status> {
+        firestore.read::<GameEntry>("games_v2", &game_id.to_string())
+    }
+
+    /// Writes a GameEntry doc in Firestore.
+    pub fn write_game_entry(
+        firestore: &FirestoreApi,
+        game_entry: &GameEntry,
+    ) -> Result<(), Status> {
+        match firestore.write("games_v2", Some(&game_entry.id.to_string()), game_entry) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(Status::internal("LibraryManager.write_game_entry: ", e)),
+        }
+    }
+
+    /// Handles Firestore library updates on successful match of a StoreEntry.
+    pub fn game_match_transaction(
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: StoreEntry,
+        owned_version: u64,
         game_entry: GameEntry,
     ) -> Result<(), Status> {
-        // Store GameEntry to 'games' collection. Might overwrite an existing
-        // one. That's ok as this is a fresher version.
-        firestore.write("games", Some(&game_entry.id.to_string()), &game_entry)?;
-
-        // Create LibraryEntry from IgdbEntry and StoreEntry.
-        let mut library_entry = LibraryEntry {
-            id: game_entry.id,
-            name: game_entry.name,
-            cover: match game_entry.cover {
-                Some(cover) => Some(cover.image_id),
-                None => None,
-            },
-            release_date: game_entry.release_date,
-            collection: game_entry.collection,
-            franchises: game_entry.franchises,
-            companies: game_entry.companies,
-            store_entry: vec![store_entry],
-            user_data: None,
-        };
+        let mut library_entry =
+            LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version], None);
 
         // TODO: The three operations below should be a transaction, but this is
         // not currently supported by this library.
         //
-        // Delete matched StoreEntries from 'users/{user}/unknown'
-        for store_entry in &library_entry.store_entry {
-            firestore.delete(&format!("users/{}/unknown/{}", user_id, store_entry.id))?;
+        // Delete StoreEntry from unmatched.
+        for store_entry in &library_entry.store_entries {
+            firestore.delete(&format!(
+                "users/{}/unmatched/{}",
+                user_id,
+                format!("{}_{}", store_entry.storefront_name, store_entry.id)
+            ))?;
         }
 
         // Check if game is already in user's library.
         if let Ok(existing) = firestore.read::<LibraryEntry>(
-            &format!("users/{}/library", user_id),
+            &format!("users/{}/library_v2", user_id),
             &library_entry.id.to_string(),
         ) {
-            // Use the most recently retrieved entry from IGDB to include any
-            // updates and merge existing user data for the entry (e.g. tags)
-            // and other store entries.
             library_entry
-                .store_entry
-                .extend(existing.store_entry.into_iter());
+                .store_entries
+                .extend(existing.store_entries.into_iter());
+            library_entry
+                .owned_versions
+                .extend(existing.owned_versions.into_iter());
             library_entry.user_data = existing.user_data;
         }
 
-        // Store GameEntries to 'users/{user}/library' collection.
+        // Store (updated) LibraryEntry to Firestore.
         firestore.write(
-            &format!("users/{}/library", user_id),
+            &format!("users/{}/library_v2", user_id),
             Some(&library_entry.id.to_string()),
             &library_entry,
         )?;
@@ -158,26 +165,18 @@ impl LibraryOps {
     ) -> Result<(), Status> {
         // Store GameEntry to 'games' collection. Might overwrite an existing
         // one. That's ok as this is a fresher version.
-        firestore.write("games", Some(&game_entry.id.to_string()), &game_entry)?;
+        LibraryOps::write_game_entry(firestore, &game_entry)?;
 
-        // Store GameEntries to 'users/{user}/library' collection.
+        // Store GameEntries to 'users/{user}/library_v2' collection.
         firestore.write(
-            &format!("users/{}/library", user_id),
+            &format!("users/{}/library_v2", user_id),
             Some(&library_entry.id.to_string()),
-            &LibraryEntry {
-                id: game_entry.id,
-                name: game_entry.name,
-                cover: match game_entry.cover {
-                    Some(cover) => Some(cover.image_id),
-                    None => None,
-                },
-                release_date: game_entry.release_date,
-                collection: game_entry.collection,
-                franchises: game_entry.franchises,
-                companies: game_entry.companies,
-                store_entry: library_entry.store_entry,
-                user_data: library_entry.user_data,
-            },
+            &LibraryEntry::new(
+                game_entry,
+                library_entry.store_entries,
+                library_entry.owned_versions,
+                library_entry.user_data,
+            ),
         )?;
 
         Ok(())
