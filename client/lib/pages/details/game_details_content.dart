@@ -74,7 +74,7 @@ class GameDetailsContent extends StatelessWidget {
                   SizedBox(height: 16.0),
                   GameTags(libraryEntry),
                   SizedBox(height: 16.0),
-                  if (!context.watch<AppConfigModel>().isMobile(context))
+                  if (!AppConfigModel.isMobile(context))
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -215,7 +215,7 @@ class GameDetailsContent extends StatelessWidget {
     return Row(
       children: [
         IconButton(
-          onPressed: () => context.read<AppConfigModel>().isMobile(context)
+          onPressed: () => AppConfigModel.isMobile(context)
               ? Navigator.pushNamed(context, '/edit',
                   arguments: '${libraryEntry.id}')
               : EditEntryDialog.show(context, libraryEntry),

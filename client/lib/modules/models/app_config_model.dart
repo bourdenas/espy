@@ -19,7 +19,7 @@ class AppConfigModel extends ChangeNotifier {
   get foregroundColour => Color(0xFF66A3BB);
   get backgrounColour => Color(0xFF253A47);
 
-  bool isMobile(BuildContext context) =>
+  static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width <= 800;
 
   void nextCardDecoration() {
