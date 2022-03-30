@@ -122,12 +122,13 @@ class GameDetailsContent extends StatelessWidget {
       title: 'Expansions & DLC',
       tiles: [shownEntry.expansions, shownEntry.dlcs]
           .expand((e) => e)
-          .map((e) => SlateTileData(
-                image: e.cover != null
-                    ? '${Urls.imageProvider}/t_cover_big/${e.cover!.imageId}.jpg'
+          .map((dlc) => SlateTileData(
+                image: dlc.cover != null
+                    ? '${Urls.imageProvider}/t_cover_big/${dlc.cover!.imageId}.jpg'
                     : null,
+                title: dlc.cover == null ? dlc.name : null,
                 onTap: () => Navigator.pushNamed(context, '/details',
-                    arguments: [gameEntry.id, e.id].join(',')),
+                    arguments: [gameEntry.id, dlc.id].join(',')),
               ))
           .toList(),
     );
