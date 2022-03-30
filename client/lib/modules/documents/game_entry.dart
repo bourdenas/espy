@@ -9,6 +9,8 @@ class GameEntry {
   final int releaseDate;
 
   final List<GameEntry> expansions;
+  final List<GameEntry> dlcs;
+  final List<GameEntry> remakes;
   final List<GameEntry> remasters;
   final List<int> versions;
   final int? parent;
@@ -19,6 +21,7 @@ class GameEntry {
   final GameImage? cover;
   final List<GameImage> screenshots;
   final List<GameImage> artwork;
+  final List<Website> websites;
 
   const GameEntry({
     required this.id,
@@ -27,6 +30,8 @@ class GameEntry {
     this.storyline = '',
     this.releaseDate = 0,
     this.expansions = const [],
+    this.dlcs = const [],
+    this.remakes = const [],
     this.remasters = const [],
     this.versions = const [],
     this.parent = null,
@@ -35,6 +40,7 @@ class GameEntry {
     this.cover,
     this.screenshots = const [],
     this.artwork = const [],
+    this.websites = const [],
   });
 
   GameEntry.fromJson(Map<String, dynamic> json)
@@ -47,6 +53,17 @@ class GameEntry {
           expansions: json.containsKey('expansions')
               ? [
                   for (final entry in json['expansions'])
+                    GameEntry.fromJson(entry),
+                ]
+              : [],
+          dlcs: json.containsKey('dlcs')
+              ? [
+                  for (final entry in json['dlcs']) GameEntry.fromJson(entry),
+                ]
+              : [],
+          remakes: json.containsKey('remakes')
+              ? [
+                  for (final entry in json['remakes'])
                     GameEntry.fromJson(entry),
                 ]
               : [],
@@ -87,6 +104,11 @@ class GameEntry {
                     GameImage.fromJson(entry),
                 ]
               : [],
+          websites: json.containsKey('websites')
+              ? [
+                  for (final entry in json['websites']) Website.fromJson(entry),
+                ]
+              : [],
         );
 
   Map<String, dynamic> toJson() {
@@ -99,6 +121,14 @@ class GameEntry {
       if (expansions.isNotEmpty)
         'expansions': [
           for (final entry in expansions) entry.toJson(),
+        ],
+      if (dlcs.isNotEmpty)
+        'dlcs': [
+          for (final entry in dlcs) entry.toJson(),
+        ],
+      if (remakes.isNotEmpty)
+        'remakes': [
+          for (final entry in remakes) entry.toJson(),
         ],
       if (remasters.isNotEmpty)
         'remasters': [
@@ -122,6 +152,10 @@ class GameEntry {
       if (artwork.isNotEmpty)
         'artwork': [
           for (final entry in artwork) entry.toJson(),
+        ],
+      if (websites.isNotEmpty)
+        'websites': [
+          for (final entry in websites) entry.toJson(),
         ],
     };
   }
@@ -150,6 +184,29 @@ class GameImage {
       'image_id': imageId,
       'height': height,
       'width': width,
+    };
+  }
+}
+
+class Website {
+  final String url;
+  final String authority;
+
+  const Website({
+    required this.url,
+    required this.authority,
+  });
+
+  Website.fromJson(Map<String, dynamic> json)
+      : this(
+          url: json['url'],
+          authority: json['authority'],
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'authority': authority,
     };
   }
 }
