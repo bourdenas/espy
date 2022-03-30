@@ -90,7 +90,8 @@ class GameDetailsContent extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 16.0),
-                  if (gameEntry.expansions.isNotEmpty) ...[
+                  if (gameEntry.expansions.isNotEmpty ||
+                      gameEntry.dlcs.isNotEmpty) ...[
                     expansions(context),
                     SizedBox(height: 16.0),
                   ],
@@ -107,8 +108,9 @@ class GameDetailsContent extends StatelessWidget {
 
   Widget expansions(BuildContext context) {
     return HomeSlate(
-      title: 'Expansions',
-      tiles: gameEntry.expansions
+      title: 'Expansions & DLC',
+      tiles: [gameEntry.expansions, gameEntry.dlcs]
+          .expand((e) => e)
           .map((gameEntry) => SlateTileData(
                 image: gameEntry.cover != null
                     ? '${Urls.imageProvider}/t_cover_big/${gameEntry.cover!.imageId}.jpg'
