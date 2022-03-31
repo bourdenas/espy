@@ -37,7 +37,6 @@ class _GameListPageState extends State<GameListPage> {
       child: Focus(
         autofocus: true,
         child: Scaffold(
-          extendBodyBehindAppBar: true,
           appBar: AppBar(
             title: GameChipsFilter(filter),
             backgroundColor: Colors.black.withOpacity(0.6),

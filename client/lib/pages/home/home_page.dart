@@ -50,8 +50,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       animation: _colorAnimationController,
       builder: (context, _) {
         return Scaffold(
-          extendBodyBehindAppBar: true,
-          appBar: _appBar(context),
+          extendBodyBehindAppBar: AppConfigModel.isMobile(context),
+          appBar: appBar(context),
           body: NotificationListener<ScrollNotification>(
             onNotification: _scrollListener,
             child: HomeContent(),
@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  AppBar _appBar(BuildContext context) {
+  AppBar appBar(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
 
     return AppBar(
