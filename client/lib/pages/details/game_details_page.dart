@@ -19,6 +19,8 @@ class GameDetailsPage extends StatelessWidget {
     final id = ids[0];
     final libraryEntry = context.read<GameEntriesModel>().getEntryById(id);
 
+    print("ids: '$ids'\nid=$id");
+
     return Actions(
       actions: {
         SearchIntent: CallbackAction<SearchIntent>(
