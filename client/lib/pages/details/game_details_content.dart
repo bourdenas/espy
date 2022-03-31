@@ -31,9 +31,12 @@ class GameDetailsContent extends StatelessWidget {
     for (final id in childPath) {
       final gameId = int.tryParse(id) ?? 0;
 
-      shownEntry = [shownEntry.expansions, shownEntry.dlcs]
-          .expand((e) => e)
-          .firstWhere((e) => e.id == gameId);
+      shownEntry = [
+        shownEntry.expansions,
+        shownEntry.dlcs,
+        shownEntry.remakes,
+        shownEntry.remasters,
+      ].expand((e) => e).firstWhere((e) => e.id == gameId);
     }
 
     return CustomScrollView(
@@ -106,6 +109,12 @@ class GameDetailsContent extends StatelessWidget {
                     expansions(context, shownEntry),
                     SizedBox(height: 16.0),
                   ],
+                  SizedBox(height: 16.0),
+                  if (shownEntry.remakes.isNotEmpty ||
+                      shownEntry.remasters.isNotEmpty) ...[
+                    remakes(context, shownEntry),
+                    SizedBox(height: 16.0),
+                  ],
                   screenshots(context, shownEntry),
                   SizedBox(height: 8.0),
                 ],
@@ -129,6 +138,23 @@ class GameDetailsContent extends StatelessWidget {
                 title: dlc.cover == null ? dlc.name : null,
                 onTap: () => Navigator.pushNamed(context, '/details',
                     arguments: [gameEntry.id, dlc.id].join(',')),
+              ))
+          .toList(),
+    );
+  }
+
+  Widget remakes(BuildContext context, GameEntry shownEntry) {
+    return HomeSlate(
+      title: 'Remakes',
+      tiles: [shownEntry.remakes, shownEntry.remasters]
+          .expand((e) => e)
+          .map((remake) => SlateTileData(
+                image: remake.cover != null
+                    ? '${Urls.imageProvider}/t_cover_big/${remake.cover!.imageId}.jpg'
+                    : null,
+                title: remake.cover == null ? remake.name : null,
+                onTap: () => Navigator.pushNamed(context, '/details',
+                    arguments: [gameEntry.id, remake.id].join(',')),
               ))
           .toList(),
     );
