@@ -34,14 +34,13 @@ class SlateTile extends StatelessWidget {
                   imageUrl: data.image!,
                   placeholder: (context, url) => PlaceholderShimmer(),
                   errorWidget: (context, url, error) =>
-                      Center(child: Icon(Icons.help_outline)),
+                      Center(child: Icon(Icons.error_outline)),
                 )
               else
                 SizedBox(
-                    width: 120,
-                    child: Center(
-                      child: Icon(Icons.help_outline),
-                    )),
+                  width: 120,
+                  child: Container(),
+                ),
               if (data.title != null)
                 Column(
                   mainAxisAlignment: MainAxisAlignment.end,

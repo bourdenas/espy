@@ -1,11 +1,8 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
-import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
-import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/modules/models/unmatched_library_model.dart';
 import 'package:espy/pages/home/home_slate.dart';
 import 'package:espy/pages/home/slate_tile.dart';
@@ -28,14 +25,13 @@ class HomeContent extends StatelessWidget {
   }
 
   Widget library(BuildContext context) {
-    final appConfig = context.watch<AppConfigModel>();
     final slates = context.watch<HomeSlatesModel>().slates;
     final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
 
     return ListView(
       // crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (appConfig.isMobile(context))
+        if (AppConfigModel.isMobile(context))
           HomeHeadline()
         else
           SizedBox(height: 64),
@@ -59,7 +55,7 @@ class HomeContent extends StatelessWidget {
             title: 'Unmatched Entries',
             onExpand: () => Navigator.pushNamed(context, '/unmatched'),
             tiles: unmatchedEntries
-                .take(appConfig.isMobile(context) ? 8 : 32)
+                .take(AppConfigModel.isMobile(context) ? 8 : 32)
                 .map((entry) => SlateTileData(
                       title: entry.title,
                       image: null,
@@ -71,16 +67,4 @@ class HomeContent extends StatelessWidget {
       ],
     );
   }
-}
-
-class _SlateInfo {
-  _SlateInfo({
-    required this.title,
-    required this.filter,
-    required this.entries,
-  });
-
-  String title;
-  LibraryFilter filter;
-  List<SlateTileData> entries = [];
 }

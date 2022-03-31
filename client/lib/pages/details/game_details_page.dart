@@ -9,13 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
 class GameDetailsPage extends StatelessWidget {
-  const GameDetailsPage({required this.id});
+  const GameDetailsPage({required this.path});
 
-  final String id;
+  final String path;
 
   @override
   Widget build(BuildContext context) {
+    final ids = path.split(',');
+    final id = ids[0];
     final libraryEntry = context.read<GameEntriesModel>().getEntryById(id);
+
+    print("ids: '$ids'\nid=$id");
 
     return Actions(
       actions: {
@@ -51,6 +55,7 @@ class GameDetailsPage extends StatelessWidget {
                 return GameDetailsContent(
                   libraryEntry: libraryEntry!,
                   gameEntry: gameEntry,
+                  childPath: ids.sublist(1),
                 );
               }
 

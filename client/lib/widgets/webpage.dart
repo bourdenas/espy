@@ -24,7 +24,7 @@ class _WebPageState extends State<WebPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Flutter WebView example')),
-        body: const WebView(initialUrl: 'https://flutter.dev'),
+        appBar: AppBar(),
+        body: WebView(initialUrl: widget.url),
       );
 }

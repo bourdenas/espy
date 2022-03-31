@@ -23,8 +23,6 @@ class _GameListPageState extends State<GameListPage> {
   @override
   Widget build(BuildContext context) {
     final filter = LibraryFilter.decode(widget.filter);
-
-    final appConfig = context.read<AppConfigModel>();
     final entries =
         context.watch<GameEntriesModel>().getEntries(filter).toList();
 
@@ -45,7 +43,7 @@ class _GameListPageState extends State<GameListPage> {
             backgroundColor: Colors.black.withOpacity(0.6),
             elevation: 0.0,
           ),
-          body: appConfig.isMobile(context)
+          body: AppConfigModel.isMobile(context)
               ? GameListView(entries: entries)
               : GameGridView(entries: entries),
         ),

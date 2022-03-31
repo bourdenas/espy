@@ -66,7 +66,7 @@ class EspyMaterialApp extends StatelessWidget {
             case '/details':
               return MaterialPageRoute(
                 builder: (_) =>
-                    GameDetailsPage(id: settings.arguments as String),
+                    GameDetailsPage(path: settings.arguments as String),
                 settings: settings,
               );
             case '/edit':
