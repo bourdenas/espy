@@ -11,7 +11,6 @@ import 'package:espy/pages/home/slate_tile.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:espy/widgets/gametags/game_tags_field.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class GameDetailsContent extends StatelessWidget {
   const GameDetailsContent({
@@ -39,6 +38,29 @@ class GameDetailsContent extends StatelessWidget {
       ].expand((e) => e).firstWhere((e) => e.id == gameId);
     }
 
+    return AppConfigModel.isMobile(context)
+        ? GameDetailsContentMobile(
+            libraryEntry: libraryEntry,
+            gameEntry: shownEntry,
+            childPath: childPath)
+        : Container();
+  }
+}
+
+class GameDetailsContentMobile extends StatelessWidget {
+  const GameDetailsContentMobile({
+    Key? key,
+    required this.libraryEntry,
+    required this.gameEntry,
+    required this.childPath,
+  }) : super(key: key);
+
+  final LibraryEntry libraryEntry;
+  final GameEntry gameEntry;
+  final List<String> childPath;
+
+  @override
+  Widget build(BuildContext context) {
     return CustomScrollView(
       key: Key('gameDetailsScrollView'),
       slivers: [
@@ -52,7 +74,7 @@ class GameDetailsContent extends StatelessWidget {
                 CachedNetworkImage(
                   width: MediaQuery.of(context).size.width,
                   imageUrl:
-                      '${Urls.imageProvider}/t_cover_big/${shownEntry.cover?.imageId}.jpg',
+                      '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
                   fit: BoxFit.cover,
                 ),
               ),
@@ -69,11 +91,11 @@ class GameDetailsContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    shownEntry.name,
+                    gameEntry.name,
                     style: Theme.of(context).textTheme.headline4,
                   ),
                   SizedBox(height: 8.0),
-                  actionBar(context, shownEntry),
+                  actionBar(context, gameEntry),
                   SizedBox(height: 16.0),
                   GameTags(libraryEntry),
                   SizedBox(height: 16.0),
@@ -86,7 +108,7 @@ class GameDetailsContent extends StatelessWidget {
                     ),
                   SizedBox(height: 16.0),
                   Text(
-                    shownEntry.summary,
+                    gameEntry.summary,
                     style: TextStyle(
                       fontSize: 14.0,
                       fontWeight: FontWeight.w400,
@@ -104,18 +126,18 @@ class GameDetailsContent extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 16.0),
-                  if (shownEntry.expansions.isNotEmpty ||
-                      shownEntry.dlcs.isNotEmpty) ...[
-                    expansions(context, shownEntry),
+                  if (gameEntry.expansions.isNotEmpty ||
+                      gameEntry.dlcs.isNotEmpty) ...[
+                    expansions(context, gameEntry),
                     SizedBox(height: 16.0),
                   ],
                   SizedBox(height: 16.0),
-                  if (shownEntry.remakes.isNotEmpty ||
-                      shownEntry.remasters.isNotEmpty) ...[
-                    remakes(context, shownEntry),
+                  if (gameEntry.remakes.isNotEmpty ||
+                      gameEntry.remasters.isNotEmpty) ...[
+                    remakes(context, gameEntry),
                     SizedBox(height: 16.0),
                   ],
-                  screenshots(context, shownEntry),
+                  screenshots(context, gameEntry),
                   SizedBox(height: 8.0),
                 ],
               ),
@@ -126,10 +148,10 @@ class GameDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget expansions(BuildContext context, GameEntry shownEntry) {
+  Widget expansions(BuildContext context, GameEntry gameEntry) {
     return HomeSlate(
       title: 'Expansions & DLC',
-      tiles: [shownEntry.expansions, shownEntry.dlcs]
+      tiles: [gameEntry.expansions, gameEntry.dlcs]
           .expand((e) => e)
           .map((dlc) => SlateTileData(
                 image: dlc.cover != null
@@ -137,16 +159,17 @@ class GameDetailsContent extends StatelessWidget {
                     : null,
                 title: dlc.cover == null ? dlc.name : null,
                 onTap: () => Navigator.pushNamed(context, '/details',
-                    arguments: [gameEntry.id, dlc.id].join(',')),
+                    arguments:
+                        [libraryEntry.id, ...childPath, dlc.id].join(',')),
               ))
           .toList(),
     );
   }
 
-  Widget remakes(BuildContext context, GameEntry shownEntry) {
+  Widget remakes(BuildContext context, GameEntry gameEntry) {
     return HomeSlate(
       title: 'Remakes',
-      tiles: [shownEntry.remakes, shownEntry.remasters]
+      tiles: [gameEntry.remakes, gameEntry.remasters]
           .expand((e) => e)
           .map((remake) => SlateTileData(
                 image: remake.cover != null
@@ -154,13 +177,14 @@ class GameDetailsContent extends StatelessWidget {
                     : null,
                 title: remake.cover == null ? remake.name : null,
                 onTap: () => Navigator.pushNamed(context, '/details',
-                    arguments: [gameEntry.id, remake.id].join(',')),
+                    arguments:
+                        [libraryEntry.id, ...childPath, remake.id].join(',')),
               ))
           .toList(),
     );
   }
 
-  Widget screenshots(BuildContext context, GameEntry shownEntry) {
+  Widget screenshots(BuildContext context, GameEntry gameEntry) {
     return Column(
       children: [
         Container(
@@ -190,7 +214,7 @@ class GameDetailsContent extends StatelessWidget {
             onPageChanged: (index, reason) {},
           ),
           items: [
-            for (final screenshot in shownEntry.screenshots)
+            for (final screenshot in gameEntry.screenshots)
               CachedNetworkImage(
                 imageUrl:
                     '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
@@ -205,7 +229,7 @@ class GameDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget actionBar(BuildContext context, GameEntry shownEntry) {
+  Widget actionBar(BuildContext context, GameEntry gameEntry) {
     return Column(
       children: [
         Row(
@@ -223,7 +247,7 @@ class GameDetailsContent extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4.0),
               ),
               child: Text(
-                '${DateTime.fromMillisecondsSinceEpoch(shownEntry.releaseDate * 1000).year}',
+                '${DateTime.fromMillisecondsSinceEpoch(gameEntry.releaseDate * 1000).year}',
                 style: TextStyle(
                   fontSize: 16.0,
                   fontWeight: FontWeight.w500,
@@ -232,7 +256,7 @@ class GameDetailsContent extends StatelessWidget {
             ),
           ],
         ),
-        linkButtons(context, shownEntry),
+        linkButtons(context, gameEntry),
       ],
     );
   }
@@ -264,10 +288,10 @@ class GameDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget linkButtons(BuildContext context, GameEntry shownEntry) {
+  Widget linkButtons(BuildContext context, GameEntry gameEntry) {
     return Row(
       children: [
-        for (final website in shownEntry.websites)
+        for (final website in gameEntry.websites)
           if (website.authority != "Null" && website.authority != "Youtube")
             IconButton(
               onPressed: () =>
