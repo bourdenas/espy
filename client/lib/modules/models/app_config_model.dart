@@ -53,14 +53,13 @@ class AppConfigModel extends ChangeNotifier {
   }
 }
 
+enum LibraryLayout {
+  GRID,
+  LIST,
+}
+
 enum CardDecoration {
   EMPTY,
   INFO,
   TAGS,
-}
-
-enum LibraryLayout {
-  GRID,
-  EXPANDED_LIST,
-  LIST,
 }

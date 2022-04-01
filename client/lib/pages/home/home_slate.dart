@@ -1,4 +1,5 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/home/slate_tile.dart';
 import 'package:flutter/material.dart';
 
@@ -24,7 +25,7 @@ class _HomeSlateState extends State<HomeSlate> {
     return Column(
       children: [
         header(context),
-        carousel(),
+        carousel(context),
       ],
     );
   }
@@ -86,11 +87,11 @@ class _HomeSlateState extends State<HomeSlate> {
     );
   }
 
-  Widget carousel() {
+  Widget carousel(BuildContext context) {
     return FadeIn(
       duration: Duration(milliseconds: 500),
       child: Container(
-        height: 170.0,
+        height: SlateTileSize.height(AppConfigModel.isMobile(context)),
         child: ListView.builder(
           controller: _scrollController,
           scrollDirection: Axis.horizontal,
