@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -8,6 +9,22 @@ class SlateTileData {
   final String? title;
   final String? image;
   final VoidCallback? onTap;
+}
+
+class SlateTileSize {
+  static const mobileWidth = 120.0;
+  static const mobileHeight = 170.0;
+
+  static const desktopWidth = 227.1;
+  static const desktopHeight = 320.0;
+
+  static double width(bool isMobile) {
+    return isMobile ? mobileWidth : desktopWidth;
+  }
+
+  static double height(bool isMobile) {
+    return isMobile ? mobileHeight : desktopHeight;
+  }
 }
 
 class SlateTile extends StatelessWidget {
@@ -20,6 +37,8 @@ class SlateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = AppConfigModel.isMobile(context);
+
     return Container(
       padding: const EdgeInsets.only(right: 8.0),
       child: InkWell(
@@ -38,7 +57,7 @@ class SlateTile extends StatelessWidget {
                 )
               else
                 SizedBox(
-                  width: 120,
+                  width: SlateTileSize.width(isMobile),
                   child: Container(),
                 ),
               if (data.title != null)
@@ -46,7 +65,7 @@ class SlateTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Container(
-                      width: 120,
+                      width: SlateTileSize.width(isMobile),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(data.title!),
@@ -71,10 +90,12 @@ class PlaceholderShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = AppConfigModel.isMobile(context);
+
     return Shimmer.fromColors(
       child: Container(
-        height: 170.0,
-        width: 120.0,
+        height: SlateTileSize.height(isMobile),
+        width: SlateTileSize.width(isMobile),
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(8.0),
