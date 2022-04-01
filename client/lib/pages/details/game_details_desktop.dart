@@ -133,15 +133,22 @@ class GameDetailsContentDesktop extends StatelessWidget {
 
   static Widget relatedGames(
       BuildContext context, GameEntry gameEntry, List<String> idPath) {
+    final hasExpansions =
+        gameEntry.expansions.isNotEmpty || gameEntry.dlcs.isNotEmpty;
+    final hasRemakes =
+        gameEntry.remakes.isNotEmpty || gameEntry.remasters.isNotEmpty;
+
     return Row(
       children: [
-        Expanded(
-          child: GameEntryExpansions(gameEntry, idPath: idPath),
-        ),
-        SizedBox(width: 64.0),
-        Expanded(
-          child: GameEntryRemakes(gameEntry, idPath: idPath),
-        ),
+        if (hasExpansions)
+          Expanded(
+            child: GameEntryExpansions(gameEntry, idPath: idPath),
+          ),
+        if (hasExpansions && hasRemakes) SizedBox(width: 64.0),
+        if (hasRemakes)
+          Expanded(
+            child: GameEntryRemakes(gameEntry, idPath: idPath),
+          ),
       ],
     );
   }
