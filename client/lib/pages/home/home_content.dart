@@ -4,7 +4,6 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/unmatched_library_model.dart';
-import 'package:espy/pages/gamelist/game_grid_view.dart';
 import 'package:espy/pages/home/home_slate.dart';
 import 'package:espy/pages/home/slate_tile.dart';
 import 'package:espy/widgets/empty_library.dart';
@@ -26,17 +25,6 @@ class HomeContent extends StatelessWidget {
   }
 
   Widget library(BuildContext context) {
-    return AppConfigModel.isMobile(context)
-        ? HomeContentMobile()
-        : HomeContentDesktop();
-  }
-}
-
-class HomeContentMobile extends StatelessWidget {
-  const HomeContentMobile({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
     final slates = context.watch<HomeSlatesModel>().slates;
     final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
 
@@ -78,15 +66,5 @@ class HomeContentMobile extends StatelessWidget {
         SizedBox(height: 30.0),
       ],
     );
-  }
-}
-
-class HomeContentDesktop extends StatelessWidget {
-  const HomeContentDesktop({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final entries = context.watch<GameEntriesModel>().getEntries(null);
-    return GameGridView(entries: entries.toList());
   }
 }
