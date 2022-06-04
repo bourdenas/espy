@@ -147,8 +147,16 @@ impl LibraryManager {
             tokio::spawn(async move {
                 let game_entry = entry_match.game_entry.unwrap();
 
+                let firestore = &firestore.lock().unwrap();
+                LibraryOps::write_game_entry(firestore, &game_entry)
+                    .expect("Failed to write to firestore");
+                if let Some(game_entry) = &entry_match.base_game_entry {
+                    LibraryOps::write_game_entry(firestore, game_entry)
+                        .expect("Failed to write to firestore");
+                }
+
                 if let Err(status) = LibraryOps::game_match_transaction(
-                    &firestore.lock().unwrap(),
+                    firestore,
                     &user_id,
                     entry_match.store_entry,
                     game_entry.id,
