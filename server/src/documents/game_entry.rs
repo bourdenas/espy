@@ -214,8 +214,8 @@ impl GameEntry {
                         3 => WebsiteAuthority::Wikipedia,
                         9 => WebsiteAuthority::Youtube,
                         13 => WebsiteAuthority::Steam,
-                        16 => WebsiteAuthority::Gog,
-                        17 => WebsiteAuthority::Egs,
+                        16 => WebsiteAuthority::Egs,
+                        17 => WebsiteAuthority::Gog,
                         _ => WebsiteAuthority::Null,
                     },
                 })
