@@ -1,6 +1,7 @@
 import 'package:espy/dialogs/settings_dialog.dart';
 import 'package:espy/modules/dialogs/search/search_dialog.dart';
 import 'package:espy/modules/intents/search_intent.dart';
+import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/home/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -149,7 +150,8 @@ class _TopLevelPageState extends State<TopLevelPage>
         SizedBox(height: 32.0),
         ListTile(
           key: Key('libraryListTile'),
-          onTap: () {},
+          onTap: () => Navigator.pushNamed(context, '/games',
+              arguments: LibraryFilter().encode()),
           leading: Icon(Icons.my_library_books),
           title: Text('Library'),
           // selected: data.state == figure out,
