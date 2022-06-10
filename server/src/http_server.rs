@@ -1,11 +1,11 @@
 use crate::api::{FirestoreApi, IgdbApi};
 use crate::http;
-use clap::Clap;
+use clap::Parser;
 use espy_server::*;
 use std::sync::{Arc, Mutex};
 use warp::{self, Filter};
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct Opts {
     /// JSON file containing application keys for espy service.
     #[clap(long, default_value = "keys.json")]

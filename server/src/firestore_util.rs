@@ -1,8 +1,8 @@
-use clap::Clap;
+use clap::Parser;
 use espy_server::*;
 
 /// Espy server util for testing functionality of the backend.
-#[derive(Clap)]
+#[derive(Parser)]
 struct Opts {
     /// Espy user name for managing a game library.
     #[clap(short, long, default_value = "")]

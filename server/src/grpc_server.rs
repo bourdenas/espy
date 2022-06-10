@@ -1,9 +1,9 @@
-use clap::Clap;
+use clap::Parser;
 use espy::espy_server::EspyServer;
 use espy_server::*;
 
 /// Espy server util for testing functionality of the backend.
-#[derive(Clap)]
+#[derive(Parser)]
 struct Opts {
     /// JSON file that contains application keys for espy service.
     #[clap(long, default_value = "keys.json")]

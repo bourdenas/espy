@@ -24,25 +24,22 @@ path = "src/search_igdb.rs"
 name = "firestore_util"
 path = "src/firestore_util.rs"
 
-[[bin]] 
-name = "egs_demo"
-path = "src/egs_demo.rs"
 
 [dependencies]
-clap = "3.0.0-beta.2"
+clap = { version="3.1", features = ["derive"] }
 egs-api = "0.4"
 futures = "0.3"
 itertools = "0.10.0"
-prost = "0.9"
+prost = "0.10"
 reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.15", features = ["full"] }
-tonic = "0.6"
+tonic = "0.7"
 warp = "0.3"
 firestore-db-and-auth = "0.6"
 async-trait = "0.1"
 async-recursion = "1.0.0"
 
 [build-dependencies]
-tonic-build = "0.6"
+tonic-build = "0.7"

@@ -1,9 +1,9 @@
-use clap::Clap;
+use clap::Parser;
 use documents::GameEntry;
 use espy_server::*;
 
 /// IGDB search utility.
-#[derive(Clap)]
+#[derive(Parser)]
 struct Opts {
     /// Espy user name for managing a game library.
     #[clap(short, long, default_value = "")]
