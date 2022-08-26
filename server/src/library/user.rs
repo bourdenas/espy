@@ -22,7 +22,7 @@ impl User {
                 firestore: Arc::clone(&firestore),
             }),
             Err(e) => {
-                eprintln!("Creating new user '{}'\n{}", user_id, e);
+                eprintln!("Creating new user '{user_id}'\n{e}");
                 let user = User {
                     data: UserData {
                         uid: String::from(user_id),
@@ -33,7 +33,7 @@ impl User {
                 match user.save() {
                     Ok(_) => Ok(user),
                     Err(e) => Err(Status::internal(
-                        &format!("Failed to read or create user '{}'", user_id),
+                        &format!("Failed to read or create user '{user_id}'"),
                         e,
                     )),
                 }
@@ -149,7 +149,7 @@ impl User {
                         *token = match api::GogToken::from_oauth_code(&token.oauth_code).await {
                             Ok(token) => token,
                             Err(e) => {
-                                eprintln!("Failed to validate GOG token. {}", e);
+                                eprintln!("Failed to validate GOG token. {e}");
                                 api::GogToken::new(&token.oauth_code)
                             }
                         }
@@ -157,7 +157,7 @@ impl User {
                     match token.validate().await {
                         Ok(()) => Some(token),
                         Err(status) => {
-                            eprintln!("Failed to validate GOG toke: {}", status);
+                            eprintln!("Failed to validate GOG toke: {status}");
                             None
                         }
                     }

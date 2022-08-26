@@ -41,10 +41,8 @@ impl Storefront for GogApi {
         let mut store_entries: Vec<StoreEntry> = vec![];
 
         for page in 1.. {
-            let uri = format!(
-                "{}/account/getFilteredProducts?mediaType=1&page={}",
-                GOG_API_HOST, page
-            );
+            let uri =
+                format!("{GOG_API_HOST}/account/getFilteredProducts?mediaType=1&page={page}",);
             let resp = reqwest::Client::new()
                 .get(&uri)
                 .header(

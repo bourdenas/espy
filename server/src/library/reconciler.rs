@@ -33,8 +33,8 @@ impl Match {
                     },
                     Err(_) => {
                         eprintln!(
-                            "Failed to retrieve base game (id={}) for '{}'",
-                            parent_id, &game_entry.name
+                            "Failed to retrieve base game (id={parent_id}) for '{}'",
+                            &game_entry.name
                         );
                         None
                     }
@@ -115,7 +115,7 @@ async fn refresh_task(task: RefreshTask) {
             game_entry: Some(game_entry),
         },
         Err(e) => {
-            println!("Failed to resolve '{}': {}", task.library_entry.name, e);
+            println!("Failed to resolve '{}': {e}", task.library_entry.name);
             Refresh {
                 library_entry: task.library_entry,
                 game_entry: None,
@@ -124,7 +124,7 @@ async fn refresh_task(task: RefreshTask) {
     };
 
     if let Err(e) = task.tx.send(entry_match).await {
-        eprintln!("{}", e);
+        eprintln!("{e}");
     }
 }
 
@@ -142,22 +142,22 @@ async fn match_task(task: MatchingTask) {
                     None => Match::failed(task.store_entry),
                 },
                 Err(e) => {
-                    eprintln!("match_by_title '{}' failed: {}", task.store_entry.title, e);
+                    eprintln!("match_by_title '{}' failed: {e}", task.store_entry.title);
                     Match::failed(task.store_entry)
                 }
             },
         },
         Err(e) => {
             eprintln!(
-                "match_by_external_id '{}' failed: {}",
-                task.store_entry.title, e
+                "match_by_external_id '{}' failed: {e}",
+                task.store_entry.title
             );
             Match::failed(task.store_entry)
         }
     };
 
     if let Err(e) = task.tx.send(entry_match).await {
-        eprintln!("{}", e);
+        eprintln!("{e}");
     }
 }
 
@@ -194,8 +194,7 @@ async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
     match igdb.get_game_by_id(id).await? {
         Some(game_entry) => Ok(GameEntry::new(game_entry)),
         None => Err(Status::not_found(&format!(
-            "Failed to retrieve game entry with id={}",
-            id
+            "Failed to retrieve game entry with id={id}"
         ))),
     }
 }

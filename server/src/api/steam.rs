@@ -25,8 +25,8 @@ impl Storefront for SteamApi {
 
     async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
         let uri = format!(
-            "{}{}?key={}&steamid={}&include_appinfo=true&format=json",
-            STEAM_HOST, STEAM_GETOWNEDGAMES_SERVICE, self.steam_key, self.steam_user_id
+            "{STEAM_HOST}{STEAM_GETOWNEDGAMES_SERVICE}?key={}&steamid={}&include_appinfo=true&format=json",
+            self.steam_key, self.steam_user_id
         );
 
         let resp = reqwest::get(&uri).await?.json::<SteamResponse>().await?;

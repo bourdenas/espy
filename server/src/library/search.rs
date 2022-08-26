@@ -14,8 +14,7 @@ pub async fn get_candidates(
         Ok(r) => r,
         Err(e) => {
             return Err(Status::not_found(&format!(
-                "Failed to recon '{}': {}",
-                title, e
+                "Failed to recon '{title}': {e}"
             )))
         }
     };

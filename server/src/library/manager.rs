@@ -116,7 +116,7 @@ impl LibraryManager {
                     refresh.library_entry,
                     refresh.game_entry.unwrap(),
                 ) {
-                    eprintln!("Error handling library entry refresh: {}", status);
+                    eprintln!("Error handling library entry refresh: {status}");
                 }
             });
         }
@@ -165,7 +165,7 @@ impl LibraryManager {
                         None => game_entry,
                     },
                 ) {
-                    eprintln!("Error handling matching entry: {}", status);
+                    eprintln!("Error handling matching entry: {status}");
                 }
             });
         }

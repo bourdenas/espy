@@ -18,8 +18,8 @@ impl LibraryOps {
     ) -> Result<(), Status> {
         for entry in entries {
             firestore.write(
-                &format!("users/{}/unmatched", user_id),
-                Some(&format!("{}_{}", storefront_name, entry.id)),
+                &format!("users/{user_id}/unmatched"),
+                Some(&format!("{storefront_name}_{}", entry.id)),
                 entry,
             )?;
         }
@@ -34,7 +34,7 @@ impl LibraryOps {
         firestore: &FirestoreApi,
         user_id: &str,
     ) -> Result<Vec<StoreEntry>, Status> {
-        match firestore.list::<StoreEntry>(&format!("users/{}/unmatched", user_id)) {
+        match firestore.list::<StoreEntry>(&format!("users/{user_id}/unmatched")) {
             Ok(entries) => Ok(entries),
             Err(e) => Err(Status::internal(
                 "LibraryManager.read_unmatched_entries: ",
@@ -51,7 +51,7 @@ impl LibraryOps {
         firestore: &FirestoreApi,
         user_id: &str,
     ) -> Result<Vec<LibraryEntry>, Status> {
-        match firestore.list::<LibraryEntry>(&format!("users/{}/library_v2", user_id)) {
+        match firestore.list::<LibraryEntry>(&format!("users/{user_id}/library_v2")) {
             Ok(entries) => Ok(entries),
             Err(e) => Err(Status::internal("LibraryManager.read_library_entries: ", e)),
         }
@@ -84,7 +84,7 @@ impl LibraryOps {
     ///
     /// Reads `users/{user}/storefront/{storefront_name}` document in Firestore.
     pub fn read_storefront_ids(firestore: &FirestoreApi, user_id: &str, name: &str) -> Vec<String> {
-        match firestore.read::<Storefront>(&format!("users/{}/storefronts", user_id), name) {
+        match firestore.read::<Storefront>(&format!("users/{user_id}/storefronts"), name) {
             Ok(storefront) => storefront.owned_games,
             Err(_) => vec![],
         }
@@ -123,15 +123,14 @@ impl LibraryOps {
         // Delete StoreEntry from unmatched.
         for store_entry in &library_entry.store_entries {
             firestore.delete(&format!(
-                "users/{}/unmatched/{}",
-                user_id,
-                format!("{}_{}", store_entry.storefront_name, store_entry.id)
+                "users/{user_id}/unmatched/{}_{}",
+                store_entry.storefront_name, store_entry.id
             ))?;
         }
 
         // Check if game is already in user's library.
         if let Ok(existing) = firestore.read::<LibraryEntry>(
-            &format!("users/{}/library_v2", user_id),
+            &format!("users/{user_id}/library_v2"),
             &library_entry.id.to_string(),
         ) {
             library_entry
@@ -145,7 +144,7 @@ impl LibraryOps {
 
         // Store (updated) LibraryEntry to Firestore.
         firestore.write(
-            &format!("users/{}/library_v2", user_id),
+            &format!("users/{user_id}/library_v2"),
             Some(&library_entry.id.to_string()),
             &library_entry,
         )?;
@@ -169,7 +168,7 @@ impl LibraryOps {
 
         // Store GameEntries to 'users/{user}/library_v2' collection.
         firestore.write(
-            &format!("users/{}/library_v2", user_id),
+            &format!("users/{user_id}/library_v2"),
             Some(&library_entry.id.to_string()),
             &LibraryEntry::new(
                 game_entry,

@@ -28,8 +28,8 @@ impl IgdbApi {
     /// retrieved token expires.
     pub async fn connect(&mut self) -> Result<(), Status> {
         let uri = format!(
-            "{}?client_id={}&client_secret={}&grant_type=client_credentials",
-            TWITCH_OAUTH_URL, self.client_id, self.secret
+            "{TWITCH_OAUTH_URL}?client_id={}&client_secret={}&grant_type=client_credentials",
+            self.client_id, self.secret
         );
 
         let resp = reqwest::Client::new()
@@ -50,7 +50,7 @@ impl IgdbApi {
     /// populated to save on extra queries.
     pub async fn search_by_title(&self, title: &str) -> Result<igdb::GameResult, Status> {
         Ok(self
-            .post(GAMES_ENDPOINT, &format!("search \"{}\"; fields *;", title))
+            .post(GAMES_ENDPOINT, &format!("search \"{title}\"; fields *;"))
             .await?)
     }
 
@@ -70,8 +70,8 @@ impl IgdbApi {
             .post(
                 EXTERNAL_GAMES_ENDPOINT,
                 &format!(
-                    "fields *; where uid = \"{}\" & category = {};",
-                    store_entry.id, category
+                    "fields *; where uid = \"{}\" & category = {category};",
+                    store_entry.id
                 ),
             )
             .await?;
@@ -85,7 +85,7 @@ impl IgdbApi {
     /// Returns a fully resolved IGDB Game matching the input IGDB Game id.
     pub async fn get_game_by_id(&self, id: u64) -> Result<Option<igdb::Game>, Status> {
         let result: igdb::GameResult = self
-            .post(GAMES_ENDPOINT, &format!("fields *; where id={};", id))
+            .post(GAMES_ENDPOINT, &format!("fields *; where id={id};"))
             .await?;
 
         let game = result.games.into_iter().next();
@@ -179,10 +179,7 @@ impl IgdbApi {
     /// Returns game image cover based on id from the igdb/covers endpoint.
     pub async fn get_cover(&self, cover_id: u64) -> Result<Option<igdb::Cover>, Status> {
         let result: igdb::CoverResult = self
-            .post(
-                COVERS_ENDPOINT,
-                &format!("fields *; where id={};", cover_id),
-            )
+            .post(COVERS_ENDPOINT, &format!("fields *; where id={cover_id};"))
             .await?;
 
         Ok(result.covers.into_iter().next())
@@ -193,7 +190,7 @@ impl IgdbApi {
         let result: igdb::CollectionResult = self
             .post(
                 COLLECTIONS_ENDPOINT,
-                &format!("fields *; where id={};", collection_id),
+                &format!("fields *; where id={collection_id};"),
             )
             .await?;
 
@@ -346,11 +343,11 @@ impl IgdbApi {
             .ok_or(Status::new("IgdbApi endpoint is not connected."))?;
 
         self.qps.wait();
-        let uri = format!("{}/{}/", IGDB_SERVICE_URL, endpoint);
+        let uri = format!("{IGDB_SERVICE_URL}/{endpoint}/");
         let bytes = reqwest::Client::new()
             .post(&uri)
             .header("Client-ID", &self.client_id)
-            .header("Authorization", format!("Bearer {}", &token))
+            .header("Authorization", format!("Bearer {token}"))
             .body(String::from(body))
             .send()
             .await?
@@ -361,8 +358,8 @@ impl IgdbApi {
             Ok(msg) => Ok(msg),
             Err(err) => {
                 eprintln!("IGDB.POST error: {}", std::str::from_utf8(&bytes).unwrap());
-                println!("endpoint: '{}'", endpoint);
-                println!("body: '{}'", body);
+                eprintln!("endpoint: '{endpoint}'");
+                eprintln!("body: '{body}'");
                 Err(Status::internal("Failed to decode IGDB response", err))
             }
         }

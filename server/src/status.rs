@@ -37,13 +37,13 @@ impl From<tonic::Status> for Status {
 
 impl From<serde_json::Error> for Status {
     fn from(err: serde_json::Error) -> Self {
-        Self::new(format!("{}", err))
+        Self::new(format!("{err}"))
     }
 }
 
 impl From<reqwest::Error> for Status {
     fn from(err: reqwest::Error) -> Self {
-        Self::new(format!("{}", err))
+        Self::new(format!("{err}"))
     }
 }
 

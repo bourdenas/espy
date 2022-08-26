@@ -29,8 +29,7 @@ impl FirestoreApi {
         match documents::read(&self.session, path, doc_id) {
             Ok(doc) => Ok(doc),
             Err(_) => Err(Status::not_found(&format!(
-                "Firestore document {}/{} not found.",
-                path, doc_id
+                "Firestore document {path}/{doc_id} not found."
             ))),
         }
     }
