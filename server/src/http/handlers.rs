@@ -16,8 +16,8 @@ pub async fn post_sync(
 
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
-        Err(e) => {
-            eprintln!("POST /library/{user_id}/settings: {e}");
+        Err(err) => {
+            eprintln!("{err}");
             return Ok(StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
@@ -47,15 +47,15 @@ pub async fn post_recon(
         Ok(()) => {
             let mut user = match User::new(firestore, &user_id) {
                 Ok(user) => user,
-                Err(e) => {
-                    eprintln!("POST /library/{user_id}/settings: {e}");
+                Err(err) => {
+                    eprintln!("{err}");
                     return Ok(StatusCode::INTERNAL_SERVER_ERROR);
                 }
             };
             match user.update_version() {
                 Ok(_) => Ok(StatusCode::OK),
-                Err(status) => {
-                    eprintln!("{status}");
+                Err(err) => {
+                    eprintln!("{err}");
                     Ok(StatusCode::INTERNAL_SERVER_ERROR)
                 }
             }
@@ -91,8 +91,8 @@ pub async fn get_images(
     let uri = format!("{IGDB_IMAGES_URL}/{resolution}/{image}");
     let resp = match reqwest::Client::new().get(&uri).send().await {
         Ok(resp) => resp,
-        Err(e) => {
-            eprintln!("Remote GET failed! {e}");
+        Err(err) => {
+            eprintln!("{err}");
             return Ok(Box::new(StatusCode::NOT_FOUND));
         }
     };
