@@ -125,7 +125,7 @@ impl LibraryManager {
     }
 
     /// Reconciles entries in the unmatched collection of user's library.
-    pub async fn match_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
+    pub async fn recon_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
         let unmatched_entries =
             LibraryOps::read_unmatched_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
 
