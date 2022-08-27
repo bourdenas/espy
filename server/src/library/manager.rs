@@ -8,6 +8,8 @@ use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
 
+use super::reconciler::Match;
+
 /// Proxy structure that handles operations regarding user's library.
 pub struct LibraryManager {
     user_id: String,
@@ -129,48 +131,60 @@ impl LibraryManager {
         let unmatched_entries =
             LibraryOps::read_unmatched_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
 
-        let (tx, mut rx) = mpsc::channel(32);
+        let (tx, rx) = mpsc::channel(32);
 
         tokio::spawn(async move {
             recon_service.reconcile(tx, unmatched_entries).await;
         });
 
-        while let Some(entry_match) = rx.recv().await {
-            println!("  received match for {}", &entry_match.store_entry.title);
+        self.handle_matches(rx).await;
+        Ok(())
+    }
 
-            if let None = &entry_match.game_entry {
-                continue;
-            }
+    async fn handle_matches(&self, mut rx: mpsc::Receiver<Match>) {
+        while let Some(entry_match) = rx.recv().await {
+            eprintln!("  received match for {}", &entry_match.store_entry.title);
 
             let firestore = Arc::clone(&self.firestore);
             let user_id = self.user_id.clone();
             tokio::spawn(async move {
-                let game_entry = entry_match.game_entry.unwrap();
-
                 let firestore = &firestore.lock().unwrap();
-                LibraryOps::write_game_entry(firestore, &game_entry)
-                    .expect("Failed to write to firestore");
-                if let Some(game_entry) = &entry_match.base_game_entry {
-                    LibraryOps::write_game_entry(firestore, game_entry)
-                        .expect("Failed to write to firestore");
-                }
-
-                if let Err(status) = LibraryOps::game_match_transaction(
-                    firestore,
-                    &user_id,
-                    entry_match.store_entry,
-                    game_entry.id,
-                    match entry_match.base_game_entry {
-                        Some(base_game_entry) => base_game_entry,
-                        None => game_entry,
-                    },
-                ) {
-                    eprintln!("Error handling matching entry: {status}");
+                match &entry_match.game_entry {
+                    Some(_) => Self::store_successful_match(&user_id, entry_match, firestore),
+                    None => LibraryOps::match_failed_transaction(
+                        firestore,
+                        &user_id,
+                        entry_match.store_entry,
+                    )
+                    .expect("Failed to write to firestore"),
                 }
             });
         }
+    }
 
-        Ok(())
+    fn store_successful_match(user_id: &str, entry_match: Match, firestore: &FirestoreApi) {
+        let game_entry = entry_match
+            .game_entry
+            .expect("store_successful_match() called with an unsuccessful match");
+
+        LibraryOps::write_game_entry(firestore, &game_entry).expect("Failed to write to firestore");
+        if let Some(game_entry) = &entry_match.base_game_entry {
+            LibraryOps::write_game_entry(firestore, game_entry)
+                .expect("Failed to write to firestore");
+        }
+
+        if let Err(status) = LibraryOps::game_match_transaction(
+            firestore,
+            user_id,
+            entry_match.store_entry,
+            game_entry.id,
+            match entry_match.base_game_entry {
+                Some(base_game_entry) => base_game_entry,
+                None => game_entry,
+            },
+        ) {
+            eprintln!("Error handling matching entry: {status}");
+        }
     }
 
     /// Match a `StoreEntry` to a specified `GameEntry` and saving it in the

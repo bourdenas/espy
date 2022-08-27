@@ -152,6 +152,34 @@ impl LibraryOps {
         Ok(())
     }
 
+    /// Handles Firestore library updates on successful match of a StoreEntry.
+    pub fn match_failed_transaction(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        store_entry: StoreEntry,
+    ) -> Result<(), Status> {
+        // TODO: The two operations below should be a transaction, but this is
+        // not currently supported by this library.
+        //
+        // Delete StoreEntry from unmatched.
+        firestore.delete(&format!(
+            "users/{user_id}/unmatched/{}_{}",
+            &store_entry.storefront_name, &store_entry.id
+        ))?;
+
+        // Write StoreEntry in failed.
+        firestore.write(
+            &format!("users/{user_id}/failed"),
+            Some(&format!(
+                "{}_{}",
+                &store_entry.storefront_name, &store_entry.id
+            )),
+            &store_entry,
+        )?;
+
+        Ok(())
+    }
+
     /// Updates a `game_entry` and the associated `library_entry` on Firestore.
     ///
     /// The `library_entry` is updated with the input `game_entry` data but
