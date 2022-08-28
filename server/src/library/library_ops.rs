@@ -1,7 +1,8 @@
 use crate::api::FirestoreApi;
-use crate::documents::{GameEntry, LibraryEntry, StoreEntry};
+use crate::documents::{GameEntry, LibraryEntry, Recent, RecentEntry, StoreEntry};
 use crate::Status;
 use serde::{Deserialize, Serialize};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct LibraryOps {}
 
@@ -107,6 +108,9 @@ impl LibraryOps {
     }
 
     /// Handles Firestore library updates on successful match of a StoreEntry.
+    ///
+    /// NOTE: The operations below should be a transaction, but this is not
+    /// currently supported by this library.
     pub fn game_match_transaction(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -114,21 +118,19 @@ impl LibraryOps {
         owned_version: u64,
         game_entry: GameEntry,
     ) -> Result<(), Status> {
+        // Write GameEntry in games collection.
+        LibraryOps::write_game_entry(firestore, &game_entry)?;
+
+        // Delete StoreEntry from unmatched.
+        firestore.delete(&format!(
+            "users/{user_id}/unmatched/{}_{}",
+            store_entry.storefront_name, store_entry.id
+        ))?;
+
+        // Check if game is already in user's library.
         let mut library_entry =
             LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version], None);
 
-        // TODO: The three operations below should be a transaction, but this is
-        // not currently supported by this library.
-        //
-        // Delete StoreEntry from unmatched.
-        for store_entry in &library_entry.store_entries {
-            firestore.delete(&format!(
-                "users/{user_id}/unmatched/{}_{}",
-                store_entry.storefront_name, store_entry.id
-            ))?;
-        }
-
-        // Check if game is already in user's library.
         if let Ok(existing) = firestore.read::<LibraryEntry>(
             &format!("users/{user_id}/library_v2"),
             &library_entry.id.to_string(),
@@ -149,18 +151,44 @@ impl LibraryOps {
             &library_entry,
         )?;
 
+        // Update recent entries in Firestore.
+        let recent_entry = RecentEntry {
+            id: library_entry.id,
+            name: library_entry.name,
+            added_timestamp: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+        };
+        let recent =
+            match firestore.read::<Recent>(&format!("users/{user_id}/recent"), "library_entries") {
+                Ok(mut recent) => {
+                    recent.entries.push(recent_entry);
+                    recent
+                }
+                Err(_) => Recent {
+                    entries: vec![recent_entry],
+                },
+            };
+
+        firestore.write(
+            &format!("users/{user_id}/recent"),
+            Some("library_entries"),
+            &recent,
+        )?;
+
         Ok(())
     }
 
     /// Handles Firestore library updates on successful match of a StoreEntry.
+    ///
+    /// NOTE: The operations below should be a transaction, but this is not
+    /// currently supported by this library.
     pub fn match_failed_transaction(
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: StoreEntry,
     ) -> Result<(), Status> {
-        // TODO: The two operations below should be a transaction, but this is
-        // not currently supported by this library.
-        //
         // Delete StoreEntry from unmatched.
         firestore.delete(&format!(
             "users/{user_id}/unmatched/{}_{}",

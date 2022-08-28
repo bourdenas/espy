@@ -112,14 +112,13 @@ impl LibraryManager {
             let firestore = Arc::clone(&self.firestore);
             let user_id = self.user_id.clone();
             tokio::spawn(async move {
-                if let Err(status) = LibraryOps::update_library_entry(
+                LibraryOps::update_library_entry(
                     &firestore.lock().unwrap(),
                     &user_id,
                     refresh.library_entry,
                     refresh.game_entry.unwrap(),
-                ) {
-                    eprintln!("Error handling library entry refresh: {status}");
-                }
+                )
+                .expect("Firestore update_library_entry():")
             });
         }
 
@@ -143,47 +142,35 @@ impl LibraryManager {
 
     async fn handle_matches(&self, mut rx: mpsc::Receiver<Match>) {
         while let Some(entry_match) = rx.recv().await {
-            eprintln!("  received match for {}", &entry_match.store_entry.title);
+            match &entry_match.game_entry {
+                Some(_) => eprintln!("  👍 received match for {}", &entry_match.store_entry.title),
+                None => eprintln!("  🚫 no match for {}", &entry_match.store_entry.title),
+            };
 
             let firestore = Arc::clone(&self.firestore);
             let user_id = self.user_id.clone();
             tokio::spawn(async move {
                 let firestore = &firestore.lock().unwrap();
-                match &entry_match.game_entry {
-                    Some(_) => Self::store_successful_match(&user_id, entry_match, firestore),
+                match entry_match.game_entry {
+                    Some(game_entry) => LibraryOps::game_match_transaction(
+                        firestore,
+                        &user_id,
+                        entry_match.store_entry,
+                        game_entry.id,
+                        match entry_match.base_game_entry {
+                            Some(base_game_entry) => base_game_entry,
+                            None => game_entry,
+                        },
+                    )
+                    .expect("Firestore game_match_transaction()"),
                     None => LibraryOps::match_failed_transaction(
                         firestore,
                         &user_id,
                         entry_match.store_entry,
                     )
-                    .expect("Failed to write to firestore"),
+                    .expect("Firestore match_failed_transaction()"),
                 }
             });
-        }
-    }
-
-    fn store_successful_match(user_id: &str, entry_match: Match, firestore: &FirestoreApi) {
-        let game_entry = entry_match
-            .game_entry
-            .expect("store_successful_match() called with an unsuccessful match");
-
-        LibraryOps::write_game_entry(firestore, &game_entry).expect("Failed to write to firestore");
-        if let Some(game_entry) = &entry_match.base_game_entry {
-            LibraryOps::write_game_entry(firestore, game_entry)
-                .expect("Failed to write to firestore");
-        }
-
-        if let Err(status) = LibraryOps::game_match_transaction(
-            firestore,
-            user_id,
-            entry_match.store_entry,
-            game_entry.id,
-            match entry_match.base_game_entry {
-                Some(base_game_entry) => base_game_entry,
-                None => game_entry,
-            },
-        ) {
-            eprintln!("Error handling matching entry: {status}");
         }
     }
 
@@ -219,9 +206,6 @@ impl LibraryManager {
     ///
     /// If the GameEntry is not already available in Firestore it attemps to
     /// retrieve it from IGDB.
-    ///
-    /// NOTE: The operation has side-effects, writes the retrieved GameEntry
-    /// from IGDB, if any, in Firestore.
     async fn retrieve_game_entry(
         &self,
         id: u64,
@@ -231,7 +215,6 @@ impl LibraryManager {
             Ok(entry) => entry,
             Err(_) => {
                 let game_entry = recon_service.retrieve(id).await?;
-                LibraryOps::write_game_entry(&self.firestore.lock().unwrap(), &game_entry)?;
                 game_entry
             }
         };
