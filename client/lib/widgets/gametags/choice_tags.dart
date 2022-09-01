@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/material.dart';
@@ -67,6 +68,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: TextFormField(
+            autofocus: !AppConfigModel.isMobile(context),
             decoration: InputDecoration(
               prefixIcon: Icon(Icons.label),
               hintText: 'Label...',
