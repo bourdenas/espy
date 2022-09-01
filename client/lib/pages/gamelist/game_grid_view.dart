@@ -14,6 +14,7 @@ class GameGridView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scrollbar(
       child: GridView.extent(
+        primary: true,
         restorationId: 'grid_view_game_entries_grid_offset',
         maxCrossAxisExtent: _maxCardWidth,
         childAspectRatio: _cardAspectRation,
@@ -25,20 +26,6 @@ class GameGridView extends StatelessWidget {
     );
   }
 
-  @override
-  int visibleEntries(BuildContext context) {
-    final cardsPerRow = (context.size!.width / _maxCardWidth).ceil();
-    final cardWidth = (context.size!.width / cardsPerRow).floor();
-    final visibleRows =
-        (context.size!.height / (cardWidth / _cardAspectRation)).ceil();
-
-    return cardsPerRow * visibleRows;
-  }
-
-  @override
-  double get scrollThreshold => 2 * _maxCardHeight;
-
   static const _maxCardWidth = 300.0;
   static const _cardAspectRation = .75;
-  static const _maxCardHeight = _maxCardWidth / _cardAspectRation;
 }

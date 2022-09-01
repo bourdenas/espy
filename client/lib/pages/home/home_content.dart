@@ -30,6 +30,7 @@ class HomeContent extends StatelessWidget {
 
     return ListView(
       // crossAxisAlignment: CrossAxisAlignment.start,
+      primary: true,
       children: [
         if (AppConfigModel.isMobile(context))
           HomeHeadline()

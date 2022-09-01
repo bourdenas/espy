@@ -176,6 +176,7 @@ class _ChipResults extends StatelessWidget {
             child: Container(
               height: 40,
               child: ListView(
+                primary: true,
                 scrollDirection: Axis.horizontal,
                 children: [
                   for (final chip in chips)

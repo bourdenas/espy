@@ -21,6 +21,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      primary: true,
       slivers: [
         header(context, libraryEntry, gameEntry),
         SliverToBoxAdapter(

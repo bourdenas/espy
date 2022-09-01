@@ -17,6 +17,7 @@ class UnmatchedListView extends StatelessWidget {
         from: 20,
         duration: Duration(milliseconds: 500),
         child: ListView.builder(
+          primary: true,
           key: Key('unmatchedListView'),
           itemCount: unmatchedEntries.length,
           itemBuilder: (context, index) {

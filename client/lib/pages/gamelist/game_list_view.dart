@@ -19,6 +19,7 @@ class GameListView extends StatelessWidget {
         from: 20,
         duration: Duration(milliseconds: 500),
         child: ListView.builder(
+          primary: true,
           key: Key('gameListView'),
           itemCount: entries.length,
           itemBuilder: (context, index) {
