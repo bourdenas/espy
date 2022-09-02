@@ -1,4 +1,3 @@
-import 'package:espy/modules/dialogs/search/search_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/widgets/espy_rail.dart';
@@ -117,9 +116,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           key: Key('searchButton'),
           icon: Icon(Icons.search),
           splashRadius: 20.0,
-          onPressed: () => isMobile
-              ? Navigator.pushNamed(context, '/search')
-              : SearchDialog.show(context),
+          onPressed: () => Navigator.pushNamed(context, '/search'),
         ),
       ],
       backgroundColor: _colorTween.value,

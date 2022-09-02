@@ -28,15 +28,10 @@ class GameSearchResults extends StatelessWidget {
             .toList()
         : [];
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          return GameListCard(
-            entry: matchedEntries[index],
-          );
-        },
-        childCount: matchedEntries.length,
-      ),
+    return SliverGrid.extent(
+      maxCrossAxisExtent: 600.0,
+      childAspectRatio: 2.5,
+      children: matchedEntries.map((e) => GameListCard(entry: e)).toList(),
     );
   }
 }
