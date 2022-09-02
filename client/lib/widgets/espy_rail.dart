@@ -82,6 +82,13 @@ List<_MenuItem> _menuItems = [
         arguments: LibraryFilter().encode()),
   ),
   _MenuItem(
+    label: 'Untagged',
+    icon: Icons.label_off_outlined,
+    selectedIcon: Icons.label_off,
+    onTap: (context) => Navigator.pushNamed(context, '/games',
+        arguments: LibraryFilter(untagged: true).encode()),
+  ),
+  _MenuItem(
     label: 'Failed',
     icon: Icons.error_outline,
     selectedIcon: Icons.error,
