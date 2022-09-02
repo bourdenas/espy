@@ -1,13 +1,14 @@
 import 'package:espy/modules/dialogs/search/search_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/home/home_content.dart';
+import 'package:espy/widgets/espy_rail.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  final Function _showMenu;
+  final void Function()? showMenu;
 
-  HomePage(Function this._showMenu);
+  HomePage({void Function()? this.showMenu});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -47,18 +48,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _colorAnimationController,
-      builder: (context, _) {
-        return Scaffold(
-          extendBodyBehindAppBar: AppConfigModel.isMobile(context),
-          appBar: appBar(context),
-          body: NotificationListener<ScrollNotification>(
-            onNotification: _scrollListener,
-            child: HomeContent(),
+    return Row(
+      children: [
+        if (widget.showMenu == null) EspyNavigationRail(false),
+        Expanded(
+          child: AnimatedBuilder(
+            animation: _colorAnimationController,
+            builder: (context, _) {
+              return Scaffold(
+                extendBodyBehindAppBar: AppConfigModel.isMobile(context),
+                appBar: appBar(context),
+                body: NotificationListener<ScrollNotification>(
+                  onNotification: _scrollListener,
+                  child: HomeContent(),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -68,14 +76,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return AppBar(
       toolbarOpacity: 0.6,
-      leading: IconButton(
-        key: Key('drawerButton'),
-        icon: Icon(Icons.menu),
-        splashRadius: 20.0,
-        onPressed: () {
-          widget._showMenu();
-        },
-      ),
+      leading: widget.showMenu != null
+          ? IconButton(
+              key: Key('drawerButton'),
+              icon: Icon(Icons.menu),
+              splashRadius: 20.0,
+              onPressed: widget.showMenu,
+            )
+          : null,
       title: Text(
         'espy',
         style: TextStyle(
