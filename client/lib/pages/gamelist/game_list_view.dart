@@ -18,17 +18,21 @@ class GameListView extends StatelessWidget {
       child: FadeInUp(
         from: 20,
         duration: Duration(milliseconds: 500),
-        child: ListView.builder(
+        child: CustomScrollView(
           primary: true,
-          key: Key('gameListView'),
-          itemCount: entries.length,
-          itemBuilder: (context, index) {
-            return GameListCard(
-              entry: entries[index],
-            );
-          },
+          shrinkWrap: true,
+          slivers: [
+            SliverGrid.extent(
+              maxCrossAxisExtent: _maxCardWidth,
+              childAspectRatio: _cardAspectRation,
+              children: entries.map((e) => GameListCard(entry: e)).toList(),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  static const _maxCardWidth = 600.0;
+  static const _cardAspectRation = 2.5;
 }
