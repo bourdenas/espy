@@ -1,5 +1,4 @@
 import 'package:espy/dialogs/settings_dialog.dart';
-import 'package:espy/modules/dialogs/search/search_dialog.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
@@ -46,7 +45,7 @@ class _TopLevelPageState extends State<TopLevelPage>
       child: Actions(
         actions: {
           SearchIntent: CallbackAction<SearchIntent>(
-              onInvoke: (intent) => SearchDialog.show(context)),
+              onInvoke: (intent) => Navigator.pushNamed(context, '/search')),
         },
         child: Focus(
           autofocus: true,
