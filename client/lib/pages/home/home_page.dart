@@ -91,17 +91,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
       actions: [
-        if (isMobile)
-          IconButton(
-            key: Key('layoutButton'),
-            icon: Icon(_libraryViews[appConfig.libraryLayout.index].iconData),
-            splashRadius: 20.0,
-            onPressed: () {
-              setState(() {
-                appConfig.nextLibraryLayout();
-              });
-            },
-          ),
+        IconButton(
+          key: Key('layoutButton'),
+          icon: Icon(_libraryViews[appConfig.libraryLayout.index].iconData),
+          splashRadius: 20.0,
+          onPressed: () {
+            setState(() {
+              appConfig.nextLibraryLayout();
+            });
+          },
+        ),
         IconButton(
           key: Key('cardInfoButton'),
           icon: Icon(_cardViews[appConfig.cardDecoration.index].iconData),
