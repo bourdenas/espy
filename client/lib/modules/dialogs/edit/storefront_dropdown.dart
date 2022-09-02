@@ -78,6 +78,7 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
 
   void onRematch(BuildContext context) {
     MatchingDialog.show(context, storeEntry, onMatch: (gameEntry) {
+      // TODO: BUG: This moves storefront entry to {user}/failed collection.
       context.read<GameLibraryModel>().unmatchEntry(storeEntry, widget.entry);
       Navigator.pushNamed(context, '/details', arguments: '${gameEntry.id}');
     });
