@@ -9,19 +9,9 @@ pub struct EgsApi {
 }
 
 impl EgsApi {
-    pub async fn connect(sid: &str) -> Result<Self, Status> {
+    pub async fn connect(code: &str) -> Result<Self, Status> {
         let mut egs = EpicGames::new();
-
-        let token = match egs.auth_sid(sid).await {
-            Some(exchange_token) => exchange_token,
-            None => {
-                return Err(Status::invalid_argument(
-                    "Provided sid was not accepted by EgsApi.",
-                ));
-            }
-        };
-
-        egs.auth_code(token).await;
+        egs.auth_code(None, Some(code.to_owned())).await;
         egs.login().await;
 
         match egs.library_items(true).await {
