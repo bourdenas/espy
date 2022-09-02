@@ -25,23 +25,23 @@ class GameListCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: CachedNetworkImage(
-                  imageUrl:
-                      '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
-                  placeholder: (context, url) => Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  errorWidget: (context, url, error) => Icon(Icons.error),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: CachedNetworkImage(
+                imageUrl:
+                    '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+                placeholder: (context, url) => Center(
+                  child: CircularProgressIndicator(),
                 ),
+                errorWidget: (context, url, error) => Icon(Icons.error),
               ),
             ),
             SizedBox(width: 16.0),
-            Expanded(
-              flex: 3,
+            Flexible(
+              flex: 1,
+              fit: FlexFit.tight,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:espy/modules/dialogs/search/search_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
@@ -22,7 +21,7 @@ class GameDetailsPage extends StatelessWidget {
     return Actions(
       actions: {
         SearchIntent: CallbackAction<SearchIntent>(
-            onInvoke: (intent) => SearchDialog.show(context)),
+            onInvoke: (intent) => Navigator.pushNamed(context, '/search')),
         HomeIntent: CallbackAction<HomeIntent>(onInvoke: (intent) {
           Navigator.pushNamed(context, '/home');
         }),

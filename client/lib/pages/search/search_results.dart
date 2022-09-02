@@ -1,3 +1,5 @@
+import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
@@ -26,17 +28,26 @@ class GameSearchResults extends StatelessWidget {
                 .split(' ')
                 .any((word) => word.startsWith(term))))
             .toList()
-        : [];
+        : <LibraryEntry>[];
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          return GameListCard(
-            entry: matchedEntries[index],
-          );
-        },
-        childCount: matchedEntries.length,
-      ),
+    return context.watch<AppConfigModel>().libraryLayout == LibraryLayout.GRID
+        ? gridView(matchedEntries)
+        : listView(matchedEntries);
+  }
+
+  SliverGrid gridView(List<LibraryEntry> matchedEntries) {
+    return SliverGrid.extent(
+      maxCrossAxisExtent: 300.0,
+      childAspectRatio: .75,
+      children: matchedEntries.map((e) => GameListCard(entry: e)).toList(),
+    );
+  }
+
+  SliverGrid listView(List<LibraryEntry> matchedEntries) {
+    return SliverGrid.extent(
+      maxCrossAxisExtent: 600.0,
+      childAspectRatio: 2.5,
+      children: matchedEntries.map((e) => GameListCard(entry: e)).toList(),
     );
   }
 }

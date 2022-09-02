@@ -25,7 +25,7 @@ class UnmatchedLibraryModel extends ChangeNotifier {
     FirebaseFirestore.instance
         .collection('users')
         .doc(_uid)
-        .collection('unmatched')
+        .collection('failed')
         .withConverter<StoreEntry>(
           fromFirestore: (snapshot, _) => StoreEntry.fromJson(snapshot.data()!),
           toFirestore: (entry, _) => entry.toJson(),

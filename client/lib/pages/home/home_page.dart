@@ -1,13 +1,13 @@
-import 'package:espy/modules/dialogs/search/search_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/home/home_content.dart';
+import 'package:espy/widgets/espy_rail.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  final Function _showMenu;
+  final void Function()? showMenu;
 
-  HomePage(Function this._showMenu);
+  HomePage({void Function()? this.showMenu});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -47,18 +47,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _colorAnimationController,
-      builder: (context, _) {
-        return Scaffold(
-          extendBodyBehindAppBar: AppConfigModel.isMobile(context),
-          appBar: appBar(context),
-          body: NotificationListener<ScrollNotification>(
-            onNotification: _scrollListener,
-            child: HomeContent(),
+    return Row(
+      children: [
+        if (widget.showMenu == null) EspyNavigationRail(false),
+        Expanded(
+          child: AnimatedBuilder(
+            animation: _colorAnimationController,
+            builder: (context, _) {
+              return Scaffold(
+                extendBodyBehindAppBar: AppConfigModel.isMobile(context),
+                appBar: appBar(context),
+                body: NotificationListener<ScrollNotification>(
+                  onNotification: _scrollListener,
+                  child: HomeContent(),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -68,14 +75,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return AppBar(
       toolbarOpacity: 0.6,
-      leading: IconButton(
-        key: Key('drawerButton'),
-        icon: Icon(Icons.menu),
-        splashRadius: 20.0,
-        onPressed: () {
-          widget._showMenu();
-        },
-      ),
+      leading: widget.showMenu != null
+          ? IconButton(
+              key: Key('drawerButton'),
+              icon: Icon(Icons.menu),
+              splashRadius: 20.0,
+              onPressed: widget.showMenu,
+            )
+          : null,
       title: Text(
         'espy',
         style: TextStyle(
@@ -84,17 +91,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
       actions: [
-        if (isMobile)
-          IconButton(
-            key: Key('layoutButton'),
-            icon: Icon(_libraryViews[appConfig.libraryLayout.index].iconData),
-            splashRadius: 20.0,
-            onPressed: () {
-              setState(() {
-                appConfig.nextLibraryLayout();
-              });
-            },
-          ),
+        IconButton(
+          key: Key('layoutButton'),
+          icon: Icon(_libraryViews[appConfig.libraryLayout.index].iconData),
+          splashRadius: 20.0,
+          onPressed: () {
+            setState(() {
+              appConfig.nextLibraryLayout();
+            });
+          },
+        ),
         IconButton(
           key: Key('cardInfoButton'),
           icon: Icon(_cardViews[appConfig.cardDecoration.index].iconData),
@@ -109,9 +115,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           key: Key('searchButton'),
           icon: Icon(Icons.search),
           splashRadius: 20.0,
-          onPressed: () => isMobile
-              ? Navigator.pushNamed(context, '/search')
-              : SearchDialog.show(context),
+          onPressed: () => Navigator.pushNamed(context, '/search'),
         ),
       ],
       backgroundColor: _colorTween.value,

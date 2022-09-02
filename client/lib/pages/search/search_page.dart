@@ -15,6 +15,8 @@ class _SearchPageState extends State<SearchPage> {
         title: Text('Search'),
       ),
       body: CustomScrollView(
+        primary: true,
+        shrinkWrap: true,
         slivers: [
           SliverPersistentHeader(
             pinned: true,
