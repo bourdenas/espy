@@ -1,10 +1,10 @@
 import 'package:espy/dialogs/settings_dialog.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/home/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class TopLevelPage extends StatefulWidget {
   @override
@@ -45,7 +45,7 @@ class _TopLevelPageState extends State<TopLevelPage>
       child: Actions(
         actions: {
           SearchIntent: CallbackAction<SearchIntent>(
-              onInvoke: (intent) => Navigator.pushNamed(context, '/search')),
+              onInvoke: (intent) => context.pushNamed('search')),
         },
         child: Focus(
           autofocus: true,
@@ -160,8 +160,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         SizedBox(height: 32.0),
         ListTile(
           key: Key('libraryListTile'),
-          onTap: () => Navigator.pushNamed(context, '/games',
-              arguments: LibraryFilter().encode()),
+          onTap: () => context.goNamed('games'),
           leading: Icon(Icons.my_library_books),
           title: Text('Library'),
           // selected: data.state == figure out,
@@ -176,7 +175,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         ),
         ListTile(
           key: Key('unmatchedListTile'),
-          onTap: () => Navigator.pushNamed(context, '/unmatched'),
+          onTap: () => context.goNamed('unmatched'),
           leading: Icon(Icons.device_unknown),
           title: Text('Unmatched Titles'),
           // selected: data.state == figure out,

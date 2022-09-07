@@ -6,6 +6,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/home/home_slate.dart';
 import 'package:espy/pages/home/slate_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class GameEntryActionBar extends StatelessWidget {
   const GameEntryActionBar({
@@ -59,8 +60,7 @@ class GameEntryActionBar extends StatelessWidget {
       children: [
         IconButton(
           onPressed: () => AppConfigModel.isMobile(context)
-              ? Navigator.pushNamed(context, '/edit',
-                  arguments: '${libraryEntry.id}')
+              ? context.pushNamed('edit', params: {'gid': '${libraryEntry.id}'})
               : EditEntryDialog.show(context, libraryEntry),
           icon: Icon(
             Icons.edit,
@@ -87,8 +87,9 @@ class GameEntryActionBar extends StatelessWidget {
         for (final website in gameEntry.websites)
           if (website.authority != "Null" && website.authority != "Youtube")
             IconButton(
-              onPressed: () =>
-                  Navigator.pushNamed(context, '/web', arguments: website.url),
+              onPressed: () => context.pushNamed('web',
+                  params: {'gid': '${libraryEntry.id}'},
+                  queryParams: {'url': website.url}),
               icon: websiteIcon(website.authority),
               splashRadius: 20.0,
             )
@@ -135,8 +136,9 @@ class GameEntryExpansions extends StatelessWidget {
                     ? '${Urls.imageProvider}/t_cover_big/${dlc.cover!.imageId}.jpg'
                     : null,
                 title: dlc.cover == null ? dlc.name : null,
-                onTap: () => Navigator.pushNamed(context, '/details',
-                    arguments: [...idPath, dlc.id].join(',')),
+                onTap: () => context.pushNamed('details', params: {
+                  'gid': [...idPath, dlc.id].join(',')
+                }),
               ))
           .toList(),
     );
@@ -161,8 +163,9 @@ class GameEntryRemakes extends StatelessWidget {
                     ? '${Urls.imageProvider}/t_cover_big/${remake.cover!.imageId}.jpg'
                     : null,
                 title: remake.cover == null ? remake.name : null,
-                onTap: () => Navigator.pushNamed(context, '/details',
-                    arguments: [...idPath, remake.id].join(',')),
+                onTap: () => context.pushNamed('details', params: {
+                  'gid': [...idPath, remake.id].join(',')
+                }),
               ))
           .toList(),
     );

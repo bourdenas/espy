@@ -3,6 +3,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/widgets/autocomplete_field.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class SearchDialogField extends StatelessWidget {
@@ -30,8 +31,8 @@ class SearchDialogField extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.pushNamed(context, '/games',
-                        arguments: LibraryFilter(stores: {store}).encode());
+                    context.goNamed('games',
+                        queryParams: LibraryFilter(stores: {store}).params());
                   },
                 ),
               ),
@@ -44,8 +45,8 @@ class SearchDialogField extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.pushNamed(context, '/games',
-                        arguments: LibraryFilter(tags: {tag}).encode());
+                    context.goNamed('games',
+                        queryParams: LibraryFilter(tags: {tag}).params());
                   },
                 ),
               ),
@@ -63,8 +64,8 @@ class SearchDialogField extends StatelessWidget {
                   icon: Icon(Icons.games),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.pushNamed(context, '/details',
-                        arguments: '${entry.id}');
+                    context
+                        .pushNamed('details', params: {'gid': '${entry.id}'});
                   },
                 ),
               ),
@@ -81,9 +82,9 @@ class SearchDialogField extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.pushNamed(context, '/games',
-                        arguments:
-                            LibraryFilter(collections: {collection}).encode());
+                    context.goNamed('games',
+                        queryParams:
+                            LibraryFilter(collections: {collection}).params());
                   },
                 ),
               ),
@@ -100,9 +101,9 @@ class SearchDialogField extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    Navigator.pushNamed(context, '/games',
-                        arguments:
-                            LibraryFilter(companies: {company}).encode());
+                    context.goNamed('games',
+                        queryParams:
+                            LibraryFilter(companies: {company}).params());
                   },
                 ),
               ),

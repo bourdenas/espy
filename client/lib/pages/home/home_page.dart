@@ -2,6 +2,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/widgets/espy_rail.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -115,7 +116,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           key: Key('searchButton'),
           icon: Icon(Icons.search),
           splashRadius: 20.0,
-          onPressed: () => Navigator.pushNamed(context, '/search'),
+          onPressed: () => context.pushNamed('search'),
         ),
       ],
       backgroundColor: _colorTween.value,

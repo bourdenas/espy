@@ -3,6 +3,7 @@ import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class GameTags extends StatelessWidget {
@@ -37,28 +38,25 @@ class _GameChipsWrap extends StatelessWidget {
         for (final company in entry.companies)
           CompanyChip(
             company,
-            onPressed: () => Navigator.pushNamed(
-              context,
-              '/games',
-              arguments: LibraryFilter(companies: {company}).encode(),
+            onPressed: () => context.goNamed(
+              'games',
+              queryParams: LibraryFilter(companies: {company}).params(),
             ),
           ),
         for (final collection in entry.collections)
           CollectionChip(
             collection,
-            onPressed: () => Navigator.pushNamed(
-              context,
-              '/games',
-              arguments: LibraryFilter(collections: {collection}).encode(),
+            onPressed: () => context.goNamed(
+              'games',
+              queryParams: LibraryFilter(collections: {collection}).params(),
             ),
           ),
         for (final tag in entry.userData.tags)
           TagChip(
             tag,
-            onPressed: () => Navigator.pushNamed(
-              context,
-              '/games',
-              arguments: LibraryFilter(tags: {tag}).encode(),
+            onPressed: () => context.goNamed(
+              'games',
+              queryParams: LibraryFilter(tags: {tag}).params(),
             ),
             onDeleted: () {
               entry.userData.tags.remove(tag);
@@ -90,10 +88,9 @@ class GameChipsListView extends StatelessWidget {
               padding: const EdgeInsets.all(4.0),
               child: CompanyChip(
                 company,
-                onPressed: () => Navigator.pushNamed(
-                  context,
-                  '/games',
-                  arguments: LibraryFilter(companies: {company}).encode(),
+                onPressed: () => context.goNamed(
+                  'games',
+                  queryParams: LibraryFilter(companies: {company}).params(),
                 ),
               ),
             ),
@@ -102,10 +99,10 @@ class GameChipsListView extends StatelessWidget {
               padding: const EdgeInsets.all(4.0),
               child: CollectionChip(
                 collection,
-                onPressed: () => Navigator.pushNamed(
-                  context,
-                  '/games',
-                  arguments: LibraryFilter(collections: {collection}).encode(),
+                onPressed: () => context.goNamed(
+                  'games',
+                  queryParams:
+                      LibraryFilter(collections: {collection}).params(),
                 ),
               ),
             ),
@@ -114,10 +111,9 @@ class GameChipsListView extends StatelessWidget {
               padding: const EdgeInsets.all(4.0),
               child: TagChip(
                 tag,
-                onPressed: () => Navigator.pushNamed(
-                  context,
-                  '/games',
-                  arguments: LibraryFilter(tags: {tag}).encode(),
+                onPressed: () => context.goNamed(
+                  'games',
+                  queryParams: LibraryFilter(tags: {tag}).params(),
                 ),
                 onDeleted: () {
                   entry.userData.tags.remove(tag);

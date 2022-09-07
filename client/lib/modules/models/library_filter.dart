@@ -46,6 +46,43 @@ class LibraryFilter {
     ].where((param) => param.isNotEmpty).join('+');
   }
 
+  Map<String, String> params() {
+    return {
+      if (companies.isNotEmpty)
+        'cmp': companies.map((c) => '${c.id}').join(','),
+      if (collections.isNotEmpty)
+        'col': collections.map((c) => '${c.id}').join(','),
+      if (tags.isNotEmpty) 'tag': tags.map((t) => t).join(','),
+      if (stores.isNotEmpty) 'str': stores.map((s) => s).join(','),
+      if (untagged) 'untagged': '',
+    };
+  }
+
+  factory LibraryFilter.fromParams(Map<String, String> params) {
+    var filter = LibraryFilter();
+
+    params.forEach((key, value) {
+      if (key == 'cmp') {
+        filter.companies = value
+            .split(',')
+            .map((e) => Annotation(id: int.tryParse(e) ?? 0, name: ''))
+            .toSet();
+      } else if (key == 'col') {
+        filter.collections = value
+            .split(',')
+            .map((e) => Annotation(id: int.tryParse(e) ?? 0, name: ''))
+            .toSet();
+      } else if (key == 'tag') {
+        filter.tags = value.split(',').toSet();
+      } else if (key == 'str') {
+        filter.stores = value.split(',').toSet();
+      } else if (key == 'untagged') {
+        filter.untagged = true;
+      }
+    });
+    return filter;
+  }
+
   factory LibraryFilter.decode(String encodedFilter) {
     final companies = Set<Annotation>();
     final collections = Set<Annotation>();

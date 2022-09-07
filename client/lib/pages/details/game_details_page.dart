@@ -5,6 +5,7 @@ import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
 
 class GameDetailsPage extends StatelessWidget {
@@ -21,10 +22,9 @@ class GameDetailsPage extends StatelessWidget {
     return Actions(
       actions: {
         SearchIntent: CallbackAction<SearchIntent>(
-            onInvoke: (intent) => Navigator.pushNamed(context, '/search')),
-        HomeIntent: CallbackAction<HomeIntent>(onInvoke: (intent) {
-          Navigator.pushNamed(context, '/home');
-        }),
+            onInvoke: (intent) => context.pushNamed('search')),
+        HomeIntent: CallbackAction<HomeIntent>(
+            onInvoke: (intent) => context.goNamed('home')),
       },
       child: Focus(
         autofocus: true,
