@@ -22,20 +22,15 @@ path = "src/firestore_util.rs"
 
 
 [dependencies]
+async-recursion = "1.0.0"
+async-trait = "0.1"
 clap = { version="3.2", features = ["derive"] }
 egs-api = "0.6"
+firestore-db-and-auth = "0.6"
 futures = "0.3"
 itertools = "0.10.0"
-prost = "0.11"
 reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.20", features = ["full"] }
-tonic = "0.8"
 warp = "0.3"
-firestore-db-and-auth = "0.6"
-async-trait = "0.1"
-async-recursion = "1.0.0"
-
-[build-dependencies]
-tonic-build = "0.8"
