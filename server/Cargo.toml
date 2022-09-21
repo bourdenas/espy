@@ -5,10 +5,6 @@ authors = ["bourdenas"]
 edition = "2021"
 
 [[bin]] 
-name = "grpc_server"
-path = "src/grpc_server.rs"
-
-[[bin]] 
 name = "http_server"
 path = "src/http_server.rs"
 
