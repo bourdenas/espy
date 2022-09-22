@@ -37,10 +37,7 @@ impl LibraryOps {
     ) -> Result<Vec<StoreEntry>, Status> {
         match firestore.list::<StoreEntry>(&format!("users/{user_id}/unmatched")) {
             Ok(entries) => Ok(entries),
-            Err(e) => Err(Status::internal(
-                "LibraryManager.read_unmatched_entries: ",
-                e,
-            )),
+            Err(e) => Err(Status::new("LibraryManager.read_unmatched_entries: ", e)),
         }
     }
 
@@ -54,7 +51,7 @@ impl LibraryOps {
     ) -> Result<Vec<LibraryEntry>, Status> {
         match firestore.list::<LibraryEntry>(&format!("users/{user_id}/library_v2")) {
             Ok(entries) => Ok(entries),
-            Err(e) => Err(Status::internal("LibraryManager.read_library_entries: ", e)),
+            Err(e) => Err(Status::new("LibraryManager.read_library_entries: ", e)),
         }
     }
 
@@ -77,7 +74,7 @@ impl LibraryOps {
             },
         ) {
             Ok(_) => Ok(()),
-            Err(e) => Err(Status::internal("LibraryManager.write_storefront_ids: ", e)),
+            Err(e) => Err(Status::new("LibraryManager.write_storefront_ids: ", e)),
         }
     }
 
@@ -103,7 +100,7 @@ impl LibraryOps {
     ) -> Result<(), Status> {
         match firestore.write("games_v2", Some(&game_entry.id.to_string()), game_entry) {
             Ok(_) => Ok(()),
-            Err(e) => Err(Status::internal("LibraryManager.write_game_entry: ", e)),
+            Err(e) => Err(Status::new("LibraryManager.write_game_entry: ", e)),
         }
     }
 

@@ -32,7 +32,7 @@ impl User {
                 };
                 match user.save() {
                     Ok(_) => Ok(user),
-                    Err(e) => Err(Status::internal(
+                    Err(e) => Err(Status::new(
                         &format!("Failed to read or create user '{user_id}'"),
                         e,
                     )),
@@ -75,7 +75,7 @@ impl User {
         });
 
         if let Err(e) = self.save() {
-            return Err(Status::internal("User.update:", e));
+            return Err(Status::new("User.update:", e));
         }
 
         Ok(())
@@ -87,7 +87,7 @@ impl User {
             .expect("SystemTime set before UNIX EPOCH!")
             .as_millis() as u64;
         if let Err(e) = self.save() {
-            return Err(Status::internal("User.sync:", e));
+            return Err(Status::new("User.sync:", e));
         }
 
         Ok(())
@@ -111,7 +111,7 @@ impl User {
 
         // Need to save User as it may got GogToken updated.
         if let Err(e) = self.save() {
-            return Err(Status::internal("User.sync:", e));
+            return Err(Status::new("User.sync:", e));
         }
 
         let steam_api = match self.steam_user_id() {
@@ -122,9 +122,7 @@ impl User {
         let egs_api = match egs_sid {
             Some(egs_sid) => match api::EgsApi::connect(&egs_sid).await {
                 Ok(egs_api) => Some(egs_api),
-                Err(status) => {
-                    return Err(Status::internal("User.sync:", status));
-                }
+                Err(e) => return Err(Status::new("User.sync:", e)),
             },
             None => None,
         };
@@ -133,7 +131,7 @@ impl User {
         mgr.sync_library(steam_api, gog_api, egs_api).await?;
 
         if let Err(e) = self.update_version() {
-            return Err(Status::internal("User.sync:", e));
+            return Err(Status::new("User.sync:", e));
         }
 
         Ok(())

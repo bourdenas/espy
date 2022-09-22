@@ -56,8 +56,8 @@ impl Storefront for GogApi {
 
             let product_list_page = match resp {
                 GogProductListResponse::Ok(pl) => pl,
-                GogProductListResponse::Err(gog_err) => {
-                    return Err(Status::internal("Failed to retrieve GOG entries", gog_err));
+                GogProductListResponse::Err(e) => {
+                    return Err(Status::new("Failed to retrieve GOG entries", e));
                 }
             };
 

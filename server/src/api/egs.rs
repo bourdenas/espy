@@ -27,7 +27,7 @@ impl EgsApi {
                     })
                     .collect(),
             }),
-            None => Err(Status::new("Failed to retrieve games from EgsApi.")),
+            None => Err(Status::internal("Failed to retrieve games from EgsApi.")),
         }
     }
 }

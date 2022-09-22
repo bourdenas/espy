@@ -45,7 +45,7 @@ impl GogToken {
         let internal_token = match resp {
             GogAuthResponse::Ok(internal_token) => internal_token,
             GogAuthResponse::Err(err) => {
-                return Err(Status::internal("Failed to retrieve GOG entries", err));
+                return Err(Status::new("Failed to retrieve GOG entries", err));
             }
         };
 
@@ -81,7 +81,7 @@ impl GogToken {
         let internal_token = match resp {
             GogAuthResponse::Ok(internal_token) => internal_token,
             GogAuthResponse::Err(err) => {
-                return Err(Status::internal("Failed to retrieve GOG entries", err));
+                return Err(Status::new("Failed to retrieve GOG entries", err));
             }
         };
 
