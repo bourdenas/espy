@@ -1,5 +1,4 @@
 use clap::Parser;
-use documents::GameEntry;
 use espy_server::*;
 
 /// IGDB search utility.
@@ -29,25 +28,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut igdb = api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
 
-    let mut result = igdb.search_by_title(&opts.search).await?;
-    println!("Found {} candidates.", result.games.len());
-    for game in &result.games {
+    let igdb_games = igdb.search_by_title(&opts.search).await?;
+    println!("Found {} candidates.", igdb_games.len());
+    for game in &igdb_games {
         println!("'{}'", &game.name);
     }
-    if opts.examine && !result.games.is_empty() {
-        let game = igdb.get_game_by_id(result.games[0].id).await?.unwrap();
+    if opts.examine && !igdb_games.is_empty() {
+        let game = igdb.get_game_by_id(igdb_games[0].id).await?.unwrap();
         println!("{:#?}", game);
     }
-    if opts.expand && !result.games.is_empty() {
-        let game_entry = GameEntry::new(std::mem::take(&mut result.games[0]));
+    if opts.expand && !igdb_games.is_empty() {
+        let igdb_game = &igdb_games[0];
         let game = igdb
-            .get_game_by_id(match game_entry.parent {
-                Some(parent_id) => parent_id,
-                None => game_entry.id,
+            .get_game_by_id(match igdb_game.parent_game {
+                Some(parent) => parent,
+                None => match igdb_game.version_parent {
+                    Some(parent) => parent,
+                    None => igdb_game.id,
+                },
             })
             .await?
             .unwrap();
-        println!("{:#?}", GameEntry::new(game));
+        println!("{:#?}", game);
     }
 
     Ok(())

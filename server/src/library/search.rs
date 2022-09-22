@@ -1,16 +1,12 @@
-use crate::api::IgdbApi;
-use crate::documents;
-use crate::igdb;
+use crate::api::{IgdbApi, IgdbGame};
+use crate::documents::GameEntry;
 use crate::Status;
 
 /// Returns `GameEntry` candidates from IGDB entries matching input title.
 ///
 /// The candidates are ordered in descending order of matching criteria.
-pub async fn get_candidates(
-    igdb: &IgdbApi,
-    title: &str,
-) -> Result<Vec<documents::GameEntry>, Status> {
-    let mut result = match igdb.search_by_title(title).await {
+pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<GameEntry>, Status> {
+    let igdb_games = match igdb.search_by_title(title).await {
         Ok(r) => r,
         Err(e) => {
             return Err(Status::not_found(&format!(
@@ -19,16 +15,7 @@ pub async fn get_candidates(
         }
     };
 
-    for game in &mut result.games {
-        if let Some(cover) = &game.cover {
-            if let Some(cover) = igdb.get_cover(cover.id).await? {
-                game.cover = Some(Box::new(cover));
-            }
-        }
-    }
-
-    let mut candidates = result
-        .games
+    let mut candidates = igdb_games
         .into_iter()
         .map(|game| Candidate {
             score: edit_distance(title, &game.name),
@@ -37,32 +24,26 @@ pub async fn get_candidates(
         .collect::<Vec<Candidate>>();
     candidates.sort_by(|a, b| a.score.cmp(&b.score));
 
-    Ok(candidates
-        .into_iter()
-        .map(|c| documents::GameEntry {
-            id: c.game.id,
-            name: c.game.name,
-            release_date: match c.game.first_release_date {
-                Some(date) => Some(date.seconds),
-                None => None,
-            },
-            cover: match c.game.cover {
-                Some(cover) => Some(documents::Image {
-                    image_id: cover.image_id,
-                    height: cover.height,
-                    width: cover.width,
-                }),
+    let mut result = vec![];
+    for candidate in candidates {
+        result.push(GameEntry {
+            id: candidate.game.id,
+            name: candidate.game.name,
+            release_date: candidate.game.first_release_date,
+            cover: match candidate.game.cover {
+                Some(cover) => igdb.get_cover(cover).await?,
                 None => None,
             },
             ..Default::default()
-        })
-        .collect())
+        });
+    }
+    Ok(result)
 }
 
 // Internal struct that is only exposed for debug reasons (search by title) in
 // the command line tool.
 pub struct Candidate {
-    pub game: igdb::Game,
+    pub game: IgdbGame,
     score: i32,
 }
 
