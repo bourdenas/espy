@@ -27,13 +27,10 @@ impl Match {
             store_entry,
             base_game_entry: match game_entry.parent {
                 Some(parent_id) => match igdb.get_game_by_id(parent_id).await {
-                    Ok(game) => match game {
-                        Some(game) => Some(GameEntry::new(game)),
-                        None => None,
-                    },
-                    Err(_) => {
+                    Ok(game) => game,
+                    Err(e) => {
                         eprintln!(
-                            "Failed to retrieve base game (id={parent_id}) for '{}'",
+                            "Failed to retrieve base game (id={parent_id}) for '{}'\nerror: {e}",
                             &game_entry.name
                         );
                         None
@@ -168,11 +165,7 @@ async fn match_by_external_id(
     store_entry: &StoreEntry,
 ) -> Result<Option<GameEntry>, Status> {
     println!("Resolving '{}'", &store_entry.title);
-
-    match igdb.match_store_entry(store_entry).await? {
-        Some(game) => Ok(Some(GameEntry::new(game))),
-        None => Ok(None),
-    }
+    igdb.match_store_entry(store_entry).await
 }
 
 /// Returns a `GameEntry` from IGDB matching the title in `StoreEntry`.
@@ -192,7 +185,7 @@ async fn match_by_title(
 /// Returns a `GameEntry` from IGDB that matches the input `id`.
 async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
     match igdb.get_game_by_id(id).await? {
-        Some(game_entry) => Ok(GameEntry::new(game_entry)),
+        Some(game_entry) => Ok(game_entry),
         None => Err(Status::not_found(&format!(
             "Failed to retrieve game entry with id={id}"
         ))),
