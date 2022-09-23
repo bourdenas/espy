@@ -14,6 +14,6 @@ COPY --from=builder /espy_server/target/release/http_server /usr/local/bin/http_
 COPY ./keys.json ./keys.json
 COPY ./espy-library-firebase-adminsdk-sncpo-3da8ca7f57.json ./espy-library-firebase-adminsdk-sncpo-3da8ca7f57.json
 
-EXPOSE 3030
+ENV PORT 8080
 
 CMD ["http_server"]
