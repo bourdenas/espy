@@ -1,3 +1,4 @@
+use super::reconciler::Match;
 use crate::api::{EgsApi, FirestoreApi, GogApi, SteamApi};
 use crate::documents::{GameEntry, StoreEntry};
 use crate::library::library_ops::LibraryOps;
@@ -7,8 +8,6 @@ use crate::Status;
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
-
-use super::reconciler::Match;
 
 /// Proxy structure that handles operations regarding user's library.
 pub struct LibraryManager {

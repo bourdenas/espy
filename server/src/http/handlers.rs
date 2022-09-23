@@ -1,10 +1,12 @@
 use crate::api::{FirestoreApi, IgdbApi};
 use crate::http::models;
-use crate::library;
-use crate::library::{Reconciler, User};
+use crate::library::{self, Reconciler, User};
 use crate::util;
-use std::convert::Infallible;
-use std::sync::{Arc, Mutex};
+use std::{
+    convert::Infallible,
+    sync::{Arc, Mutex},
+    time::SystemTime,
+};
 use warp::http::StatusCode;
 
 pub async fn post_sync(
@@ -72,14 +74,20 @@ pub async fn post_search(
     igdb: Arc<IgdbApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
     println!("POST /search body: {:?}", &search);
+    let started = SystemTime::now();
 
-    match library::search::get_candidates(&igdb, &search.title).await {
-        Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
-        Err(err) => {
-            eprintln!("{err}");
-            Ok(Box::new(StatusCode::NOT_FOUND))
-        }
-    }
+    let resp: Result<Box<dyn warp::Reply>, Infallible> =
+        match library::search::get_candidates(&igdb, &search.title).await {
+            Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
+            Err(err) => {
+                eprintln!("{err}");
+                Ok(Box::new(StatusCode::NOT_FOUND))
+            }
+        };
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    println!("response time: {:.2} msec", resp_time.as_millis());
+    resp
 }
 
 pub async fn get_images(

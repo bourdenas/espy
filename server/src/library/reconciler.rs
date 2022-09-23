@@ -89,7 +89,7 @@ impl Reconciler {
             library_entries
                 .into_iter()
                 .map(|library_entry| RefreshTask {
-                    library_entry: library_entry,
+                    library_entry,
                     igdb: Arc::clone(&self.igdb),
                     tx: tx.clone(),
                 }),
