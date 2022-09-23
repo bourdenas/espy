@@ -2,6 +2,7 @@ use crate::api::{FirestoreApi, IgdbApi};
 use crate::http;
 use clap::Parser;
 use espy_server::*;
+use std::env;
 use std::sync::{Arc, Mutex};
 use warp::{self, Filter};
 
@@ -19,7 +20,7 @@ struct Opts {
     firestore_credentials: String,
 
     /// Port number to use for listening to gRPC requests.
-    #[clap(short, long, default_value = "3030")]
+    #[clap(short, long, default_value = "8080")]
     port: u16,
 }
 
@@ -37,7 +38,16 @@ async fn main() -> Result<(), Status> {
             .expect("FirestoreApi.from_credentials()"),
     ));
 
-    println!("starting the HTTP server...");
+    // Let ENV VAR override flag.
+    let port: u16 = match env::var("PORT") {
+        Ok(port) => match port.parse::<u16>() {
+            Ok(port) => port,
+            Err(_) => opts.port,
+        },
+        Err(_) => opts.port,
+    };
+
+    println!("starting the HTTP server listening at port {port}");
     warp::serve(
         http::routes::routes(Arc::new(keys), Arc::new(igdb), firestore).with(
             warp::cors()
