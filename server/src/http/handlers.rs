@@ -108,4 +108,9 @@ pub async fn get_images(
     }
 }
 
+pub async fn welcome() -> Result<Box<dyn warp::Reply>, Infallible> {
+    println!("GET /");
+    Ok(Box::new("welcome"))
+}
+
 const IGDB_IMAGES_URL: &str = "https://images.igdb.com/igdb/image/upload";
