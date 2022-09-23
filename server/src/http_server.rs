@@ -47,7 +47,7 @@ async fn main() -> Result<(), Status> {
                 .allow_credentials(true),
         ),
     )
-    .run(([127, 0, 0, 1], opts.port))
+    .run(([0, 0, 0, 0], opts.port))
     .await;
 
     Ok(())
