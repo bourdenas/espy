@@ -81,7 +81,7 @@ pub async fn post_search(
     let started = SystemTime::now();
 
     let resp: Result<Box<dyn warp::Reply>, Infallible> =
-        match library::search::get_candidates(&igdb, &search.title).await {
+        match library::search::get_candidates_with_covers(igdb, &search.title).await {
             Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
             Err(err) => {
                 error! {"{err}"}

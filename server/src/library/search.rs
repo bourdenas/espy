@@ -1,6 +1,8 @@
 use crate::api::{IgdbApi, IgdbGame};
 use crate::documents::GameEntry;
 use crate::Status;
+use itertools::Itertools;
+use std::sync::{Arc, Mutex};
 
 /// Returns `GameEntry` candidates from IGDB entries matching input title.
 ///
@@ -19,31 +21,93 @@ pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<GameEntry
         .into_iter()
         .map(|game| Candidate {
             score: edit_distance(title, &game.name),
-            game: game,
+            game,
+            entry: GameEntry::default(),
         })
         .collect::<Vec<Candidate>>();
     candidates.sort_by(|a, b| a.score.cmp(&b.score));
 
-    let mut result = vec![];
-    for candidate in candidates {
-        result.push(GameEntry {
+    Ok(candidates
+        .into_iter()
+        .map(|candidate| GameEntry {
             id: candidate.game.id,
             name: candidate.game.name,
             release_date: candidate.game.first_release_date,
-            cover: match candidate.game.cover {
-                Some(cover) => igdb.get_cover(cover).await?,
-                None => None,
-            },
             ..Default::default()
-        });
+        })
+        .collect())
+}
+
+/// Returns `GameEntry` candidates from IGDB entries matching input title.
+///
+/// The candidates are ordered in descending order of matching criteria.
+pub async fn get_candidates_with_covers(
+    igdb: Arc<IgdbApi>,
+    title: &str,
+) -> Result<Vec<GameEntry>, Status> {
+    let igdb_games = match igdb.search_by_title(title).await {
+        Ok(r) => r,
+        Err(e) => {
+            return Err(Status::not_found(&format!(
+                "Failed to recon '{title}': {e}"
+            )))
+        }
+    };
+
+    let candidates = igdb_games
+        .into_iter()
+        .map(|game| Candidate {
+            score: edit_distance(title, &game.name),
+            entry: GameEntry::default(),
+            game: game,
+        })
+        .collect::<Vec<Candidate>>();
+
+    let result = Arc::new(Mutex::new(vec![]));
+    let mut handles = vec![];
+    for mut candidate in candidates {
+        let igdb = Arc::clone(&igdb);
+        let result = Arc::clone(&result);
+
+        handles.push(tokio::spawn(async move {
+            let cover = match candidate.game.cover {
+                Some(cover) => match igdb.get_cover(cover).await {
+                    Ok(cover) => cover,
+                    Err(_) => None,
+                },
+                None => None,
+            };
+
+            candidate.entry = GameEntry {
+                id: candidate.game.id,
+                name: candidate.game.name,
+                release_date: candidate.game.first_release_date,
+                cover,
+                ..Default::default()
+            };
+            candidate.game = IgdbGame::default();
+
+            result.lock().unwrap().push(candidate);
+        }));
     }
-    Ok(result)
+    futures::future::join_all(handles).await;
+
+    Ok(Arc::try_unwrap(result)
+        .unwrap()
+        .into_inner()
+        .unwrap()
+        .into_iter()
+        .sorted_by(|left, right| left.score.cmp(&right.score))
+        .map(|candidate| candidate.entry)
+        .collect())
 }
 
 // Internal struct that is only exposed for debug reasons (search by title) in
 // the command line tool.
-pub struct Candidate {
-    pub game: IgdbGame,
+#[derive(Debug)]
+struct Candidate {
+    game: IgdbGame,
+    entry: GameEntry,
     score: i32,
 }
 
