@@ -53,7 +53,6 @@ async fn main() -> Result<(), Status> {
         Err(_) => opts.port,
     };
 
-    println!("starting the HTTP server listening at port {port}");
     warp::serve(
         http::routes::routes(Arc::new(keys), Arc::new(igdb), firestore).with(
             warp::cors()
@@ -63,7 +62,7 @@ async fn main() -> Result<(), Status> {
                 .allow_credentials(true),
         ),
     )
-    .run(([0, 0, 0, 0], opts.port))
+    .run(([0, 0, 0, 0], port))
     .await;
 
     Ok(())
