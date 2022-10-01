@@ -3,6 +3,7 @@ use crate::traits::Storefront;
 use crate::Status;
 use async_trait::async_trait;
 use egs_api::EpicGames;
+use tracing::info;
 
 pub struct EgsApi {
     games: Vec<StoreEntry>,
@@ -44,7 +45,9 @@ impl Storefront for EgsApi {
     }
 
     async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
-        println!("epic games: {}", self.games.len());
+        info! {
+            "epic games: {}", self.games.len()
+        }
         Ok(self.games.clone())
     }
 }

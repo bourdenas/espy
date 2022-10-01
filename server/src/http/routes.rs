@@ -3,6 +3,7 @@ use crate::http::{handlers, models};
 use crate::util;
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
+use tracing::warn;
 use warp::{self, Filter};
 
 /// Returns a Filter with all available routes.
@@ -17,7 +18,7 @@ pub fn routes(
         .or(post_search(Arc::clone(&igdb)))
         .or(post_recon(firestore, igdb))
         .or_else(|e| async {
-            println!("Request rejected: {:?}", e);
+            warn! {"Rejected route: {:?}", e};
             Err(e)
         })
 }
