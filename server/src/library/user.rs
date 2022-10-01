@@ -5,6 +5,7 @@ use crate::util;
 use crate::Status;
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tracing::{info, warn};
 
 pub struct User {
     data: UserData,
@@ -22,7 +23,7 @@ impl User {
                 firestore: Arc::clone(&firestore),
             }),
             Err(e) => {
-                eprintln!("Creating new user '{user_id}'\n{e}");
+                info!("Creating new user '{user_id}'\n{e}");
                 let user = User {
                     data: UserData {
                         uid: String::from(user_id),
@@ -147,7 +148,7 @@ impl User {
                         *token = match api::GogToken::from_oauth_code(&token.oauth_code).await {
                             Ok(token) => token,
                             Err(e) => {
-                                eprintln!("Failed to validate GOG token. {e}");
+                                warn!("Failed to validate GOG token. {e}");
                                 api::GogToken::new(&token.oauth_code)
                             }
                         }
@@ -155,7 +156,7 @@ impl User {
                     match token.validate().await {
                         Ok(()) => Some(token),
                         Err(status) => {
-                            eprintln!("Failed to validate GOG toke: {status}");
+                            warn!("Failed to validate GOG toke: {status}");
                             None
                         }
                     }
@@ -168,7 +169,7 @@ impl User {
 
     /// Save user entry to Firestore. Returns the Firestore document id.
     fn save(&self) -> Result<String, Status> {
-        eprintln!("updating user data to firestore...");
+        info!("updating user data to firestore...");
         self.firestore
             .lock()
             .unwrap()

@@ -5,6 +5,7 @@ use crate::Status;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
+use tracing::{error, info};
 
 // The result of a refresh operation on a `library_entry`.
 pub struct Refresh {
@@ -29,7 +30,7 @@ impl Match {
                 Some(parent_id) => match igdb.get_game_by_id(parent_id).await {
                     Ok(game) => game,
                     Err(e) => {
-                        eprintln!(
+                        error!(
                             "Failed to retrieve base game (id={parent_id}) for '{}'\nerror: {e}",
                             &game_entry.name
                         );
@@ -112,7 +113,7 @@ async fn refresh_task(task: RefreshTask) {
             game_entry: Some(game_entry),
         },
         Err(e) => {
-            println!("Failed to resolve '{}': {e}", task.library_entry.name);
+            error!("Failed to resolve '{}': {e}", task.library_entry.name);
             Refresh {
                 library_entry: task.library_entry,
                 game_entry: None,
@@ -121,7 +122,7 @@ async fn refresh_task(task: RefreshTask) {
     };
 
     if let Err(e) = task.tx.send(entry_match).await {
-        eprintln!("{e}");
+        error!("{e}");
     }
 }
 
@@ -139,13 +140,13 @@ async fn match_task(task: MatchingTask) {
                     None => Match::failed(task.store_entry),
                 },
                 Err(e) => {
-                    eprintln!("match_by_title '{}' failed: {e}", task.store_entry.title);
+                    error!("match_by_title '{}' failed: {e}", task.store_entry.title);
                     Match::failed(task.store_entry)
                 }
             },
         },
         Err(e) => {
-            eprintln!(
+            error!(
                 "match_by_external_id '{}' failed: {e}",
                 task.store_entry.title
             );
@@ -154,7 +155,7 @@ async fn match_task(task: MatchingTask) {
     };
 
     if let Err(e) = task.tx.send(entry_match).await {
-        eprintln!("{e}");
+        error!("{e}");
     }
 }
 
@@ -164,7 +165,7 @@ async fn match_by_external_id(
     igdb: &IgdbApi,
     store_entry: &StoreEntry,
 ) -> Result<Option<GameEntry>, Status> {
-    println!("Resolving '{}'", &store_entry.title);
+    info!("Resolving '{}'", &store_entry.title);
     igdb.match_store_entry(store_entry).await
 }
 
@@ -173,7 +174,7 @@ async fn match_by_title(
     igdb: &IgdbApi,
     store_entry: &StoreEntry,
 ) -> Result<Option<GameEntry>, Status> {
-    println!("Searching '{}'", &store_entry.title);
+    info!("Searching '{}'", &store_entry.title);
 
     let candidates = search::get_candidates(igdb, &store_entry.title).await?;
     match candidates.into_iter().next() {
