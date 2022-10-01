@@ -3,6 +3,7 @@ use crate::documents::GameEntry;
 use crate::Status;
 use itertools::Itertools;
 use std::sync::{Arc, Mutex};
+use tracing::{info, info_span, instrument, Instrument};
 
 /// Returns `GameEntry` candidates from IGDB entries matching input title.
 ///
@@ -41,11 +42,13 @@ pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<GameEntry
 /// Returns `GameEntry` candidates from IGDB entries matching input title.
 ///
 /// The candidates are ordered in descending order of matching criteria.
+#[instrument(level = "info", skip(igdb))]
 pub async fn get_candidates_with_covers(
     igdb: Arc<IgdbApi>,
     title: &str,
 ) -> Result<Vec<GameEntry>, Status> {
-    let igdb_games = match igdb.search_by_title(title).await {
+    let span = info_span!("search_by_title");
+    let igdb_games = match igdb.search_by_title(title).instrument(span).await {
         Ok(r) => r,
         Err(e) => {
             return Err(Status::not_found(&format!(
@@ -53,6 +56,7 @@ pub async fn get_candidates_with_covers(
             )))
         }
     };
+    info!("retrieved {} candidates", igdb_games.len());
 
     let candidates = igdb_games
         .into_iter()
@@ -70,8 +74,9 @@ pub async fn get_candidates_with_covers(
         let result = Arc::clone(&result);
 
         handles.push(tokio::spawn(async move {
+            let span = info_span!("cover retrival");
             let cover = match candidate.game.cover {
-                Some(cover) => match igdb.get_cover(cover).await {
+                Some(cover) => match igdb.get_cover(cover).instrument(span).await {
                     Ok(cover) => cover,
                     Err(_) => None,
                 },
