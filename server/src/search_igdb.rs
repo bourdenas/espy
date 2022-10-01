@@ -1,5 +1,5 @@
 use clap::Parser;
-use espy_server::*;
+use espy_server::{documents::StoreEntry, *};
 
 /// IGDB search utility.
 #[derive(Parser)]
@@ -7,6 +7,12 @@ struct Opts {
     /// Espy user name for managing a game library.
     #[clap(short, long, default_value = "")]
     search: String,
+
+    #[clap(long)]
+    external: String,
+
+    #[clap(long)]
+    external_store: String,
 
     #[clap(long)]
     expand: bool,
@@ -28,8 +34,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut igdb = api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
 
+    if !&opts.external.is_empty() {
+        let game = igdb
+            .match_store_entry(&StoreEntry {
+                id: opts.external,
+                storefront_name: opts.external_store,
+                ..Default::default()
+            })
+            .await?;
+        println!("Got: {:?}", game);
+        return Ok(());
+    }
+
     let igdb_games = igdb.search_by_title(&opts.search).await?;
     println!("Found {} candidates.", igdb_games.len());
+
     for game in &igdb_games {
         println!("'{}'", &game.name);
     }

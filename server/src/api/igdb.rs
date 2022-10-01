@@ -62,6 +62,8 @@ impl IgdbApi {
         let category: u8 = match store_entry.storefront_name.as_ref() {
             "steam" => 1,
             "gog" => 5,
+            // "egs" => 26,
+            "egs" => return Ok(None),
             _ => return Ok(None),
         };
 
@@ -325,6 +327,21 @@ impl IgdbApi {
 
         Ok(companies)
     }
+
+    // async fn schedule<T: DeserializeOwned + Send>(
+    //     &self,
+    //     endpoint: &str,
+    //     body: &str,
+    // ) -> Receiver<Result<T, Status>> {
+    //     let (tx, rx) = oneshot::channel();
+
+    //     let task = tokio::spawn(async move {
+    //         let res = self.post::<T>(endpoint, body).await;
+    //         tx.send(res);
+    //     });
+
+    //     rx
+    // }
 
     /// Sends a POST request to an IGDB service endpoint.
     async fn post<T: DeserializeOwned>(&self, endpoint: &str, body: &str) -> Result<T, Status> {
