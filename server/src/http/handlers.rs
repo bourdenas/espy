@@ -7,8 +7,10 @@ use std::{
     sync::{Arc, Mutex},
     time::SystemTime,
 };
+use tracing::{info, instrument};
 use warp::http::StatusCode;
 
+#[instrument(level = "info", skip(keys, firestore))]
 pub async fn post_sync(
     user_id: String,
     keys: Arc<util::keys::Keys>,
@@ -33,6 +35,7 @@ pub async fn post_sync(
     }
 }
 
+#[instrument(level = "info", skip(igdb, firestore))]
 pub async fn post_recon(
     user_id: String,
     recon: models::Recon,
@@ -69,11 +72,14 @@ pub async fn post_recon(
     }
 }
 
+#[instrument(level = "info", skip(igdb))]
 pub async fn post_search(
     search: models::Search,
     igdb: Arc<IgdbApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("POST /search body: {:?}", &search);
+    info! {
+        "POST /search"
+    }
     let started = SystemTime::now();
 
     let resp: Result<Box<dyn warp::Reply>, Infallible> =
@@ -86,7 +92,10 @@ pub async fn post_search(
         };
 
     let resp_time = SystemTime::now().duration_since(started).unwrap();
-    println!("response time: {:.2} msec", resp_time.as_millis());
+    info! {
+        "  time: {:.2} msec", resp_time.as_millis()
+    }
+
     resp
 }
 

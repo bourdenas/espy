@@ -24,7 +24,8 @@ path = "src/firestore_util.rs"
 [dependencies]
 async-recursion = "1.0.0"
 async-trait = "0.1"
-clap = { version="3.2", features = ["derive"] }
+clap = { version="4.0", features = ["derive"] }
+console-subscriber = "0.1"
 egs-api = "0.6"
 firestore-db-and-auth = "0.6"
 futures = "0.3"
@@ -32,7 +33,7 @@ itertools = "0.10.0"
 reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "1.20", features = ["full"] }
+tokio = { version = "1.20", features = ["full", "tracing"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 warp = "0.3"
