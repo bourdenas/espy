@@ -2,6 +2,7 @@ use crate::documents::StoreEntry;
 use crate::traits::Storefront;
 use crate::Status;
 use async_trait::async_trait;
+use tracing::info;
 
 pub struct SteamApi {
     steam_key: String,
@@ -30,7 +31,9 @@ impl Storefront for SteamApi {
         );
 
         let resp = reqwest::get(&uri).await?.json::<SteamResponse>().await?;
-        println!("steam games: {}", resp.response.game_count);
+        info! {
+            "steam games: {}", resp.response.game_count
+        }
 
         Ok(resp
             .response

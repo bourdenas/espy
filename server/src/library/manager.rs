@@ -8,6 +8,7 @@ use crate::Status;
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
+use tracing::info;
 
 /// Proxy structure that handles operations regarding user's library.
 pub struct LibraryManager {
@@ -102,7 +103,7 @@ impl LibraryManager {
         });
 
         while let Some(refresh) = rx.recv().await {
-            println!("  received refresh for {}", &refresh.library_entry.name);
+            info!("  received refresh for {}", &refresh.library_entry.name);
 
             if let None = &refresh.game_entry {
                 continue;
@@ -142,8 +143,8 @@ impl LibraryManager {
     async fn handle_matches(&self, mut rx: mpsc::Receiver<Match>) {
         while let Some(entry_match) = rx.recv().await {
             match &entry_match.game_entry {
-                Some(_) => eprintln!("  👍 received match for {}", &entry_match.store_entry.title),
-                None => eprintln!("  🚫 no match for {}", &entry_match.store_entry.title),
+                Some(_) => info!("  👍 received match for {}", &entry_match.store_entry.title),
+                None => info!("  🚫 no match for {}", &entry_match.store_entry.title),
             };
 
             let firestore = Arc::clone(&self.firestore);

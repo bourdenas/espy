@@ -3,6 +3,7 @@ use crate::documents::StoreEntry;
 use crate::traits::Storefront;
 use crate::Status;
 use async_trait::async_trait;
+use tracing::info;
 
 pub struct GogApi {
     token: api::GogToken,
@@ -75,7 +76,9 @@ impl Storefront for GogApi {
                 break;
             }
         }
-        println!("gog games: {}", store_entries.len());
+        info! {
+            "gog games: {}", store_entries.len()
+        }
 
         Ok(store_entries)
     }

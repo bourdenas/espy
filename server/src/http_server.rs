@@ -26,6 +26,12 @@ struct Opts {
 
 #[tokio::main]
 async fn main() -> Result<(), Status> {
+    let subscriber = tracing_subscriber::FmtSubscriber::new();
+    match tracing::subscriber::set_global_default(subscriber) {
+        Ok(()) => (),
+        Err(e) => eprintln!("{e}"),
+    };
+
     let opts: Opts = Opts::parse();
 
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
@@ -47,7 +53,6 @@ async fn main() -> Result<(), Status> {
         Err(_) => opts.port,
     };
 
-    println!("starting the HTTP server listening at port {port}");
     warp::serve(
         http::routes::routes(Arc::new(keys), Arc::new(igdb), firestore).with(
             warp::cors()
@@ -57,7 +62,7 @@ async fn main() -> Result<(), Status> {
                 .allow_credentials(true),
         ),
     )
-    .run(([0, 0, 0, 0], opts.port))
+    .run(([0, 0, 0, 0], port))
     .await;
 
     Ok(())

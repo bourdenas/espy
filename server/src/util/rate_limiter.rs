@@ -2,11 +2,13 @@ use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
 
 /// Thread-safe RateLimiter for fixed amount of queries per second (QPS).
+#[derive(Debug)]
 pub struct RateLimiter {
     qps_rate: i32,
     state: Mutex<RateLimiterState>,
 }
 
+#[derive(Debug)]
 struct RateLimiterState {
     available_capacity: i32,
     next_reset: SystemTime,
