@@ -1,5 +1,6 @@
 use clap::Parser;
-use espy_server::{documents::StoreEntry, *};
+use espy_server::{documents::StoreEntry, library::search, *};
+use itertools::Itertools;
 
 /// IGDB search utility.
 #[derive(Parser)]
@@ -16,9 +17,6 @@ struct Opts {
 
     #[clap(long)]
     expand: bool,
-
-    #[clap(long)]
-    examine: bool,
 
     /// JSON file that contains application keys for espy service.
     #[clap(long, default_value = "keys.json")]
@@ -48,28 +46,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         return Ok(());
     }
 
-    let igdb_games = igdb.search_by_title(&opts.search).await?;
-    println!("Found {} candidates.", igdb_games.len());
+    let games = search::get_candidates(&igdb, &opts.search).await?;
+    println!(
+        "Found {} candidates.\n{}",
+        games.len(),
+        games.iter().map(|game| &game.name).join("\n")
+    );
 
-    for game in &igdb_games {
-        println!("'{}'", &game.name);
-    }
-    if opts.examine && !igdb_games.is_empty() {
-        let game = igdb.get_game_by_id(igdb_games[0].id).await?.unwrap();
-        println!("{:#?}", game);
-    }
-    if opts.expand && !igdb_games.is_empty() {
-        let igdb_game = &igdb_games[0];
-        let game = igdb
-            .get_game_by_id(match igdb_game.parent_game {
-                Some(parent) => parent,
-                None => match igdb_game.version_parent {
-                    Some(parent) => parent,
-                    None => igdb_game.id,
-                },
-            })
-            .await?
-            .unwrap();
+    if opts.expand && !games.is_empty() {
+        let game = igdb.get_game_by_id(games[0].id).await?.unwrap();
         println!("{:#?}", game);
     }
 
