@@ -59,6 +59,7 @@ impl IgdbApi {
 
     /// Returns a fully resolved IGDB Game based on the provided storefront
     /// entry if found in IGDB.
+    #[instrument(level = "trace", skip(self))]
     pub async fn match_store_entry(
         &self,
         store_entry: &StoreEntry,
@@ -88,6 +89,7 @@ impl IgdbApi {
     }
 
     /// Returns a fully resolved IGDB Game matching the input IGDB Game id.
+    #[instrument(level = "trace", skip(self))]
     pub async fn get_game_by_id(&self, id: u64) -> Result<Option<GameEntry>, Status> {
         let result: Vec<IgdbGame> = self
             .post(GAMES_ENDPOINT, &format!("fields *; where id={id};"))
@@ -108,6 +110,14 @@ impl IgdbApi {
     /// IGDB returns Game entries only with relevant IDs for such items that need
     /// subsequent lookups in corresponding IGDB tables.
     #[async_recursion]
+    #[instrument(
+        level = "trace", 
+        skip(self),
+        fields(
+            game_id = %igdb_game.id,
+            game_name = %igdb_game.name,
+        )
+    )]
     async fn retrieve_game_info(&self, igdb_game: IgdbGame) -> Result<GameEntry, Status> {
         let mut game = GameEntry {
             id: igdb_game.id,
@@ -209,6 +219,7 @@ impl IgdbApi {
     }
 
     /// Returns game screenshots based on id from the igdb/screenshots endpoint.
+    #[instrument(level = "trace", skip(self))]
     async fn get_artwork(&self, ids: &[u64]) -> Result<Vec<Image>, Status> {
         Ok(self
             .post(
@@ -225,6 +236,7 @@ impl IgdbApi {
     }
 
     /// Returns game screenshots based on id from the igdb/screenshots endpoint.
+    #[instrument(level = "trace", skip(self))]
     async fn get_screenshots(&self, ids: &[u64]) -> Result<Vec<Image>, Status> {
         Ok(self
             .post(
@@ -241,6 +253,7 @@ impl IgdbApi {
     }
 
     /// Returns game websites based on id from the igdb/websites endpoint.
+    #[instrument(level = "trace", skip(self))]
     async fn get_websites(&self, ids: &[u64]) -> Result<Vec<igdb_docs::Website>, Status> {
         Ok(self
             .post(
@@ -257,6 +270,7 @@ impl IgdbApi {
     }
 
     /// Returns game collection based on id from the igdb/collections endpoint.
+    #[instrument(level = "trace", skip(self))]
     async fn get_collection(&self, id: u64) -> Result<Option<Annotation>, Status> {
         let result: Vec<Annotation> = self
             .post(COLLECTIONS_ENDPOINT, &format!("fields *; where id={id};"))
@@ -266,6 +280,7 @@ impl IgdbApi {
     }
 
     /// Returns game franchices based on id from the igdb/frachises endpoint.
+    #[instrument(level = "trace", skip(self))]
     async fn get_franchises(&self, ids: &[u64]) -> Result<Vec<Annotation>, Status> {
         Ok(self
             .post(
@@ -282,6 +297,7 @@ impl IgdbApi {
     }
 
     /// Returns game companies involved in the making of the game.
+    #[instrument(level = "trace", skip(self))]
     async fn get_companies(&self, ids: &[u64]) -> Result<Vec<Annotation>, Status> {
         // Collect all involved companies for a game entry.
         let involved_companies: Vec<InvolvedCompany> = self

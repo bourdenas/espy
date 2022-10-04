@@ -10,6 +10,7 @@ use tracing::{debug, instrument, trace_span, Instrument};
 /// Returns `GameEntry` candidates from IGDB entries matching input title.
 ///
 /// The candidates are ordered in descending order of matching criteria.
+#[instrument(level = "trace", skip(igdb))]
 pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<GameEntry>, Status> {
     let igdb_games = match igdb.search_by_title(title).await {
         Ok(r) => r,
