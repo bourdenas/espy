@@ -1,9 +1,11 @@
-use crate::api::{IgdbApi, IgdbGame};
-use crate::documents::GameEntry;
-use crate::Status;
+use crate::{
+    api::{IgdbApi, IgdbGame},
+    documents::GameEntry,
+    Status,
+};
 use itertools::Itertools;
 use std::sync::{Arc, Mutex};
-use tracing::{info, info_span, instrument, Instrument};
+use tracing::{debug, instrument, trace_span, Instrument};
 
 /// Returns `GameEntry` candidates from IGDB entries matching input title.
 ///
@@ -42,13 +44,12 @@ pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<GameEntry
 /// Returns `GameEntry` candidates from IGDB entries matching input title.
 ///
 /// The candidates are ordered in descending order of matching criteria.
-#[instrument(level = "info", skip(igdb))]
+#[instrument(level = "trace", skip(igdb))]
 pub async fn get_candidates_with_covers(
     igdb: Arc<IgdbApi>,
     title: &str,
 ) -> Result<Vec<GameEntry>, Status> {
-    let span = info_span!("search_by_title");
-    let igdb_games = match igdb.search_by_title(title).instrument(span).await {
+    let igdb_games = match igdb.search_by_title(title).await {
         Ok(r) => r,
         Err(e) => {
             return Err(Status::not_found(&format!(
@@ -56,7 +57,7 @@ pub async fn get_candidates_with_covers(
             )))
         }
     };
-    info!("retrieved {} candidates", igdb_games.len());
+    debug!("retrieved {} candidates", igdb_games.len());
 
     let candidates = igdb_games
         .into_iter()
@@ -73,27 +74,29 @@ pub async fn get_candidates_with_covers(
         let igdb = Arc::clone(&igdb);
         let result = Arc::clone(&result);
 
-        handles.push(tokio::spawn(async move {
-            let span = info_span!("cover retrival");
-            let cover = match candidate.game.cover {
-                Some(cover) => match igdb.get_cover(cover).instrument(span).await {
-                    Ok(cover) => cover,
-                    Err(_) => None,
-                },
-                None => None,
-            };
+        handles.push(tokio::spawn(
+            async move {
+                let cover = match candidate.game.cover {
+                    Some(cover) => match igdb.get_cover(cover).await {
+                        Ok(cover) => cover,
+                        Err(_) => None,
+                    },
+                    None => None,
+                };
 
-            candidate.entry = GameEntry {
-                id: candidate.game.id,
-                name: candidate.game.name,
-                release_date: candidate.game.first_release_date,
-                cover,
-                ..Default::default()
-            };
-            candidate.game = IgdbGame::default();
+                candidate.entry = GameEntry {
+                    id: candidate.game.id,
+                    name: candidate.game.name,
+                    release_date: candidate.game.first_release_date,
+                    cover,
+                    ..Default::default()
+                };
+                candidate.game = IgdbGame::default();
 
-            result.lock().unwrap().push(candidate);
-        }));
+                result.lock().unwrap().push(candidate);
+            }
+            .instrument(trace_span!("spawn")),
+        ));
     }
     futures::future::join_all(handles).await;
 

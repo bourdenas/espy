@@ -1,9 +1,12 @@
 use super::igdb_docs::{self, ExternalGame, IgdbGame, InvolvedCompany};
-use crate::documents::{Annotation, GameEntry, Image, StoreEntry, Website, WebsiteAuthority};
-use crate::util::rate_limiter::RateLimiter;
-use crate::Status;
+use crate::{
+    documents::{Annotation, GameEntry, Image, StoreEntry, Website, WebsiteAuthority},
+    util::rate_limiter::RateLimiter,
+    Status,
+};
 use async_recursion::async_recursion;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use tracing::instrument;
 
 pub struct IgdbApi {
     client_id: String,
@@ -47,6 +50,7 @@ impl IgdbApi {
     ///
     /// Returns barebone candidates with not many of the relevant IGDB fields
     /// populated to save on extra queries.
+    #[instrument(level = "trace", skip(self))]
     pub async fn search_by_title(&self, title: &str) -> Result<Vec<IgdbGame>, Status> {
         Ok(self
             .post(GAMES_ENDPOINT, &format!("search \"{title}\"; fields *;"))
@@ -195,6 +199,7 @@ impl IgdbApi {
     }
 
     /// Returns game image cover based on id from the igdb/covers endpoint.
+    #[instrument(level = "trace", skip(self))]
     pub async fn get_cover(&self, id: u64) -> Result<Option<Image>, Status> {
         let result: Vec<Image> = self
             .post(COVERS_ENDPOINT, &format!("fields *; where id={id};"))

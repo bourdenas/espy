@@ -1,9 +1,15 @@
-use crate::api::{FirestoreApi, IgdbApi};
-use crate::http;
+use crate::{
+    api::{FirestoreApi, IgdbApi},
+    http,
+};
 use clap::Parser;
 use espy_server::*;
-use std::env;
-use std::sync::{Arc, Mutex};
+use opentelemetry::global;
+use std::{
+    env,
+    sync::{Arc, Mutex},
+};
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 use warp::{self, Filter};
 
 #[derive(Parser)]
@@ -26,11 +32,32 @@ struct Opts {
 
 #[tokio::main]
 async fn main() -> Result<(), Status> {
-    let subscriber = tracing_subscriber::FmtSubscriber::new();
-    match tracing::subscriber::set_global_default(subscriber) {
-        Ok(()) => (),
-        Err(e) => eprintln!("{e}"),
+    global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
+
+    let tracer = match opentelemetry_jaeger::new_agent_pipeline()
+        .with_service_name("espy-httpserver")
+        .install_simple()
+    {
+        Ok(tracer) => tracer,
+        Err(e) => {
+            eprintln!("{e}");
+            return Err(Status::new("Failed to setup tracing", e));
+        }
     };
+
+    let opentelemetry = tracing_opentelemetry::layer().with_tracer(tracer);
+    match tracing_subscriber::registry()
+        .with(opentelemetry)
+        // Continue logging to stdout
+        .with(fmt::Layer::default())
+        .try_init()
+    {
+        Ok(()) => (),
+        Err(e) => {
+            eprintln!("{e}");
+            return Err(Status::new("Failed to setup tracing", e));
+        }
+    }
 
     let opts: Opts = Opts::parse();
 

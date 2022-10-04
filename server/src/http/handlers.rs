@@ -1,22 +1,24 @@
-use crate::api::{FirestoreApi, IgdbApi};
-use crate::http::models;
-use crate::library::{self, Reconciler, User};
-use crate::util;
+use crate::{
+    api::{FirestoreApi, IgdbApi},
+    http::models,
+    library::{self, Reconciler, User},
+    util,
+};
 use std::{
     convert::Infallible,
     sync::{Arc, Mutex},
     time::SystemTime,
 };
-use tracing::{error, info, instrument, warn};
+use tracing::{debug, error, instrument, warn};
 use warp::http::StatusCode;
 
-#[instrument(level = "info", skip(keys, firestore))]
+#[instrument(level = "trace", skip(keys, firestore))]
 pub async fn post_sync(
     user_id: String,
     keys: Arc<util::keys::Keys>,
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> Result<impl warp::Reply, Infallible> {
-    info! {"POST /library/{user_id}/sync"};
+    debug!("POST /library/{user_id}/sync");
 
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
@@ -35,14 +37,14 @@ pub async fn post_sync(
     }
 }
 
-#[instrument(level = "info", skip(igdb, firestore))]
+#[instrument(level = "trace", skip(igdb, firestore))]
 pub async fn post_recon(
     user_id: String,
     recon: models::Recon,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    info! {"POST /library/{user_id}/recon"}
+    debug!("POST /library/{user_id}/recon");
 
     let mgr = library::LibraryManager::new(&user_id, Arc::clone(&firestore));
     match mgr
@@ -72,12 +74,12 @@ pub async fn post_recon(
     }
 }
 
-#[instrument(level = "info", skip(igdb))]
+#[instrument(level = "trace", skip(igdb))]
 pub async fn post_search(
     search: models::Search,
     igdb: Arc<IgdbApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    info! {"POST /search"}
+    debug!("POST /search");
     let started = SystemTime::now();
 
     let resp: Result<Box<dyn warp::Reply>, Infallible> =
@@ -90,7 +92,7 @@ pub async fn post_search(
         };
 
     let resp_time = SystemTime::now().duration_since(started).unwrap();
-    info! {"time: {:.2} msec", resp_time.as_millis()}
+    debug!("time: {:.2} msec", resp_time.as_millis());
     resp
 }
 
@@ -98,7 +100,7 @@ pub async fn get_images(
     resolution: String,
     image: String,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    info! {"GET /images/{resolution}/{image}"}
+    debug!("GET /images/{resolution}/{image}");
 
     let uri = format!("{IGDB_IMAGES_URL}/{resolution}/{image}");
     let resp = match reqwest::Client::new().get(&uri).send().await {
@@ -121,7 +123,7 @@ pub async fn get_images(
 }
 
 pub async fn welcome() -> Result<Box<dyn warp::Reply>, Infallible> {
-    info! {"GET /"}
+    debug!("GET /");
     Ok(Box::new("welcome"))
 }
 
