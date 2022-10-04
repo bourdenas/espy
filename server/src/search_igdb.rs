@@ -8,10 +8,10 @@ struct Opts {
     #[clap(short, long, default_value = "")]
     search: String,
 
-    #[clap(long)]
+    #[clap(long, default_value = "")]
     external: String,
 
-    #[clap(long)]
+    #[clap(long, default_value = "")]
     external_store: String,
 
     #[clap(long)]
@@ -27,6 +27,8 @@ struct Opts {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    Tracing::setup("search-igdb")?;
+
     let opts: Opts = Opts::parse();
 
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();

@@ -32,11 +32,7 @@ struct Opts {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let subscriber = tracing_subscriber::FmtSubscriber::new();
-    match tracing::subscriber::set_global_default(subscriber) {
-        Ok(()) => (),
-        Err(e) => eprintln!("{e}"),
-    };
+    Tracing::setup("sync-library")?;
 
     let opts: Opts = Opts::parse();
 
