@@ -5,7 +5,7 @@ use crate::{
 };
 use itertools::Itertools;
 use std::sync::{Arc, Mutex};
-use tracing::{debug, instrument, trace_span, Instrument};
+use tracing::{debug, error, instrument, trace_span, Instrument};
 
 /// Returns `GameEntry` candidates from IGDB entries matching input title.
 ///
@@ -80,7 +80,10 @@ pub async fn get_candidates_with_covers(
                 let cover = match candidate.game.cover {
                     Some(cover) => match igdb.get_cover(cover).await {
                         Ok(cover) => cover,
-                        Err(_) => None,
+                        Err(e) => {
+                            error!("Failed to retrieve cover: {e}");
+                            None
+                        }
                     },
                     None => None,
                 };
