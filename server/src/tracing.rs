@@ -28,11 +28,7 @@ impl Tracing {
         match tracing_subscriber::registry()
             .with(opentelemetry)
             // Continue logging to stdout
-            .with(
-                fmt::Layer::new()
-                    .with_writer(std::io::stdout.with_max_level(Level::INFO))
-                    .pretty(),
-            )
+            .with(fmt::Layer::new().with_writer(std::io::stdout.with_max_level(Level::INFO)))
             .try_init()
         {
             Ok(()) => Ok(()),
