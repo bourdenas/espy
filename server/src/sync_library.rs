@@ -1,6 +1,7 @@
 use clap::Parser;
 use espy_server::*;
 use std::sync::{Arc, Mutex};
+use tracing::trace_span;
 
 /// Espy server util for testing functionality of the backend.
 #[derive(Parser)]
@@ -47,13 +48,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             .expect("FirestoreApi.from_credentials()"),
     ));
 
+    let span = trace_span!("library sync");
+    let _guard = span.enter();
+
     let mut user = library::User::new(Arc::clone(&firestore), &opts.user)?;
     user.sync(&keys, opts.egs_code).await?;
 
     let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
     mgr.recon_entries(library::Reconciler::new(Arc::clone(&igdb)))
         .await?;
-    user.update_version()?;
+    user.update_library_version()?;
 
     if opts.refresh {
         mgr.refresh_entries(library::Reconciler::new(Arc::clone(&igdb)))

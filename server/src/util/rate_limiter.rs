@@ -1,5 +1,8 @@
-use std::sync::Mutex;
-use std::time::{Duration, SystemTime};
+use std::{
+    sync::Mutex,
+    time::{Duration, SystemTime},
+};
+use tracing::instrument;
 
 /// Thread-safe RateLimiter for fixed amount of queries per second (QPS).
 #[derive(Debug)]
@@ -28,6 +31,7 @@ impl RateLimiter {
     // Blocks execution thread until it is ok to execute next operation based on
     // QPS limit. Returns the duration the thread was blocked. Returns 0 if the
     // thread did not have to block.
+    #[instrument(level = "trace", skip(self))]
     pub fn wait(&self) -> Duration {
         let mut total_wait_time = Duration::from_micros(0);
 

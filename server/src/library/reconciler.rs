@@ -5,7 +5,7 @@ use crate::Status;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
-use tracing::{error, info};
+use tracing::{error, info, instrument, Instrument, trace_span};
 
 // The result of a refresh operation on a `library_entry`.
 pub struct Refresh {
@@ -61,6 +61,7 @@ impl Reconciler {
     }
 
     /// Returns a fully resolved IGDB GameEntry matching input `id`.
+    #[instrument(level = "trace", skip(self))]
     pub async fn retrieve(&self, id: u64) -> Result<GameEntry, Status> {
         get_entry(&self.igdb, id).await
     }
@@ -69,13 +70,19 @@ impl Reconciler {
     ///
     /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
     /// successful or failed matches.
+    #[instrument(
+        level = "trace",
+        skip(self, tx, store_entries), 
+        fields(entries_len = %store_entries.len())
+    )]
     pub async fn reconcile(&self, tx: mpsc::Sender<Match>, store_entries: Vec<StoreEntry>) {
         let fut = stream::iter(store_entries.into_iter().map(|store_entry| MatchingTask {
-            store_entry: store_entry,
+            store_entry,
             igdb: Arc::clone(&self.igdb),
             tx: tx.clone(),
         }))
-        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, match_task);
+        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, match_task)
+        .instrument(trace_span!("spawn recon tasks"));
 
         fut.await;
         drop(tx);
@@ -85,6 +92,11 @@ impl Reconciler {
     ///
     /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
     /// successful or failed matches.
+    #[instrument(
+        level = "trace",
+        skip(self, tx, library_entries), 
+        fields(entries_len = %library_entries.len())
+    )]
     pub async fn refresh(&self, tx: mpsc::Sender<Refresh>, library_entries: Vec<LibraryEntry>) {
         let fut = stream::iter(
             library_entries
@@ -95,17 +107,23 @@ impl Reconciler {
                     tx: tx.clone(),
                 }),
         )
-        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, refresh_task);
+        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, refresh_task)
+        .instrument(trace_span!("spawn fresh tasks"));
 
         fut.await;
         drop(tx);
     }
 }
 
-const IGDB_CONNECTIONS_LIMIT: usize = 8;
+const IGDB_CONNECTIONS_LIMIT: usize = 2;
 
 /// Performs a single `RefreshTask` to producea `Refresh` and transmits it over
 /// its task's channel.
+#[instrument(
+    level = "trace",
+    skip(task), 
+    fields(library_entry = %task.library_entry)
+)]
 async fn refresh_task(task: RefreshTask) {
     let entry_match = match get_entry(&task.igdb, task.library_entry.id).await {
         Ok(game_entry) => Refresh {
@@ -128,6 +146,11 @@ async fn refresh_task(task: RefreshTask) {
 
 /// Performs a `MatchingTask` to producea `Match` and transmits it over its
 /// task's channel.
+#[instrument(
+    level = "trace",
+    skip(task), 
+    fields(store_entry = %task.store_entry)
+)]
 async fn match_task(task: MatchingTask) {
     let entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => match game_entry {

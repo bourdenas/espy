@@ -59,7 +59,7 @@ pub async fn post_recon(
                     return Ok(StatusCode::INTERNAL_SERVER_ERROR);
                 }
             };
-            match user.update_version() {
+            match user.update_library_version() {
                 Ok(_) => Ok(StatusCode::OK),
                 Err(err) => {
                     error! {"{err}"}
