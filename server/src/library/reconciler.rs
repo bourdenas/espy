@@ -81,7 +81,7 @@ impl Reconciler {
             igdb: Arc::clone(&self.igdb),
             tx: tx.clone(),
         }))
-        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, match_task)
+        .for_each_concurrent(4, match_task)
         .instrument(trace_span!("spawn recon tasks"));
 
         fut.await;
@@ -107,15 +107,13 @@ impl Reconciler {
                     tx: tx.clone(),
                 }),
         )
-        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, refresh_task)
+        .for_each_concurrent(4, refresh_task)
         .instrument(trace_span!("spawn fresh tasks"));
 
         fut.await;
         drop(tx);
     }
 }
-
-const IGDB_CONNECTIONS_LIMIT: usize = 2;
 
 /// Performs a single `RefreshTask` to producea `Refresh` and transmits it over
 /// its task's channel.

@@ -51,7 +51,7 @@ impl IgdbApi {
         self.state = Some(Arc::new(IgdbApiState {
             client_id: self.client_id.clone(),
             oauth_token: resp.access_token,
-            qps: RateLimiter::new(4),
+            qps: RateLimiter::new(4, 7),
         }));
 
         Ok(())
@@ -549,6 +549,7 @@ async fn post<T: DeserializeOwned>(
 ) -> Result<T, Status> {
     igdb_state.qps.wait();
 
+    let _permit = igdb_state.qps.connection().await;
     let uri = format!("{IGDB_SERVICE_URL}/{endpoint}/");
     let resp = reqwest::Client::new()
         .post(&uri)

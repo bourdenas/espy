@@ -113,7 +113,7 @@ impl LibraryManager {
         );
 
         while let Some(refresh) = rx.recv().await {
-            info!("  received refresh for {}", &refresh.library_entry.name);
+            info!("refreshed '{}'", &refresh.library_entry.name);
 
             if let None = &refresh.game_entry {
                 continue;
