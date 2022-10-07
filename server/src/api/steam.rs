@@ -1,8 +1,8 @@
-use crate::documents::StoreEntry;
+use crate::documents::{SteamData, StoreEntry};
 use crate::traits::Storefront;
 use crate::Status;
 use async_trait::async_trait;
-use tracing::info;
+use tracing::{error, info, instrument};
 
 pub struct SteamApi {
     steam_key: String,
@@ -15,6 +15,24 @@ impl SteamApi {
             steam_key: String::from(steam_key),
             steam_user_id: String::from(steam_user_id),
         }
+    }
+
+    #[instrument(level = "trace")]
+    pub async fn get_app_details(steam_appid: u64) -> Result<SteamData, Status> {
+        let uri = format!(
+            "https://store.steampowered.com/api/appdetails?appids={}&l=english",
+            steam_appid
+        );
+
+        let resp = reqwest::get(&uri).await?;
+        let text = resp.text().await?;
+        let resp = serde_json::from_str::<SteamAppDetailsResponse>(&text).map_err(|_| {
+            let msg = format!("Received unexpected response: {}", &text);
+            error!(msg);
+            Status::internal(msg)
+        })?;
+
+        Ok(resp.data)
     }
 }
 
@@ -68,6 +86,12 @@ struct GameEntry {
     name: String,
     playtime_forever: i32,
     img_icon_url: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug)]
+struct SteamAppDetailsResponse {
+    success: bool,
+    data: SteamData,
 }
 
 const STEAM_HOST: &str = "http://api.steampowered.com";

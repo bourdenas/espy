@@ -1,4 +1,4 @@
-use crate::documents::Annotation;
+use super::{Annotation, SteamData};
 use serde::{Deserialize, Serialize};
 
 /// Document type under 'users/{user_id}/games' that represents a game entry in
@@ -67,6 +67,10 @@ pub struct GameEntry {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub websites: Vec<Website>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steam_data: Option<SteamData>,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
