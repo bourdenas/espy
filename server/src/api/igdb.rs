@@ -8,7 +8,7 @@ use async_recursion::async_recursion;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinHandle;
-use tracing::{instrument, trace_span, Instrument};
+use tracing::{error, instrument, trace_span, Instrument};
 
 pub struct IgdbApi {
     secret: String,
@@ -216,84 +216,83 @@ async fn retrieve_game_info(
 
     let game = Arc::new(Mutex::new(game));
 
-    let mut handles: Vec<tracing::instrument::Instrumented<JoinHandle<Result<(), Status>>>> =
-        vec![];
+    let mut handles: Vec<JoinHandle<Result<(), Status>>> = vec![];
     if let Some(cover) = igdb_game.cover {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 game.lock().unwrap().cover = get_cover(igdb_state, cover).await?;
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_cover")),
-        );
+        ));
     }
     if let Some(collection) = igdb_game.collection {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 if let Some(collection) = get_collection(igdb_state, collection).await? {
                     game.lock().unwrap().collections.push(collection);
                 }
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_collection")),
-        );
+        ));
     }
     if igdb_game.franchises.len() > 0 {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 let franchise = get_franchises(igdb_state, &igdb_game.franchises).await?;
                 game.lock().unwrap().collections.extend(franchise);
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_franchises")),
-        );
+        ));
     }
     if igdb_game.involved_companies.len() > 0 {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 game.lock().unwrap().companies =
                     get_companies(igdb_state, &igdb_game.involved_companies).await?;
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_companies")),
-        );
+        ));
     }
     if igdb_game.artworks.len() > 0 {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 game.lock().unwrap().artwork = get_artwork(igdb_state, &igdb_game.artworks).await?;
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_artwork")),
-        );
+        ));
     }
     if igdb_game.screenshots.len() > 0 {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 game.lock().unwrap().screenshots =
                     get_screenshots(igdb_state, &igdb_game.screenshots).await?;
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_screenshots")),
-        );
+        ));
     }
     if igdb_game.websites.len() > 0 {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 let websites = get_websites(igdb_state, &igdb_game.websites).await?;
                 game.lock()
                     .unwrap()
@@ -311,62 +310,62 @@ async fn retrieve_game_info(
                         },
                     }));
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_websites")),
-        );
+        ));
     }
 
     for expansion in igdb_game.expansions.into_iter() {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 if let Some(expansion) = retrieve_game(igdb_state, expansion).await? {
                     game.lock().unwrap().expansions.push(expansion);
                 }
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_expansions")),
-        );
+        ));
     }
     for dlc in igdb_game.dlcs.into_iter() {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 if let Some(dlc) = retrieve_game(igdb_state, dlc).await? {
                     game.lock().unwrap().dlcs.push(dlc);
                 }
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_dlcs")),
-        );
+        ));
     }
     for remake in igdb_game.remakes.into_iter() {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 if let Some(remake) = retrieve_game(igdb_state, remake).await? {
                     game.lock().unwrap().remakes.push(remake);
                 }
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_remakes")),
-        );
+        ));
     }
     for remaster in igdb_game.remasters.into_iter() {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
-        handles.push(
-            tokio::spawn(async move {
+        handles.push(tokio::spawn(
+            async move {
                 if let Some(remaster) = retrieve_game(igdb_state, remaster).await? {
                     game.lock().unwrap().remasters.push(remaster);
                 }
                 Ok(())
-            })
+            }
             .instrument(trace_span!("spawn_get_remasters")),
-        );
+        ));
     }
 
     for result in futures::future::join_all(handles).await {
@@ -560,11 +559,16 @@ async fn post<T: DeserializeOwned>(
         )
         .body(String::from(body))
         .send()
-        .await?
-        .json::<T>()
         .await?;
 
-    Ok(resp)
+    let text = resp.text().await?;
+    let resp = serde_json::from_str::<T>(&text).map_err(|_| {
+        let msg = format!("Received unexpected response: {}", &text);
+        error!(msg);
+        Status::internal(msg)
+    });
+
+    resp
 }
 
 const TWITCH_OAUTH_URL: &str = "https://id.twitch.tv/oauth2/token";
