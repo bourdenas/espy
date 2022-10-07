@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// Document type under 'users/{user_id}/unknown/{entry_id}' that represents
 /// user ownership of a title in a storefront that has not yet been matched with
@@ -16,4 +17,14 @@ pub struct StoreEntry {
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
     pub image: String,
+}
+
+impl fmt::Display for StoreEntry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "StoreEntry({}): '{}' -- {}",
+            &self.id, &self.title, &self.storefront_name
+        )
+    }
 }

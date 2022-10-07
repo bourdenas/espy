@@ -1,9 +1,13 @@
-use crate::api::{FirestoreApi, IgdbApi};
-use crate::http;
+use crate::{
+    api::{FirestoreApi, IgdbApi},
+    http,
+};
 use clap::Parser;
 use espy_server::*;
-use std::env;
-use std::sync::{Arc, Mutex};
+use std::{
+    env,
+    sync::{Arc, Mutex},
+};
 use warp::{self, Filter};
 
 #[derive(Parser)]
@@ -26,11 +30,7 @@ struct Opts {
 
 #[tokio::main]
 async fn main() -> Result<(), Status> {
-    let subscriber = tracing_subscriber::FmtSubscriber::new();
-    match tracing::subscriber::set_global_default(subscriber) {
-        Ok(()) => (),
-        Err(e) => eprintln!("{e}"),
-    };
+    Tracing::setup("espy-httpserver")?;
 
     let opts: Opts = Opts::parse();
 
