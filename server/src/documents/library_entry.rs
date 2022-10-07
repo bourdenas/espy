@@ -1,7 +1,6 @@
-use crate::documents::Annotation;
-use crate::documents::GameEntry;
-use crate::documents::StoreEntry;
+use crate::documents::{Annotation, GameEntry, StoreEntry};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// Document type under 'users/{user_id}/library_v2/{game_id}' that represents a
 /// game entry in user's library that has been matched with an IGDB entry.
@@ -60,6 +59,12 @@ impl LibraryEntry {
             owned_versions,
             user_data,
         }
+    }
+}
+
+impl fmt::Display for LibraryEntry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "LibraryEntry({}): '{}'", &self.id, &self.name)
     }
 }
 
