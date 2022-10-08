@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/annotation.dart';
+import 'package:espy/modules/documents/steam_data.dart';
 
 class GameEntry {
   final int id;
@@ -23,6 +24,8 @@ class GameEntry {
   final List<GameImage> artwork;
   final List<Website> websites;
 
+  final SteamData? steamData;
+
   const GameEntry({
     required this.id,
     required this.name,
@@ -41,6 +44,7 @@ class GameEntry {
     this.screenshots = const [],
     this.artwork = const [],
     this.websites = const [],
+    this.steamData = null,
   });
 
   GameEntry.fromJson(Map<String, dynamic> json)
@@ -109,6 +113,9 @@ class GameEntry {
                   for (final entry in json['websites']) Website.fromJson(entry),
                 ]
               : [],
+          steamData: json.containsKey('steam_data')
+              ? SteamData.fromJson(json['steam_data'])
+              : null,
         );
 
   Map<String, dynamic> toJson() {
