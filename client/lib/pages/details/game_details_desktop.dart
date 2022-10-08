@@ -51,64 +51,70 @@ class GameDetailsContentDesktop extends StatelessWidget {
 
   static Widget header(
       BuildContext context, LibraryEntry libraryEntry, GameEntry gameEntry) {
+    final backgroundImage = gameEntry.steamData != null &&
+            gameEntry.steamData!.backgroundImage != null
+        ? gameEntry.steamData!.backgroundImage!
+        : gameEntry.artwork.isNotEmpty
+            ? 'https://images.igdb.com/igdb/image/upload/t_720p/${gameEntry.artwork[0].imageId}.jpg'
+            : '';
+
     return SliverAppBar(
       pinned: true,
       expandedHeight: 320.0,
       flexibleSpace: FlexibleSpaceBar(
-        background: Stack(children: [
-          // Material(
-          //   elevation: 2,
-          //   shape:
-          //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          //   clipBehavior: Clip.antiAlias,
-          //   child: BackdropFilter(
-          //     filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-          //     child: Image.network(
-          //       'https://images.igdb.com/igdb/image/upload/t_720p/${entry.game.artworks[0].imageId}.jpg',
-          //       fit: BoxFit.cover,
-          //       height: 200,
-          //       width: 1200,
-          //     ),
-          //   ),
-          // ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+        background: Stack(
+          children: [
+            Row(
               children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Hero(
-                      tag: '${gameEntry.id}_cover',
-                      child: CachedNetworkImage(
-                        imageUrl:
-                            '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
-                        errorWidget: (context, url, error) => Icon(Icons.error),
-                      ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      child: FloatingActionButton(
-                        mini: true,
-                        tooltip: 'Edit',
-                        child: Icon(Icons.edit),
-                        backgroundColor: Color.fromARGB(64, 255, 255, 255),
-                        onPressed: () {
-                          // GameEntryEditDialog.show(context, libraryEntry);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(padding: EdgeInsets.all(8)),
                 Expanded(
-                  child: gameTitle(context, libraryEntry, gameEntry),
+                  child: Image.network(
+                    backgroundImage,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                  ),
                 ),
               ],
             ),
-          )
-        ]),
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Hero(
+                        tag: '${gameEntry.id}_cover',
+                        child: CachedNetworkImage(
+                          imageUrl:
+                              '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        child: FloatingActionButton(
+                          mini: true,
+                          tooltip: 'Edit',
+                          child: Icon(Icons.edit),
+                          backgroundColor: Color.fromARGB(64, 255, 255, 255),
+                          onPressed: () {
+                            // GameEntryEditDialog.show(context, libraryEntry);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(padding: EdgeInsets.all(8)),
+                  Expanded(
+                    child: gameTitle(context, libraryEntry, gameEntry),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
