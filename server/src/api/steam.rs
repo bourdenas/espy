@@ -1,8 +1,11 @@
-use crate::documents::{SteamData, StoreEntry};
-use crate::traits::Storefront;
-use crate::Status;
+use crate::{
+    documents::{SteamData, StoreEntry},
+    traits::Storefront,
+    Status,
+};
 use async_trait::async_trait;
-use tracing::{error, info, instrument};
+use std::collections::HashMap;
+use tracing::{info, instrument};
 
 pub struct SteamApi {
     steam_key: String,
@@ -26,11 +29,14 @@ impl SteamApi {
 
         let resp = reqwest::get(&uri).await?;
         let text = resp.text().await?;
-        let resp = serde_json::from_str::<SteamAppDetailsResponse>(&text).map_err(|_| {
-            let msg = format!("Received unexpected response: {}", &text);
-            error!(msg);
-            Status::internal(msg)
-        })?;
+        let (_, resp) = serde_json::from_str::<HashMap<String, SteamAppDetailsResponse>>(&text)
+            .map_err(|e| {
+                let msg = format!("Failed to parse response: {}", e);
+                Status::internal(msg)
+            })?
+            .into_iter()
+            .next()
+            .unwrap();
 
         Ok(resp.data)
     }
