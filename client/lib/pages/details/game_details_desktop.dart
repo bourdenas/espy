@@ -5,6 +5,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class GameDetailsContentDesktop extends StatelessWidget {
   const GameDetailsContentDesktop({
@@ -20,6 +21,10 @@ class GameDetailsContentDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final description = gameEntry.steamData != null
+        ? gameEntry.steamData!.aboutTheGame
+        : gameEntry.summary;
+
     return CustomScrollView(
       primary: true,
       slivers: [
@@ -34,11 +39,14 @@ class GameDetailsContentDesktop extends StatelessWidget {
                   gameEntry: gameEntry,
                 ),
                 SizedBox(height: 16.0),
-                Column(
-                  children: [SelectableText(gameEntry.summary)],
-                ),
                 relatedGames(
-                    context, gameEntry, ['${libraryEntry.id}', ...childPath]),
+                  context,
+                  gameEntry,
+                  ['${libraryEntry.id}', ...childPath],
+                ),
+                Html(
+                  data: description,
+                ),
                 SizedBox(height: 16.0),
               ],
             ),
