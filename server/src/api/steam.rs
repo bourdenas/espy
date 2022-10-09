@@ -1,7 +1,11 @@
-use crate::documents::StoreEntry;
-use crate::traits::Storefront;
-use crate::Status;
+use crate::{
+    documents::{SteamData, StoreEntry},
+    traits::Storefront,
+    Status,
+};
 use async_trait::async_trait;
+use std::collections::HashMap;
+use tracing::{info, instrument};
 
 pub struct SteamApi {
     steam_key: String,
@@ -15,6 +19,27 @@ impl SteamApi {
             steam_user_id: String::from(steam_user_id),
         }
     }
+
+    #[instrument(level = "trace")]
+    pub async fn get_app_details(steam_appid: u64) -> Result<SteamData, Status> {
+        let uri = format!(
+            "https://store.steampowered.com/api/appdetails?appids={}&l=english",
+            steam_appid
+        );
+
+        let resp = reqwest::get(&uri).await?;
+        let text = resp.text().await?;
+        let (_, resp) = serde_json::from_str::<HashMap<String, SteamAppDetailsResponse>>(&text)
+            .map_err(|e| {
+                let msg = format!("Failed to parse response: {}", e);
+                Status::internal(msg)
+            })?
+            .into_iter()
+            .next()
+            .unwrap();
+
+        Ok(resp.data)
+    }
 }
 
 #[async_trait]
@@ -25,12 +50,14 @@ impl Storefront for SteamApi {
 
     async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
         let uri = format!(
-            "{}{}?key={}&steamid={}&include_appinfo=true&format=json",
-            STEAM_HOST, STEAM_GETOWNEDGAMES_SERVICE, self.steam_key, self.steam_user_id
+            "{STEAM_HOST}{STEAM_GETOWNEDGAMES_SERVICE}?key={}&steamid={}&include_appinfo=true&format=json",
+            self.steam_key, self.steam_user_id
         );
 
         let resp = reqwest::get(&uri).await?.json::<SteamResponse>().await?;
-        println!("steam games: {}", resp.response.game_count);
+        info! {
+            "steam games: {}", resp.response.game_count
+        }
 
         Ok(resp
             .response
@@ -65,6 +92,12 @@ struct GameEntry {
     name: String,
     playtime_forever: i32,
     img_icon_url: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug)]
+struct SteamAppDetailsResponse {
+    success: bool,
+    data: SteamData,
 }
 
 const STEAM_HOST: &str = "http://api.steampowered.com";

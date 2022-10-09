@@ -3,6 +3,7 @@ use crate::http::{handlers, models};
 use crate::util;
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
+use tracing::warn;
 use warp::{self, Filter};
 
 /// Returns a Filter with all available routes.
@@ -11,12 +12,13 @@ pub fn routes(
     igdb: Arc<IgdbApi>,
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    get_images()
+    home()
+        .or(get_images())
         .or(post_sync(keys, Arc::clone(&firestore)))
         .or(post_search(Arc::clone(&igdb)))
         .or(post_recon(firestore, igdb))
         .or_else(|e| async {
-            println!("Request rejected: {:?}", e);
+            warn! {"Rejected route: {:?}", e};
             Err(e)
         })
 }
@@ -62,6 +64,11 @@ fn get_images() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
     warp::path!("images" / String / String)
         .and(warp::get())
         .and_then(handlers::get_images)
+}
+
+/// GET /
+fn home() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!().and(warp::get()).and_then(handlers::welcome)
 }
 
 fn with_igdb(

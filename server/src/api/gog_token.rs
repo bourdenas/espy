@@ -38,16 +38,14 @@ impl GogToken {
     /// Retrieve GOG authentication code by loging in to:
     /// https://auth.gog.com/auth?client_id=46899977096215655&redirect_uri=https%3A%2F%2Fembed.gog.com%2Fon_login_success%3Forigin%3Dclient&response_type=code&layout=client2
     pub async fn from_oauth_code(oauth_code: &str) -> Result<Self, Status> {
-        let params = format!(
-            "/token?client_id={}&client_secret={}&grant_type=authorization_code&code={}&redirect_uri={}%2Ftoken", 
-            GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, oauth_code, GOG_GALAXY_REDIRECT_URI);
-        let uri = format!("{}{}", GOG_AUTH_HOST, params);
+        let params = format!("client_id={GOG_GALAXY_CLIENT_ID}&client_secret={GOG_GALAXY_SECRET}&grant_type=authorization_code&code={oauth_code}&redirect_uri={GOG_GALAXY_REDIRECT_URI}%2Ftoken");
+        let uri = format!("{GOG_AUTH_HOST}/token?{params}");
 
         let resp = reqwest::get(&uri).await?.json::<GogAuthResponse>().await?;
         let internal_token = match resp {
             GogAuthResponse::Ok(internal_token) => internal_token,
             GogAuthResponse::Err(err) => {
-                return Err(Status::internal("Failed to retrieve GOG entries", err));
+                return Err(Status::new("Failed to retrieve GOG entries", err));
             }
         };
 
@@ -75,15 +73,15 @@ impl GogToken {
         }
 
         let params = format!(
-            "/token?client_id={}&client_secret={}&grant_type=refresh_token&refresh_token={}&%2Ftoken",
-            GOG_GALAXY_CLIENT_ID, GOG_GALAXY_SECRET, &self.refresh_token);
-        let uri = format!("{}{}", GOG_AUTH_HOST, params);
+            "client_id={GOG_GALAXY_CLIENT_ID}&client_secret={GOG_GALAXY_SECRET}&grant_type=refresh_token&refresh_token={}&%2Ftoken",
+            &self.refresh_token);
+        let uri = format!("{GOG_AUTH_HOST}/token?{params}");
 
         let resp = reqwest::get(&uri).await?.json::<GogAuthResponse>().await?;
         let internal_token = match resp {
             GogAuthResponse::Ok(internal_token) => internal_token,
             GogAuthResponse::Err(err) => {
-                return Err(Status::internal("Failed to retrieve GOG entries", err));
+                return Err(Status::new("Failed to retrieve GOG entries", err));
             }
         };
 

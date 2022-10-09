@@ -1,10 +1,14 @@
-use crate::api;
-use crate::documents::{Keys, UserData};
-use crate::library::LibraryManager;
-use crate::util;
-use crate::Status;
-use std::sync::{Arc, Mutex};
-use std::time::{SystemTime, UNIX_EPOCH};
+use crate::{
+    api,
+    documents::{Keys, UserData},
+    library::LibraryManager,
+    util, Status,
+};
+use std::{
+    sync::{Arc, Mutex},
+    time::{SystemTime, UNIX_EPOCH},
+};
+use tracing::{info, instrument, warn};
 
 pub struct User {
     data: UserData,
@@ -15,6 +19,7 @@ impl User {
     /// Returns a User instance that is loaded from the Firestore users
     /// collection. Creates a new User entry in Firestore if user does not
     /// already exist.
+    #[instrument(level = "trace", skip(firestore))]
     pub fn new(firestore: Arc<Mutex<api::FirestoreApi>>, user_id: &str) -> Result<Self, Status> {
         match load_user(user_id, Arc::clone(&firestore)) {
             Ok(data) => Ok(User {
@@ -22,7 +27,7 @@ impl User {
                 firestore: Arc::clone(&firestore),
             }),
             Err(e) => {
-                eprintln!("Creating new user '{}'\n{}", user_id, e);
+                info!("Creating new user '{user_id}'\n{e}");
                 let user = User {
                     data: UserData {
                         uid: String::from(user_id),
@@ -32,8 +37,8 @@ impl User {
                 };
                 match user.save() {
                     Ok(_) => Ok(user),
-                    Err(e) => Err(Status::internal(
-                        &format!("Failed to read or create user '{}'", user_id),
+                    Err(e) => Err(Status::new(
+                        &format!("Failed to read or create user '{user_id}'"),
                         e,
                     )),
                 }
@@ -64,7 +69,12 @@ impl User {
     /// different than what was already store the GOG logic credentials of the
     /// user are invalidated and refreshed.
     /// Updated user entry is pushed to Firestore.
-    pub async fn update(&mut self, steam_user_id: &str, gog_auth_code: &str) -> Result<(), Status> {
+    #[instrument(level = "trace", skip(self, steam_user_id, gog_auth_code))]
+    pub async fn update_codes(
+        &mut self,
+        steam_user_id: &str,
+        gog_auth_code: &str,
+    ) -> Result<(), Status> {
         self.data.keys = Some(Keys {
             steam_user_id: String::from(steam_user_id),
             // TODO: Need to avoid invalidating the existing credentials for no reason.
@@ -75,19 +85,20 @@ impl User {
         });
 
         if let Err(e) = self.save() {
-            return Err(Status::internal("User.update:", e));
+            return Err(Status::new("User.update:", e));
         }
 
         Ok(())
     }
 
-    pub fn update_version(&mut self) -> Result<(), Status> {
+    #[instrument(level = "trace", skip(self))]
+    pub fn update_library_version(&mut self) -> Result<(), Status> {
         self.data.version = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("SystemTime set before UNIX EPOCH!")
             .as_millis() as u64;
         if let Err(e) = self.save() {
-            return Err(Status::internal("User.sync:", e));
+            return Err(Status::new("User.sync:", e));
         }
 
         Ok(())
@@ -99,20 +110,24 @@ impl User {
     /// NOTE: It does not try to reconcile retrieve entries.
     /// NOTE: `egs_sid` is too ephemeral to be stored in Firestore so it is
     /// provided as an optional argument.
+    #[instrument(level = "trace", skip(self, keys, egs_sid))]
     pub async fn sync(
         &mut self,
         keys: &util::keys::Keys,
         egs_sid: Option<String>,
     ) -> Result<(), Status> {
         let gog_api = match self.gog_token().await {
-            Some(token) => Some(api::GogApi::new(token.clone())),
+            Some(token) => {
+                let gog_api = Some(api::GogApi::new(token.clone()));
+
+                // Need to save User as it may got GogToken updated.
+                if let Err(e) = self.save() {
+                    return Err(Status::new("User.sync:", e));
+                }
+                gog_api
+            }
             None => None,
         };
-
-        // Need to save User as it may got GogToken updated.
-        if let Err(e) = self.save() {
-            return Err(Status::internal("User.sync:", e));
-        }
 
         let steam_api = match self.steam_user_id() {
             Some(user_id) => Some(api::SteamApi::new(&keys.steam.client_key, user_id)),
@@ -122,9 +137,7 @@ impl User {
         let egs_api = match egs_sid {
             Some(egs_sid) => match api::EgsApi::connect(&egs_sid).await {
                 Ok(egs_api) => Some(egs_api),
-                Err(status) => {
-                    return Err(Status::internal("User.sync:", status));
-                }
+                Err(e) => return Err(Status::new("User.sync:", e)),
             },
             None => None,
         };
@@ -132,8 +145,8 @@ impl User {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.sync_library(steam_api, gog_api, egs_api).await?;
 
-        if let Err(e) = self.update_version() {
-            return Err(Status::internal("User.sync:", e));
+        if let Err(e) = self.update_library_version() {
+            return Err(Status::new("User.sync:", e));
         }
 
         Ok(())
@@ -149,7 +162,7 @@ impl User {
                         *token = match api::GogToken::from_oauth_code(&token.oauth_code).await {
                             Ok(token) => token,
                             Err(e) => {
-                                eprintln!("Failed to validate GOG token. {}", e);
+                                warn!("Failed to validate GOG token. {e}");
                                 api::GogToken::new(&token.oauth_code)
                             }
                         }
@@ -157,7 +170,7 @@ impl User {
                     match token.validate().await {
                         Ok(()) => Some(token),
                         Err(status) => {
-                            eprintln!("Failed to validate GOG toke: {}", status);
+                            warn!("Failed to validate GOG toke: {status}");
                             None
                         }
                     }
@@ -170,7 +183,7 @@ impl User {
 
     /// Save user entry to Firestore. Returns the Firestore document id.
     fn save(&self) -> Result<String, Status> {
-        eprintln!("updating user data to firestore...");
+        info!("updating user data to firestore...");
         self.firestore
             .lock()
             .unwrap()

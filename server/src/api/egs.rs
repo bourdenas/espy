@@ -3,25 +3,16 @@ use crate::traits::Storefront;
 use crate::Status;
 use async_trait::async_trait;
 use egs_api::EpicGames;
+use tracing::info;
 
 pub struct EgsApi {
     games: Vec<StoreEntry>,
 }
 
 impl EgsApi {
-    pub async fn connect(sid: &str) -> Result<Self, Status> {
+    pub async fn connect(code: &str) -> Result<Self, Status> {
         let mut egs = EpicGames::new();
-
-        let token = match egs.auth_sid(sid).await {
-            Some(exchange_token) => exchange_token,
-            None => {
-                return Err(Status::invalid_argument(
-                    "Provided sid was not accepted by EgsApi.",
-                ));
-            }
-        };
-
-        egs.auth_code(token).await;
+        egs.auth_code(None, Some(code.to_owned())).await;
         egs.login().await;
 
         match egs.library_items(true).await {
@@ -37,7 +28,7 @@ impl EgsApi {
                     })
                     .collect(),
             }),
-            None => Err(Status::new("Failed to retrieve games from EgsApi.")),
+            None => Err(Status::internal("Failed to retrieve games from EgsApi.")),
         }
     }
 }
@@ -54,7 +45,9 @@ impl Storefront for EgsApi {
     }
 
     async fn get_owned_games(&self) -> Result<Vec<StoreEntry>, Status> {
-        println!("epic games: {}", self.games.len());
+        info! {
+            "epic games: {}", self.games.len()
+        }
         Ok(self.games.clone())
     }
 }

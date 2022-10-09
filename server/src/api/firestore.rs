@@ -29,8 +29,7 @@ impl FirestoreApi {
         match documents::read(&self.session, path, doc_id) {
             Ok(doc) => Ok(doc),
             Err(_) => Err(Status::not_found(&format!(
-                "Firestore document {}/{} not found.",
-                path, doc_id
+                "Firestore document {path}/{doc_id} not found."
             ))),
         }
     }
@@ -49,7 +48,7 @@ impl FirestoreApi {
             documents::WriteOptions::default(),
         ) {
             Ok(result) => Ok(result.document_id),
-            Err(e) => Err(Status::internal("Firestore.write: ", e)),
+            Err(e) => Err(Status::new("Firestore.write: ", e)),
         }
     }
 
@@ -68,7 +67,7 @@ impl FirestoreApi {
             documents::WriteOptions { merge: true },
         ) {
             Ok(result) => Ok(result.document_id),
-            Err(e) => Err(Status::internal("Firestore.update: ", e)),
+            Err(e) => Err(Status::new("Firestore.update: ", e)),
         }
     }
 
@@ -77,7 +76,7 @@ impl FirestoreApi {
     pub fn delete(&self, path: &str) -> Result<(), Status> {
         match documents::delete(&self.session, path, false) {
             Ok(_) => Ok(()),
-            Err(e) => Err(Status::internal("Firestore.delete: ", e)),
+            Err(e) => Err(Status::new("Firestore.delete: ", e)),
         }
     }
 
@@ -91,7 +90,7 @@ impl FirestoreApi {
             .into_iter()
             .map(|result| match result {
                 Ok((doc, _metadata)) => Ok(doc),
-                Err(e) => Err(Status::internal("Firestore.list: ", e)),
+                Err(e) => Err(Status::new("Firestore.list: ", e)),
             })
             .collect()
     }
@@ -113,7 +112,7 @@ impl FirestoreApi {
             field_name,
         ) {
             Ok(result) => result,
-            Err(e) => return Err(Status::internal("Firestore.query: ", e)),
+            Err(e) => return Err(Status::new("Firestore.query: ", e)),
         };
 
         result
@@ -121,7 +120,7 @@ impl FirestoreApi {
             .map(
                 |metadata| match documents::read_by_name(&self.session, &metadata.name) {
                     Ok(doc) => Ok(doc),
-                    Err(e) => Err(Status::internal("Firestore.query.read_by_name: ", e)),
+                    Err(e) => Err(Status::new("Firestore.query.read_by_name: ", e)),
                 },
             )
             .collect()

@@ -1,23 +1,29 @@
-use crate::api::{FirestoreApi, IgdbApi};
-use crate::http::models;
-use crate::library;
-use crate::library::{Reconciler, User};
-use crate::util;
-use std::convert::Infallible;
-use std::sync::{Arc, Mutex};
+use crate::{
+    api::{FirestoreApi, IgdbApi},
+    http::models,
+    library::{self, Reconciler, User},
+    util,
+};
+use std::{
+    convert::Infallible,
+    sync::{Arc, Mutex},
+    time::SystemTime,
+};
+use tracing::{debug, error, instrument, warn};
 use warp::http::StatusCode;
 
+#[instrument(level = "trace", skip(keys, firestore))]
 pub async fn post_sync(
     user_id: String,
     keys: Arc<util::keys::Keys>,
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> Result<impl warp::Reply, Infallible> {
-    println!("POST /library/{}/sync", &user_id);
+    debug!("POST /library/{user_id}/sync");
 
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
-        Err(e) => {
-            eprintln!("POST /library/{}/settings: {}", &user_id, e);
+        Err(err) => {
+            error! {"{err}"}
             return Ok(StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
@@ -25,19 +31,20 @@ pub async fn post_sync(
     match user.sync(&keys, None).await {
         Ok(()) => Ok(StatusCode::OK),
         Err(err) => {
-            eprintln!("{}", err);
+            error! {"{err}"}
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
+#[instrument(level = "trace", skip(igdb, firestore))]
 pub async fn post_recon(
     user_id: String,
     recon: models::Recon,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    println!("POST /library/{}/recon", &user_id);
+    debug!("POST /library/{user_id}/recon");
 
     let mgr = library::LibraryManager::new(&user_id, Arc::clone(&firestore));
     match mgr
@@ -47,62 +54,65 @@ pub async fn post_recon(
         Ok(()) => {
             let mut user = match User::new(firestore, &user_id) {
                 Ok(user) => user,
-                Err(e) => {
-                    eprintln!("POST /library/{}/settings: {}", &user_id, e);
+                Err(err) => {
+                    error! {"{err}"}
                     return Ok(StatusCode::INTERNAL_SERVER_ERROR);
                 }
             };
-            match user.update_version() {
+            match user.update_library_version() {
                 Ok(_) => Ok(StatusCode::OK),
-                Err(status) => {
-                    eprintln!("{}", status);
+                Err(err) => {
+                    error! {"{err}"}
                     Ok(StatusCode::INTERNAL_SERVER_ERROR)
                 }
             }
         }
         Err(err) => {
-            eprintln!("{}", err);
+            error! {"{err}"}
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
+#[instrument(level = "trace", skip(igdb))]
 pub async fn post_search(
     search: models::Search,
     igdb: Arc<IgdbApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("POST /search body: {:?}", &search);
+    debug!("POST /search");
+    let started = SystemTime::now();
 
-    match library::search::get_candidates(&igdb, &search.title).await {
-        Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
-        Err(err) => {
-            eprintln!("{}", err);
-            Ok(Box::new(StatusCode::NOT_FOUND))
-        }
-    }
+    let resp: Result<Box<dyn warp::Reply>, Infallible> =
+        match library::search::get_candidates_with_covers(igdb, &search.title).await {
+            Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
+            Err(err) => {
+                error! {"{err}"}
+                Ok(Box::new(StatusCode::NOT_FOUND))
+            }
+        };
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    debug!("time: {:.2} msec", resp_time.as_millis());
+    resp
 }
 
 pub async fn get_images(
     resolution: String,
     image: String,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
-    println!("GET /images/{}/{}", &resolution, &image);
+    debug!("GET /images/{resolution}/{image}");
 
-    let uri = format!("{}/{}/{}", IGDB_IMAGES_URL, &resolution, &image);
+    let uri = format!("{IGDB_IMAGES_URL}/{resolution}/{image}");
     let resp = match reqwest::Client::new().get(&uri).send().await {
         Ok(resp) => resp,
-        Err(e) => {
-            eprintln!("Remote GET failed! {}", e);
+        Err(err) => {
+            warn! {"{err}"}
             return Ok(Box::new(StatusCode::NOT_FOUND));
         }
     };
 
     if resp.status() != StatusCode::OK {
-        eprintln!(
-            "Failed to retrieve image: {} \nerr: {}",
-            &uri,
-            resp.status()
-        );
+        warn! {"Failed to retrieve image: {uri} \nerr: {}", resp.status()}
         return Ok(Box::new(resp.status()));
     }
 
@@ -110,6 +120,11 @@ pub async fn get_images(
         Ok(bytes) => Ok(Box::new(bytes.to_vec())),
         Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
     }
+}
+
+pub async fn welcome() -> Result<Box<dyn warp::Reply>, Infallible> {
+    debug!("GET /");
+    Ok(Box::new("welcome"))
 }
 
 const IGDB_IMAGES_URL: &str = "https://images.igdb.com/igdb/image/upload";

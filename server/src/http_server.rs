@@ -1,11 +1,16 @@
-use crate::api::{FirestoreApi, IgdbApi};
-use crate::http;
-use clap::Clap;
+use crate::{
+    api::{FirestoreApi, IgdbApi},
+    http,
+};
+use clap::Parser;
 use espy_server::*;
-use std::sync::{Arc, Mutex};
+use std::{
+    env,
+    sync::{Arc, Mutex},
+};
 use warp::{self, Filter};
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct Opts {
     /// JSON file containing application keys for espy service.
     #[clap(long, default_value = "keys.json")]
@@ -19,12 +24,14 @@ struct Opts {
     firestore_credentials: String,
 
     /// Port number to use for listening to gRPC requests.
-    #[clap(short, long, default_value = "3030")]
+    #[clap(short, long, default_value = "8080")]
     port: u16,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Status> {
+    Tracing::setup("espy-httpserver")?;
+
     let opts: Opts = Opts::parse();
 
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
@@ -37,7 +44,15 @@ async fn main() -> Result<(), Status> {
             .expect("FirestoreApi.from_credentials()"),
     ));
 
-    println!("starting the HTTP server...");
+    // Let ENV VAR override flag.
+    let port: u16 = match env::var("PORT") {
+        Ok(port) => match port.parse::<u16>() {
+            Ok(port) => port,
+            Err(_) => opts.port,
+        },
+        Err(_) => opts.port,
+    };
+
     warp::serve(
         http::routes::routes(Arc::new(keys), Arc::new(igdb), firestore).with(
             warp::cors()
@@ -47,7 +62,7 @@ async fn main() -> Result<(), Status> {
                 .allow_credentials(true),
         ),
     )
-    .run(([127, 0, 0, 1], opts.port))
+    .run(([0, 0, 0, 0], port))
     .await;
 
     Ok(())

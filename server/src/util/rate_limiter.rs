@@ -1,23 +1,34 @@
-use std::sync::Mutex;
-use std::time::{Duration, SystemTime};
+use std::{
+    sync::Mutex,
+    time::{Duration, SystemTime},
+};
+use tokio::sync::{Semaphore, SemaphorePermit};
+use tracing::instrument;
 
 /// Thread-safe RateLimiter for fixed amount of queries per second (QPS).
+#[derive(Debug)]
 pub struct RateLimiter {
     qps_rate: i32,
+    active_connections: Semaphore,
     state: Mutex<RateLimiterState>,
 }
 
+#[derive(Debug)]
 struct RateLimiterState {
-    available_capacity: i32,
+    available_qps: i32,
     next_reset: SystemTime,
 }
 
 impl RateLimiter {
-    pub fn new(qps_rate: i32) -> RateLimiter {
+    pub fn new(qps_rate: i32, max_active_connections: i32) -> RateLimiter {
+        assert!(qps_rate > 0);
+        assert!(max_active_connections >= qps_rate);
+
         RateLimiter {
             qps_rate,
+            active_connections: Semaphore::new(max_active_connections as usize),
             state: Mutex::new(RateLimiterState {
-                available_capacity: qps_rate,
+                available_qps: qps_rate,
                 next_reset: SystemTime::now(),
             }),
         }
@@ -26,6 +37,7 @@ impl RateLimiter {
     // Blocks execution thread until it is ok to execute next operation based on
     // QPS limit. Returns the duration the thread was blocked. Returns 0 if the
     // thread did not have to block.
+    #[instrument(level = "trace", skip(self))]
     pub fn wait(&self) -> Duration {
         let mut total_wait_time = Duration::from_micros(0);
 
@@ -49,17 +61,22 @@ impl RateLimiter {
         let mut state = self.state.lock().unwrap();
 
         if state.next_reset < now {
-            state.available_capacity = self.qps_rate;
+            state.available_qps = self.qps_rate;
             state.next_reset = now.checked_add(Duration::from_secs(1)).unwrap();
         }
 
-        match state.available_capacity > 0 {
+        match state.available_qps > 0 {
             true => {
-                state.available_capacity -= 1;
+                state.available_qps -= 1;
                 Duration::from_micros(0)
             }
             false => state.next_reset.duration_since(now).unwrap(),
         }
+    }
+
+    #[instrument(level = "trace", skip(self))]
+    pub async fn connection(&self) -> SemaphorePermit {
+        self.active_connections.acquire().await.unwrap()
     }
 }
 
@@ -69,7 +86,7 @@ mod tests {
 
     #[test]
     fn sequencial_under_qps() {
-        let limiter = RateLimiter::new(4);
+        let limiter = RateLimiter::new(4, 4);
 
         let start = SystemTime::now();
         for _ in 0..2 {
@@ -81,7 +98,7 @@ mod tests {
 
     #[test]
     fn sequencial_over_qps() {
-        let limiter = RateLimiter::new(4);
+        let limiter = RateLimiter::new(4, 4);
 
         let start = SystemTime::now();
         for _ in 0..4 {
@@ -100,7 +117,7 @@ mod tests {
 
     #[test]
     fn parallel_under_qps() {
-        let limiter = Arc::new(RateLimiter::new(4));
+        let limiter = Arc::new(RateLimiter::new(4, 4));
 
         let start = SystemTime::now();
         let threads = (0..2)
@@ -121,7 +138,7 @@ mod tests {
 
     #[test]
     fn parallel_over_qps() {
-        let limiter = Arc::new(RateLimiter::new(4));
+        let limiter = Arc::new(RateLimiter::new(4, 4));
 
         let start = SystemTime::now();
         let threads = (0..5)

@@ -3,6 +3,7 @@ use crate::documents::StoreEntry;
 use crate::traits::Storefront;
 use crate::Status;
 use async_trait::async_trait;
+use tracing::info;
 
 pub struct GogApi {
     token: api::GogToken,
@@ -41,10 +42,8 @@ impl Storefront for GogApi {
         let mut store_entries: Vec<StoreEntry> = vec![];
 
         for page in 1.. {
-            let uri = format!(
-                "{}/account/getFilteredProducts?mediaType=1&page={}",
-                GOG_API_HOST, page
-            );
+            let uri =
+                format!("{GOG_API_HOST}/account/getFilteredProducts?mediaType=1&page={page}",);
             let resp = reqwest::Client::new()
                 .get(&uri)
                 .header(
@@ -58,8 +57,8 @@ impl Storefront for GogApi {
 
             let product_list_page = match resp {
                 GogProductListResponse::Ok(pl) => pl,
-                GogProductListResponse::Err(gog_err) => {
-                    return Err(Status::internal("Failed to retrieve GOG entries", gog_err));
+                GogProductListResponse::Err(e) => {
+                    return Err(Status::new("Failed to retrieve GOG entries", e));
                 }
             };
 
@@ -77,7 +76,9 @@ impl Storefront for GogApi {
                 break;
             }
         }
-        println!("gog games: {}", store_entries.len());
+        info! {
+            "gog games: {}", store_entries.len()
+        }
 
         Ok(store_entries)
     }

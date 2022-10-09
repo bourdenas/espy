@@ -1,12 +1,17 @@
-use crate::api::{EgsApi, FirestoreApi, GogApi, SteamApi};
-use crate::documents::{GameEntry, StoreEntry};
-use crate::library::library_ops::LibraryOps;
-use crate::library::Reconciler;
-use crate::traits;
-use crate::Status;
-use std::collections::HashSet;
-use std::sync::{Arc, Mutex};
+use super::reconciler::Match;
+use crate::{
+    api::{EgsApi, FirestoreApi, GogApi, SteamApi},
+    documents::{GameEntry, StoreEntry},
+    library::library_ops::LibraryOps,
+    library::Reconciler,
+    traits, Status,
+};
+use std::{
+    collections::HashSet,
+    sync::{Arc, Mutex},
+};
 use tokio::sync::mpsc;
+use tracing::{info, instrument, trace_span, Instrument};
 
 /// Proxy structure that handles operations regarding user's library.
 pub struct LibraryManager {
@@ -29,6 +34,7 @@ impl LibraryManager {
     /// New entries are added as unreconciled / unmatched titles. Reconciliation
     /// with IGDB entries is a separate step that will be triggered
     /// independenlty.
+    #[instrument(level = "trace", skip(self, steam_api, gog_api, egs_api), fields(user_id = %self.user_id))]
     pub async fn sync_library(
         &self,
         steam_api: Option<SteamApi>,
@@ -56,6 +62,7 @@ impl LibraryManager {
     ///   contain all storefront game ids owned by the user.
     ///   (b) the `users/{user}/unmatched` collection with 'StoreEntry` documents
     ///   that correspond to new found entries.
+    #[instrument(level = "trace", skip(self, api), fields(user_id = %self.user_id))]
     async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
         let mut game_ids = HashSet::<String>::new();
         {
@@ -90,18 +97,23 @@ impl LibraryManager {
     }
 
     /// Refreshes game entries info from IGDB in user's library.
+    #[instrument(level = "trace", skip(self, recon_service), fields(user_id = %self.user_id))]
     pub async fn refresh_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
         let library_entries =
             LibraryOps::read_library_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
+        let library_entries = library_entries.into_iter().take(5).collect();
 
         let (tx, mut rx) = mpsc::channel(32);
 
-        tokio::spawn(async move {
-            recon_service.refresh(tx, library_entries).await;
-        });
+        let _handle = tokio::spawn(
+            async move {
+                recon_service.refresh(tx, library_entries).await;
+            }
+            .instrument(trace_span!("spawn refresh task")),
+        );
 
         while let Some(refresh) = rx.recv().await {
-            println!("  received refresh for {}", &refresh.library_entry.name);
+            info!("refreshed '{}'", &refresh.library_entry.name);
 
             if let None = &refresh.game_entry {
                 continue;
@@ -109,66 +121,84 @@ impl LibraryManager {
 
             let firestore = Arc::clone(&self.firestore);
             let user_id = self.user_id.clone();
-            tokio::spawn(async move {
-                if let Err(status) = LibraryOps::update_library_entry(
-                    &firestore.lock().unwrap(),
-                    &user_id,
-                    refresh.library_entry,
-                    refresh.game_entry.unwrap(),
-                ) {
-                    eprintln!("Error handling library entry refresh: {}", status);
+            let _handle = tokio::spawn(
+                async move {
+                    LibraryOps::update_library_entry(
+                        &firestore.lock().unwrap(),
+                        &user_id,
+                        refresh.library_entry,
+                        refresh.game_entry.unwrap(),
+                    )
+                    .expect("Firestore update_library_entry():")
                 }
-            });
+                .instrument(trace_span!("spawn Firestore update task")),
+            );
         }
 
         Ok(())
     }
 
     /// Reconciles entries in the unmatched collection of user's library.
-    pub async fn match_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
+    #[instrument(level = "trace", skip(self, recon_service), fields(user_id = %self.user_id))]
+    pub async fn recon_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
         let unmatched_entries =
             LibraryOps::read_unmatched_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
 
-        let (tx, mut rx) = mpsc::channel(32);
+        let (tx, rx) = mpsc::channel(32);
 
-        tokio::spawn(async move {
-            recon_service.reconcile(tx, unmatched_entries).await;
-        });
-
-        while let Some(entry_match) = rx.recv().await {
-            println!("  received match for {}", &entry_match.store_entry.title);
-
-            if let None = &entry_match.game_entry {
-                continue;
+        tokio::spawn(
+            async move {
+                recon_service.reconcile(tx, unmatched_entries).await;
             }
+            .instrument(trace_span!("spawn recon job")),
+        );
+
+        self.handle_matches(rx).await;
+        Ok(())
+    }
+
+    async fn handle_matches(&self, mut rx: mpsc::Receiver<Match>) {
+        while let Some(entry_match) = rx.recv().await {
+            match &entry_match.game_entry {
+                Some(_) => info!("  👍 received match for {}", &entry_match.store_entry.title),
+                None => info!("  🚫 no match for {}", &entry_match.store_entry.title),
+            };
 
             let firestore = Arc::clone(&self.firestore);
             let user_id = self.user_id.clone();
-            tokio::spawn(async move {
-                let game_entry = entry_match.game_entry.unwrap();
-
-                if let Err(status) = LibraryOps::game_match_transaction(
-                    &firestore.lock().unwrap(),
-                    &user_id,
-                    entry_match.store_entry,
-                    game_entry.id,
-                    match entry_match.base_game_entry {
-                        Some(base_game_entry) => base_game_entry,
-                        None => game_entry,
-                    },
-                ) {
-                    eprintln!("Error handling matching entry: {}", status);
+            tokio::spawn(
+                async move {
+                    let firestore = &firestore.lock().unwrap();
+                    match entry_match.game_entry {
+                        Some(game_entry) => LibraryOps::game_match_transaction(
+                            firestore,
+                            &user_id,
+                            entry_match.store_entry,
+                            game_entry.id,
+                            match entry_match.base_game_entry {
+                                Some(base_game_entry) => base_game_entry,
+                                None => game_entry,
+                            },
+                        )
+                        .expect("Firestore game_match_transaction()"),
+                        None => LibraryOps::match_failed_transaction(
+                            firestore,
+                            &user_id,
+                            entry_match.store_entry,
+                        )
+                        .expect("Firestore match_failed_transaction()"),
+                    }
                 }
-            });
+                .instrument(trace_span!("spawn handle match")),
+            );
         }
-
-        Ok(())
     }
 
     /// Match a `StoreEntry` to a specified `GameEntry` and saving it in the
     /// user's library.
     ///
     /// Uses the `Reconciler` to retrieve full details for `GameEntry`.
+    #[instrument(level = "trace", skip(self, recon_service), fields(user_id = %self.user_id))]
     pub async fn manual_match(
         &self,
         recon_service: Reconciler,
@@ -197,9 +227,7 @@ impl LibraryManager {
     ///
     /// If the GameEntry is not already available in Firestore it attemps to
     /// retrieve it from IGDB.
-    ///
-    /// NOTE: The operation has side-effects, writes the retrieved GameEntry
-    /// from IGDB, if any, in Firestore.
+    #[instrument(level = "trace", skip(self, recon_service), fields(user_id = %self.user_id))]
     async fn retrieve_game_entry(
         &self,
         id: u64,
@@ -209,7 +237,6 @@ impl LibraryManager {
             Ok(entry) => entry,
             Err(_) => {
                 let game_entry = recon_service.retrieve(id).await?;
-                LibraryOps::write_game_entry(&self.firestore.lock().unwrap(), &game_entry)?;
                 game_entry
             }
         };
@@ -217,6 +244,7 @@ impl LibraryManager {
         Ok(game_entry)
     }
 
+    #[instrument(level = "trace", skip(self))]
     fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
         LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
     }

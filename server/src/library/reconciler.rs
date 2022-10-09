@@ -5,6 +5,7 @@ use crate::Status;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
+use tracing::{error, info, instrument, Instrument, trace_span};
 
 // The result of a refresh operation on a `library_entry`.
 pub struct Refresh {
@@ -27,14 +28,11 @@ impl Match {
             store_entry,
             base_game_entry: match game_entry.parent {
                 Some(parent_id) => match igdb.get_game_by_id(parent_id).await {
-                    Ok(game) => match game {
-                        Some(game) => Some(GameEntry::new(game)),
-                        None => None,
-                    },
-                    Err(_) => {
-                        eprintln!(
-                            "Failed to retrieve base game (id={}) for '{}'",
-                            parent_id, &game_entry.name
+                    Ok(game) => game,
+                    Err(e) => {
+                        error!(
+                            "Failed to retrieve base game (id={parent_id}) for '{}'\nerror: {e}",
+                            &game_entry.name
                         );
                         None
                     }
@@ -63,6 +61,7 @@ impl Reconciler {
     }
 
     /// Returns a fully resolved IGDB GameEntry matching input `id`.
+    #[instrument(level = "trace", skip(self))]
     pub async fn retrieve(&self, id: u64) -> Result<GameEntry, Status> {
         get_entry(&self.igdb, id).await
     }
@@ -71,13 +70,19 @@ impl Reconciler {
     ///
     /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
     /// successful or failed matches.
+    #[instrument(
+        level = "trace",
+        skip(self, tx, store_entries), 
+        fields(entries_len = %store_entries.len())
+    )]
     pub async fn reconcile(&self, tx: mpsc::Sender<Match>, store_entries: Vec<StoreEntry>) {
         let fut = stream::iter(store_entries.into_iter().map(|store_entry| MatchingTask {
-            store_entry: store_entry,
+            store_entry,
             igdb: Arc::clone(&self.igdb),
             tx: tx.clone(),
         }))
-        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, match_task);
+        .for_each_concurrent(4, match_task)
+        .instrument(trace_span!("spawn recon tasks"));
 
         fut.await;
         drop(tx);
@@ -87,27 +92,36 @@ impl Reconciler {
     ///
     /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
     /// successful or failed matches.
+    #[instrument(
+        level = "trace",
+        skip(self, tx, library_entries), 
+        fields(entries_len = %library_entries.len())
+    )]
     pub async fn refresh(&self, tx: mpsc::Sender<Refresh>, library_entries: Vec<LibraryEntry>) {
         let fut = stream::iter(
             library_entries
                 .into_iter()
                 .map(|library_entry| RefreshTask {
-                    library_entry: library_entry,
+                    library_entry,
                     igdb: Arc::clone(&self.igdb),
                     tx: tx.clone(),
                 }),
         )
-        .for_each_concurrent(IGDB_CONNECTIONS_LIMIT, refresh_task);
+        .for_each_concurrent(4, refresh_task)
+        .instrument(trace_span!("spawn fresh tasks"));
 
         fut.await;
         drop(tx);
     }
 }
 
-const IGDB_CONNECTIONS_LIMIT: usize = 8;
-
 /// Performs a single `RefreshTask` to producea `Refresh` and transmits it over
 /// its task's channel.
+#[instrument(
+    level = "trace",
+    skip(task), 
+    fields(library_entry = %task.library_entry)
+)]
 async fn refresh_task(task: RefreshTask) {
     let entry_match = match get_entry(&task.igdb, task.library_entry.id).await {
         Ok(game_entry) => Refresh {
@@ -115,7 +129,7 @@ async fn refresh_task(task: RefreshTask) {
             game_entry: Some(game_entry),
         },
         Err(e) => {
-            println!("Failed to resolve '{}': {}", task.library_entry.name, e);
+            error!("Failed to resolve '{}': {e}", task.library_entry.name);
             Refresh {
                 library_entry: task.library_entry,
                 game_entry: None,
@@ -124,12 +138,17 @@ async fn refresh_task(task: RefreshTask) {
     };
 
     if let Err(e) = task.tx.send(entry_match).await {
-        eprintln!("{}", e);
+        error!("{e}");
     }
 }
 
 /// Performs a `MatchingTask` to producea `Match` and transmits it over its
 /// task's channel.
+#[instrument(
+    level = "trace",
+    skip(task), 
+    fields(store_entry = %task.store_entry)
+)]
 async fn match_task(task: MatchingTask) {
     let entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => match game_entry {
@@ -142,22 +161,22 @@ async fn match_task(task: MatchingTask) {
                     None => Match::failed(task.store_entry),
                 },
                 Err(e) => {
-                    eprintln!("match_by_title '{}' failed: {}", task.store_entry.title, e);
+                    error!("match_by_title '{}' failed: {e}", task.store_entry.title);
                     Match::failed(task.store_entry)
                 }
             },
         },
         Err(e) => {
-            eprintln!(
-                "match_by_external_id '{}' failed: {}",
-                task.store_entry.title, e
+            error!(
+                "match_by_external_id '{}' failed: {e}",
+                task.store_entry.title
             );
             Match::failed(task.store_entry)
         }
     };
 
     if let Err(e) = task.tx.send(entry_match).await {
-        eprintln!("{}", e);
+        error!("{e}");
     }
 }
 
@@ -167,12 +186,8 @@ async fn match_by_external_id(
     igdb: &IgdbApi,
     store_entry: &StoreEntry,
 ) -> Result<Option<GameEntry>, Status> {
-    println!("Resolving '{}'", &store_entry.title);
-
-    match igdb.match_store_entry(store_entry).await? {
-        Some(game) => Ok(Some(GameEntry::new(game))),
-        None => Ok(None),
-    }
+    info!("Resolving '{}'", &store_entry.title);
+    igdb.match_store_entry(store_entry).await
 }
 
 /// Returns a `GameEntry` from IGDB matching the title in `StoreEntry`.
@@ -180,7 +195,7 @@ async fn match_by_title(
     igdb: &IgdbApi,
     store_entry: &StoreEntry,
 ) -> Result<Option<GameEntry>, Status> {
-    println!("Searching '{}'", &store_entry.title);
+    info!("Searching '{}'", &store_entry.title);
 
     let candidates = search::get_candidates(igdb, &store_entry.title).await?;
     match candidates.into_iter().next() {
@@ -192,10 +207,9 @@ async fn match_by_title(
 /// Returns a `GameEntry` from IGDB that matches the input `id`.
 async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
     match igdb.get_game_by_id(id).await? {
-        Some(game_entry) => Ok(GameEntry::new(game_entry)),
+        Some(game_entry) => Ok(game_entry),
         None => Err(Status::not_found(&format!(
-            "Failed to retrieve game entry with id={}",
-            id
+            "Failed to retrieve game entry with id={id}"
         ))),
     }
 }
