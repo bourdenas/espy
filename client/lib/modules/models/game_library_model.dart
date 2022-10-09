@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Model that handles interactions with remote library data store.
 class GameLibraryModel extends ChangeNotifier {
   List<LibraryEntry> entries = [];
   String _userId = '';
@@ -73,7 +74,7 @@ class GameLibraryModel extends ChangeNotifier {
     final snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
-        .collection('library')
+        .collection('library_v2')
         .withConverter<LibraryEntry>(
           fromFirestore: (snapshot, _) =>
               LibraryEntry.fromJson(snapshot.data()!),
@@ -92,7 +93,7 @@ class GameLibraryModel extends ChangeNotifier {
     await FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
-        .collection('library')
+        .collection('library_v2')
         .doc(entry.id.toString())
         .set(entry.toJson());
 
@@ -154,14 +155,14 @@ class GameLibraryModel extends ChangeNotifier {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(_userId)
-          .collection('library')
+          .collection('library_v2')
           .doc(libraryEntry.id.toString())
           .delete();
     } else {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(_userId)
-          .collection('library')
+          .collection('library_v2')
           .doc(libraryEntry.id.toString())
           .set(libraryEntry.toJson());
     }
@@ -169,8 +170,8 @@ class GameLibraryModel extends ChangeNotifier {
     await FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
-        .collection('unknown')
-        .doc(storeEntry.id.toString())
+        .collection('failed')
+        .doc('${storeEntry.storefront}_${storeEntry.id}')
         .set(storeEntry.toJson());
 
     await _saveLibraryLocally(DateTime.now().millisecondsSinceEpoch);

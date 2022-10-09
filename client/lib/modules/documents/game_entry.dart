@@ -5,27 +5,42 @@ class GameEntry {
   final String name;
 
   final String summary;
+  final String storyline;
   final int releaseDate;
 
-  final Annotation? collection;
-  final List<Annotation> franchises;
+  final List<GameEntry> expansions;
+  final List<GameEntry> dlcs;
+  final List<GameEntry> remakes;
+  final List<GameEntry> remasters;
+  final List<int> versions;
+  final int? parent;
+
+  final List<Annotation> collections;
   final List<Annotation> companies;
 
   final GameImage? cover;
   final List<GameImage> screenshots;
   final List<GameImage> artwork;
+  final List<Website> websites;
 
   const GameEntry({
     required this.id,
     required this.name,
     this.summary = '',
+    this.storyline = '',
     this.releaseDate = 0,
-    this.collection,
-    this.franchises = const [],
+    this.expansions = const [],
+    this.dlcs = const [],
+    this.remakes = const [],
+    this.remasters = const [],
+    this.versions = const [],
+    this.parent = null,
+    this.collections = const [],
     this.companies = const [],
     this.cover,
     this.screenshots = const [],
     this.artwork = const [],
+    this.websites = const [],
   });
 
   GameEntry.fromJson(Map<String, dynamic> json)
@@ -33,13 +48,38 @@ class GameEntry {
           id: json['id']!,
           name: json['name']!,
           summary: json['summary'] ?? '',
+          storyline: json['storyline'] ?? '',
           releaseDate: json['release_date'] ?? 0,
-          collection: json.containsKey('collection')
-              ? Annotation.fromJson(json['collection'])
-              : null,
-          franchises: json.containsKey('franchises')
+          expansions: json.containsKey('expansions')
               ? [
-                  for (final entry in json['franchises'])
+                  for (final entry in json['expansions'])
+                    GameEntry.fromJson(entry),
+                ]
+              : [],
+          dlcs: json.containsKey('dlcs')
+              ? [
+                  for (final entry in json['dlcs']) GameEntry.fromJson(entry),
+                ]
+              : [],
+          remakes: json.containsKey('remakes')
+              ? [
+                  for (final entry in json['remakes'])
+                    GameEntry.fromJson(entry),
+                ]
+              : [],
+          remasters: json.containsKey('remasters')
+              ? [
+                  for (final entry in json['remasters'])
+                    GameEntry.fromJson(entry),
+                ]
+              : [],
+          versions: json.containsKey('versions')
+              ? [for (final version in json['versions']) version]
+              : [],
+          parent: json['parent'],
+          collections: json.containsKey('collections')
+              ? [
+                  for (final entry in json['collections'])
                     Annotation.fromJson(entry),
                 ]
               : [],
@@ -64,6 +104,11 @@ class GameEntry {
                     GameImage.fromJson(entry),
                 ]
               : [],
+          websites: json.containsKey('websites')
+              ? [
+                  for (final entry in json['websites']) Website.fromJson(entry),
+                ]
+              : [],
         );
 
   Map<String, dynamic> toJson() {
@@ -71,11 +116,29 @@ class GameEntry {
       'id': id,
       'name': name,
       if (summary.isNotEmpty) 'summary': summary,
+      if (storyline.isNotEmpty) 'storyline': storyline,
       if (releaseDate > 0) 'release_date': releaseDate,
-      if (collection != null) 'collection': collection!.toJson(),
-      if (franchises.isNotEmpty)
-        'franchises': [
-          for (final entry in franchises) entry.toJson(),
+      if (expansions.isNotEmpty)
+        'expansions': [
+          for (final entry in expansions) entry.toJson(),
+        ],
+      if (dlcs.isNotEmpty)
+        'dlcs': [
+          for (final entry in dlcs) entry.toJson(),
+        ],
+      if (remakes.isNotEmpty)
+        'remakes': [
+          for (final entry in remakes) entry.toJson(),
+        ],
+      if (remasters.isNotEmpty)
+        'remasters': [
+          for (final entry in remasters) entry.toJson(),
+        ],
+      if (versions.isNotEmpty) 'versions': versions,
+      if (parent != null) 'parent': parent,
+      if (collections.isNotEmpty)
+        'collections': [
+          for (final entry in collections) entry.toJson(),
         ],
       if (companies.isNotEmpty)
         'companies': [
@@ -89,6 +152,10 @@ class GameEntry {
       if (artwork.isNotEmpty)
         'artwork': [
           for (final entry in artwork) entry.toJson(),
+        ],
+      if (websites.isNotEmpty)
+        'websites': [
+          for (final entry in websites) entry.toJson(),
         ],
     };
   }
@@ -117,6 +184,29 @@ class GameImage {
       'image_id': imageId,
       'height': height,
       'width': width,
+    };
+  }
+}
+
+class Website {
+  final String url;
+  final String authority;
+
+  const Website({
+    required this.url,
+    required this.authority,
+  });
+
+  Website.fromJson(Map<String, dynamic> json)
+      : this(
+          url: json['url'],
+          authority: json['authority'],
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'authority': authority,
     };
   }
 }

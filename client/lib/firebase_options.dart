@@ -24,10 +24,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -56,5 +53,16 @@ class DefaultFirebaseOptions {
     messagingSenderId: '478783154654',
     projectId: 'espy-library',
     storageBucket: 'espy-library.appspot.com',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyB9MTP3zLsU67y3IibCmDH-BOiGq2FSmc4',
+    appId: '1:478783154654:ios:0699b01f48faa95820954f',
+    messagingSenderId: '478783154654',
+    projectId: 'espy-library',
+    storageBucket: 'espy-library.appspot.com',
+    androidClientId: '478783154654-0kf23uvh2ma5l90ip176hg0s02s745f3.apps.googleusercontent.com',
+    iosClientId: '478783154654-smue6eutb9k4hqojqiibto94hq0qk6lq.apps.googleusercontent.com',
+    iosBundleId: 'com.bourdenas.espy',
   );
 }
