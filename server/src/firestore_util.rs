@@ -1,10 +1,13 @@
+use std::sync::Arc;
+
 use clap::Parser;
 use espy_server::{
     api::SteamApi,
     documents::{GameEntry, SteamData},
     *,
 };
-use tracing::{error, info, instrument, log::warn, trace_span};
+use futures::stream::{self, StreamExt};
+use tracing::{error, info, instrument, log::warn};
 
 /// Espy server util for testing functionality of the backend.
 #[derive(Parser)]
@@ -27,39 +30,59 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let opts: Opts = Opts::parse();
 
-    let firestore = api::FirestoreApi::from_credentials(&opts.firestore_credentials)
-        .expect("FirestoreApi.from_credentials()");
-
-    // TODO: Firestore batch operations.
-    let span = trace_span!("get_steam_data");
-    let _ = span.enter();
+    let firestore = Arc::new(
+        api::FirestoreApi::from_credentials(&opts.firestore_credentials)
+            .expect("FirestoreApi.from_credentials()"),
+    );
 
     let game_entries = read_game_entries(&firestore)?;
-    for mut entry in game_entries {
-        info!("processing '{}'", entry.name);
-        update_entry(&mut entry).await;
 
-        for entry in &mut entry.expansions {
-            info!("processing '{}'", entry.name);
-            update_entry(entry).await;
-        }
-        for entry in &mut entry.dlcs {
-            info!("processing '{}'", entry.name);
-            update_entry(entry).await;
-        }
-        for entry in &mut entry.remakes {
-            info!("processing '{}'", entry.name);
-            update_entry(entry).await;
-        }
-        for entry in &mut entry.remasters {
-            info!("processing '{}'", entry.name);
-            update_entry(entry).await;
-        }
+    let fut = stream::iter(game_entries.into_iter().map(|game_entry| SteamDataTask {
+        game_entry,
+        firestore: Arc::clone(&firestore),
+    }))
+    .for_each_concurrent(8, steam_data_task);
 
-        write_game_entry(&firestore, &entry)?;
-    }
+    fut.await;
 
     Ok(())
+}
+
+async fn steam_data_task(task: SteamDataTask) {
+    if let Some(_) = task.game_entry.steam_data {
+        return;
+    }
+
+    let mut entry = task.game_entry;
+
+    info!("processing '{}'", entry.name);
+    update_entry(&mut entry).await;
+
+    for entry in &mut entry.expansions {
+        info!("processing '{}'", entry.name);
+        update_entry(entry).await;
+    }
+    for entry in &mut entry.dlcs {
+        info!("processing '{}'", entry.name);
+        update_entry(entry).await;
+    }
+    for entry in &mut entry.remakes {
+        info!("processing '{}'", entry.name);
+        update_entry(entry).await;
+    }
+    for entry in &mut entry.remasters {
+        info!("processing '{}'", entry.name);
+        update_entry(entry).await;
+    }
+
+    if let Err(e) = write_game_entry(&task.firestore, &entry) {
+        error!("Failed to write {} to Firestore: {}", entry.name, e);
+    }
+}
+
+struct SteamDataTask {
+    game_entry: GameEntry,
+    firestore: Arc<api::FirestoreApi>,
 }
 
 async fn update_entry(game_entry: &mut GameEntry) {
@@ -78,9 +101,13 @@ fn get_steam_appid(game_entry: &GameEntry) -> Option<u64> {
         .websites
         .iter()
         .find_map(|website| match website.authority {
-            documents::WebsiteAuthority::Steam => {
-                website.url.split("/").last().unwrap().parse().ok()
-            }
+            documents::WebsiteAuthority::Steam => website
+                .url
+                .split("/")
+                .collect::<Vec<_>>()
+                .iter()
+                .rev()
+                .find_map(|s| s.parse().ok()),
             _ => None,
         })
 }
