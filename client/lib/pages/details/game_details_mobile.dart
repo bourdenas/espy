@@ -8,7 +8,9 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:espy/widgets/gametags/game_tags_field.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class GameDetailsContentMobile extends StatelessWidget {
   const GameDetailsContentMobile({
@@ -24,6 +26,17 @@ class GameDetailsContentMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundImage = gameEntry.steamData != null &&
+            gameEntry.steamData!.backgroundImage != null
+        ? gameEntry.steamData!.backgroundImage!
+        : gameEntry.artwork.isNotEmpty
+            ? 'https://images.igdb.com/igdb/image/upload/t_720p/${gameEntry.artwork[0].imageId}.jpg'
+            : '';
+
+    final description = gameEntry.steamData != null
+        ? gameEntry.steamData!.aboutTheGame
+        : gameEntry.summary;
+
     return CustomScrollView(
       key: Key('gameDetailsScrollView'),
       slivers: [
@@ -36,8 +49,7 @@ class GameDetailsContentMobile extends StatelessWidget {
               child: _fadeShader(
                 CachedNetworkImage(
                   width: MediaQuery.of(context).size.width,
-                  imageUrl:
-                      '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
+                  imageUrl: backgroundImage,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -58,6 +70,16 @@ class GameDetailsContentMobile extends StatelessWidget {
                     style: Theme.of(context).textTheme.headline4,
                   ),
                   SizedBox(height: 8.0),
+                  if (!kReleaseMode)
+                    Column(
+                      children: [
+                        Text(
+                          'game id: ${gameEntry.id}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        SizedBox(height: 8.0),
+                      ],
+                    ),
                   GameEntryActionBar(
                     libraryEntry: libraryEntry,
                     gameEntry: gameEntry,
@@ -73,14 +95,24 @@ class GameDetailsContentMobile extends StatelessWidget {
                       ],
                     ),
                   SizedBox(height: 16.0),
-                  Text(
-                    gameEntry.summary,
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 1.2,
-                    ),
+                  Html(
+                    data: description,
+                    style: {
+                      'html': Style(
+                        fontSize: FontSize(14.0),
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 1.2,
+                      )
+                    },
                   ),
+                  // Text(
+                  //   gameEntry.summary,
+                  //   style: TextStyle(
+                  //     fontSize: 14.0,
+                  //     fontWeight: FontWeight.w400,
+                  //     letterSpacing: 1.2,
+                  //   ),
+                  // ),
                   SizedBox(height: 8.0),
                   Text(
                     'Franchise: Foo, Bar',

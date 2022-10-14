@@ -22,31 +22,35 @@ class GameEntryActionBar extends StatelessWidget {
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            releaseYear(),
+            SizedBox(width: 16.0),
             actionButtons(context),
             SizedBox(width: 16.0),
-            Container(
-              padding: EdgeInsets.symmetric(
-                vertical: 2.0,
-                horizontal: 8.0,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.grey[800],
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Text(
-                '${DateTime.fromMillisecondsSinceEpoch(gameEntry.releaseDate * 1000).year}',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
+            linkButtons(context, gameEntry),
           ],
         ),
-        linkButtons(context, gameEntry),
       ],
+    );
+  }
+
+  Container releaseYear() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: 2.0,
+        horizontal: 8.0,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.grey[800],
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: Text(
+        '${DateTime.fromMillisecondsSinceEpoch(gameEntry.releaseDate * 1000).year}',
+        style: TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 

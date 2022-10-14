@@ -4,7 +4,9 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class GameDetailsContentDesktop extends StatelessWidget {
   const GameDetailsContentDesktop({
@@ -20,6 +22,10 @@ class GameDetailsContentDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final description = gameEntry.steamData != null
+        ? gameEntry.steamData!.aboutTheGame
+        : gameEntry.summary;
+
     return CustomScrollView(
       primary: true,
       slivers: [
@@ -34,14 +40,27 @@ class GameDetailsContentDesktop extends StatelessWidget {
                   gameEntry: gameEntry,
                 ),
                 SizedBox(height: 16.0),
-                Column(
-                  children: [SelectableText(gameEntry.summary)],
-                ),
                 relatedGames(
-                    context, gameEntry, ['${libraryEntry.id}', ...childPath]),
+                  context,
+                  gameEntry,
+                  ['${libraryEntry.id}', ...childPath],
+                ),
                 SizedBox(height: 16.0),
               ],
             ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 600),
+                child: Html(
+                  data: description,
+                ),
+              ),
+            ],
           ),
         ),
         screenshot(context, gameEntry),
@@ -51,64 +70,70 @@ class GameDetailsContentDesktop extends StatelessWidget {
 
   static Widget header(
       BuildContext context, LibraryEntry libraryEntry, GameEntry gameEntry) {
+    final backgroundImage = gameEntry.steamData != null &&
+            gameEntry.steamData!.backgroundImage != null
+        ? gameEntry.steamData!.backgroundImage!
+        : gameEntry.artwork.isNotEmpty
+            ? 'https://images.igdb.com/igdb/image/upload/t_720p/${gameEntry.artwork[0].imageId}.jpg'
+            : '';
+
     return SliverAppBar(
       pinned: true,
       expandedHeight: 320.0,
       flexibleSpace: FlexibleSpaceBar(
-        background: Stack(children: [
-          // Material(
-          //   elevation: 2,
-          //   shape:
-          //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          //   clipBehavior: Clip.antiAlias,
-          //   child: BackdropFilter(
-          //     filter: ui.ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-          //     child: Image.network(
-          //       'https://images.igdb.com/igdb/image/upload/t_720p/${entry.game.artworks[0].imageId}.jpg',
-          //       fit: BoxFit.cover,
-          //       height: 200,
-          //       width: 1200,
-          //     ),
-          //   ),
-          // ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+        background: Stack(
+          children: [
+            Row(
               children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Hero(
-                      tag: '${gameEntry.id}_cover',
-                      child: CachedNetworkImage(
-                        imageUrl:
-                            '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
-                        errorWidget: (context, url, error) => Icon(Icons.error),
-                      ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      child: FloatingActionButton(
-                        mini: true,
-                        tooltip: 'Edit',
-                        child: Icon(Icons.edit),
-                        backgroundColor: Color.fromARGB(64, 255, 255, 255),
-                        onPressed: () {
-                          // GameEntryEditDialog.show(context, libraryEntry);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(padding: EdgeInsets.all(8)),
                 Expanded(
-                  child: gameTitle(context, libraryEntry, gameEntry),
+                  child: Image.network(
+                    backgroundImage,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                  ),
                 ),
               ],
             ),
-          )
-        ]),
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Hero(
+                        tag: '${gameEntry.id}_cover',
+                        child: CachedNetworkImage(
+                          imageUrl:
+                              '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        child: FloatingActionButton(
+                          mini: true,
+                          tooltip: 'Edit',
+                          child: Icon(Icons.edit),
+                          backgroundColor: Color.fromARGB(64, 255, 255, 255),
+                          onPressed: () {
+                            // GameEntryEditDialog.show(context, libraryEntry);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(padding: EdgeInsets.all(8)),
+                  Expanded(
+                    child: gameTitle(context, libraryEntry, gameEntry),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -125,6 +150,14 @@ class GameDetailsContentDesktop extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
+          if (!kReleaseMode)
+            Expanded(
+              child: Text(
+                '${gameEntry.id}',
+                style: Theme.of(context).textTheme.headline5,
+                textAlign: TextAlign.center,
+              ),
+            ),
         ]),
         Padding(padding: EdgeInsets.all(16)),
         GameTags(libraryEntry),
