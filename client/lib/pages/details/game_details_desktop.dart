@@ -4,6 +4,7 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
@@ -44,12 +45,22 @@ class GameDetailsContentDesktop extends StatelessWidget {
                   gameEntry,
                   ['${libraryEntry.id}', ...childPath],
                 ),
-                Html(
-                  data: description,
-                ),
                 SizedBox(height: 16.0),
               ],
             ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 600),
+                child: Html(
+                  data: description,
+                ),
+              ),
+            ],
           ),
         ),
         screenshot(context, gameEntry),
@@ -139,6 +150,14 @@ class GameDetailsContentDesktop extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
+          if (!kReleaseMode)
+            Expanded(
+              child: Text(
+                '${gameEntry.id}',
+                style: Theme.of(context).textTheme.headline5,
+                textAlign: TextAlign.center,
+              ),
+            ),
         ]),
         Padding(padding: EdgeInsets.all(16)),
         GameTags(libraryEntry),
