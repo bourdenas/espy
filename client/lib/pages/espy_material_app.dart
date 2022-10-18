@@ -6,6 +6,7 @@ import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/gamelist/game_list_page.dart';
+import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/pages/login_page.dart';
 import 'package:espy/pages/search/search_page.dart';
 import 'package:espy/pages/top_level_page.dart';
@@ -23,19 +24,24 @@ class EspyMaterialApp extends StatelessWidget {
       GoRoute(
         name: 'home',
         path: '/',
-        builder: (context, state) => TopLevelPage(),
+        builder: (context, state) => TopLevelPage(
+          body: HomeContent(),
+        ),
       ),
       GoRoute(
         name: 'games',
         path: '/games',
-        builder: (context, state) =>
-            GameListPage(filter: LibraryFilter.fromParams(state.queryParams)),
+        builder: (context, state) => TopLevelPage(
+          body:
+              GameListPage(filter: LibraryFilter.fromParams(state.queryParams)),
+        ),
       ),
       GoRoute(
         name: 'details',
         path: '/details/:gid',
-        builder: (context, state) =>
-            GameDetailsPage(path: state.params['gid']!),
+        builder: (context, state) => TopLevelPage(
+          body: GameDetailsPage(path: state.params['gid']!),
+        ),
         routes: [
           GoRoute(
             name: 'edit',
@@ -54,12 +60,16 @@ class EspyMaterialApp extends StatelessWidget {
       GoRoute(
         name: 'search',
         path: '/search',
-        builder: (context, state) => SearchPage(),
+        builder: (context, state) => TopLevelPage(
+          body: SearchPage(),
+        ),
       ),
       GoRoute(
         name: 'unmatched',
         path: '/unmatched',
-        builder: (context, state) => UnmatchedPage(),
+        builder: (context, state) => TopLevelPage(
+          body: UnmatchedPage(),
+        ),
       ),
       GoRoute(
         name: 'profile',
@@ -67,7 +77,7 @@ class EspyMaterialApp extends StatelessWidget {
         builder: (context, state) => ProfilePage(),
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
+    errorBuilder: (context, state) => TopLevelPage(
       body: Center(
         child: Text('Page not found :('),
       ),
