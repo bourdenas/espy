@@ -24,23 +24,31 @@ class EspyMaterialApp extends StatelessWidget {
       GoRoute(
         name: 'home',
         path: '/',
-        builder: (context, state) => TopLevelPage(
-          body: HomeContent(),
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: TopLevelPage(
+            body: HomeContent(),
+          ),
         ),
       ),
       GoRoute(
         name: 'games',
         path: '/games',
-        builder: (context, state) => TopLevelPage(
-          body:
-              GameListPage(filter: LibraryFilter.fromParams(state.queryParams)),
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: TopLevelPage(
+            body: GameListPage(
+                filter: LibraryFilter.fromParams(state.queryParams)),
+          ),
         ),
       ),
       GoRoute(
         name: 'details',
         path: '/details/:gid',
-        builder: (context, state) => TopLevelPage(
-          body: GameDetailsPage(path: state.params['gid']!),
+        pageBuilder: (context, state) => NoTransitionPage(
+          child: TopLevelPage(
+            body: GameDetailsPage(path: state.params['gid']!),
+          ),
         ),
         routes: [
           GoRoute(
@@ -60,15 +68,19 @@ class EspyMaterialApp extends StatelessWidget {
       GoRoute(
         name: 'search',
         path: '/search',
-        builder: (context, state) => TopLevelPage(
-          body: SearchPage(),
+        pageBuilder: (context, state) => NoTransitionPage(
+          child: TopLevelPage(
+            body: SearchPage(),
+          ),
         ),
       ),
       GoRoute(
         name: 'unmatched',
         path: '/unmatched',
-        builder: (context, state) => TopLevelPage(
-          body: UnmatchedPage(),
+        pageBuilder: (context, state) => NoTransitionPage(
+          child: TopLevelPage(
+            body: UnmatchedPage(),
+          ),
         ),
       ),
       GoRoute(
