@@ -17,7 +17,7 @@ class GameDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final ids = path.split(',');
     final id = ids[0];
-    final libraryEntry = context.read<GameEntriesModel>().getEntryById(id);
+    final libraryEntry = context.watch<GameEntriesModel>().getEntryById(id);
 
     return Actions(
       actions: {
