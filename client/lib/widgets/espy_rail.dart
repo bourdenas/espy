@@ -1,6 +1,7 @@
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class EspyNavigationRail extends StatefulWidget {
   final bool extended;
@@ -72,26 +73,25 @@ List<_MenuItem> _menuItems = [
     label: 'Home',
     icon: Icons.home_outlined,
     selectedIcon: Icons.home,
-    onTap: (context) => Navigator.pushNamed(context, '/home'),
+    onTap: (context) => context.goNamed('home'),
   ),
   _MenuItem(
     label: 'Library',
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
-    onTap: (context) => Navigator.pushNamed(context, '/games',
-        arguments: LibraryFilter().encode()),
+    onTap: (context) => context.goNamed('games'),
   ),
   _MenuItem(
     label: 'Untagged',
     icon: Icons.label_off_outlined,
     selectedIcon: Icons.label_off,
-    onTap: (context) => Navigator.pushNamed(context, '/games',
-        arguments: LibraryFilter(untagged: true).encode()),
+    onTap: (context) => context.goNamed('games',
+        queryParams: LibraryFilter(untagged: true).params()),
   ),
   _MenuItem(
     label: 'Failed',
     icon: Icons.error_outline,
     selectedIcon: Icons.error,
-    onTap: (context) => Navigator.pushNamed(context, '/unmatched'),
+    onTap: (context) => context.goNamed('unmatched'),
   ),
 ];

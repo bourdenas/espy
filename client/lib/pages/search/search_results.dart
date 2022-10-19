@@ -6,6 +6,7 @@ import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/gamelist/game_list_card.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
 
 class GameSearchResults extends StatelessWidget {
@@ -69,10 +70,9 @@ class TagSearchResults extends StatelessWidget {
         .filterStores(searchTerms)
         .map((store) => StoreChip(
               store,
-              onPressed: () => Navigator.pushNamed(
-                context,
-                '/games',
-                arguments: LibraryFilter(stores: {store}).encode(),
+              onPressed: () => context.goNamed(
+                'games',
+                queryParams: LibraryFilter(stores: {store}).params(),
               ),
             ))
         .toList();
@@ -81,10 +81,9 @@ class TagSearchResults extends StatelessWidget {
         .filterTags(searchTerms)
         .map((tag) => TagChip(
               tag,
-              onPressed: () => Navigator.pushNamed(
-                context,
-                '/games',
-                arguments: LibraryFilter(tags: {tag}).encode(),
+              onPressed: () => context.goNamed(
+                'games',
+                queryParams: LibraryFilter(tags: {tag}).params(),
               ),
             ))
         .toList();
@@ -93,10 +92,9 @@ class TagSearchResults extends StatelessWidget {
         .filterCompanies(searchTerms)
         .map((company) => CompanyChip(
               company,
-              onPressed: () => Navigator.pushNamed(
-                context,
-                '/games',
-                arguments: LibraryFilter(companies: {company}).encode(),
+              onPressed: () => context.goNamed(
+                'games',
+                queryParams: LibraryFilter(companies: {company}).params(),
               ),
             ))
         .toList();
@@ -105,10 +103,9 @@ class TagSearchResults extends StatelessWidget {
         .filterCollections(searchTerms)
         .map((collection) => CollectionChip(
               collection,
-              onPressed: () => Navigator.pushNamed(
-                context,
-                '/games',
-                arguments: LibraryFilter(collections: {collection}).encode(),
+              onPressed: () => context.goNamed(
+                'games',
+                queryParams: LibraryFilter(collections: {collection}).params(),
               ),
             ))
         .toList();

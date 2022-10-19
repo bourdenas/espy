@@ -9,6 +9,7 @@ import 'package:espy/pages/home/slate_tile.dart';
 import 'package:espy/widgets/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
 
 class HomeContent extends StatelessWidget {
@@ -40,21 +41,21 @@ class HomeContent extends StatelessWidget {
           if (slate.entries.isNotEmpty)
             HomeSlate(
               title: slate.title,
-              onExpand: () => Navigator.pushNamed(context, '/games',
-                  arguments: slate.filter.encode()),
+              onExpand: () =>
+                  context.goNamed('games', queryParams: slate.filter.params()),
               tiles: slate.entries
                   .map((libraryEntry) => SlateTileData(
                         image:
                             '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
-                        onTap: () => Navigator.pushNamed(context, '/details',
-                            arguments: '${libraryEntry.id}'),
+                        onTap: () => context.pushNamed('details',
+                            params: {'gid': '${libraryEntry.id}'}),
                       ))
                   .toList(),
             ),
         if (slates.isEmpty && unmatchedEntries.isNotEmpty)
           HomeSlate(
             title: 'Unmatched Entries',
-            onExpand: () => Navigator.pushNamed(context, '/unmatched'),
+            onExpand: () => context.goNamed('unmatched'),
             tiles: unmatchedEntries
                 .take(AppConfigModel.isMobile(context) ? 8 : 32)
                 .map((entry) => SlateTileData(

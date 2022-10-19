@@ -3,6 +3,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class GameListCard extends StatelessWidget {
   GameListCard({
@@ -15,8 +16,7 @@ class GameListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () =>
-          Navigator.pushNamed(context, '/details', arguments: '${entry.id}'),
+      onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
       child: Container(
         padding: EdgeInsets.all(8.0),
         margin: EdgeInsets.only(bottom: 16.0),

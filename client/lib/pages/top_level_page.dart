@@ -1,12 +1,16 @@
 import 'package:espy/dialogs/settings_dialog.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
-import 'package:espy/pages/home/home_page.dart';
+import 'package:espy/pages/home/espy_scaffold.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class TopLevelPage extends StatefulWidget {
+  final Widget body;
+
+  TopLevelPage({required this.body});
+
   @override
   State<TopLevelPage> createState() => _TopLevelPageState();
 }
@@ -45,7 +49,7 @@ class _TopLevelPageState extends State<TopLevelPage>
       child: Actions(
         actions: {
           SearchIntent: CallbackAction<SearchIntent>(
-              onInvoke: (intent) => Navigator.pushNamed(context, '/search')),
+              onInvoke: (intent) => context.pushNamed('search')),
         },
         child: Focus(
           autofocus: true,
@@ -58,7 +62,9 @@ class _TopLevelPageState extends State<TopLevelPage>
   }
 
   Widget _desktopPage(BuildContext context) {
-    return HomePage();
+    return EspyScaffold(
+      body: widget.body,
+    );
   }
 
   Widget _mobilePage(BuildContext context) {
@@ -87,9 +93,12 @@ class _TopLevelPageState extends State<TopLevelPage>
                 alignment: Alignment.centerLeft,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(radius),
-                  child: HomePage(showMenu: () {
-                    _drawerAnimationController.forward();
-                  }),
+                  child: EspyScaffold(
+                    body: widget.body,
+                    onShowMenu: () {
+                      _drawerAnimationController.forward();
+                    },
+                  ),
                 ),
               ),
             ],
@@ -160,8 +169,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         SizedBox(height: 32.0),
         ListTile(
           key: Key('libraryListTile'),
-          onTap: () => Navigator.pushNamed(context, '/games',
-              arguments: LibraryFilter().encode()),
+          onTap: () => context.goNamed('games'),
           leading: Icon(Icons.my_library_books),
           title: Text('Library'),
           // selected: data.state == figure out,
@@ -176,7 +184,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         ),
         ListTile(
           key: Key('unmatchedListTile'),
-          onTap: () => Navigator.pushNamed(context, '/unmatched'),
+          onTap: () => context.goNamed('unmatched'),
           leading: Icon(Icons.device_unknown),
           title: Text('Unmatched Titles'),
           // selected: data.state == figure out,
@@ -191,9 +199,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         ),
         ListTile(
           key: Key('settingsListTile'),
-          onTap: () {
-            SettingsDialog.show(context);
-          },
+          onTap: () => SettingsDialog.show(context),
           leading: Icon(Icons.settings),
           title: Text('Settings'),
           iconColor: Colors.white70,

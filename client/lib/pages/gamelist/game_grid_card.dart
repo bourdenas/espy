@@ -5,6 +5,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class GameGridCard extends StatelessWidget {
@@ -21,8 +22,7 @@ class GameGridCard extends StatelessWidget {
 
     return InkResponse(
       enableFeedback: true,
-      onTap: () =>
-          Navigator.pushNamed(context, '/details', arguments: '${entry.id}'),
+      onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
       child: Listener(
         // onPointerDown: (PointerDownEvent event) async =>
         //     await showTagsContextMenu(context, event, entry),
@@ -100,10 +100,9 @@ class TagsTileBar extends StatelessWidget {
               padding: const EdgeInsets.all(2),
               child: TagChip(
                 tag,
-                onPressed: () => Navigator.pushNamed(
-                  context,
-                  '/games',
-                  arguments: LibraryFilter(tags: {tag}).encode(),
+                onPressed: () => context.goNamed(
+                  'games',
+                  queryParams: LibraryFilter(tags: {tag}).params(),
                 ),
               ),
             ),

@@ -4,6 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
 
 class HomeHeadline extends StatelessWidget {
@@ -25,8 +26,8 @@ class HomeHeadline extends StatelessWidget {
         items: [
           for (final entry in entries.take(8))
             GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/details',
-                  arguments: '${entry.id}'),
+              onTap: () =>
+                  context.pushNamed('details', params: {'gid': '${entry.id}'}),
               child: Stack(
                 children: [
                   _fadeShader(

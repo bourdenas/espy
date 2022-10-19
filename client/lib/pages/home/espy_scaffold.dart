@@ -1,19 +1,21 @@
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/widgets/espy_rail.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class HomePage extends StatefulWidget {
-  final void Function()? showMenu;
+class EspyScaffold extends StatefulWidget {
+  final void Function()? onShowMenu;
+  final Widget body;
 
-  HomePage({void Function()? this.showMenu});
+  EspyScaffold({required this.body, this.onShowMenu});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<EspyScaffold> createState() => _EspyScaffoldState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class _EspyScaffoldState extends State<EspyScaffold>
+    with TickerProviderStateMixin {
   late AnimationController _colorAnimationController;
   late Animation _colorTween;
 
@@ -49,7 +51,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        if (widget.showMenu == null) EspyNavigationRail(false),
+        if (widget.onShowMenu == null) EspyNavigationRail(false),
         Expanded(
           child: AnimatedBuilder(
             animation: _colorAnimationController,
@@ -59,7 +61,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 appBar: appBar(context),
                 body: NotificationListener<ScrollNotification>(
                   onNotification: _scrollListener,
-                  child: HomeContent(),
+                  child: widget.body,
                 ),
               );
             },
@@ -70,19 +72,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   AppBar appBar(BuildContext context) {
-    final isMobile = AppConfigModel.isMobile(context);
     final appConfig = context.read<AppConfigModel>();
 
     return AppBar(
       toolbarOpacity: 0.6,
-      leading: widget.showMenu != null
+      leading: widget.onShowMenu != null
           ? IconButton(
               key: Key('drawerButton'),
               icon: Icon(Icons.menu),
               splashRadius: 20.0,
-              onPressed: widget.showMenu,
+              onPressed: widget.onShowMenu,
             )
-          : null,
+          : Image.asset(
+              'assets/images/espy-logo_800.png',
+              fit: BoxFit.cover,
+            ),
       title: Text(
         'espy',
         style: TextStyle(
@@ -115,7 +119,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           key: Key('searchButton'),
           icon: Icon(Icons.search),
           splashRadius: 20.0,
-          onPressed: () => Navigator.pushNamed(context, '/search'),
+          onPressed: () => context.pushNamed('search'),
         ),
       ],
       backgroundColor: _colorTween.value,

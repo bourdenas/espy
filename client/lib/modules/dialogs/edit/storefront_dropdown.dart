@@ -3,6 +3,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class StorefrontDropdown extends StatefulWidget {
@@ -80,7 +81,7 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
     MatchingDialog.show(context, storeEntry, onMatch: (gameEntry) {
       // TODO: BUG: This moves storefront entry to {user}/failed collection.
       context.read<GameLibraryModel>().unmatchEntry(storeEntry, widget.entry);
-      Navigator.pushNamed(context, '/details', arguments: '${gameEntry.id}');
+      context.pushNamed('details', params: {'gid': '${gameEntry.id}'});
     });
   }
 
