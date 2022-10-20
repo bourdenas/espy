@@ -76,12 +76,13 @@ impl User {
         gog_auth_code: &str,
     ) -> Result<(), Status> {
         self.data.keys = Some(Keys {
-            steam_user_id: String::from(steam_user_id),
             // TODO: Need to avoid invalidating the existing credentials for no reason.
             gog_token: match api::GogToken::from_oauth_code(gog_auth_code).await {
                 Ok(token) => Some(token),
                 Err(_) => None,
             },
+            steam_user_id: String::from(steam_user_id),
+            egs_auth_code: String::default(),
         });
 
         if let Err(e) = self.save() {
