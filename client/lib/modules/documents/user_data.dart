@@ -26,27 +26,32 @@ class UserData {
 }
 
 class Keys {
-  final String? steamUserId;
   final GogToken? gogToken;
+  final String? steamUserId;
+  final String? egsAuthCode;
 
   Keys({
-    required this.steamUserId,
     required this.gogToken,
+    required this.steamUserId,
+    required this.egsAuthCode,
   });
 
   Keys.fromJson(Map<String, dynamic> json)
       : this(
-          steamUserId:
-              json.containsKey('steam_user_id') ? json['steam_user_id'] : null,
           gogToken: json.containsKey('gog_token')
               ? GogToken.fromJson(json['gog_token'])
               : null,
+          steamUserId:
+              json.containsKey('steam_user_id') ? json['steam_user_id'] : null,
+          egsAuthCode:
+              json.containsKey('egs_auth_code') ? json['egs_auth_code'] : null,
         );
 
   Map<String, dynamic> toJson() {
     return {
-      if (steamUserId != null) 'steam_user_id': steamUserId,
       if (gogToken != null) 'gog_token': gogToken!.toJson(),
+      if (steamUserId != null) 'steam_user_id': steamUserId,
+      if (egsAuthCode != null) 'egs_auth_code': egsAuthCode,
     };
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
@@ -31,34 +32,36 @@ class UserDataModel extends ChangeNotifier {
   UserData? _userData;
 
   /// Update Firestore with user's credentials to third-party data stores.
-  Future<void> setUserKeys(
-      {String steamUserId = '', String gogAuthCode = ''}) async {
+  Future<void> setUserKeys(Keys keys) async {
+    if (_userData!.keys!.gogToken!.oauthCode != keys.gogToken!.oauthCode ||
+        _userData!.keys!.steamUserId != keys.steamUserId) {
+      // NOTE: EGS auth code is too ephemeral.
+      // There is no point to store to Firebase.
+      FirebaseFirestore.instance.collection('users').doc(_userId!).update({
+        'keys': {
+          'gog_token': {
+            'oauth_code': gogAuthCode,
+          },
+          'steam_user_id': steamUserId,
+        },
+      }).onError((error, _) => print('Failed to update user profile:$error'));
+    }
+
     _userData = UserData(
       uid: _userId!,
-      keys: Keys(
-        steamUserId: steamUserId,
-        gogToken: GogToken(oauthCode: gogAuthCode),
-      ),
-      version: null,
+      keys: keys,
+      version: _userData!.version,
     );
-
-    FirebaseFirestore.instance.collection('users').doc(_userId!).update({
-      'keys': {
-        'steam_user_id': steamUserId,
-        'gog_token': {
-          'oauth_code': gogAuthCode,
-        },
-      },
-    }).onError((error, _) => print('Failed to update user profile:$error'));
   }
 
   /// Initiates the library sync process to the espy backend for the user.
-  Future<void> syncLibrary() async {
+  Future<void> syncLibrary(Keys keys) async {
     var response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/${_userId!}/sync'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
+      body: jsonEncode(keys.toJson()),
     );
 
     if (response.statusCode == 200) {

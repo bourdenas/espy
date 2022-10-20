@@ -1,3 +1,4 @@
+import 'package:espy/modules/documents/user_data.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfire_ui/auth.dart';
@@ -32,6 +33,7 @@ class ProfilePage extends StatelessWidget {
         //   ],
         // ),
         editBoxes(context),
+        SizedBox(height: 16),
         buttons(context),
       ],
     );
@@ -45,11 +47,16 @@ class ProfilePage extends StatelessWidget {
           child: Text("Sync"),
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              await context.read<UserDataModel>().setUserKeys(
-                    steamUserId: _steamTextController.text,
-                    gogAuthCode: _gogTextController.text,
-                  );
-              await context.read<UserDataModel>().syncLibrary();
+              final keys = Keys(
+                gogToken: GogToken(
+                  oauthCode: _gogTextController.text,
+                ),
+                steamUserId: _steamTextController.text,
+                egsAuthCode: _egsTextController.text,
+              );
+
+              await context.read<UserDataModel>().setUserKeys(keys);
+              await context.read<UserDataModel>().syncLibrary(keys);
             }
           },
         ),
@@ -63,8 +70,9 @@ class ProfilePage extends StatelessWidget {
   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final _steamTextController = TextEditingController();
   final _gogTextController = TextEditingController();
+  final _steamTextController = TextEditingController();
+  final _egsTextController = TextEditingController();
 
   Widget editBoxes(BuildContext context) {
     final user = context.watch<UserDataModel>();
@@ -87,6 +95,12 @@ class ProfilePage extends StatelessWidget {
               token: user.steamUserId,
               logoAsset: 'assets/images/steam-128.png',
               textController: _steamTextController,
+            ),
+            storefrontTokenEditBox(
+              label: 'Epic Game Store authorizationCode',
+              token: '',
+              logoAsset: 'assets/images/egs-128.png',
+              textController: _egsTextController,
             ),
           ],
         ),
