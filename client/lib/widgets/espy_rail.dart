@@ -1,3 +1,4 @@
+import 'package:espy/dialogs/settings_dialog.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -93,5 +94,12 @@ List<_MenuItem> _menuItems = [
     icon: Icons.error_outline,
     selectedIcon: Icons.error,
     onTap: (context) => context.goNamed('unmatched'),
+  ),
+  _MenuItem(
+    label: 'Settings',
+    icon: Icons.settings,
+    selectedIcon: Icons.settings,
+    // onTap: (context) => SettingsDialog.show(context),
+    onTap: (context) => context.goNamed('profile'),
   ),
 ];

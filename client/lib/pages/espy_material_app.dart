@@ -86,7 +86,11 @@ class EspyMaterialApp extends StatelessWidget {
       GoRoute(
         name: 'profile',
         path: '/profile',
-        builder: (context, state) => ProfilePage(),
+        pageBuilder: (context, state) => NoTransitionPage(
+          child: TopLevelPage(
+            body: ProfilePage(),
+          ),
+        ),
       ),
     ],
     errorBuilder: (context, state) => TopLevelPage(
