@@ -175,10 +175,7 @@ impl LibraryManager {
                             &user_id,
                             entry_match.store_entry,
                             game_entry.id,
-                            match entry_match.base_game_entry {
-                                Some(base_game_entry) => base_game_entry,
-                                None => game_entry,
-                            },
+                            game_entry,
                         )
                         .expect("Firestore game_match_transaction()"),
                         None => LibraryOps::match_failed_transaction(

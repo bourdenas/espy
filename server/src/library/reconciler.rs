@@ -19,14 +19,13 @@ pub struct Refresh {
 pub struct Match {
     pub store_entry: StoreEntry,
     pub game_entry: Option<GameEntry>,
-    pub base_game_entry: Option<GameEntry>,
 }
 
 impl Match {
     async fn create(store_entry: StoreEntry, game_entry: GameEntry, igdb: &IgdbApi) -> Self {
         Match {
             store_entry,
-            base_game_entry: match game_entry.parent {
+            game_entry: match game_entry.parent {
                 Some(parent_id) => match igdb.get_game_by_id(parent_id).await {
                     Ok(game) => game,
                     Err(e) => {
@@ -37,9 +36,8 @@ impl Match {
                         None
                     }
                 },
-                None => None,
+                None => Some(game_entry),
             },
-            game_entry: Some(game_entry),
         }
     }
 
@@ -174,6 +172,9 @@ async fn match_task(task: MatchingTask) {
             Match::failed(task.store_entry)
         }
     };
+
+    // Retrieve Steam data for matched GameEntry.
+    // retrieve_steam_data(&mut entry_match.base_game_entry);
 
     if let Err(e) = task.tx.send(entry_match).await {
         error!("{e}");
