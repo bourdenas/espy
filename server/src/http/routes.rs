@@ -14,7 +14,7 @@ pub fn routes(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     home()
         .or(get_images())
-        .or(post_sync(keys, Arc::clone(&firestore)))
+        .or(post_sync(keys, Arc::clone(&firestore), Arc::clone(&igdb)))
         .or(post_search(Arc::clone(&igdb)))
         .or(post_recon(firestore, igdb))
         .or_else(|e| async {
@@ -27,12 +27,14 @@ pub fn routes(
 fn post_sync(
     keys: Arc<util::keys::Keys>,
     firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "sync")
         .and(warp::post())
         .and(sync_body())
         .and(with_keys(keys))
         .and(with_firestore(firestore))
+        .and(with_igdb(igdb))
         .and_then(handlers::post_sync)
 }
 

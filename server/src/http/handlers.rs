@@ -13,12 +13,13 @@ use std::{
 use tracing::{debug, error, instrument, warn};
 use warp::http::StatusCode;
 
-#[instrument(level = "trace", skip(storefront_keys, api_keys, firestore))]
+#[instrument(level = "trace", skip(storefront_keys, api_keys, firestore, igdb))]
 pub async fn post_sync(
     user_id: String,
     storefront_keys: documents::Keys,
     api_keys: Arc<util::keys::Keys>,
     firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
     debug!("POST /library/{user_id}/sync");
 
@@ -39,6 +40,7 @@ pub async fn post_sync(
                 false => Some(storefront_keys.egs_auth_code),
                 true => None,
             },
+            Reconciler::new(Arc::clone(&igdb)),
         )
         .await
     {

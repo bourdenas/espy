@@ -1,7 +1,7 @@
+use super::{LibraryManager, Reconciler};
 use crate::{
     api,
     documents::{Keys, UserData},
-    library::LibraryManager,
     util, Status,
 };
 use std::{
@@ -111,11 +111,12 @@ impl User {
     /// NOTE: It does not try to reconcile retrieve entries.
     /// NOTE: `egs_sid` is too ephemeral to be stored in Firestore so it is
     /// provided as an optional argument.
-    #[instrument(level = "trace", skip(self, keys, egs_sid))]
+    #[instrument(level = "trace", skip(self, keys, egs_sid, recon_service))]
     pub async fn sync(
         &mut self,
         keys: &util::keys::Keys,
         egs_sid: Option<String>,
+        recon_service: Reconciler,
     ) -> Result<(), Status> {
         let gog_api = match self.gog_token().await {
             Some(token) => {
@@ -144,7 +145,8 @@ impl User {
         };
 
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.sync_library(steam_api, gog_api, egs_api).await?;
+        mgr.sync_library(steam_api, gog_api, egs_api, recon_service)
+            .await?;
 
         if let Err(e) = self.update_library_version() {
             return Err(Status::new("User.sync:", e));

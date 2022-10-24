@@ -34,12 +34,17 @@ impl LibraryManager {
     /// New entries are added as unreconciled / unmatched titles. Reconciliation
     /// with IGDB entries is a separate step that will be triggered
     /// independenlty.
-    #[instrument(level = "trace", skip(self, steam_api, gog_api, egs_api), fields(user_id = %self.user_id))]
+    #[instrument(
+        level = "trace",
+        skip(self, steam_api, gog_api, egs_api, recon_service),
+        fields(user_id = %self.user_id),
+    )]
     pub async fn sync_library(
         &self,
         steam_api: Option<SteamApi>,
         gog_api: Option<GogApi>,
         egs_api: Option<EgsApi>,
+        recon_service: Reconciler,
     ) -> Result<(), Status> {
         if let Some(api) = steam_api {
             self.sync_storefront(&api).await?;
@@ -50,6 +55,8 @@ impl LibraryManager {
         if let Some(api) = egs_api {
             self.sync_storefront(&api).await?;
         }
+
+        self.recon_entries(recon_service).await?;
 
         Ok(())
     }
@@ -62,7 +69,11 @@ impl LibraryManager {
     ///   contain all storefront game ids owned by the user.
     ///   (b) the `users/{user}/unmatched` collection with 'StoreEntry` documents
     ///   that correspond to new found entries.
-    #[instrument(level = "trace", skip(self, api), fields(user_id = %self.user_id))]
+    #[instrument(
+        level = "trace",
+        skip(self, api),
+        fields(user_id = %self.user_id),
+    )]
     async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
         let mut game_ids = HashSet::<String>::new();
         {
@@ -97,7 +108,11 @@ impl LibraryManager {
     }
 
     /// Refreshes game entries info from IGDB in user's library.
-    #[instrument(level = "trace", skip(self, recon_service), fields(user_id = %self.user_id))]
+    #[instrument(
+        level = "trace",
+        skip(self, recon_service),
+        fields(user_id = %self.user_id),
+    )]
     pub async fn refresh_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
         let library_entries =
             LibraryOps::read_library_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
@@ -139,8 +154,12 @@ impl LibraryManager {
     }
 
     /// Reconciles entries in the unmatched collection of user's library.
-    #[instrument(level = "trace", skip(self, recon_service), fields(user_id = %self.user_id))]
-    pub async fn recon_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
+    #[instrument(
+        level = "trace",
+        skip(self, recon_service),
+        fields(user_id = %self.user_id),
+    )]
+    async fn recon_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
         let unmatched_entries =
             LibraryOps::read_unmatched_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
 
@@ -195,7 +214,11 @@ impl LibraryManager {
     /// user's library.
     ///
     /// Uses the `Reconciler` to retrieve full details for `GameEntry`.
-    #[instrument(level = "trace", skip(self, recon_service), fields(user_id = %self.user_id))]
+    #[instrument(
+        level = "trace",
+        skip(self, recon_service),
+        fields(user_id = %self.user_id),
+    )]
     pub async fn manual_match(
         &self,
         recon_service: Reconciler,
@@ -224,7 +247,11 @@ impl LibraryManager {
     ///
     /// If the GameEntry is not already available in Firestore it attemps to
     /// retrieve it from IGDB.
-    #[instrument(level = "trace", skip(self, recon_service), fields(user_id = %self.user_id))]
+    #[instrument(
+        level = "trace",
+        skip(self, recon_service),
+        fields(user_id = %self.user_id),
+    )]
     async fn retrieve_game_entry(
         &self,
         id: u64,
