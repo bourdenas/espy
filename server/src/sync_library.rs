@@ -52,14 +52,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let _guard = span.enter();
 
     let mut user = library::User::new(Arc::clone(&firestore), &opts.user)?;
-    user.sync(&keys, opts.egs_code).await?;
-
-    let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
-    mgr.recon_entries(library::Reconciler::new(Arc::clone(&igdb)))
-        .await?;
-    user.update_library_version()?;
+    user.sync(
+        &keys,
+        opts.egs_code,
+        library::Reconciler::new(Arc::clone(&igdb)),
+    )
+    .await?;
 
     if opts.refresh {
+        let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
         mgr.refresh_entries(library::Reconciler::new(Arc::clone(&igdb)))
             .await?;
     }
