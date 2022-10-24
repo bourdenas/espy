@@ -1,3 +1,4 @@
+use super::steam_data;
 use crate::api::IgdbApi;
 use crate::documents::{GameEntry, LibraryEntry, StoreEntry};
 use crate::library::search;
@@ -71,7 +72,7 @@ impl Reconciler {
     #[instrument(
         level = "trace",
         skip(self, tx, store_entries), 
-        fields(entries_len = %store_entries.len())
+        fields(entries_len = %store_entries.len()),
     )]
     pub async fn reconcile(&self, tx: mpsc::Sender<Match>, store_entries: Vec<StoreEntry>) {
         let fut = stream::iter(store_entries.into_iter().map(|store_entry| MatchingTask {
@@ -93,7 +94,7 @@ impl Reconciler {
     #[instrument(
         level = "trace",
         skip(self, tx, library_entries), 
-        fields(entries_len = %library_entries.len())
+        fields(entries_len = %library_entries.len()),
     )]
     pub async fn refresh(&self, tx: mpsc::Sender<Refresh>, library_entries: Vec<LibraryEntry>) {
         let fut = stream::iter(
@@ -118,7 +119,7 @@ impl Reconciler {
 #[instrument(
     level = "trace",
     skip(task), 
-    fields(library_entry = %task.library_entry)
+    fields(library_entry = %task.library_entry),
 )]
 async fn refresh_task(task: RefreshTask) {
     let entry_match = match get_entry(&task.igdb, task.library_entry.id).await {
@@ -145,10 +146,10 @@ async fn refresh_task(task: RefreshTask) {
 #[instrument(
     level = "trace",
     skip(task), 
-    fields(store_entry = %task.store_entry)
+    fields(store_entry = %task.store_entry),
 )]
 async fn match_task(task: MatchingTask) {
-    let entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
+    let mut entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => match game_entry {
             Some(game_entry) => Match::create(task.store_entry, game_entry, &task.igdb).await,
             None => match match_by_title(&task.igdb, &task.store_entry).await {
@@ -174,7 +175,9 @@ async fn match_task(task: MatchingTask) {
     };
 
     // Retrieve Steam data for matched GameEntry.
-    // retrieve_steam_data(&mut entry_match.base_game_entry);
+    if let Some(game_entry) = &mut entry_match.game_entry{
+        steam_data::retrieve_steam_data(game_entry).await;
+    }
 
     if let Err(e) = task.tx.send(entry_match).await {
         error!("{e}");
