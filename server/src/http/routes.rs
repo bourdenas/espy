@@ -1,6 +1,6 @@
 use crate::api::{FirestoreApi, IgdbApi};
 use crate::http::{handlers, models};
-use crate::util;
+use crate::{documents, util};
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
 use tracing::warn;
@@ -30,6 +30,7 @@ fn post_sync(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "sync")
         .and(warp::post())
+        .and(sync_body())
         .and(with_keys(keys))
         .and(with_firestore(firestore))
         .and_then(handlers::post_sync)
@@ -87,6 +88,10 @@ fn with_keys(
     keys: Arc<util::keys::Keys>,
 ) -> impl Filter<Extract = (Arc<util::keys::Keys>,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&keys))
+}
+
+fn sync_body() -> impl Filter<Extract = (documents::Keys,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
 }
 
 fn recon_body() -> impl Filter<Extract = (models::Recon,), Error = warp::Rejection> + Clone {
