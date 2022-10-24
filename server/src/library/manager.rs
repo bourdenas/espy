@@ -1,6 +1,6 @@
 use super::reconciler::Match;
 use crate::{
-    api::{EgsApi, FirestoreApi, GogApi, SteamApi},
+    api::{FirestoreApi, GogApi, SteamApi},
     documents::{GameEntry, StoreEntry},
     library::library_ops::LibraryOps,
     library::Reconciler,
@@ -36,23 +36,19 @@ impl LibraryManager {
     /// independenlty.
     #[instrument(
         level = "trace",
-        skip(self, steam_api, gog_api, egs_api, recon_service),
+        skip(self, steam_api, gog_api, recon_service),
         fields(user_id = %self.user_id),
     )]
     pub async fn sync_library(
         &self,
         steam_api: Option<SteamApi>,
         gog_api: Option<GogApi>,
-        egs_api: Option<EgsApi>,
         recon_service: Reconciler,
     ) -> Result<(), Status> {
         if let Some(api) = steam_api {
             self.sync_storefront(&api).await?;
         }
         if let Some(api) = gog_api {
-            self.sync_storefront(&api).await?;
-        }
-        if let Some(api) = egs_api {
             self.sync_storefront(&api).await?;
         }
 

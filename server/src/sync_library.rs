@@ -18,11 +18,6 @@ struct Opts {
     #[clap(long, default_value = "keys.json")]
     key_store: String,
 
-    /// Epic Game Store authorizationCode from
-    /// https://www.epicgames.com/id/login?redirectUrl=https%3A%2F%2Fwww.epicgames.com%2Fid%2Fapi%2Fredirect%3FclientId%3D34a02cf8f4414e29b15921876da36f9a%26responseType%3Dcode
-    #[clap(long)]
-    egs_code: Option<String>,
-
     /// JSON file containing Firestore credentials for espy service.
     #[clap(
         long,
@@ -52,12 +47,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let _guard = span.enter();
 
     let mut user = library::User::new(Arc::clone(&firestore), &opts.user)?;
-    user.sync(
-        &keys,
-        opts.egs_code,
-        library::Reconciler::new(Arc::clone(&igdb)),
-    )
-    .await?;
+    user.sync(&keys, library::Reconciler::new(Arc::clone(&igdb)))
+        .await?;
 
     if opts.refresh {
         let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));

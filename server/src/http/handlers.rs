@@ -1,6 +1,5 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
-    documents,
     http::models,
     library::{self, Reconciler, User},
     util,
@@ -13,10 +12,9 @@ use std::{
 use tracing::{debug, error, instrument, warn};
 use warp::http::StatusCode;
 
-#[instrument(level = "trace", skip(storefront_keys, api_keys, firestore, igdb))]
+#[instrument(level = "trace", skip(api_keys, firestore, igdb))]
 pub async fn post_sync(
     user_id: String,
-    storefront_keys: documents::Keys,
     api_keys: Arc<util::keys::Keys>,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
@@ -32,16 +30,7 @@ pub async fn post_sync(
     };
 
     match user
-        .sync(
-            &api_keys,
-            // Use only EGS auth code from input keys because it's ephemeral.
-            // For the other storefront ids/codes stored in Firestore are used.
-            match storefront_keys.egs_auth_code.is_empty() {
-                false => Some(storefront_keys.egs_auth_code),
-                true => None,
-            },
-            Reconciler::new(Arc::clone(&igdb)),
-        )
+        .sync(&api_keys, Reconciler::new(Arc::clone(&igdb)))
         .await
     {
         Ok(()) => Ok(StatusCode::OK),
