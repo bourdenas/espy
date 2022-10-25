@@ -37,6 +37,17 @@ fn post_sync(
         .and_then(handlers::post_sync)
 }
 
+/// POST /match/search
+fn post_search(
+    igdb: Arc<IgdbApi>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("search")
+        .and(warp::post())
+        .and(search_body())
+        .and(with_igdb(igdb))
+        .and_then(handlers::post_search)
+}
+
 /// POST /library/{user_id}/recon
 fn post_recon(
     firestore: Arc<Mutex<FirestoreApi>>,
@@ -48,17 +59,6 @@ fn post_recon(
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
         .and_then(handlers::post_recon)
-}
-
-/// POST /match/search
-fn post_search(
-    igdb: Arc<IgdbApi>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("search")
-        .and(warp::post())
-        .and(search_body())
-        .and(with_igdb(igdb))
-        .and_then(handlers::post_search)
 }
 
 /// GET /images/{resolution}/{image_id}

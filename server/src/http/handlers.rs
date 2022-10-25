@@ -41,6 +41,28 @@ pub async fn post_sync(
     }
 }
 
+#[instrument(level = "trace", skip(igdb))]
+pub async fn post_search(
+    search: models::Search,
+    igdb: Arc<IgdbApi>,
+) -> Result<Box<dyn warp::Reply>, Infallible> {
+    debug!("POST /search");
+    let started = SystemTime::now();
+
+    let resp: Result<Box<dyn warp::Reply>, Infallible> =
+        match library::search::get_candidates_with_covers(igdb, &search.title).await {
+            Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
+            Err(err) => {
+                error! {"{err}"}
+                Ok(Box::new(StatusCode::NOT_FOUND))
+            }
+        };
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    debug!("time: {:.2} msec", resp_time.as_millis());
+    resp
+}
+
 #[instrument(level = "trace", skip(igdb, firestore))]
 pub async fn post_recon(
     user_id: String,
@@ -76,28 +98,6 @@ pub async fn post_recon(
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
-}
-
-#[instrument(level = "trace", skip(igdb))]
-pub async fn post_search(
-    search: models::Search,
-    igdb: Arc<IgdbApi>,
-) -> Result<Box<dyn warp::Reply>, Infallible> {
-    debug!("POST /search");
-    let started = SystemTime::now();
-
-    let resp: Result<Box<dyn warp::Reply>, Infallible> =
-        match library::search::get_candidates_with_covers(igdb, &search.title).await {
-            Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
-            Err(err) => {
-                error! {"{err}"}
-                Ok(Box::new(StatusCode::NOT_FOUND))
-            }
-        };
-
-    let resp_time = SystemTime::now().duration_since(started).unwrap();
-    debug!("time: {:.2} msec", resp_time.as_millis());
-    resp
 }
 
 pub async fn get_images(
