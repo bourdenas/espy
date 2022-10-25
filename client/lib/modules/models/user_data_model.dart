@@ -55,7 +55,7 @@ class UserDataModel extends ChangeNotifier {
   }
 
   /// Initiates the library sync process to the espy backend for the user.
-  Future<void> syncLibrary(Keys keys) async {
+  Future<String> syncLibrary(Keys keys) async {
     var response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/${_userId!}/sync'),
       headers: {
@@ -65,9 +65,25 @@ class UserDataModel extends ChangeNotifier {
     );
 
     if (response.statusCode == 200) {
-      print('Sync successful.');
+      return 'Sync successful.';
     } else {
-      print('Failed to post updated user information:\n${response.statusCode}');
+      return 'Failed to post updated user information:\n${response.statusCode}';
+    }
+  }
+
+  Future<String> uploadLibrary(Upload titles) async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/${_userId!}/upload'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(titles.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      return 'Failed to upload game titles:\n${response.statusCode}';
     }
   }
 

@@ -1,3 +1,4 @@
+import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:flutter/material.dart';
@@ -39,40 +40,15 @@ class _ProfilePageState extends State<ProfilePage> {
         //     }),
         //   ],
         // ),
-        editBoxes(context),
+        storefrontCodeBoxes(context),
         SizedBox(height: 16),
-        buttons(context),
+        syncButtons(context),
+        SizedBox(height: 32),
+        manualEditBoxes(context),
+        SizedBox(height: 16),
+        uploadButtons(context),
+        SizedBox(height: 32),
         syncLog(),
-      ],
-    );
-  }
-
-  Widget buttons(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        ElevatedButton(
-          child: Text("Sync"),
-          onPressed: () async {
-            if (_formKey.currentState!.validate()) {
-              final keys = Keys(
-                gogToken: GogToken(
-                  oauthCode: _gogTextController.text,
-                ),
-                steamUserId: _steamTextController.text,
-                egsAuthCode: _egsTextController.text,
-              );
-
-              await context.read<UserDataModel>().setUserKeys(keys);
-              await context.read<UserDataModel>().syncLibrary(keys);
-            }
-          },
-        ),
-        SizedBox(width: 24),
-        TextButton(
-          child: Text("Cancel"),
-          onPressed: () => context.goNamed('home'),
-        ),
       ],
     );
   }
@@ -82,7 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final _steamTextController = TextEditingController();
   final _egsTextController = TextEditingController();
 
-  Widget editBoxes(BuildContext context) {
+  Widget storefrontCodeBoxes(BuildContext context) {
     final user = context.watch<UserDataModel>();
 
     return Form(
@@ -103,12 +79,6 @@ class _ProfilePageState extends State<ProfilePage> {
               token: user.steamUserId,
               logoAsset: 'assets/images/steam-128.png',
               textController: _steamTextController,
-            ),
-            manualUploadEditBox(
-              label: 'Add Epic Games Store titles manually...',
-              token: '',
-              logoAsset: 'assets/images/egs-128.png',
-              textController: _egsTextController,
             ),
           ],
         ),
@@ -147,6 +117,55 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget syncButtons(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ElevatedButton(
+          child: Text("Sync"),
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              final keys = Keys(
+                gogToken: GogToken(
+                  oauthCode: _gogTextController.text,
+                ),
+                steamUserId: _steamTextController.text,
+                egsAuthCode: _egsTextController.text,
+              );
+
+              await context.read<UserDataModel>().setUserKeys(keys);
+              final response =
+                  await context.read<UserDataModel>().syncLibrary(keys);
+              setState(() {
+                _syncLog = response;
+              });
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget manualEditBoxes(BuildContext context) {
+    return Form(
+      // key: _formKey,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 400.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            manualUploadEditBox(
+              label: 'Add Epic Games Store titles manually...',
+              token: '',
+              logoAsset: 'assets/images/egs-128.png',
+              textController: _egsTextController,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget manualUploadEditBox({
     required String logoAsset,
     required String label,
@@ -179,16 +198,40 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget uploadButtons(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ElevatedButton(
+          child: Text("Upload"),
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              final titles = Upload(
+                  entries: _egsTextController.text
+                      .split('\n')
+                      .map((line) =>
+                          StoreEntry(id: '', title: line, storefront: 'egs'))
+                      .toList());
+
+              final response =
+                  await context.read<UserDataModel>().uploadLibrary(titles);
+              setState(() {
+                _syncLog = response;
+              });
+            }
+          },
+        ),
+      ],
+    );
+  }
+
   String _syncLog;
 
   Widget syncLog() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32.0),
-      child: Expanded(
-        child: Container(
-          width: 300,
-          child: Text(_syncLog),
-        ),
+    return Expanded(
+      child: Container(
+        width: 300,
+        child: Text(_syncLog),
       ),
     );
   }
