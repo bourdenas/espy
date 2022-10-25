@@ -17,8 +17,15 @@ class LoginPage extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   ProfilePage({Key? key}) : super(key: key);
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  _ProfilePageState() : _syncLog = '';
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +42,7 @@ class ProfilePage extends StatelessWidget {
         editBoxes(context),
         SizedBox(height: 16),
         buttons(context),
+        syncLog(),
       ],
     );
   }
@@ -96,8 +104,8 @@ class ProfilePage extends StatelessWidget {
               logoAsset: 'assets/images/steam-128.png',
               textController: _steamTextController,
             ),
-            storefrontTokenEditBox(
-              label: 'Epic Game Store authorizationCode',
+            manualUploadEditBox(
+              label: 'Add Epic Games Store titles manually...',
               token: '',
               logoAsset: 'assets/images/egs-128.png',
               textController: _egsTextController,
@@ -108,7 +116,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Padding storefrontTokenEditBox({
+  Widget storefrontTokenEditBox({
     required String logoAsset,
     required String label,
     required String token,
@@ -135,6 +143,52 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget manualUploadEditBox({
+    required String logoAsset,
+    required String label,
+    required String token,
+    required TextEditingController textController,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
+            child: Image.asset(logoAsset, width: 48),
+          ),
+          Expanded(
+            child: Container(
+              width: 200.0,
+              child: TextFormField(
+                maxLines: 5,
+                controller: textController..text = token,
+                decoration: InputDecoration(
+                  labelText: label,
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _syncLog;
+
+  Widget syncLog() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32.0),
+      child: Expanded(
+        child: Container(
+          width: 300,
+          child: Text(_syncLog),
+        ),
       ),
     );
   }
