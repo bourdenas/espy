@@ -24,7 +24,7 @@ pub async fn post_sync(
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
         Err(err) => {
-            error! {"{err}"}
+            error!("{err}");
             return Ok(StatusCode::INTERNAL_SERVER_ERROR);
         }
     };
@@ -35,7 +35,7 @@ pub async fn post_sync(
     {
         Ok(()) => Ok(StatusCode::OK),
         Err(err) => {
-            error! {"{err}"}
+            error!("{err}");
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -53,7 +53,7 @@ pub async fn post_search(
         match library::search::get_candidates_with_covers(igdb, &search.title).await {
             Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
             Err(err) => {
-                error! {"{err}"}
+                error!("{err}");
                 Ok(Box::new(StatusCode::NOT_FOUND))
             }
         };
@@ -81,23 +81,48 @@ pub async fn post_recon(
             let mut user = match User::new(firestore, &user_id) {
                 Ok(user) => user,
                 Err(err) => {
-                    error! {"{err}"}
+                    error!("{err}");
                     return Ok(StatusCode::INTERNAL_SERVER_ERROR);
                 }
             };
             match user.update_library_version() {
                 Ok(_) => Ok(StatusCode::OK),
                 Err(err) => {
-                    error! {"{err}"}
+                    error!("{err}");
                     Ok(StatusCode::INTERNAL_SERVER_ERROR)
                 }
             }
         }
         Err(err) => {
-            error! {"{err}"}
+            error!("{err}");
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
+}
+
+#[instrument(level = "trace", skip(upload, firestore, igdb))]
+pub async fn post_upload(
+    user_id: String,
+    upload: models::Upload,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    debug!("POST /upload");
+    let started = SystemTime::now();
+
+    let recon_service = Reconciler::new(igdb);
+    let mgr = library::LibraryManager::new(&user_id, Arc::clone(&firestore));
+    match mgr.recon_store_entries(upload.entries, recon_service).await {
+        Ok(()) => (),
+        Err(err) => {
+            error!("{err}");
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    debug!("time: {:.2} msec", resp_time.as_millis());
+    Ok(StatusCode::OK)
 }
 
 pub async fn get_images(

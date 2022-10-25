@@ -114,33 +114,6 @@ impl Reconciler {
     }
 }
 
-/// Performs a single `RefreshTask` to producea `Refresh` and transmits it over
-/// its task's channel.
-#[instrument(
-    level = "trace",
-    skip(task), 
-    fields(library_entry = %task.library_entry),
-)]
-async fn refresh_task(task: RefreshTask) {
-    let entry_match = match get_entry(&task.igdb, task.library_entry.id).await {
-        Ok(game_entry) => Refresh {
-            library_entry: task.library_entry,
-            game_entry: Some(game_entry),
-        },
-        Err(e) => {
-            error!("Failed to resolve '{}': {e}", task.library_entry.name);
-            Refresh {
-                library_entry: task.library_entry,
-                game_entry: None,
-            }
-        }
-    };
-
-    if let Err(e) = task.tx.send(entry_match).await {
-        error!("{e}");
-    }
-}
-
 /// Performs a `MatchingTask` to producea `Match` and transmits it over its
 /// task's channel.
 #[instrument(
@@ -218,11 +191,31 @@ async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
     }
 }
 
-/// Library entry refresh task structure.
-struct RefreshTask {
-    library_entry: LibraryEntry,
-    igdb: Arc<IgdbApi>,
-    tx: mpsc::Sender<Refresh>,
+/// Performs a single `RefreshTask` to producea `Refresh` and transmits it over
+/// its task's channel.
+#[instrument(
+    level = "trace",
+    skip(task), 
+    fields(library_entry = %task.library_entry),
+)]
+async fn refresh_task(task: RefreshTask) {
+    let entry_match = match get_entry(&task.igdb, task.library_entry.id).await {
+        Ok(game_entry) => Refresh {
+            library_entry: task.library_entry,
+            game_entry: Some(game_entry),
+        },
+        Err(e) => {
+            error!("Failed to resolve '{}': {e}", task.library_entry.name);
+            Refresh {
+                library_entry: task.library_entry,
+                game_entry: None,
+            }
+        }
+    };
+
+    if let Err(e) = task.tx.send(entry_match).await {
+        error!("{e}");
+    }
 }
 
 /// Reconciliation task structure.
@@ -230,4 +223,11 @@ struct MatchingTask {
     store_entry: StoreEntry,
     igdb: Arc<IgdbApi>,
     tx: mpsc::Sender<Match>,
+}
+
+/// Library entry refresh task structure.
+struct RefreshTask {
+    library_entry: LibraryEntry,
+    igdb: Arc<IgdbApi>,
+    tx: mpsc::Sender<Refresh>,
 }

@@ -52,7 +52,7 @@ impl LibraryManager {
             self.sync_storefront(&api).await?;
         }
 
-        self.recon_entries(recon_service).await?;
+        self.recon_unmatched_entries(recon_service).await?;
 
         Ok(())
     }
@@ -155,15 +155,34 @@ impl LibraryManager {
         skip(self, recon_service),
         fields(user_id = %self.user_id),
     )]
-    async fn recon_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
+    async fn recon_unmatched_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
         let unmatched_entries =
             LibraryOps::read_unmatched_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
 
+        self.recon_store_entries(unmatched_entries, recon_service)
+            .await?;
+        Ok(())
+    }
+
+    /// Reconciles entries in the unmatched collection of user's library.
+    #[instrument(
+        level = "trace",
+        skip(self, store_entries, recon_service),
+        fields(
+            user_id = %self.user_id,
+            entries_num = %store_entries.len()
+        ),
+    )]
+    pub async fn recon_store_entries(
+        &self,
+        store_entries: Vec<StoreEntry>,
+        recon_service: Reconciler,
+    ) -> Result<(), Status> {
         let (tx, rx) = mpsc::channel(32);
 
         tokio::spawn(
             async move {
-                recon_service.reconcile(tx, unmatched_entries).await;
+                recon_service.reconcile(tx, store_entries).await;
             }
             .instrument(trace_span!("spawn recon job")),
         );
