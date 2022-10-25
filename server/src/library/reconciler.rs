@@ -6,7 +6,7 @@ use crate::Status;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
-use tracing::{error, info, instrument, Instrument, trace_span};
+use tracing::{debug, error, instrument, Instrument, trace_span};
 
 // The result of a refresh operation on a `library_entry`.
 pub struct Refresh {
@@ -163,8 +163,12 @@ async fn match_by_external_id(
     igdb: &IgdbApi,
     store_entry: &StoreEntry,
 ) -> Result<Option<GameEntry>, Status> {
-    info!("Resolving '{}'", &store_entry.title);
-    igdb.match_store_entry(store_entry).await
+    debug!("Resolving '{}'", &store_entry.title);
+
+    match store_entry.id.is_empty() { 
+        true => Err(Status::invalid_argument("empty store entry id")),
+        false => igdb.match_store_entry(store_entry).await,
+    }
 }
 
 /// Returns a `GameEntry` from IGDB matching the title in `StoreEntry`.
@@ -172,7 +176,7 @@ async fn match_by_title(
     igdb: &IgdbApi,
     store_entry: &StoreEntry,
 ) -> Result<Option<GameEntry>, Status> {
-    info!("Searching '{}'", &store_entry.title);
+    debug!("Searching '{}'", &store_entry.title);
 
     let candidates = search::get_candidates(igdb, &store_entry.title).await?;
     match candidates.into_iter().next() {
