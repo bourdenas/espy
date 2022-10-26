@@ -1,4 +1,4 @@
-use super::reconciler::Match;
+use super::{reconciler::Match, ReconReport};
 use crate::{
     api::{FirestoreApi, GogApi, SteamApi},
     documents::{GameEntry, StoreEntry},
@@ -177,7 +177,7 @@ impl LibraryManager {
         &self,
         store_entries: Vec<StoreEntry>,
         recon_service: Reconciler,
-    ) -> Result<(), Status> {
+    ) -> Result<ReconReport, Status> {
         let (tx, rx) = mpsc::channel(32);
 
         tokio::spawn(
@@ -187,15 +187,24 @@ impl LibraryManager {
             .instrument(trace_span!("spawn recon job")),
         );
 
-        self.handle_matches(rx).await;
-        Ok(())
+        Ok(self.handle_matches(rx).await)
     }
 
-    async fn handle_matches(&self, mut rx: mpsc::Receiver<Match>) {
+    async fn handle_matches(&self, mut rx: mpsc::Receiver<Match>) -> ReconReport {
+        let mut report = ReconReport { lines: vec![] };
+
         while let Some(entry_match) = rx.recv().await {
             match &entry_match.game_entry {
-                Some(_) => info!("  👍 received match for {}", &entry_match.store_entry.title),
-                None => info!("  🚫 no match for {}", &entry_match.store_entry.title),
+                Some(entry) => report.lines.push(format!(
+                    "matched '{}' ({}) with {}",
+                    &entry_match.store_entry.title,
+                    &entry_match.store_entry.storefront_name,
+                    &entry.name,
+                )),
+                None => report.lines.push(format!(
+                    "failed to match {} ({})",
+                    &entry_match.store_entry.title, &entry_match.store_entry.storefront_name,
+                )),
             };
 
             let firestore = Arc::clone(&self.firestore);
@@ -223,6 +232,7 @@ impl LibraryManager {
                 .instrument(trace_span!("spawn handle match")),
             );
         }
+        report
     }
 
     /// Match a `StoreEntry` to a specified `GameEntry` and saving it in the

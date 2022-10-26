@@ -106,23 +106,29 @@ pub async fn post_upload(
     upload: models::Upload,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<Box<dyn warp::Reply>, Infallible> {
     debug!("POST /upload");
     let started = SystemTime::now();
 
+    let mut user = library::User::new(Arc::clone(&firestore), &user_id).unwrap();
     let recon_service = Reconciler::new(igdb);
     let mgr = library::LibraryManager::new(&user_id, Arc::clone(&firestore));
-    match mgr.recon_store_entries(upload.entries, recon_service).await {
-        Ok(()) => (),
+    let report = match mgr.recon_store_entries(upload.entries, recon_service).await {
+        Ok(report) => report,
         Err(err) => {
             error!("{err}");
-            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+            let status: Box<dyn warp::Reply> = Box::new(StatusCode::INTERNAL_SERVER_ERROR);
+            return Ok(status);
         }
-    }
+    };
 
     let resp_time = SystemTime::now().duration_since(started).unwrap();
     debug!("time: {:.2} msec", resp_time.as_millis());
-    Ok(StatusCode::OK)
+
+    user.update_library_version().unwrap();
+
+    let resp: Box<dyn warp::Reply> = Box::new(warp::reply::json(&report));
+    Ok(resp)
 }
 
 pub async fn get_images(
@@ -151,9 +157,9 @@ pub async fn get_images(
     }
 }
 
-pub async fn welcome() -> Result<Box<dyn warp::Reply>, Infallible> {
+pub async fn welcome() -> Result<impl warp::Reply, Infallible> {
     debug!("GET /");
-    Ok(Box::new("welcome"))
+    Ok("welcome")
 }
 
 const IGDB_IMAGES_URL: &str = "https://images.igdb.com/igdb/image/upload";

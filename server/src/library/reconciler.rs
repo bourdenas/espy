@@ -166,7 +166,7 @@ async fn match_by_external_id(
     debug!("Resolving '{}'", &store_entry.title);
 
     match store_entry.id.is_empty() { 
-        true => Err(Status::invalid_argument("empty store entry id")),
+        true => Ok(None),
         false => igdb.match_store_entry(store_entry).await,
     }
 }
