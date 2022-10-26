@@ -81,7 +81,9 @@ class UserDataModel extends ChangeNotifier {
     );
 
     if (response.statusCode == 200) {
-      return response.body;
+      final jsonObj = jsonDecode(response.body) as Map<String, dynamic>;
+      final report = ReconReport.fromJson(jsonObj);
+      return report.lines.join('\n');
     } else {
       return 'Failed to upload game titles:\n${response.statusCode}';
     }

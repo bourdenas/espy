@@ -54,6 +54,27 @@ class Upload {
   }
 }
 
+class ReconReport {
+  final List<String> lines;
+
+  ReconReport({
+    required this.lines,
+  });
+
+  ReconReport.fromJson(Map<String, dynamic> json)
+      : this(
+          lines: json.containsKey('lines')
+              ? [for (final line in json['lines']) line]
+              : [],
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'lines': lines,
+    };
+  }
+}
+
 class Keys {
   final GogToken? gogToken;
   final String? steamUserId;
