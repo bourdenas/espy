@@ -107,10 +107,6 @@ impl User {
 
     /// Synchronises user library with connected storefronts to retrieve
     /// updates.
-    ///
-    /// NOTE: It does not try to reconcile retrieve entries.
-    /// NOTE: `egs_sid` is too ephemeral to be stored in Firestore so it is
-    /// provided as an optional argument.
     #[instrument(level = "trace", skip(self, keys, recon_service))]
     pub async fn sync(
         &mut self,
