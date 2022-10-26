@@ -1,7 +1,7 @@
-use super::{LibraryManager, Reconciler};
+use super::{LibraryManager, ReconReport, Reconciler};
 use crate::{
     api,
-    documents::{Keys, UserData},
+    documents::{Keys, StoreEntry, UserData},
     util, Status,
 };
 use std::{
@@ -139,6 +139,24 @@ impl User {
         }
 
         Ok(())
+    }
+
+    /// Manually uploads a set of StoreEntries to the user library for
+    /// reconciling.
+    #[instrument(level = "trace", skip(self, entries, recon_service))]
+    pub async fn upload(
+        &mut self,
+        entries: Vec<StoreEntry>,
+        recon_service: Reconciler,
+    ) -> Result<ReconReport, Status> {
+        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
+        let report = mgr.recon_store_entries(entries, recon_service).await?;
+
+        if let Err(e) = self.update_library_version() {
+            return Err(Status::new("User.upload:", e));
+        }
+
+        Ok(report)
     }
 
     /// Tries to validate user's GogToken and returns a reference to it only if

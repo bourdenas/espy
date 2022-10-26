@@ -41,6 +41,33 @@ pub async fn post_sync(
     }
 }
 
+#[instrument(level = "trace", skip(upload, firestore, igdb))]
+pub async fn post_upload(
+    user_id: String,
+    upload: models::Upload,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+) -> Result<Box<dyn warp::Reply>, Infallible> {
+    debug!("POST /library/{user_id}/upload");
+    let started = SystemTime::now();
+
+    let mut user = library::User::new(Arc::clone(&firestore), &user_id).unwrap();
+    let report = match user.upload(upload.entries, Reconciler::new(igdb)).await {
+        Ok(report) => report,
+        Err(err) => {
+            error!("{err}");
+            let status: Box<dyn warp::Reply> = Box::new(StatusCode::INTERNAL_SERVER_ERROR);
+            return Ok(status);
+        }
+    };
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    debug!("time: {:.2} msec", resp_time.as_millis());
+
+    let resp: Box<dyn warp::Reply> = Box::new(warp::reply::json(&report));
+    Ok(resp)
+}
+
 #[instrument(level = "trace", skip(igdb))]
 pub async fn post_search(
     search: models::Search,
@@ -98,37 +125,6 @@ pub async fn post_recon(
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
-}
-
-#[instrument(level = "trace", skip(upload, firestore, igdb))]
-pub async fn post_upload(
-    user_id: String,
-    upload: models::Upload,
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-) -> Result<Box<dyn warp::Reply>, Infallible> {
-    debug!("POST /upload");
-    let started = SystemTime::now();
-
-    let mut user = library::User::new(Arc::clone(&firestore), &user_id).unwrap();
-    let recon_service = Reconciler::new(igdb);
-    let mgr = library::LibraryManager::new(&user_id, Arc::clone(&firestore));
-    let report = match mgr.recon_store_entries(upload.entries, recon_service).await {
-        Ok(report) => report,
-        Err(err) => {
-            error!("{err}");
-            let status: Box<dyn warp::Reply> = Box::new(StatusCode::INTERNAL_SERVER_ERROR);
-            return Ok(status);
-        }
-    };
-
-    let resp_time = SystemTime::now().duration_since(started).unwrap();
-    debug!("time: {:.2} msec", resp_time.as_millis());
-
-    user.update_library_version().unwrap();
-
-    let resp: Box<dyn warp::Reply> = Box::new(warp::reply::json(&report));
-    Ok(resp)
 }
 
 pub async fn get_images(
