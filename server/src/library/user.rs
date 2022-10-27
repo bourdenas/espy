@@ -1,6 +1,6 @@
 use super::{LibraryManager, ReconReport, Reconciler};
 use crate::{
-    api,
+    api::{self, FirestoreApi, GogApi, SteamApi},
     documents::{Keys, StoreEntry, UserData},
     util, Status,
 };
@@ -12,7 +12,7 @@ use tracing::{info, instrument, warn};
 
 pub struct User {
     data: UserData,
-    firestore: Arc<Mutex<api::FirestoreApi>>,
+    firestore: Arc<Mutex<FirestoreApi>>,
 }
 
 impl User {
@@ -20,57 +20,14 @@ impl User {
     /// collection. Creates a new User entry in Firestore if user does not
     /// already exist.
     #[instrument(level = "trace", skip(firestore))]
-    pub fn new(firestore: Arc<Mutex<api::FirestoreApi>>, user_id: &str) -> Result<Self, Status> {
-        match load_user(user_id, Arc::clone(&firestore)) {
-            Ok(data) => Ok(User {
-                data,
-                firestore: Arc::clone(&firestore),
-            }),
-            Err(e) => {
-                info!("Creating new user '{user_id}'\n{e}");
-                let user = User {
-                    data: UserData {
-                        uid: String::from(user_id),
-                        ..Default::default()
-                    },
-                    firestore: Arc::clone(&firestore),
-                };
-                match user.save() {
-                    Ok(_) => Ok(user),
-                    Err(e) => Err(Status::new(
-                        &format!("Failed to read or create user '{user_id}'"),
-                        e,
-                    )),
-                }
-            }
-        }
+    pub fn new(firestore: Arc<Mutex<FirestoreApi>>, user_id: &str) -> Result<Self, Status> {
+        load_user(user_id, firestore)
     }
 
-    /// Returns user's Steam id.
-    pub fn steam_user_id<'a>(&'a self) -> Option<&'a str> {
-        match &self.data.keys {
-            Some(keys) => Some(&keys.steam_user_id),
-            None => None,
-        }
-    }
-
-    /// Returns user's GOG oauth code returned after successful sign in externally.
-    pub fn gog_auth_code<'a>(&'a self) -> Option<&'a str> {
-        match &self.data.keys {
-            Some(keys) => match &keys.gog_token {
-                Some(token) => Some(&token.oauth_code),
-                None => None,
-            },
-            None => None,
-        }
-    }
-
-    /// Updates the user's Steam id and GOG oauth code. If GOG oauth code is
-    /// different than what was already store the GOG logic credentials of the
-    /// user are invalidated and refreshed.
-    /// Updated user entry is pushed to Firestore.
+    /// Updates user's storefront credentials. This may cause refresh of
+    /// credentials. Updated user data are pushed to Firestore.
     #[instrument(level = "trace", skip(self, steam_user_id, gog_auth_code))]
-    pub async fn update_codes(
+    pub async fn update_storefronts(
         &mut self,
         steam_user_id: &str,
         gog_auth_code: &str,
@@ -85,7 +42,7 @@ impl User {
             egs_auth_code: String::default(),
         });
 
-        if let Err(e) = self.save() {
+        if let Err(e) = save_user_data(&self.data, &self.firestore.lock().unwrap()) {
             return Err(Status::new("User.update:", e));
         }
 
@@ -98,7 +55,7 @@ impl User {
             .duration_since(UNIX_EPOCH)
             .expect("SystemTime set before UNIX EPOCH!")
             .as_millis() as u64;
-        if let Err(e) = self.save() {
+        if let Err(e) = save_user_data(&self.data, &self.firestore.lock().unwrap()) {
             return Err(Status::new("User.sync:", e));
         }
 
@@ -115,11 +72,11 @@ impl User {
     ) -> Result<(), Status> {
         let gog_api = match self.gog_token().await {
             Some(token) => {
-                let gog_api = Some(api::GogApi::new(token.clone()));
+                let gog_api = Some(GogApi::new(token.clone()));
 
                 // Need to save User as it may got GogToken updated.
-                if let Err(e) = self.save() {
-                    return Err(Status::new("User.sync:", e));
+                if let Err(e) = save_user_data(&self.data, &self.firestore.lock().unwrap()) {
+                    return Err(Status::new("User::sync(): failed to save user data.", e));
                 }
                 gog_api
             }
@@ -127,15 +84,15 @@ impl User {
         };
 
         let steam_api = match self.steam_user_id() {
-            Some(user_id) => Some(api::SteamApi::new(&keys.steam.client_key, user_id)),
+            Some(user_id) => Some(SteamApi::new(&keys.steam.client_key, user_id)),
             None => None,
         };
 
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.sync_library(steam_api, gog_api, recon_service).await?;
 
-        if let Err(e) = self.update_library_version() {
-            return Err(Status::new("User.sync:", e));
+        if let Err(e) = commit_version(&mut self.data, &self.firestore.lock().unwrap()) {
+            return Err(Status::new("User::sync(): failed to commit version.", e));
         }
 
         Ok(())
@@ -152,8 +109,8 @@ impl User {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         let report = mgr.recon_store_entries(entries, recon_service).await?;
 
-        if let Err(e) = self.update_library_version() {
-            return Err(Status::new("User.upload:", e));
+        if let Err(e) = commit_version(&mut self.data, &self.firestore.lock().unwrap()) {
+            return Err(Status::new("User::upload(): failed to commit version.", e));
         }
 
         Ok(report)
@@ -174,10 +131,11 @@ impl User {
                             }
                         }
                     }
+
                     match token.validate().await {
                         Ok(()) => Some(token),
-                        Err(status) => {
-                            warn!("Failed to validate GOG toke: {status}");
+                        Err(e) => {
+                            warn!("Failed to validate GOG token: {e}");
                             None
                         }
                     }
@@ -188,19 +146,60 @@ impl User {
         }
     }
 
-    /// Save user entry to Firestore. Returns the Firestore document id.
-    fn save(&self) -> Result<String, Status> {
-        info!("updating user data to firestore...");
-        self.firestore
-            .lock()
-            .unwrap()
-            .write("users", Some(&self.data.uid), &self.data)
+    /// Returns user's Steam id.
+    fn steam_user_id<'a>(&'a self) -> Option<&'a str> {
+        match &self.data.keys {
+            Some(keys) => Some(&keys.steam_user_id),
+            None => None,
+        }
     }
 }
 
-fn load_user(user_id: &str, firestore: Arc<Mutex<api::FirestoreApi>>) -> Result<UserData, Status> {
+#[instrument(level = "trace", skip(user_id, firestore))]
+fn load_user(user_id: &str, firestore: Arc<Mutex<FirestoreApi>>) -> Result<User, Status> {
+    if let Ok(data) = load_user_data(user_id, Arc::clone(&firestore)) {
+        return Ok(User { data, firestore });
+    }
+
+    info!("Creating new user '{user_id}'");
+    let user = User {
+        data: UserData {
+            uid: String::from(user_id),
+            ..Default::default()
+        },
+        firestore: Arc::clone(&firestore),
+    };
+
+    match save_user_data(&user.data, &firestore.lock().unwrap()) {
+        Ok(_) => Ok(user),
+        Err(e) => Err(Status::new(
+            &format!("Failed to create user '{user_id}'"),
+            e,
+        )),
+    }
+}
+
+fn load_user_data(user_id: &str, firestore: Arc<Mutex<FirestoreApi>>) -> Result<UserData, Status> {
     Ok(firestore
         .lock()
         .unwrap()
         .read::<UserData>("users", user_id)?)
+}
+
+#[instrument(level = "trace", skip(user_data, firestore))]
+fn save_user_data(user_data: &UserData, firestore: &FirestoreApi) -> Result<String, Status> {
+    firestore.write("users", Some(&user_data.uid), user_data)
+}
+
+#[instrument(level = "trace", skip(user_data, firestore))]
+fn commit_version(user_data: &mut UserData, firestore: &FirestoreApi) -> Result<(), Status> {
+    user_data.version = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("SystemTime set before UNIX EPOCH!")
+        .as_millis() as u64;
+    if let Err(e) = save_user_data(&user_data, firestore) {
+        return Err(Status::new("commit_version:", e));
+    }
+
+    Ok(())
 }
