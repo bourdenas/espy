@@ -1,7 +1,7 @@
 use super::{LibraryManager, ReconReport, Reconciler};
 use crate::{
     api::{self, FirestoreApi, GogApi, SteamApi},
-    documents::{GameEntry, Keys, StoreEntry, UserData},
+    documents::{GameEntry, Keys, LibraryEntry, StoreEntry, UserData},
     util, Status,
 };
 use std::{
@@ -97,8 +97,7 @@ impl User {
         Ok(report)
     }
 
-    /// Manually uploads a set of StoreEntries to the user library for
-    /// reconciling.
+    /// Manually matches a StoreEntry with a LibraryEntry.
     #[instrument(level = "trace", skip(self, recon_service))]
     pub async fn match_entry(
         &mut self,
@@ -109,6 +108,35 @@ impl User {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.manual_match(recon_service, store_entry, game_entry)
             .await?;
+
+        commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
+        Ok(())
+    }
+
+    /// Unmatches a StoreEntry with a LibraryEntry. The StoreEntry is not deleted.
+    #[instrument(level = "trace", skip(self, library_entry))]
+    pub async fn unmatch_entry(
+        &mut self,
+        store_entry: StoreEntry,
+        library_entry: LibraryEntry,
+    ) -> Result<(), Status> {
+        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
+        mgr.unmatch_game(store_entry, library_entry).await?;
+
+        commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
+        Ok(())
+    }
+
+    /// Deletes a StoreEntry with a LibraryEntry. The StoreEntry is completely
+    /// removed.
+    #[instrument(level = "trace", skip(self, library_entry))]
+    pub async fn delete_entry(
+        &mut self,
+        store_entry: StoreEntry,
+        library_entry: LibraryEntry,
+    ) -> Result<(), Status> {
+        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
+        mgr.delete_game(store_entry, library_entry).await?;
 
         commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
         Ok(())

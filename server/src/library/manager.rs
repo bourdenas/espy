@@ -1,6 +1,6 @@
 use crate::{
     api::{FirestoreApi, GogApi, SteamApi},
-    documents::{GameEntry, StoreEntry},
+    documents::{GameEntry, LibraryEntry, StoreEntry},
     library::{
         library_ops::LibraryOps, library_transactions::LibraryTransactions, reconciler::Match,
         ReconReport, Reconciler,
@@ -56,23 +56,6 @@ impl LibraryManager {
     /// Reconciles entries in the unmatched collection of user's library.
     #[instrument(
         level = "trace",
-        skip(self, recon_service),
-        fields(user_id = %self.user_id),
-    )]
-    async fn recon_unmatched_entries(
-        &self,
-        recon_service: Reconciler,
-    ) -> Result<ReconReport, Status> {
-        let unmatched_entries =
-            LibraryOps::list_unmatched(&self.firestore.lock().unwrap(), &self.user_id)?;
-
-        self.recon_store_entries(unmatched_entries, recon_service)
-            .await
-    }
-
-    /// Reconciles entries in the unmatched collection of user's library.
-    #[instrument(
-        level = "trace",
         skip(self, store_entries, recon_service),
         fields(
             user_id = %self.user_id,
@@ -94,6 +77,82 @@ impl LibraryManager {
         );
 
         Ok(self.receive_matches(rx).await)
+    }
+
+    /// Match a `StoreEntry` to a specified `GameEntry` and saving it in the
+    /// user's library.
+    ///
+    /// Uses the `Reconciler` to retrieve full details for `GameEntry`.
+    #[instrument(level = "trace", skip(self, recon_service))]
+    pub async fn manual_match(
+        &self,
+        recon_service: Reconciler,
+        store_entry: StoreEntry,
+        game_entry: GameEntry,
+    ) -> Result<(), Status> {
+        // Retrieve full details GameEntry from recon service.
+        let mut game_entry = self
+            .retrieve_game_entry(game_entry.id, &recon_service)
+            .await?;
+        let owned_game_id = game_entry.id;
+        if let Some(parent_id) = game_entry.parent {
+            game_entry = self.retrieve_game_entry(parent_id, &recon_service).await?;
+        }
+
+        LibraryTransactions::match_game(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            store_entry,
+            owned_game_id,
+            game_entry,
+        )
+    }
+
+    /// Unmatch a `StoreEntry` from user's library. The StoreEntry is not
+    /// deleted. Instead it is moved into the failed matches.
+    #[instrument(level = "trace", skip(self, library_entry))]
+    pub async fn unmatch_game(
+        &self,
+        store_entry: StoreEntry,
+        library_entry: LibraryEntry,
+    ) -> Result<(), Status> {
+        LibraryTransactions::unmatch_game(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            store_entry,
+            library_entry,
+            false,
+        )
+    }
+
+    /// Deletes a `StoreEntry` from user's library. The StoreEntry is completely
+    /// removed.
+    #[instrument(level = "trace", skip(self, library_entry))]
+    pub async fn delete_game(
+        &self,
+        store_entry: StoreEntry,
+        library_entry: LibraryEntry,
+    ) -> Result<(), Status> {
+        LibraryTransactions::unmatch_game(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            store_entry,
+            library_entry,
+            true,
+        )
+    }
+
+    /// Reconciles entries in the unmatched collection of user's library.
+    #[instrument(level = "trace", skip(self, recon_service))]
+    async fn recon_unmatched_entries(
+        &self,
+        recon_service: Reconciler,
+    ) -> Result<ReconReport, Status> {
+        let unmatched_entries =
+            LibraryOps::list_unmatched(&self.firestore.lock().unwrap(), &self.user_id)?;
+
+        self.recon_store_entries(unmatched_entries, recon_service)
+            .await
     }
 
     async fn receive_matches(&self, mut rx: mpsc::Receiver<Match>) -> ReconReport {
@@ -141,39 +200,6 @@ impl LibraryManager {
         report
     }
 
-    /// Match a `StoreEntry` to a specified `GameEntry` and saving it in the
-    /// user's library.
-    ///
-    /// Uses the `Reconciler` to retrieve full details for `GameEntry`.
-    #[instrument(
-        level = "trace",
-        skip(self, recon_service),
-        fields(user_id = %self.user_id),
-    )]
-    pub async fn manual_match(
-        &self,
-        recon_service: Reconciler,
-        store_entry: StoreEntry,
-        game_entry: GameEntry,
-    ) -> Result<(), Status> {
-        // Retrieve full details GameEntry from recon service.
-        let mut game_entry = self
-            .retrieve_game_entry(game_entry.id, &recon_service)
-            .await?;
-        let owned_game_id = game_entry.id;
-        if let Some(parent_id) = game_entry.parent {
-            game_entry = self.retrieve_game_entry(parent_id, &recon_service).await?;
-        }
-
-        LibraryTransactions::match_game(
-            &self.firestore.lock().unwrap(),
-            &self.user_id,
-            store_entry,
-            owned_game_id,
-            game_entry,
-        )
-    }
-
     /// Returns a GameEntry based on `id`.
     ///
     /// If the GameEntry is not already available in Firestore it attemps to
@@ -206,12 +232,6 @@ impl LibraryManager {
 
     /// Retieves new game entries from the provided remote storefront and
     /// modifies user's library in Firestore.
-    ///
-    /// This operation updates
-    ///   (a) the `users/{user}/storefronts/{storefront_name}` document to
-    ///   contain all storefront game ids owned by the user.
-    ///   (b) the `users/{user}/unmatched` collection with 'StoreEntry` documents
-    ///   that correspond to new found entries.
     #[instrument(level = "trace", skip(self, api))]
     async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
         let store_entries = api.get_owned_games().await?;
