@@ -11,7 +11,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 use tokio::sync::mpsc;
-use tracing::{info, instrument, trace_span, Instrument};
+use tracing::{instrument, trace_span, Instrument};
 
 /// Proxy structure that handles operations regarding user's library.
 pub struct LibraryManager {
@@ -57,98 +57,6 @@ impl LibraryManager {
         Ok(())
     }
 
-    /// Retieves new game entries from the provided remote storefront and
-    /// modifies user's library in Firestore.
-    ///
-    /// This operation updates
-    ///   (a) the `users/{user}/storefronts/{storefront_name}` document to
-    ///   contain all storefront game ids owned by the user.
-    ///   (b) the `users/{user}/unmatched` collection with 'StoreEntry` documents
-    ///   that correspond to new found entries.
-    #[instrument(
-        level = "trace",
-        skip(self, api),
-        fields(user_id = %self.user_id),
-    )]
-    async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
-        let mut game_ids = HashSet::<String>::new();
-        {
-            game_ids.extend(
-                LibraryOps::read_storefront_ids(
-                    &self.firestore.lock().unwrap(),
-                    &self.user_id,
-                    &T::id(),
-                )
-                .into_iter(),
-            );
-        }
-        let store_entries = api
-            .get_owned_games()
-            .await?
-            .into_iter()
-            .filter(|store_entry| !game_ids.contains(&store_entry.id))
-            .collect::<Vec<StoreEntry>>();
-
-        let firestore = &self.firestore.lock().unwrap();
-        LibraryOps::write_unmatched_entries(firestore, &self.user_id, &T::id(), &store_entries)?;
-
-        game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
-        LibraryOps::write_storefront_ids(
-            firestore,
-            &self.user_id,
-            &T::id(),
-            &game_ids.into_iter().collect::<Vec<_>>(),
-        )?;
-
-        Ok(())
-    }
-
-    /// Refreshes game entries info from IGDB in user's library.
-    #[instrument(
-        level = "trace",
-        skip(self, recon_service),
-        fields(user_id = %self.user_id),
-    )]
-    pub async fn refresh_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
-        let library_entries =
-            LibraryOps::read_library_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
-        let library_entries = library_entries.into_iter().take(5).collect();
-
-        let (tx, mut rx) = mpsc::channel(32);
-
-        let _handle = tokio::spawn(
-            async move {
-                recon_service.refresh(tx, library_entries).await;
-            }
-            .instrument(trace_span!("spawn refresh task")),
-        );
-
-        while let Some(refresh) = rx.recv().await {
-            info!("refreshed '{}'", &refresh.library_entry.name);
-
-            if let None = &refresh.game_entry {
-                continue;
-            }
-
-            let firestore = Arc::clone(&self.firestore);
-            let user_id = self.user_id.clone();
-            let _handle = tokio::spawn(
-                async move {
-                    LibraryOps::update_library_entry(
-                        &firestore.lock().unwrap(),
-                        &user_id,
-                        refresh.library_entry,
-                        refresh.game_entry.unwrap(),
-                    )
-                    .expect("Firestore update_library_entry():")
-                }
-                .instrument(trace_span!("spawn Firestore update task")),
-            );
-        }
-
-        Ok(())
-    }
-
     /// Reconciles entries in the unmatched collection of user's library.
     #[instrument(
         level = "trace",
@@ -187,10 +95,10 @@ impl LibraryManager {
             .instrument(trace_span!("spawn recon job")),
         );
 
-        Ok(self.handle_matches(rx).await)
+        Ok(self.receive_matches(rx).await)
     }
 
-    async fn handle_matches(&self, mut rx: mpsc::Receiver<Match>) -> ReconReport {
+    async fn receive_matches(&self, mut rx: mpsc::Receiver<Match>) -> ReconReport {
         let mut report = ReconReport { lines: vec![] };
 
         while let Some(entry_match) = rx.recv().await {
@@ -296,5 +204,47 @@ impl LibraryManager {
     #[instrument(level = "trace", skip(self))]
     fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
         LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
+    }
+
+    /// Retieves new game entries from the provided remote storefront and
+    /// modifies user's library in Firestore.
+    ///
+    /// This operation updates
+    ///   (a) the `users/{user}/storefronts/{storefront_name}` document to
+    ///   contain all storefront game ids owned by the user.
+    ///   (b) the `users/{user}/unmatched` collection with 'StoreEntry` documents
+    ///   that correspond to new found entries.
+    #[instrument(level = "trace", skip(self, api))]
+    async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
+        let mut game_ids = HashSet::<String>::new();
+        {
+            game_ids.extend(
+                LibraryOps::read_storefront_ids(
+                    &self.firestore.lock().unwrap(),
+                    &self.user_id,
+                    &T::id(),
+                )
+                .into_iter(),
+            );
+        }
+        let store_entries = api
+            .get_owned_games()
+            .await?
+            .into_iter()
+            .filter(|store_entry| !game_ids.contains(&store_entry.id))
+            .collect::<Vec<StoreEntry>>();
+
+        let firestore = &self.firestore.lock().unwrap();
+        LibraryOps::write_unmatched_entries(firestore, &self.user_id, &T::id(), &store_entries)?;
+
+        game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
+        LibraryOps::write_storefront_ids(
+            firestore,
+            &self.user_id,
+            &T::id(),
+            &game_ids.into_iter().collect::<Vec<_>>(),
+        )?;
+
+        Ok(())
     }
 }

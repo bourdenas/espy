@@ -10,10 +10,6 @@ struct Opts {
     #[clap(short, long, default_value = "")]
     user: String,
 
-    /// If set it refreshes user's library with IGDB data.
-    #[clap(long)]
-    refresh: bool,
-
     /// JSON file that contains application keys for espy service.
     #[clap(long, default_value = "keys.json")]
     key_store: String,
@@ -49,12 +45,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut user = library::User::new(Arc::clone(&firestore), &opts.user)?;
     user.sync(&keys, library::Reconciler::new(Arc::clone(&igdb)))
         .await?;
-
-    // if opts.refresh {
-    //     let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
-    //     mgr.refresh_entries(library::Reconciler::new(Arc::clone(&igdb)))
-    //         .await?;
-    // }
 
     Ok(())
 }
