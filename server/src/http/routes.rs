@@ -17,7 +17,8 @@ pub fn routes(
         .or(post_sync(keys, Arc::clone(&firestore), Arc::clone(&igdb)))
         .or(post_upload(Arc::clone(&firestore), Arc::clone(&igdb)))
         .or(post_search(Arc::clone(&igdb)))
-        .or(post_recon(firestore, igdb))
+        .or(post_match(Arc::clone(&firestore), igdb))
+        .or(post_unmatch(firestore))
         .or_else(|e| async {
             warn! {"Rejected route: {:?}", e};
             Err(e)
@@ -62,17 +63,28 @@ fn post_search(
         .and_then(handlers::post_search)
 }
 
-/// POST /library/{user_id}/recon
-fn post_recon(
+/// POST /library/{user_id}/match
+fn post_match(
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "recon")
+    warp::path!("library" / String / "match")
         .and(warp::post())
-        .and(recon_body())
+        .and(match_body())
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
-        .and_then(handlers::post_recon)
+        .and_then(handlers::post_match)
+}
+
+/// POST /library/{user_id}/unmatch
+fn post_unmatch(
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / String / "unmatch")
+        .and(warp::post())
+        .and(unmatch_body())
+        .and(with_firestore(firestore))
+        .and_then(handlers::post_unmatch)
 }
 
 /// GET /images/{resolution}/{image_id}
@@ -113,6 +125,10 @@ fn search_body() -> impl Filter<Extract = (models::Search,), Error = warp::Rejec
     warp::body::content_length_limit(16 * 1024).and(warp::body::json())
 }
 
-fn recon_body() -> impl Filter<Extract = (models::Recon,), Error = warp::Rejection> + Clone {
+fn match_body() -> impl Filter<Extract = (models::Match,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
+}
+
+fn unmatch_body() -> impl Filter<Extract = (models::Unmatch,), Error = warp::Rejection> + Clone {
     warp::body::content_length_limit(64 * 1024).and(warp::body::json())
 }

@@ -1,4 +1,4 @@
-use crate::documents::{self, StoreEntry};
+use crate::documents;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -13,12 +13,19 @@ impl std::fmt::Display for Search {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Recon {
+pub struct Match {
     pub store_entry: documents::StoreEntry,
     pub game_entry: documents::GameEntry,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
+pub struct Unmatch {
+    pub store_entry: documents::StoreEntry,
+    pub library_entry: documents::LibraryEntry,
+    pub delete: bool,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Upload {
-    pub entries: Vec<StoreEntry>,
+    pub entries: Vec<documents::StoreEntry>,
 }

@@ -91,9 +91,9 @@ pub async fn post_search(
 }
 
 #[instrument(level = "trace", skip(igdb, firestore))]
-pub async fn post_recon(
+pub async fn post_match(
     user_id: String,
-    recon: models::Recon,
+    _match: models::Match,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
@@ -109,10 +109,38 @@ pub async fn post_recon(
 
     match user
         .match_entry(
-            recon.store_entry,
-            recon.game_entry,
+            _match.store_entry,
+            _match.game_entry,
             Reconciler::new(Arc::clone(&igdb)),
         )
+        .await
+    {
+        Ok(()) => Ok(StatusCode::OK),
+        Err(err) => {
+            error!("{err}");
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[instrument(level = "trace", skip(firestore))]
+pub async fn post_unmatch(
+    user_id: String,
+    unmatch: models::Unmatch,
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> Result<impl warp::Reply, Infallible> {
+    debug!("POST /library/{user_id}/recon");
+
+    let mut user = match User::new(firestore, &user_id) {
+        Ok(user) => user,
+        Err(err) => {
+            error!("{err}");
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    match user
+        .unmatch_entry(unmatch.store_entry, unmatch.library_entry, unmatch.delete)
         .await
     {
         Ok(()) => Ok(StatusCode::OK),
