@@ -10,18 +10,6 @@ use tracing::instrument;
 pub struct LibraryOps;
 
 impl LibraryOps {
-    /// Returns user's game library entries.
-    ///
-    /// Reads `LibraryEntry` documents under collection
-    /// `users/{user}/library_v2` in Firestore.
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn list_library(
-        firestore: &FirestoreApi,
-        user_id: &str,
-    ) -> Result<Vec<LibraryEntry>, Status> {
-        firestore.list::<LibraryEntry>(&format!("users/{user_id}/library_v2"))
-    }
-
     /// Write a `game_entry` and the associated `library_entry` on Firestore.
     ///
     /// The `library_entry` is updated with the input `game_entry` data but
