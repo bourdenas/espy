@@ -56,7 +56,7 @@ impl User {
         &mut self,
         keys: &util::keys::Keys,
         recon_service: Reconciler,
-    ) -> Result<(), Status> {
+    ) -> Result<ReconReport, Status> {
         let gog_api = match self.gog_token().await {
             Some(token) => {
                 let gog_api = Some(GogApi::new(token.clone()));
@@ -76,10 +76,10 @@ impl User {
         };
 
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.sync_library(steam_api, gog_api, recon_service).await?;
+        let report = mgr.sync_library(steam_api, gog_api, recon_service).await?;
 
         commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
-        Ok(())
+        Ok(report)
     }
 
     /// Manually uploads a set of StoreEntries to the user library for

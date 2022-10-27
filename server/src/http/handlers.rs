@@ -2,7 +2,7 @@ use crate::{
     api::{FirestoreApi, IgdbApi},
     http::models,
     library::{self, Reconciler, User},
-    util,
+    util, Status,
 };
 use std::{
     convert::Infallible,
@@ -18,27 +18,28 @@ pub async fn post_sync(
     api_keys: Arc<util::keys::Keys>,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
-) -> Result<impl warp::Reply, Infallible> {
+) -> Result<Box<dyn warp::Reply>, Infallible> {
     debug!("POST /library/{user_id}/sync");
+    let started = SystemTime::now();
 
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
-        Err(err) => {
-            error!("{err}");
-            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-        }
+        Err(err) => return Ok(log_err(err)),
     };
 
-    match user
+    let report = match user
         .sync(&api_keys, Reconciler::new(Arc::clone(&igdb)))
         .await
     {
-        Ok(()) => Ok(StatusCode::OK),
-        Err(err) => {
-            error!("{err}");
-            Ok(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
+        Ok(report) => report,
+        Err(err) => return Ok(log_err(err)),
+    };
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    debug!("time: {:.2} msec", resp_time.as_millis());
+
+    let resp: Box<dyn warp::Reply> = Box::new(warp::reply::json(&report));
+    Ok(resp)
 }
 
 #[instrument(level = "trace", skip(upload, firestore, igdb))]
@@ -51,14 +52,13 @@ pub async fn post_upload(
     debug!("POST /library/{user_id}/upload");
     let started = SystemTime::now();
 
-    let mut user = library::User::new(Arc::clone(&firestore), &user_id).unwrap();
+    let mut user = match library::User::new(Arc::clone(&firestore), &user_id) {
+        Ok(user) => user,
+        Err(err) => return Ok(log_err(err)),
+    };
     let report = match user.upload(upload.entries, Reconciler::new(igdb)).await {
         Ok(report) => report,
-        Err(err) => {
-            error!("{err}");
-            let status: Box<dyn warp::Reply> = Box::new(StatusCode::INTERNAL_SERVER_ERROR);
-            return Ok(status);
-        }
+        Err(err) => return Ok(log_err(err)),
     };
 
     let resp_time = SystemTime::now().duration_since(started).unwrap();
@@ -155,3 +155,9 @@ pub async fn welcome() -> Result<impl warp::Reply, Infallible> {
 }
 
 const IGDB_IMAGES_URL: &str = "https://images.igdb.com/igdb/image/upload";
+
+fn log_err(status: Status) -> Box<dyn warp::Reply> {
+    error!("{status}");
+    let status: Box<dyn warp::Reply> = Box::new(StatusCode::INTERNAL_SERVER_ERROR);
+    status
+}

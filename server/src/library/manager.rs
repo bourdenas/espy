@@ -44,7 +44,7 @@ impl LibraryManager {
         steam_api: Option<SteamApi>,
         gog_api: Option<GogApi>,
         recon_service: Reconciler,
-    ) -> Result<(), Status> {
+    ) -> Result<ReconReport, Status> {
         if let Some(api) = steam_api {
             self.sync_storefront(&api).await?;
         }
@@ -52,9 +52,7 @@ impl LibraryManager {
             self.sync_storefront(&api).await?;
         }
 
-        self.recon_unmatched_entries(recon_service).await?;
-
-        Ok(())
+        self.recon_unmatched_entries(recon_service).await
     }
 
     /// Reconciles entries in the unmatched collection of user's library.
@@ -63,13 +61,15 @@ impl LibraryManager {
         skip(self, recon_service),
         fields(user_id = %self.user_id),
     )]
-    async fn recon_unmatched_entries(&self, recon_service: Reconciler) -> Result<(), Status> {
+    async fn recon_unmatched_entries(
+        &self,
+        recon_service: Reconciler,
+    ) -> Result<ReconReport, Status> {
         let unmatched_entries =
             LibraryOps::read_unmatched_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
 
         self.recon_store_entries(unmatched_entries, recon_service)
-            .await?;
-        Ok(())
+            .await
     }
 
     /// Reconciles entries in the unmatched collection of user's library.
