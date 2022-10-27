@@ -50,11 +50,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     user.sync(&keys, library::Reconciler::new(Arc::clone(&igdb)))
         .await?;
 
-    if opts.refresh {
-        let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
-        mgr.refresh_entries(library::Reconciler::new(Arc::clone(&igdb)))
-            .await?;
-    }
+    // if opts.refresh {
+    //     let mgr = library::LibraryManager::new(&opts.user, Arc::clone(&firestore));
+    //     mgr.refresh_entries(library::Reconciler::new(Arc::clone(&igdb)))
+    //         .await?;
+    // }
 
     Ok(())
 }

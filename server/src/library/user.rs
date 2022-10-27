@@ -1,7 +1,7 @@
 use super::{LibraryManager, ReconReport, Reconciler};
 use crate::{
     api::{self, FirestoreApi, GogApi, SteamApi},
-    documents::{Keys, StoreEntry, UserData},
+    documents::{GameEntry, Keys, StoreEntry, UserData},
     util, Status,
 };
 use std::{
@@ -49,19 +49,6 @@ impl User {
         Ok(())
     }
 
-    #[instrument(level = "trace", skip(self))]
-    pub fn update_library_version(&mut self) -> Result<(), Status> {
-        self.data.version = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("SystemTime set before UNIX EPOCH!")
-            .as_millis() as u64;
-        if let Err(e) = save_user_data(&self.data, &self.firestore.lock().unwrap()) {
-            return Err(Status::new("User.sync:", e));
-        }
-
-        Ok(())
-    }
-
     /// Synchronises user library with connected storefronts to retrieve
     /// updates.
     #[instrument(level = "trace", skip(self, keys, recon_service))]
@@ -91,10 +78,7 @@ impl User {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.sync_library(steam_api, gog_api, recon_service).await?;
 
-        if let Err(e) = commit_version(&mut self.data, &self.firestore.lock().unwrap()) {
-            return Err(Status::new("User::sync(): failed to commit version.", e));
-        }
-
+        commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
         Ok(())
     }
 
@@ -109,11 +93,25 @@ impl User {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         let report = mgr.recon_store_entries(entries, recon_service).await?;
 
-        if let Err(e) = commit_version(&mut self.data, &self.firestore.lock().unwrap()) {
-            return Err(Status::new("User::upload(): failed to commit version.", e));
-        }
-
+        commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
         Ok(report)
+    }
+
+    /// Manually uploads a set of StoreEntries to the user library for
+    /// reconciling.
+    #[instrument(level = "trace", skip(self, recon_service))]
+    pub async fn match_entry(
+        &mut self,
+        store_entry: StoreEntry,
+        game_entry: GameEntry,
+        recon_service: Reconciler,
+    ) -> Result<(), Status> {
+        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
+        mgr.manual_match(recon_service, store_entry, game_entry)
+            .await?;
+
+        commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
+        Ok(())
     }
 
     /// Tries to validate user's GogToken and returns a reference to it only if
@@ -198,7 +196,7 @@ fn commit_version(user_data: &mut UserData, firestore: &FirestoreApi) -> Result<
         .expect("SystemTime set before UNIX EPOCH!")
         .as_millis() as u64;
     if let Err(e) = save_user_data(&user_data, firestore) {
-        return Err(Status::new("commit_version:", e));
+        return Err(Status::new("Failed to commit version:", e));
     }
 
     Ok(())
