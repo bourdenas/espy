@@ -2,17 +2,12 @@ use crate::{
     api::{FirestoreApi, GogApi, SteamApi},
     documents::{GameEntry, StoreEntry},
     library::{
-        library_ops::{LibraryOps, StorefrontIds},
-        library_transactions::LibraryTransactions,
-        reconciler::Match,
+        library_ops::LibraryOps, library_transactions::LibraryTransactions, reconciler::Match,
         ReconReport, Reconciler,
     },
     traits, Status,
 };
-use std::{
-    collections::HashSet,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
 use tracing::{instrument, trace_span, Instrument};
 
@@ -219,39 +214,12 @@ impl LibraryManager {
     ///   that correspond to new found entries.
     #[instrument(level = "trace", skip(self, api))]
     async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
-        let mut game_ids = HashSet::<String>::new();
-        {
-            game_ids.extend(
-                LibraryOps::read_storefront_ids(
-                    &self.firestore.lock().unwrap(),
-                    &self.user_id,
-                    &T::id(),
-                )
-                .into_iter(),
-            );
-        }
-        let store_entries = api
-            .get_owned_games()
-            .await?
-            .into_iter()
-            .filter(|store_entry| !game_ids.contains(&store_entry.id))
-            .collect::<Vec<StoreEntry>>();
-
-        let firestore = &self.firestore.lock().unwrap();
-        for entry in &store_entries {
-            LibraryOps::write_unmatched(firestore, &self.user_id, entry)?;
-        }
-
-        game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
-        LibraryOps::write_storefront_ids(
-            firestore,
+        let store_entries = api.get_owned_games().await?;
+        LibraryTransactions::store_new_to_unmatched(
+            &self.firestore.lock().unwrap(),
             &self.user_id,
-            StorefrontIds {
-                name: T::id(),
-                owned_games: game_ids.into_iter().collect::<Vec<_>>(),
-            },
-        )?;
-
-        Ok(())
+            &T::id(),
+            store_entries,
+        )
     }
 }

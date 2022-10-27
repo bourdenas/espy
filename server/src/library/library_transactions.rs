@@ -1,9 +1,10 @@
-use super::library_ops::LibraryOps;
+use super::library_ops::{LibraryOps, StorefrontIds};
 use crate::{
     api::FirestoreApi,
     documents::{GameEntry, LibraryEntry, StoreEntry},
     Status,
 };
+use std::collections::HashSet;
 
 pub struct LibraryTransactions;
 
@@ -72,6 +73,44 @@ impl LibraryTransactions {
     ) -> Result<(), Status> {
         LibraryOps::delete_unmatched(firestore, user_id, &store_entry)?;
         LibraryOps::write_failed(firestore, user_id, &store_entry)?;
+
+        Ok(())
+    }
+
+    /// Given store entries a remote storefront it updates user's library in
+    /// Firestore.
+    ///
+    /// This operation updates
+    /// (a) the `users/{user}/storefronts/{storefront_name}` document to contain all
+    ///     storefront game ids owned by the user.
+    /// (b) the `users/{user}/unmatched` collection with 'StoreEntry` documents that
+    ///     correspond to new found entries.
+    pub fn store_new_to_unmatched(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        storefront_name: &str,
+        store_entries: Vec<StoreEntry>,
+    ) -> Result<(), Status> {
+        let mut game_ids = HashSet::<String>::from_iter(
+            LibraryOps::read_storefront_ids(firestore, user_id, storefront_name).into_iter(),
+        );
+
+        let mut store_entries = store_entries;
+        store_entries.retain(|entry| !game_ids.contains(&entry.id));
+
+        for entry in &store_entries {
+            LibraryOps::write_unmatched(firestore, user_id, entry)?;
+        }
+
+        game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
+        LibraryOps::write_storefront_ids(
+            firestore,
+            user_id,
+            StorefrontIds {
+                name: storefront_name.to_owned(),
+                owned_games: game_ids.into_iter().collect::<Vec<_>>(),
+            },
+        )?;
 
         Ok(())
     }
