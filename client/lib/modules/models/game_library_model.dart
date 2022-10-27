@@ -125,7 +125,7 @@ class GameLibraryModel extends ChangeNotifier {
 
   Future<bool> matchEntry(StoreEntry storeEntry, GameEntry gameEntry) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$_userId/recon'),
+      Uri.parse('${Urls.espyBackend}/library/$_userId/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -144,38 +144,26 @@ class GameLibraryModel extends ChangeNotifier {
     return true;
   }
 
-  Future<void> unmatchEntry(
+  Future<bool> unmatchEntry(
       StoreEntry storeEntry, LibraryEntry libraryEntry) async {
-    libraryEntry.storeEntries
-        .removeWhere((entry) => entry.storefront == storeEntry.storefront);
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/$_userId/unmatch'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'store_entry': storeEntry.toJson(),
+        'library_entry': libraryEntry.toJson(),
+        'delete': false,
+      }),
+    );
 
-    if (libraryEntry.storeEntries.isEmpty) {
-      entries.removeWhere((entry) => entry.id == libraryEntry.id);
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(_userId)
-          .collection('library_v2')
-          .doc(libraryEntry.id.toString())
-          .delete();
-    } else {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(_userId)
-          .collection('library_v2')
-          .doc(libraryEntry.id.toString())
-          .set(libraryEntry.toJson());
+    if (response.statusCode != 200) {
+      print(
+          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
+      return false;
     }
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(_userId)
-        .collection('failed')
-        .doc('${storeEntry.storefront}_${storeEntry.id}')
-        .set(storeEntry.toJson());
-
-    await _saveLibraryLocally(DateTime.now().millisecondsSinceEpoch);
-
-    notifyListeners();
+    return true;
   }
 }
