@@ -5,6 +5,7 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tracing::instrument;
 
 pub struct LibraryOps;
 
@@ -13,6 +14,7 @@ impl LibraryOps {
     ///
     /// Reads `LibraryEntry` documents under collection
     /// `users/{user}/library_v2` in Firestore.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn list_library(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -24,6 +26,7 @@ impl LibraryOps {
     ///
     /// The `library_entry` is updated with the input `game_entry` data but
     /// maintains existing user date (tags, store entries).
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn write_library_entry(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -37,6 +40,7 @@ impl LibraryOps {
         Ok(())
     }
 
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn update_library_entry(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -61,6 +65,7 @@ impl LibraryOps {
         LibraryOps::write_library_entry(firestore, user_id, &library_entry)
     }
 
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn remove_from_library_entry(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -69,7 +74,7 @@ impl LibraryOps {
     ) -> Result<(), Status> {
         // let mut library_entry = library_entry;
         library_entry.store_entries.retain(|entry| {
-            entry.storefront_name != store_entry.storefront_name && entry.id != store_entry.id
+            !(entry.storefront_name == store_entry.storefront_name && entry.id == store_entry.id)
         });
 
         if library_entry.store_entries.is_empty() {
@@ -82,11 +87,13 @@ impl LibraryOps {
     }
 
     /// Returns a GameEntry doc based on `game_id` from Firestore.
+    #[instrument(level = "trace", skip(firestore))]
     pub fn read_game_entry(firestore: &FirestoreApi, game_id: u64) -> Result<GameEntry, Status> {
         firestore.read::<GameEntry>("games_v2", &game_id.to_string())
     }
 
     /// Writes a GameEntry doc in Firestore.
+    #[instrument(level = "trace", skip(firestore))]
     pub fn write_game_entry(
         firestore: &FirestoreApi,
         game_entry: &GameEntry,
@@ -95,6 +102,7 @@ impl LibraryOps {
         Ok(())
     }
 
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn read_recent(firestore: &FirestoreApi, user_id: &str) -> Recent {
         match firestore.read::<Recent>(&format!("users/{user_id}/recent"), "library_entries") {
             Ok(recent) => recent,
@@ -102,6 +110,7 @@ impl LibraryOps {
         }
     }
 
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn append_to_recent(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -128,6 +137,7 @@ impl LibraryOps {
         Ok(())
     }
 
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn remove_from_recent(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -135,8 +145,8 @@ impl LibraryOps {
     ) -> Result<(), Status> {
         let mut recent = Self::read_recent(firestore, user_id);
         recent.entries.retain(|entry| {
-            entry.store_entry.storefront_name != store_entry.storefront_name
-                && entry.store_entry.id != store_entry.id
+            !(entry.store_entry.storefront_name == store_entry.storefront_name
+                && entry.store_entry.id == store_entry.id)
         });
 
         firestore.write(
@@ -151,8 +161,13 @@ impl LibraryOps {
     /// Returns all store game ids owned by user from specified storefront.
     ///
     /// Reads `users/{user}/storefront/{storefront_name}` document in Firestore.
-    pub fn read_storefront_ids(firestore: &FirestoreApi, user_id: &str, name: &str) -> Vec<String> {
-        match firestore.read::<StorefrontIds>(&format!("users/{user_id}/storefronts"), name) {
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn read_storefront_ids(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        storefront: &str,
+    ) -> Vec<String> {
+        match firestore.read::<StorefrontIds>(&format!("users/{user_id}/storefronts"), storefront) {
             Ok(storefront) => storefront.owned_games,
             Err(_) => vec![],
         }
@@ -162,13 +177,14 @@ impl LibraryOps {
     ///
     /// Writes `users/{user}/storefront/{storefront_name}` document in
     /// Firestore.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn write_storefront_ids(
         firestore: &FirestoreApi,
         user_id: &str,
         storefront: StorefrontIds,
     ) -> Result<(), Status> {
         match firestore.write(
-            &format!("users/{}/storefronts", user_id),
+            &format!("users/{user_id}/storefronts"),
             Some(&storefront.name),
             &storefront,
         ) {
@@ -181,6 +197,7 @@ impl LibraryOps {
     ///
     /// Reads/writes `users/{user}/storefront/{storefront_name}` document in
     /// Firestore.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn remove_from_storefront_ids(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -212,6 +229,7 @@ impl LibraryOps {
     ///
     /// Reads `StoreEntry` documents under collection `users/{user}/unmatched`
     /// in Firestore.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn list_unmatched(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -223,6 +241,7 @@ impl LibraryOps {
     ///
     /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
     /// in Firestore.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn write_unmatched(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -253,6 +272,7 @@ impl LibraryOps {
     ///
     /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
     /// in Firestore.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn delete_unmatched(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -279,6 +299,7 @@ impl LibraryOps {
     ///
     /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
     /// in Firestore.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn write_failed(
         firestore: &FirestoreApi,
         user_id: &str,

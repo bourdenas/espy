@@ -5,6 +5,7 @@ use crate::{
     Status,
 };
 use std::collections::HashSet;
+use tracing::instrument;
 
 pub struct LibraryTransactions;
 
@@ -12,6 +13,7 @@ pub struct LibraryTransactions;
 /// supported by this library.
 impl LibraryTransactions {
     /// Handles successfully resovled StoreEntry.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn match_game(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -39,6 +41,7 @@ impl LibraryTransactions {
     }
 
     /// Delete or unmatches (based on `delete`) a StoreEntry from the library.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn unmatch_game(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -66,6 +69,7 @@ impl LibraryTransactions {
     }
 
     /// Handles failed to resolve StoreEntry.
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn match_failed(
         firestore: &FirestoreApi,
         user_id: &str,
