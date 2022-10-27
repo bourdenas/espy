@@ -2,7 +2,7 @@ use super::{reconciler::Match, ReconReport};
 use crate::{
     api::{FirestoreApi, GogApi, SteamApi},
     documents::{GameEntry, StoreEntry},
-    library::library_ops::LibraryOps,
+    library::library_ops::{LibraryOps, LibraryTransactions, StorefrontIds},
     library::Reconciler,
     traits, Status,
 };
@@ -66,7 +66,7 @@ impl LibraryManager {
         recon_service: Reconciler,
     ) -> Result<ReconReport, Status> {
         let unmatched_entries =
-            LibraryOps::read_unmatched_entries(&self.firestore.lock().unwrap(), &self.user_id)?;
+            LibraryOps::list_unmatched(&self.firestore.lock().unwrap(), &self.user_id)?;
 
         self.recon_store_entries(unmatched_entries, recon_service)
             .await
@@ -121,7 +121,7 @@ impl LibraryManager {
                 async move {
                     let firestore = &firestore.lock().unwrap();
                     match entry_match.game_entry {
-                        Some(game_entry) => LibraryOps::game_match_transaction(
+                        Some(game_entry) => LibraryTransactions::game_match(
                             firestore,
                             &user_id,
                             entry_match.store_entry,
@@ -129,7 +129,7 @@ impl LibraryManager {
                             game_entry,
                         )
                         .expect("Firestore game_match_transaction()"),
-                        None => LibraryOps::match_failed_transaction(
+                        None => LibraryTransactions::match_failed(
                             firestore,
                             &user_id,
                             entry_match.store_entry,
@@ -167,7 +167,7 @@ impl LibraryManager {
             game_entry = self.retrieve_game_entry(parent_id, &recon_service).await?;
         }
 
-        LibraryOps::game_match_transaction(
+        LibraryTransactions::game_match(
             &self.firestore.lock().unwrap(),
             &self.user_id,
             store_entry,
@@ -203,7 +203,7 @@ impl LibraryManager {
 
     #[instrument(level = "trace", skip(self))]
     fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
-        LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
+        LibraryOps::read_game(&self.firestore.lock().unwrap(), id)
     }
 
     /// Retieves new game entries from the provided remote storefront and
@@ -235,14 +235,18 @@ impl LibraryManager {
             .collect::<Vec<StoreEntry>>();
 
         let firestore = &self.firestore.lock().unwrap();
-        LibraryOps::write_unmatched_entries(firestore, &self.user_id, &T::id(), &store_entries)?;
+        for entry in &store_entries {
+            LibraryOps::write_unmatched(firestore, &self.user_id, entry)?;
+        }
 
         game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
         LibraryOps::write_storefront_ids(
             firestore,
             &self.user_id,
-            &T::id(),
-            &game_ids.into_iter().collect::<Vec<_>>(),
+            StorefrontIds {
+                name: T::id(),
+                owned_games: game_ids.into_iter().collect::<Vec<_>>(),
+            },
         )?;
 
         Ok(())
