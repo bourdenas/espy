@@ -94,4 +94,10 @@ List<_MenuItem> _menuItems = [
     selectedIcon: Icons.error,
     onTap: (context) => context.goNamed('unmatched'),
   ),
+  _MenuItem(
+    label: 'Settings',
+    icon: Icons.settings,
+    selectedIcon: Icons.settings,
+    onTap: (context) => context.goNamed('profile'),
+  ),
 ];

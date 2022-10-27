@@ -1,3 +1,5 @@
+import 'package:espy/modules/documents/store_entry.dart';
+
 class UserData {
   final String uid;
   final Keys? keys;
@@ -25,28 +27,81 @@ class UserData {
   }
 }
 
-class Keys {
-  final String? steamUserId;
-  final GogToken? gogToken;
+class Upload {
+  final List<StoreEntry> entries;
 
-  Keys({
-    required this.steamUserId,
-    required this.gogToken,
+  Upload({
+    required this.entries,
   });
 
-  Keys.fromJson(Map<String, dynamic> json)
+  Upload.fromJson(Map<StoreEntry, dynamic> json)
       : this(
-          steamUserId:
-              json.containsKey('steam_user_id') ? json['steam_user_id'] : null,
-          gogToken: json.containsKey('gog_token')
-              ? GogToken.fromJson(json['gog_token'])
-              : null,
+          entries: json.containsKey('entries')
+              ? [
+                  for (final entry in json['entries'])
+                    StoreEntry.fromJson(entry)
+                ]
+              : [],
         );
 
   Map<String, dynamic> toJson() {
     return {
-      if (steamUserId != null) 'steam_user_id': steamUserId,
+      if (entries.isNotEmpty)
+        'entries': [
+          for (final entry in entries) entry.toJson(),
+        ],
+    };
+  }
+}
+
+class ReconReport {
+  final List<String> lines;
+
+  ReconReport({
+    required this.lines,
+  });
+
+  ReconReport.fromJson(Map<String, dynamic> json)
+      : this(
+          lines: json.containsKey('lines')
+              ? [for (final line in json['lines']) line]
+              : [],
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'lines': lines,
+    };
+  }
+}
+
+class Keys {
+  final GogToken? gogToken;
+  final String? steamUserId;
+  final String? egsAuthCode;
+
+  Keys({
+    required this.gogToken,
+    required this.steamUserId,
+    required this.egsAuthCode,
+  });
+
+  Keys.fromJson(Map<String, dynamic> json)
+      : this(
+          gogToken: json.containsKey('gog_token')
+              ? GogToken.fromJson(json['gog_token'])
+              : null,
+          steamUserId:
+              json.containsKey('steam_user_id') ? json['steam_user_id'] : null,
+          egsAuthCode:
+              json.containsKey('egs_auth_code') ? json['egs_auth_code'] : null,
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
       if (gogToken != null) 'gog_token': gogToken!.toJson(),
+      if (steamUserId != null) 'steam_user_id': steamUserId,
+      if (egsAuthCode != null) 'egs_auth_code': egsAuthCode,
     };
   }
 }
