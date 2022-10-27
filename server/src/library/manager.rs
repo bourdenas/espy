@@ -1,9 +1,12 @@
-use super::{reconciler::Match, ReconReport};
 use crate::{
     api::{FirestoreApi, GogApi, SteamApi},
     documents::{GameEntry, StoreEntry},
-    library::library_ops::{LibraryOps, LibraryTransactions, StorefrontIds},
-    library::Reconciler,
+    library::{
+        library_ops::{LibraryOps, StorefrontIds},
+        library_transactions::LibraryTransactions,
+        reconciler::Match,
+        ReconReport, Reconciler,
+    },
     traits, Status,
 };
 use std::{
@@ -121,7 +124,7 @@ impl LibraryManager {
                 async move {
                     let firestore = &firestore.lock().unwrap();
                     match entry_match.game_entry {
-                        Some(game_entry) => LibraryTransactions::game_match(
+                        Some(game_entry) => LibraryTransactions::match_game(
                             firestore,
                             &user_id,
                             entry_match.store_entry,
@@ -167,7 +170,7 @@ impl LibraryManager {
             game_entry = self.retrieve_game_entry(parent_id, &recon_service).await?;
         }
 
-        LibraryTransactions::game_match(
+        LibraryTransactions::match_game(
             &self.firestore.lock().unwrap(),
             &self.user_id,
             store_entry,
@@ -203,7 +206,7 @@ impl LibraryManager {
 
     #[instrument(level = "trace", skip(self))]
     fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
-        LibraryOps::read_game(&self.firestore.lock().unwrap(), id)
+        LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
     }
 
     /// Retieves new game entries from the provided remote storefront and

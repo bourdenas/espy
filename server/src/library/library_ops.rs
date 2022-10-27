@@ -1,121 +1,10 @@
-use crate::api::FirestoreApi;
-use crate::documents::{GameEntry, LibraryEntry, Recent, RecentEntry, StoreEntry};
-use crate::Status;
+use crate::{
+    api::FirestoreApi,
+    documents::{GameEntry, LibraryEntry, Recent, RecentEntry, StoreEntry},
+    Status,
+};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
-
-pub struct LibraryTransactions;
-
-impl LibraryTransactions {
-    /// Handles Firestore library updates on successful match of a StoreEntry.
-    ///
-    /// NOTE: The operations below should be a transaction, but this is not
-    /// currently supported by this library.
-    pub fn game_match(
-        firestore: &FirestoreApi,
-        user_id: &str,
-        store_entry: StoreEntry,
-        owned_version: u64,
-        game_entry: GameEntry,
-    ) -> Result<(), Status> {
-        // Write GameEntry in games collection.
-        LibraryOps::write_game(firestore, &game_entry)?;
-
-        // Delete StoreEntry from unmatched.
-        firestore.delete(&format!(
-            "users/{user_id}/unmatched/{}_{}",
-            store_entry.storefront_name, store_entry.id
-        ))?;
-
-        // Check if game is already in user's library.
-        let mut library_entry = LibraryEntry::new(
-            game_entry,
-            vec![store_entry.clone()],
-            vec![owned_version],
-            None,
-        );
-
-        if let Ok(existing) = firestore.read::<LibraryEntry>(
-            &format!("users/{user_id}/library_v2"),
-            &library_entry.id.to_string(),
-        ) {
-            library_entry
-                .store_entries
-                .extend(existing.store_entries.into_iter());
-            library_entry
-                .owned_versions
-                .extend(existing.owned_versions.into_iter());
-            library_entry.user_data = existing.user_data;
-        }
-
-        // Store (updated) LibraryEntry to Firestore.
-        firestore.write(
-            &format!("users/{user_id}/library_v2"),
-            Some(&library_entry.id.to_string()),
-            &library_entry,
-        )?;
-
-        LibraryOps::append_to_recent(firestore, user_id, &library_entry, store_entry)?;
-
-        Ok(())
-    }
-
-    pub fn game_unmatch(
-        firestore: &FirestoreApi,
-        user_id: &str,
-        store_entry: StoreEntry,
-        library_entry: LibraryEntry,
-        delete: bool,
-    ) -> Result<(), Status> {
-        let mut library_entry = library_entry;
-        library_entry.store_entries.retain(|entry| {
-            entry.storefront_name != store_entry.storefront_name && entry.id != store_entry.id
-        });
-
-        if library_entry.store_entries.is_empty() {
-            firestore.delete(&format!("users/{user_id}/library_v2/{}", library_entry.id))?;
-        } else {
-            firestore.write(
-                &format!("users/{user_id}/library_v2"),
-                Some(&library_entry.id.to_string()),
-                &library_entry,
-            )?;
-        }
-
-        // Remove from recent collection.
-        LibraryOps::remove_from_recent(firestore, user_id, &store_entry)?;
-
-        if delete {
-            LibraryOps::remove_from_storefront_ids(firestore, user_id, &store_entry)?;
-        } else {
-            // Write StoreEntry in failed collection.
-            LibraryOps::write_failed(firestore, user_id, &store_entry)?;
-        }
-
-        Ok(())
-    }
-
-    /// Handles Firestore library updates on successful match of a StoreEntry.
-    ///
-    /// NOTE: The operations below should be a transaction, but this is not
-    /// currently supported by this library.
-    pub fn match_failed(
-        firestore: &FirestoreApi,
-        user_id: &str,
-        store_entry: StoreEntry,
-    ) -> Result<(), Status> {
-        // Delete StoreEntry from unmatched.
-        firestore.delete(&format!(
-            "users/{user_id}/unmatched/{}_{}",
-            &store_entry.storefront_name, &store_entry.id
-        ))?;
-
-        // Write StoreEntry in failed.
-        LibraryOps::write_failed(firestore, user_id, &store_entry)?;
-
-        Ok(())
-    }
-}
 
 pub struct LibraryOps;
 
@@ -131,25 +20,89 @@ impl LibraryOps {
         firestore.list::<LibraryEntry>(&format!("users/{user_id}/library_v2"))
     }
 
+    /// Write a `game_entry` and the associated `library_entry` on Firestore.
+    ///
+    /// The `library_entry` is updated with the input `game_entry` data but
+    /// maintains existing user date (tags, store entries).
+    pub fn write_library_entry(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        library_entry: &LibraryEntry,
+    ) -> Result<(), Status> {
+        firestore.write(
+            &format!("users/{user_id}/library_v2"),
+            Some(&library_entry.id.to_string()),
+            library_entry,
+        )?;
+        Ok(())
+    }
+
+    pub fn update_library_entry(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        library_entry: LibraryEntry,
+    ) -> Result<(), Status> {
+        let mut library_entry = library_entry;
+
+        // Merge new LibraryEntry with existing one.
+        if let Ok(existing) = firestore.read::<LibraryEntry>(
+            &format!("users/{user_id}/library_v2"),
+            &library_entry.id.to_string(),
+        ) {
+            library_entry
+                .store_entries
+                .extend(existing.store_entries.into_iter());
+            library_entry
+                .owned_versions
+                .extend(existing.owned_versions.into_iter());
+            library_entry.user_data = existing.user_data;
+        }
+
+        LibraryOps::write_library_entry(firestore, user_id, &library_entry)
+    }
+
+    pub fn remove_from_library_entry(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        store_entry: &StoreEntry,
+        library_entry: &mut LibraryEntry,
+    ) -> Result<(), Status> {
+        // let mut library_entry = library_entry;
+        library_entry.store_entries.retain(|entry| {
+            entry.storefront_name != store_entry.storefront_name && entry.id != store_entry.id
+        });
+
+        if library_entry.store_entries.is_empty() {
+            firestore.delete(&format!("users/{user_id}/library_v2/{}", library_entry.id))?;
+        } else {
+            LibraryOps::write_library_entry(firestore, user_id, &library_entry)?;
+        }
+
+        Ok(())
+    }
+
     /// Returns a GameEntry doc based on `game_id` from Firestore.
-    pub fn read_game(firestore: &FirestoreApi, game_id: u64) -> Result<GameEntry, Status> {
+    pub fn read_game_entry(firestore: &FirestoreApi, game_id: u64) -> Result<GameEntry, Status> {
         firestore.read::<GameEntry>("games_v2", &game_id.to_string())
     }
 
     /// Writes a GameEntry doc in Firestore.
-    pub fn write_game(firestore: &FirestoreApi, game_entry: &GameEntry) -> Result<(), Status> {
+    pub fn write_game_entry(
+        firestore: &FirestoreApi,
+        game_entry: &GameEntry,
+    ) -> Result<(), Status> {
         firestore.write("games_v2", Some(&game_entry.id.to_string()), game_entry)?;
         Ok(())
     }
 
-    fn read_recent(firestore: &FirestoreApi, user_id: &str) -> Recent {
+    pub fn read_recent(firestore: &FirestoreApi, user_id: &str) -> Recent {
         match firestore.read::<Recent>(&format!("users/{user_id}/recent"), "library_entries") {
             Ok(recent) => recent,
             Err(_) => Recent { entries: vec![] },
         }
     }
 
-    fn append_to_recent(
+    pub fn append_to_recent(
         firestore: &FirestoreApi,
         user_id: &str,
         library_entry: &LibraryEntry,
@@ -175,7 +128,7 @@ impl LibraryOps {
         Ok(())
     }
 
-    fn remove_from_recent(
+    pub fn remove_from_recent(
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: &StoreEntry,
@@ -228,7 +181,7 @@ impl LibraryOps {
     ///
     /// Reads/writes `users/{user}/storefront/{storefront_name}` document in
     /// Firestore.
-    fn remove_from_storefront_ids(
+    pub fn remove_from_storefront_ids(
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: &StoreEntry,
@@ -296,11 +249,37 @@ impl LibraryOps {
         Ok(())
     }
 
+    /// Store store entry to user's unmatched collection.
+    ///
+    /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
+    /// in Firestore.
+    pub fn delete_unmatched(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        store_entry: &StoreEntry,
+    ) -> Result<(), Status> {
+        let mut title = String::default();
+        if store_entry.id.is_empty() {
+            title = safe_title(store_entry);
+        }
+
+        firestore.delete(&format!(
+            "users/{user_id}/unmatched/{}_{}",
+            &store_entry.storefront_name,
+            match store_entry.id.is_empty() {
+                false => &store_entry.id,
+                true => &title,
+            },
+        ))?;
+
+        Ok(())
+    }
+
     /// Store storefront entries to user's library under unmatched entries.
     ///
     /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
     /// in Firestore.
-    fn write_failed(
+    pub fn write_failed(
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: &StoreEntry,
@@ -321,35 +300,6 @@ impl LibraryOps {
                 },
             )),
             &store_entry,
-        )?;
-
-        Ok(())
-    }
-
-    /// Updates a `game_entry` and the associated `library_entry` on Firestore.
-    ///
-    /// The `library_entry` is updated with the input `game_entry` data but
-    /// maintains existing user date (tags, store entries).
-    pub fn update_library_entry(
-        firestore: &FirestoreApi,
-        user_id: &str,
-        library_entry: LibraryEntry,
-        game_entry: GameEntry,
-    ) -> Result<(), Status> {
-        // Store GameEntry to 'games' collection. Might overwrite an existing
-        // one. That's ok as this is a fresher version.
-        LibraryOps::write_game(firestore, &game_entry)?;
-
-        // Store GameEntries to 'users/{user}/library_v2' collection.
-        firestore.write(
-            &format!("users/{user_id}/library_v2"),
-            Some(&library_entry.id.to_string()),
-            &LibraryEntry::new(
-                game_entry,
-                library_entry.store_entries,
-                library_entry.owned_versions,
-                library_entry.user_data,
-            ),
         )?;
 
         Ok(())
