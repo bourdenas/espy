@@ -6,8 +6,8 @@ use super::StoreEntry;
 /// history of recent additions in user's library.
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Recent {
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    // #[serde(default)]
+    // #[serde(skip_serializing_if = "Vec::is_empty")]
     pub entries: Vec<RecentEntry>,
 }
 

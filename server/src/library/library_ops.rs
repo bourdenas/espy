@@ -74,7 +74,9 @@ impl LibraryOps {
     ) -> Result<(), Status> {
         // let mut library_entry = library_entry;
         library_entry.store_entries.retain(|entry| {
-            !(entry.storefront_name == store_entry.storefront_name && entry.id == store_entry.id)
+            entry.storefront_name != store_entry.storefront_name
+                || entry.id != store_entry.id
+                || entry.title != store_entry.title
         });
 
         if library_entry.store_entries.is_empty() {
@@ -145,8 +147,9 @@ impl LibraryOps {
     ) -> Result<(), Status> {
         let mut recent = Self::read_recent(firestore, user_id);
         recent.entries.retain(|entry| {
-            !(entry.store_entry.storefront_name == store_entry.storefront_name
-                && entry.store_entry.id == store_entry.id)
+            entry.store_entry.storefront_name != store_entry.storefront_name
+                || entry.store_entry.id != store_entry.id
+                || entry.store_entry.title != store_entry.title
         });
 
         firestore.write(
