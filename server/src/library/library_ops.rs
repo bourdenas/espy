@@ -194,10 +194,16 @@ impl LibraryOps {
         user_id: &str,
         store_entry: &StoreEntry,
     ) -> Result<(), Status> {
-        let mut storefront = firestore.read::<StorefrontIds>(
+        let mut storefront = match firestore.read::<StorefrontIds>(
             &format!("users/{user_id}/storefront"),
             &store_entry.storefront_name,
-        )?;
+        ) {
+            Ok(storefront) => storefront,
+            Err(_) => StorefrontIds {
+                name: store_entry.storefront_name.clone(),
+                ..Default::default()
+            },
+        };
 
         let index = storefront
             .owned_games
