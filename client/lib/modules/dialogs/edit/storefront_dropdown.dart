@@ -7,13 +7,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class StorefrontDropdown extends StatefulWidget {
-  StorefrontDropdown(this.entry);
+  StorefrontDropdown(this.libraryEntry);
 
-  final LibraryEntry entry;
+  final LibraryEntry libraryEntry;
 
   @override
   _StorefrontDropdownState createState() =>
-      _StorefrontDropdownState(entry.storeEntries[0]);
+      _StorefrontDropdownState(libraryEntry.storeEntries[0]);
 }
 
 class _StorefrontDropdownState extends State<StorefrontDropdown> {
@@ -30,7 +30,7 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
           DropdownButton<StoreEntry>(
             value: storeEntry,
             items: [
-              for (final storeEntry in widget.entry.storeEntries)
+              for (final storeEntry in widget.libraryEntry.storeEntries)
                 DropdownMenuItem<StoreEntry>(
                   value: storeEntry,
                   child: Text(storeEntry.storefront),
@@ -62,12 +62,16 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: () => onRematch(context),
                   child: Text('Re-match'),
+                  onPressed: () => onRematch(context),
                 ),
                 ElevatedButton(
-                  onPressed: () => onUnmatch(context),
                   child: Text('Unmatch'),
+                  onPressed: () => onUnmatch(context),
+                ),
+                ElevatedButton(
+                  child: Text('Delete'),
+                  onPressed: () => onDelete(context),
                 ),
               ],
             ),
@@ -80,7 +84,9 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
   void onRematch(BuildContext context) {
     MatchingDialog.show(context, storeEntry, onMatch: (gameEntry) {
       // TODO: BUG: This moves storefront entry to {user}/failed collection.
-      context.read<GameLibraryModel>().unmatchEntry(storeEntry, widget.entry);
+      context
+          .read<GameLibraryModel>()
+          .unmatchEntry(storeEntry, widget.libraryEntry);
       context.pushNamed('details', params: {'gid': '${gameEntry.id}'});
     });
   }
@@ -100,13 +106,48 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
                     content: Text("Unmatching '${storeEntry.title}'...")));
                 Navigator.of(context).pop();
 
-                if (widget.entry.storeEntries.length == 1) {
+                if (widget.libraryEntry.storeEntries.length == 1) {
                   Navigator.pop(context);
                 }
 
                 context
                     .read<GameLibraryModel>()
-                    .unmatchEntry(storeEntry, widget.entry);
+                    .unmatchEntry(storeEntry, widget.libraryEntry);
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void onDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: Text('Are you sure you want to delete this entry?'),
+          actions: [
+            TextButton(
+              child: Text('Confirm'),
+              onPressed: () async {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text("Deleting '${storeEntry.title}'...")));
+                Navigator.of(context).pop();
+
+                if (widget.libraryEntry.storeEntries.length == 1) {
+                  Navigator.pop(context);
+                }
+
+                context.read<GameLibraryModel>().unmatchEntry(
+                    storeEntry, widget.libraryEntry,
+                    delete: true);
                 Navigator.pop(context);
               },
             ),

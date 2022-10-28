@@ -145,7 +145,10 @@ class GameLibraryModel extends ChangeNotifier {
   }
 
   Future<bool> unmatchEntry(
-      StoreEntry storeEntry, LibraryEntry libraryEntry) async {
+    StoreEntry storeEntry,
+    LibraryEntry libraryEntry, {
+    bool delete = false,
+  }) async {
     var response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/$_userId/unmatch'),
       headers: {
@@ -154,7 +157,7 @@ class GameLibraryModel extends ChangeNotifier {
       body: jsonEncode({
         'store_entry': storeEntry.toJson(),
         'library_entry': libraryEntry.toJson(),
-        'delete': false,
+        'delete': delete,
       }),
     );
 
