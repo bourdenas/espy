@@ -94,20 +94,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content: Text('Matching in progress...')));
-                            context
-                                .read<GameLibraryModel>()
-                                .matchEntry(widget.storeEntry, gameEntry)
-                                .then((success) {
-                              if (success && widget.onMatch != null) {
-                                widget.onMatch!(gameEntry);
-                              }
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text(success
-                                          ? 'Matched successfully.'
-                                          : 'Failed to apply match.')));
-                            });
+                            widget.onMatch!(gameEntry);
                             Navigator.of(context).pop();
                           }))
                       .toList();

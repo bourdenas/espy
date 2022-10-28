@@ -169,4 +169,30 @@ class GameLibraryModel extends ChangeNotifier {
 
     return true;
   }
+
+  Future<bool> rematchEntry(
+    StoreEntry storeEntry,
+    LibraryEntry libraryEntry,
+    GameEntry gameEntry,
+  ) async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/$_userId/rematch'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'store_entry': storeEntry.toJson(),
+        'library_entry': libraryEntry.toJson(),
+        'game_entry': gameEntry.toJson(),
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      print(
+          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
+      return false;
+    }
+
+    return true;
+  }
 }
