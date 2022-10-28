@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,8 @@ class GameListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
+      onSecondaryTap: () => EditEntryDialog.show(context, entry),
+      onLongPress: () => EditEntryDialog.show(context, entry),
       child: Container(
         padding: EdgeInsets.all(8.0),
         margin: EdgeInsets.only(bottom: 16.0),
