@@ -104,14 +104,14 @@ impl LibraryOps {
     pub fn append_to_recent(
         firestore: &FirestoreApi,
         user_id: &str,
-        library_entry: &LibraryEntry,
+        library_entry_id: u64,
         store_entry: StoreEntry,
     ) -> Result<(), Status> {
         let mut recent = LibraryOps::read_recent(firestore, user_id);
 
         recent.entries.push(RecentEntry {
-            library_entry_id: library_entry.id,
-            store_entry: store_entry.clone(),
+            library_entry_id,
+            store_entry,
             added_timestamp: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap()

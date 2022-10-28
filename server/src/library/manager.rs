@@ -2,8 +2,8 @@ use crate::{
     api::{FirestoreApi, GogApi, SteamApi},
     documents::{GameEntry, LibraryEntry, StoreEntry},
     library::{
-        library_ops::LibraryOps, library_transactions::LibraryTransactions, reconciler::Match,
-        ReconReport, Reconciler,
+        library_ops::LibraryOps, library_transactions::LibraryTransactions,
+        library_transactions::Op, reconciler::Match, ReconReport, Reconciler,
     },
     traits, Status,
 };
@@ -113,7 +113,7 @@ impl LibraryManager {
     #[instrument(level = "trace", skip(self, library_entry))]
     pub async fn unmatch_game(
         &self,
-        store_entry: StoreEntry,
+        store_entry: &StoreEntry,
         library_entry: LibraryEntry,
     ) -> Result<(), Status> {
         LibraryTransactions::unmatch_game(
@@ -121,7 +121,7 @@ impl LibraryManager {
             &self.user_id,
             store_entry,
             library_entry,
-            false,
+            Op::Failed,
         )
     }
 
@@ -130,7 +130,7 @@ impl LibraryManager {
     #[instrument(level = "trace", skip(self, library_entry))]
     pub async fn delete_game(
         &self,
-        store_entry: StoreEntry,
+        store_entry: &StoreEntry,
         library_entry: LibraryEntry,
     ) -> Result<(), Status> {
         LibraryTransactions::unmatch_game(
@@ -138,8 +138,28 @@ impl LibraryManager {
             &self.user_id,
             store_entry,
             library_entry,
-            true,
+            Op::Delete,
         )
+    }
+
+    #[instrument(level = "trace", skip(self, recon_service))]
+    pub async fn rematch_game(
+        &self,
+        recon_service: Reconciler,
+        store_entry: StoreEntry,
+        game_entry: GameEntry,
+        existing_library_entry: LibraryEntry,
+    ) -> Result<(), Status> {
+        LibraryTransactions::unmatch_game(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            &store_entry,
+            existing_library_entry,
+            Op::Unmatch,
+        )?;
+
+        self.manual_match(recon_service, store_entry, game_entry)
+            .await
     }
 
     /// Reconciles entries in the unmatched collection of user's library.
@@ -189,7 +209,7 @@ impl LibraryManager {
                         None => LibraryTransactions::match_failed(
                             firestore,
                             &user_id,
-                            entry_match.store_entry,
+                            &entry_match.store_entry,
                         )
                         .expect("Firestore match_failed_transaction()"),
                     }

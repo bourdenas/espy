@@ -31,7 +31,7 @@ impl LibraryTransactions {
             None,
         );
 
-        LibraryOps::append_to_recent(firestore, user_id, &library_entry, store_entry)?;
+        LibraryOps::append_to_recent(firestore, user_id, library_entry.id, store_entry)?;
 
         // Update LibraryEntry. It might already exist from a different
         // storefront.
@@ -41,13 +41,13 @@ impl LibraryTransactions {
     }
 
     /// Delete or unmatches (based on `delete`) a StoreEntry from the library.
-    #[instrument(level = "trace", skip(firestore, user_id))]
+    #[instrument(level = "trace", skip(firestore, user_id, operation))]
     pub fn unmatch_game(
         firestore: &FirestoreApi,
         user_id: &str,
-        store_entry: StoreEntry,
+        store_entry: &StoreEntry,
         library_entry: LibraryEntry,
-        delete: bool,
+        operation: Op,
     ) -> Result<(), Status> {
         let mut library_entry = library_entry;
         LibraryOps::remove_from_library_entry(
@@ -59,11 +59,11 @@ impl LibraryTransactions {
 
         LibraryOps::remove_from_recent(firestore, user_id, &store_entry)?;
 
-        if delete {
-            LibraryOps::remove_from_storefront_ids(firestore, user_id, &store_entry)?;
-        } else {
-            LibraryOps::write_failed(firestore, user_id, &store_entry)?;
-        }
+        match operation {
+            Op::Unmatch => (),
+            Op::Failed => LibraryOps::write_failed(firestore, user_id, &store_entry)?,
+            Op::Delete => LibraryOps::remove_from_storefront_ids(firestore, user_id, &store_entry)?,
+        };
 
         Ok(())
     }
@@ -73,10 +73,10 @@ impl LibraryTransactions {
     pub fn match_failed(
         firestore: &FirestoreApi,
         user_id: &str,
-        store_entry: StoreEntry,
+        store_entry: &StoreEntry,
     ) -> Result<(), Status> {
-        LibraryOps::delete_unmatched(firestore, user_id, &store_entry)?;
-        LibraryOps::write_failed(firestore, user_id, &store_entry)?;
+        LibraryOps::delete_unmatched(firestore, user_id, store_entry)?;
+        LibraryOps::write_failed(firestore, user_id, store_entry)?;
 
         Ok(())
     }
@@ -118,4 +118,10 @@ impl LibraryTransactions {
 
         Ok(())
     }
+}
+
+pub enum Op {
+    Unmatch,
+    Failed,
+    Delete,
 }

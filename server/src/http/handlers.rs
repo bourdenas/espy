@@ -171,8 +171,8 @@ pub async fn post_rematch(
     match user
         .rematch_entry(
             rematch.store_entry,
-            rematch.library_entry,
             rematch.game_entry,
+            rematch.library_entry,
             Reconciler::new(Arc::clone(&igdb)),
         )
         .await
