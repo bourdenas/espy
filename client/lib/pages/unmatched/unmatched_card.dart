@@ -1,7 +1,9 @@
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/store_entry.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class UnmatchedCard extends StatelessWidget {
   UnmatchedCard({
@@ -14,7 +16,13 @@ class UnmatchedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => MatchingDialog.show(context, entry),
+      onTap: () => MatchingDialog.show(
+        context,
+        entry,
+        onMatch: (gameEntry) =>
+            context.read<GameLibraryModel>().matchEntry(entry, gameEntry),
+      ),
+      onSecondaryTap: () {},
       child: Container(
         padding: EdgeInsets.all(8.0),
         margin: EdgeInsets.only(bottom: 16.0),

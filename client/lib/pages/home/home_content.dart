@@ -2,6 +2,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/unmatched_library_model.dart';
 import 'package:espy/pages/home/home_slate.dart';
@@ -61,7 +62,13 @@ class HomeContent extends StatelessWidget {
                 .map((entry) => SlateTileData(
                       title: entry.title,
                       image: null,
-                      onTap: () => MatchingDialog.show(context, entry),
+                      onTap: () => MatchingDialog.show(
+                        context,
+                        entry,
+                        onMatch: (gameEntry) => context
+                            .read<GameLibraryModel>()
+                            .matchEntry(entry, gameEntry),
+                      ),
                     ))
                 .toList(),
           ),
