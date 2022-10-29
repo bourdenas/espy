@@ -265,9 +265,9 @@ impl LibraryOps {
         Ok(())
     }
 
-    /// Store store entry to user's unmatched collection.
+    /// Deletes store entry from user's unmatched collection.
     ///
-    /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
+    /// Deletes `StoreEntry` documents under collection `users/{user}/unmatched`
     /// in Firestore.
     #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn delete_unmatched(
@@ -319,6 +319,33 @@ impl LibraryOps {
             )),
             &store_entry,
         )?;
+
+        Ok(())
+    }
+
+    /// Deletes store entry to user's failed collection.
+    ///
+    /// Deletes `StoreEntry` documents under collection `users/{user}/failed`
+    /// in Firestore.
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn delete_failed(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        store_entry: &StoreEntry,
+    ) -> Result<(), Status> {
+        let mut title = String::default();
+        if store_entry.id.is_empty() {
+            title = safe_title(store_entry);
+        }
+
+        firestore.delete(&format!(
+            "users/{user_id}/failed/{}_{}",
+            &store_entry.storefront_name,
+            match store_entry.id.is_empty() {
+                false => &store_entry.id,
+                true => &title,
+            },
+        ))?;
 
         Ok(())
     }

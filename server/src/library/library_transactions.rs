@@ -23,6 +23,7 @@ impl LibraryTransactions {
     ) -> Result<(), Status> {
         LibraryOps::write_game_entry(firestore, &game_entry)?;
         LibraryOps::delete_unmatched(firestore, user_id, &store_entry)?;
+        LibraryOps::delete_failed(firestore, user_id, &store_entry)?;
 
         let library_entry = LibraryEntry::new(
             game_entry,
