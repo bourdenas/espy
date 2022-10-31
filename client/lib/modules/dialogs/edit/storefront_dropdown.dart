@@ -81,7 +81,7 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
   }
 
   void onRematch(BuildContext context) {
-    MatchingDialog.show(context, storeEntry, onMatch: (gameEntry) {
+    MatchingDialog.show(context, storeEntry: storeEntry, onMatch: (gameEntry) {
       context
           .read<GameLibraryModel>()
           .rematchEntry(storeEntry, widget.libraryEntry, gameEntry);

@@ -103,6 +103,8 @@ class GameLibraryModel extends ChangeNotifier {
   }
 
   Future<List<GameEntry>> searchByTitle(String title) async {
+    if (title.isEmpty) return [];
+
     var response = await http.post(
       Uri.parse('${Urls.espyBackend}/search'),
       headers: {

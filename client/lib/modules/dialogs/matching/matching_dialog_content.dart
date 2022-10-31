@@ -15,7 +15,7 @@ class MatchingDialogContent extends StatefulWidget {
     this.onMatch,
   }) : super(key: key);
 
-  final StoreEntry storeEntry;
+  final StoreEntry? storeEntry;
   final Future<List<GameEntry>> matches;
   final void Function(GameEntry)? onMatch;
 
@@ -41,7 +41,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
               )
             ]),
             child:
-                SlateTile(data: SlateTileData(title: widget.storeEntry.title)),
+                SlateTile(data: SlateTileData(title: widget.storeEntry?.title)),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -122,7 +122,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
     super.initState();
 
     matches = widget.matches;
-    _matchController.text = widget.storeEntry.title;
+    _matchController.text = widget.storeEntry?.title ?? '';
   }
 
   @override

@@ -1,4 +1,6 @@
+import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/espy_rail.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -59,6 +61,17 @@ class _EspyScaffoldState extends State<EspyScaffold>
               return Scaffold(
                 extendBodyBehindAppBar: AppConfigModel.isMobile(context),
                 appBar: appBar(context),
+                floatingActionButton: FloatingActionButton(
+                  child: Icon(Icons.add),
+                  onPressed: () => MatchingDialog.show(
+                    context,
+                    onMatch: (gameEntry) {
+                      // context
+                      //     .read<GameLibraryModel>()
+                      //     .matchEntry(entry, gameEntry);
+                    },
+                  ),
+                ),
                 body: NotificationListener<ScrollNotification>(
                   onNotification: _scrollListener,
                   child: widget.body,
