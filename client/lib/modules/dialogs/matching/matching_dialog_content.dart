@@ -26,6 +26,7 @@ class MatchingDialogContent extends StatefulWidget {
 
 class _MatchingDialogContentState extends State<MatchingDialogContent> {
   StoreEntry? storeEntry;
+  String storeName = 'egs';
 
   _MatchingDialogContentState(this.storeEntry);
 
@@ -53,28 +54,32 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: DropdownButton<String>(
-              value: storeEntry?.storefront ?? 'egs',
-              items: [
-                for (final store in ['gog', 'steam', 'egs', 'battle net'])
-                  DropdownMenuItem<String>(
-                    value: store,
-                    child: Text(store),
-                  ),
-              ],
-              hint: Text(
-                "Storefront",
+            child: AbsorbPointer(
+              absorbing: storeEntry != null,
+              child: DropdownButton<String>(
+                value: storeName,
+                items: [
+                  for (final store in [
+                    'gog',
+                    'steam',
+                    'egs',
+                    'battle net',
+                    'disc',
+                  ])
+                    DropdownMenuItem<String>(
+                      value: store,
+                      child: Text(store),
+                    ),
+                ],
+                hint: Text(
+                  "Storefront",
+                ),
+                onChanged: (String? value) {
+                  setState(() {
+                    storeName = value!;
+                  });
+                },
               ),
-              onChanged: (String? value) {
-                setState(() {
-                  storeEntry = StoreEntry(
-                      id: '',
-                      title: storeEntry?.id.isNotEmpty ?? false
-                          ? storeEntry!.title
-                          : _matchController.text,
-                      storefront: value ?? '');
-                });
-              },
             ),
           ),
           FutureBuilder(
@@ -113,7 +118,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content: Text('Matching in progress...')));
-                            widget.onMatch!(storeEntry!, gameEntry);
+                            widget.onMatch!(getStoreEntry(), gameEntry);
                             Navigator.of(context).pop();
                           }))
                       .toList();
@@ -134,6 +139,15 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
         ],
       ),
     );
+  }
+
+  StoreEntry getStoreEntry() {
+    return storeEntry ??
+        StoreEntry(
+          id: '',
+          title: _matchController.text,
+          storefront: storeName,
+        );
   }
 
   @override
