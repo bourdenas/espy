@@ -19,8 +19,8 @@ class UnmatchedCard extends StatelessWidget {
       onTap: () => MatchingDialog.show(
         context,
         storeEntry: entry,
-        onMatch: (gameEntry) =>
-            context.read<GameLibraryModel>().matchEntry(entry, gameEntry),
+        onMatch: (storeEntry, gameEntry) =>
+            context.read<GameLibraryModel>().matchEntry(storeEntry, gameEntry),
       ),
       onSecondaryTap: () {},
       child: Container(

@@ -17,7 +17,7 @@ class MatchingDialogContent extends StatefulWidget {
 
   final StoreEntry? storeEntry;
   final Future<List<GameEntry>> matches;
-  final void Function(GameEntry)? onMatch;
+  final void Function(StoreEntry, GameEntry)? onMatch;
 
   @override
   State<MatchingDialogContent> createState() =>
@@ -47,7 +47,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
               autofocus: true,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search),
-                hintText: 'match...',
+                hintText: 'Game title...',
               ),
             ),
           ),
@@ -113,7 +113,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content: Text('Matching in progress...')));
-                            widget.onMatch!(gameEntry);
+                            widget.onMatch!(storeEntry!, gameEntry);
                             Navigator.of(context).pop();
                           }))
                       .toList();

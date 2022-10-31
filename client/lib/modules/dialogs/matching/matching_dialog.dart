@@ -9,7 +9,7 @@ class MatchingDialog extends StatefulWidget {
   static void show(
     BuildContext context, {
     StoreEntry? storeEntry,
-    void Function(GameEntry)? onMatch,
+    void Function(StoreEntry, GameEntry)? onMatch,
   }) {
     showDialog(
       context: context,
@@ -27,7 +27,7 @@ class MatchingDialog extends StatefulWidget {
   }) : super(key: key);
 
   final StoreEntry? storeEntry;
-  final void Function(GameEntry)? onMatch;
+  final void Function(StoreEntry, GameEntry)? onMatch;
 
   @override
   State<MatchingDialog> createState() => _MatchingDialogState();
@@ -54,7 +54,7 @@ class MatchingDialogAnimation extends StatefulWidget {
 
   final StoreEntry? storeEntry;
   final Future<List<GameEntry>> matches;
-  final void Function(GameEntry)? onMatch;
+  final void Function(StoreEntry, GameEntry)? onMatch;
 
   @override
   State<MatchingDialogAnimation> createState() =>
