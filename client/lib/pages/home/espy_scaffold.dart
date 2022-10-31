@@ -66,9 +66,9 @@ class _EspyScaffoldState extends State<EspyScaffold>
                   onPressed: () => MatchingDialog.show(
                     context,
                     onMatch: (storeEntry, gameEntry) {
-                      // context
-                      //     .read<GameLibraryModel>()
-                      //     .matchEntry(entry, gameEntry);
+                      context
+                          .read<GameLibraryModel>()
+                          .matchEntry(storeEntry, gameEntry);
                     },
                   ),
                 ),
