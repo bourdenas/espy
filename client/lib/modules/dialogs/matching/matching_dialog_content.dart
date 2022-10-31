@@ -20,29 +20,22 @@ class MatchingDialogContent extends StatefulWidget {
   final void Function(GameEntry)? onMatch;
 
   @override
-  State<MatchingDialogContent> createState() => _MatchingDialogContentState();
+  State<MatchingDialogContent> createState() =>
+      _MatchingDialogContentState(storeEntry);
 }
 
 class _MatchingDialogContentState extends State<MatchingDialogContent> {
+  StoreEntry? storeEntry;
+
+  _MatchingDialogContentState(this.storeEntry);
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            height: 170,
-            decoration: BoxDecoration(boxShadow: [
-              BoxShadow(
-                color: Colors.black,
-                blurRadius: 2.0,
-                spreadRadius: 0.0,
-                offset: Offset(2.0, 2.0), // shadow direction: bottom right
-              )
-            ]),
-            child:
-                SlateTile(data: SlateTileData(title: widget.storeEntry?.title)),
-          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -56,6 +49,32 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                 prefixIcon: Icon(Icons.search),
                 hintText: 'match...',
               ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: DropdownButton<String>(
+              value: storeEntry?.storefront ?? 'egs',
+              items: [
+                for (final store in ['gog', 'steam', 'egs', 'battle net'])
+                  DropdownMenuItem<String>(
+                    value: store,
+                    child: Text(store),
+                  ),
+              ],
+              hint: Text(
+                "Storefront",
+              ),
+              onChanged: (String? value) {
+                setState(() {
+                  storeEntry = StoreEntry(
+                      id: '',
+                      title: storeEntry?.id.isNotEmpty ?? false
+                          ? storeEntry!.title
+                          : _matchController.text,
+                      storefront: value ?? '');
+                });
+              },
             ),
           ),
           FutureBuilder(
@@ -107,7 +126,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                 return Container(
                   // hacky: Manually measure height of HomeSlate to avoid
                   // resize if a message is shown instead.
-                  height: 234.0,
+                  height: 400.0,
                   width: 500.0,
                   child: result,
                 );
