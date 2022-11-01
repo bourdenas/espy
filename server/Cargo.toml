@@ -1,6 +1,6 @@
 [package]
 name = "espy_server"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["bourdenas"]
 edition = "2021"
 
@@ -19,6 +19,10 @@ path = "src/search_igdb.rs"
 [[bin]] 
 name = "firestore_util"
 path = "src/firestore_util.rs"
+
+[[bin]] 
+name = "storefront_cleanup"
+path = "src/utils/storefront_cleanup.rs"
 
 
 [dependencies]
