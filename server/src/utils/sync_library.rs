@@ -22,9 +22,11 @@ struct Opts {
     firestore_credentials: String,
 }
 
+/// Syncs user library with connected storefront retrieving new games and
+/// reconciling them.
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    Tracing::setup("sync-library")?;
+    Tracing::setup("utils/sync_library")?;
 
     let opts: Opts = Opts::parse();
 
