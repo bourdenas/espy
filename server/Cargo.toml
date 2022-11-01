@@ -9,10 +9,6 @@ name = "http_server"
 path = "src/http_server.rs"
 
 [[bin]] 
-name = "search_igdb"
-path = "src/search_igdb.rs"
-
-[[bin]] 
 name = "firestore_util"
 path = "src/firestore_util.rs"
 
@@ -20,6 +16,10 @@ path = "src/firestore_util.rs"
 [[bin]] 
 name = "sync_library"
 path = "src/utils/sync_library.rs"
+
+[[bin]]
+name = "search_igdb"
+path = "src/utils/search_igdb.rs"
 
 [[bin]] 
 name = "storefront_cleanup"
