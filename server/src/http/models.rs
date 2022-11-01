@@ -1,6 +1,11 @@
 use crate::documents;
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct Upload {
+    pub entries: Vec<documents::StoreEntry>,
+}
+
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Search {
     pub title: String,
@@ -26,6 +31,8 @@ pub struct Unmatch {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Upload {
-    pub entries: Vec<documents::StoreEntry>,
+pub struct Rematch {
+    pub store_entry: documents::StoreEntry,
+    pub library_entry: documents::LibraryEntry,
+    pub game_entry: documents::GameEntry,
 }

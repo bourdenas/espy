@@ -122,9 +122,30 @@ impl User {
     ) -> Result<(), Status> {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         match delete {
-            false => mgr.unmatch_game(store_entry, library_entry).await?,
-            true => mgr.delete_game(store_entry, library_entry).await?,
+            false => mgr.unmatch_game(&store_entry, library_entry).await?,
+            true => mgr.delete_game(&store_entry, library_entry).await?,
         }
+
+        commit_version(&mut self.data, &self.firestore.lock().unwrap())
+    }
+
+    /// Unmatches or deletes (based on `delete`) a StoreEntry with a LibraryEntry.
+    #[instrument(level = "trace", skip(self, recon_service))]
+    pub async fn rematch_entry(
+        &mut self,
+        store_entry: StoreEntry,
+        game_entry: GameEntry,
+        existing_library_entry: LibraryEntry,
+        recon_service: Reconciler,
+    ) -> Result<(), Status> {
+        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
+        mgr.rematch_game(
+            recon_service,
+            store_entry,
+            game_entry,
+            existing_library_entry,
+        )
+        .await?;
 
         commit_version(&mut self.data, &self.firestore.lock().unwrap())
     }

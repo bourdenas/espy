@@ -97,7 +97,7 @@ pub async fn post_match(
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    debug!("POST /library/{user_id}/recon");
+    debug!("POST /library/{user_id}/match");
 
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
@@ -129,7 +129,7 @@ pub async fn post_unmatch(
     unmatch: models::Unmatch,
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> Result<impl warp::Reply, Infallible> {
-    debug!("POST /library/{user_id}/recon");
+    debug!("POST /library/{user_id}/unmatch");
 
     let mut user = match User::new(firestore, &user_id) {
         Ok(user) => user,
@@ -141,6 +141,40 @@ pub async fn post_unmatch(
 
     match user
         .unmatch_entry(unmatch.store_entry, unmatch.library_entry, unmatch.delete)
+        .await
+    {
+        Ok(()) => Ok(StatusCode::OK),
+        Err(err) => {
+            error!("{err}");
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[instrument(level = "trace", skip(igdb, firestore))]
+pub async fn post_rematch(
+    user_id: String,
+    rematch: models::Rematch,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    debug!("POST /library/{user_id}/rematch");
+
+    let mut user = match User::new(firestore, &user_id) {
+        Ok(user) => user,
+        Err(err) => {
+            error!("{err}");
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    match user
+        .rematch_entry(
+            rematch.store_entry,
+            rematch.game_entry,
+            rematch.library_entry,
+            Reconciler::new(Arc::clone(&igdb)),
+        )
         .await
     {
         Ok(()) => Ok(StatusCode::OK),
