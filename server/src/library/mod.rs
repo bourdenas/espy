@@ -4,7 +4,7 @@ mod manager;
 mod recon_report;
 mod reconciler;
 pub mod search;
-mod steam_data;
+pub mod steam_data;
 mod user;
 
 pub use library_ops::LibraryOps;

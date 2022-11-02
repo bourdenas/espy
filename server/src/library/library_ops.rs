@@ -10,6 +10,12 @@ use tracing::instrument;
 pub struct LibraryOps;
 
 impl LibraryOps {
+    /// Returns a list of all games stored on espy Firestore.
+    #[instrument(level = "trace", skip(firestore))]
+    pub fn list_games(firestore: &FirestoreApi) -> Result<Vec<GameEntry>, Status> {
+        firestore.list(&format!("games_v2"))
+    }
+
     /// Returns a list of all successfully matched games in user library.
     #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn list_library(
