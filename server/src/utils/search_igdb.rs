@@ -5,16 +5,20 @@ use itertools::Itertools;
 /// IGDB search utility.
 #[derive(Parser)]
 struct Opts {
-    /// Espy user name for managing a game library.
+    /// Game title to search for in IGDB.
     #[clap(short, long, default_value = "")]
     search: String,
 
+    /// External store ID used for retrieving game info.
     #[clap(long, default_value = "")]
     external: String,
 
+    /// If external is set thhis indicates the store name to be used.
     #[clap(long, default_value = "")]
     external_store: String,
 
+    /// If set retrieves all available information for the top candidate of the
+    /// search.
     #[clap(long)]
     expand: bool,
 
@@ -23,12 +27,12 @@ struct Opts {
     key_store: String,
 }
 
+/// Quickly retrieve game info from IGDB based on title or external id matching.
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    Tracing::setup("search-igdb")?;
+    Tracing::setup("utils/search_igdb")?;
 
     let opts: Opts = Opts::parse();
-
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
 
     let mut igdb = api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);

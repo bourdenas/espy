@@ -1,6 +1,6 @@
 [package]
 name = "espy_server"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["bourdenas"]
 edition = "2021"
 
@@ -8,17 +8,22 @@ edition = "2021"
 name = "http_server"
 path = "src/http_server.rs"
 
+# Command line utils
 [[bin]] 
 name = "sync_library"
-path = "src/sync_library.rs"
+path = "src/utils/sync_library.rs"
 
 [[bin]] 
+name = "refresh_entries"
+path = "src/utils/refresh_entries.rs"
+
+[[bin]]
 name = "search_igdb"
-path = "src/search_igdb.rs"
+path = "src/utils/search_igdb.rs"
 
 [[bin]] 
-name = "firestore_util"
-path = "src/firestore_util.rs"
+name = "storefront_cleanup"
+path = "src/utils/storefront_cleanup.rs"
 
 
 [dependencies]

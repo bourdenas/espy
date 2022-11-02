@@ -10,6 +10,21 @@ use tracing::instrument;
 pub struct LibraryOps;
 
 impl LibraryOps {
+    /// Returns a list of all games stored on espy Firestore.
+    #[instrument(level = "trace", skip(firestore))]
+    pub fn list_games(firestore: &FirestoreApi) -> Result<Vec<GameEntry>, Status> {
+        firestore.list(&format!("games_v2"))
+    }
+
+    /// Returns a list of all successfully matched games in user library.
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn list_library(
+        firestore: &FirestoreApi,
+        user_id: &str,
+    ) -> Result<Vec<LibraryEntry>, Status> {
+        firestore.list(&format!("users/{user_id}/library_v2"))
+    }
+
     /// Write a `game_entry` and the associated `library_entry` on Firestore.
     ///
     /// The `library_entry` is updated with the input `game_entry` data but
@@ -172,12 +187,16 @@ impl LibraryOps {
     pub fn write_storefront_ids(
         firestore: &FirestoreApi,
         user_id: &str,
-        storefront: StorefrontIds,
+        storefront_name: &str,
+        owned_games: Vec<String>,
     ) -> Result<(), Status> {
         match firestore.write(
             &format!("users/{user_id}/storefronts"),
-            Some(&storefront.name),
-            &storefront,
+            Some(storefront_name),
+            &StorefrontIds {
+                name: storefront_name.to_owned(),
+                owned_games,
+            },
         ) {
             Ok(_) => Ok(()),
             Err(e) => Err(Status::new("LibraryManager.write_storefront_ids: ", e)),
@@ -290,6 +309,12 @@ impl LibraryOps {
         ))?;
 
         Ok(())
+    }
+
+    /// Returns a list of all failed to match games in user library.
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn list_failed(firestore: &FirestoreApi, user_id: &str) -> Result<Vec<StoreEntry>, Status> {
+        firestore.list(&format!("users/{user_id}/failed"))
     }
 
     /// Store storefront entries to user's library under unmatched entries.

@@ -1,4 +1,4 @@
-use super::library_ops::{LibraryOps, StorefrontIds};
+use super::library_ops::LibraryOps;
 use crate::{
     api::FirestoreApi,
     documents::{GameEntry, LibraryEntry, StoreEntry},
@@ -111,10 +111,8 @@ impl LibraryTransactions {
         LibraryOps::write_storefront_ids(
             firestore,
             user_id,
-            StorefrontIds {
-                name: storefront_name.to_owned(),
-                owned_games: game_ids.into_iter().collect::<Vec<_>>(),
-            },
+            storefront_name,
+            game_ids.into_iter().collect::<Vec<_>>(),
         )?;
 
         Ok(())

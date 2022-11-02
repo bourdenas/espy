@@ -121,6 +121,7 @@ impl IgdbApi {
         }
     }
 
+    /// Returns a fully resolved IGDB Game based on its ID.
     #[instrument(level = "trace", skip(self))]
     pub async fn get_game_by_id(&self, id: u64) -> Result<Option<GameEntry>, Status> {
         let igdb_state = match &self.state {
