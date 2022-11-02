@@ -45,8 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let _guard = span.enter();
 
     let mut user = library::User::new(Arc::clone(&firestore), &opts.user)?;
-    user.sync(&keys, library::Reconciler::new(Arc::clone(&igdb)))
-        .await?;
+    user.sync(&keys, igdb).await?;
 
     Ok(())
 }

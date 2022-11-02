@@ -1,7 +1,7 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
     http::models,
-    library::{self, Reconciler, User},
+    library::{self, User},
     util, Status,
 };
 use std::{
@@ -27,10 +27,7 @@ pub async fn post_sync(
         Err(err) => return Ok(log_err(err)),
     };
 
-    let report = match user
-        .sync(&api_keys, Reconciler::new(Arc::clone(&igdb)))
-        .await
-    {
+    let report = match user.sync(&api_keys, igdb).await {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };
@@ -56,7 +53,7 @@ pub async fn post_upload(
         Ok(user) => user,
         Err(err) => return Ok(log_err(err)),
     };
-    let report = match user.upload(upload.entries, Reconciler::new(igdb)).await {
+    let report = match user.upload(upload.entries, igdb).await {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };
@@ -108,11 +105,7 @@ pub async fn post_match(
     };
 
     match user
-        .match_entry(
-            _match.store_entry,
-            _match.game_entry,
-            Reconciler::new(Arc::clone(&igdb)),
-        )
+        .match_entry(_match.store_entry, _match.game_entry, igdb)
         .await
     {
         Ok(()) => Ok(StatusCode::OK),
@@ -173,7 +166,7 @@ pub async fn post_rematch(
             rematch.store_entry,
             rematch.game_entry,
             rematch.library_entry,
-            Reconciler::new(Arc::clone(&igdb)),
+            igdb,
         )
         .await
     {
