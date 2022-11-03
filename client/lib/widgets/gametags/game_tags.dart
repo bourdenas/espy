@@ -83,17 +83,17 @@ class GameChipsListView extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          for (final company in entry.companies)
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: CompanyChip(
-                company,
-                onPressed: () => context.goNamed(
-                  'games',
-                  queryParams: LibraryFilter(companies: {company}).params(),
-                ),
-              ),
-            ),
+          // for (final company in entry.companies)
+          //   Padding(
+          //     padding: const EdgeInsets.all(4.0),
+          //     child: CompanyChip(
+          //       company,
+          //       onPressed: () => context.goNamed(
+          //         'games',
+          //         queryParams: LibraryFilter(companies: {company}).params(),
+          //       ),
+          //     ),
+          //   ),
           for (final collection in entry.collections)
             Padding(
               padding: const EdgeInsets.all(4.0),
