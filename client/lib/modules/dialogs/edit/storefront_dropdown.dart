@@ -81,13 +81,17 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
   }
 
   void onRematch(BuildContext context) {
-    MatchingDialog.show(context, storeEntry, onMatch: (gameEntry) {
-      context
-          .read<GameLibraryModel>()
-          .rematchEntry(storeEntry, widget.libraryEntry, gameEntry);
-      Navigator.of(context).pop();
-      Navigator.of(context).pop();
-    });
+    MatchingDialog.show(
+      context,
+      storeEntry: storeEntry,
+      onMatch: (storeEntry, gameEntry) {
+        context
+            .read<GameLibraryModel>()
+            .rematchEntry(storeEntry, widget.libraryEntry, gameEntry);
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      },
+    );
   }
 
   void onUnmatch(BuildContext context) {

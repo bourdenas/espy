@@ -64,10 +64,10 @@ class HomeContent extends StatelessWidget {
                       image: null,
                       onTap: () => MatchingDialog.show(
                         context,
-                        entry,
-                        onMatch: (gameEntry) => context
+                        storeEntry: entry,
+                        onMatch: (storeEntry, gameEntry) => context
                             .read<GameLibraryModel>()
-                            .matchEntry(entry, gameEntry),
+                            .matchEntry(storeEntry, gameEntry),
                       ),
                     ))
                 .toList(),

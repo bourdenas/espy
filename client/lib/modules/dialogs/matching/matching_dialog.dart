@@ -7,9 +7,9 @@ import 'package:provider/src/provider.dart';
 
 class MatchingDialog extends StatefulWidget {
   static void show(
-    BuildContext context,
-    StoreEntry storeEntry, {
-    void Function(GameEntry)? onMatch,
+    BuildContext context, {
+    StoreEntry? storeEntry,
+    void Function(StoreEntry, GameEntry)? onMatch,
   }) {
     showDialog(
       context: context,
@@ -22,12 +22,12 @@ class MatchingDialog extends StatefulWidget {
 
   const MatchingDialog({
     Key? key,
-    required this.storeEntry,
+    this.storeEntry,
     this.onMatch,
   }) : super(key: key);
 
-  final StoreEntry storeEntry;
-  final void Function(GameEntry)? onMatch;
+  final StoreEntry? storeEntry;
+  final void Function(StoreEntry, GameEntry)? onMatch;
 
   @override
   State<MatchingDialog> createState() => _MatchingDialogState();
@@ -42,7 +42,9 @@ class _MatchingDialogState extends State<MatchingDialog> {
   Widget build(BuildContext context) {
     return MatchingDialogAnimation(
         widget.storeEntry,
-        context.read<GameLibraryModel>().searchByTitle(widget.storeEntry.title),
+        context
+            .read<GameLibraryModel>()
+            .searchByTitle(widget.storeEntry?.title ?? ''),
         widget.onMatch);
   }
 }
@@ -50,9 +52,9 @@ class _MatchingDialogState extends State<MatchingDialog> {
 class MatchingDialogAnimation extends StatefulWidget {
   MatchingDialogAnimation(this.storeEntry, this.matches, this.onMatch);
 
-  final StoreEntry storeEntry;
+  final StoreEntry? storeEntry;
   final Future<List<GameEntry>> matches;
-  final void Function(GameEntry)? onMatch;
+  final void Function(StoreEntry, GameEntry)? onMatch;
 
   @override
   State<MatchingDialogAnimation> createState() =>

@@ -15,34 +15,28 @@ class MatchingDialogContent extends StatefulWidget {
     this.onMatch,
   }) : super(key: key);
 
-  final StoreEntry storeEntry;
+  final StoreEntry? storeEntry;
   final Future<List<GameEntry>> matches;
-  final void Function(GameEntry)? onMatch;
+  final void Function(StoreEntry, GameEntry)? onMatch;
 
   @override
-  State<MatchingDialogContent> createState() => _MatchingDialogContentState();
+  State<MatchingDialogContent> createState() =>
+      _MatchingDialogContentState(storeEntry);
 }
 
 class _MatchingDialogContentState extends State<MatchingDialogContent> {
+  StoreEntry? storeEntry;
+  String storeName = 'egs';
+
+  _MatchingDialogContentState(this.storeEntry);
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            height: 170,
-            decoration: BoxDecoration(boxShadow: [
-              BoxShadow(
-                color: Colors.black,
-                blurRadius: 2.0,
-                spreadRadius: 0.0,
-                offset: Offset(2.0, 2.0), // shadow direction: bottom right
-              )
-            ]),
-            child:
-                SlateTile(data: SlateTileData(title: widget.storeEntry.title)),
-          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -54,7 +48,37 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
               autofocus: true,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search),
-                hintText: 'match...',
+                hintText: 'Game title...',
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: AbsorbPointer(
+              absorbing: storeEntry != null,
+              child: DropdownButton<String>(
+                value: storeName,
+                items: [
+                  for (final store in [
+                    'gog',
+                    'steam',
+                    'egs',
+                    'battle.net',
+                    'disc',
+                  ])
+                    DropdownMenuItem<String>(
+                      value: store,
+                      child: Text(store),
+                    ),
+                ],
+                hint: Text(
+                  "Storefront",
+                ),
+                onChanged: (String? value) {
+                  setState(() {
+                    storeName = value!;
+                  });
+                },
               ),
             ),
           ),
@@ -94,7 +118,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content: Text('Matching in progress...')));
-                            widget.onMatch!(gameEntry);
+                            widget.onMatch!(getStoreEntry(), gameEntry);
                             Navigator.of(context).pop();
                           }))
                       .toList();
@@ -107,7 +131,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                 return Container(
                   // hacky: Manually measure height of HomeSlate to avoid
                   // resize if a message is shown instead.
-                  height: 234.0,
+                  height: 400.0,
                   width: 500.0,
                   child: result,
                 );
@@ -117,12 +141,21 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
     );
   }
 
+  StoreEntry getStoreEntry() {
+    return storeEntry ??
+        StoreEntry(
+          id: '',
+          title: _matchController.text,
+          storefront: storeName,
+        );
+  }
+
   @override
   void initState() {
     super.initState();
 
     matches = widget.matches;
-    _matchController.text = widget.storeEntry.title;
+    _matchController.text = widget.storeEntry?.title ?? '';
   }
 
   @override
