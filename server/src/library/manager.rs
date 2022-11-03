@@ -202,7 +202,7 @@ impl LibraryManager {
                             game_entry.id,
                             game_entry,
                         )
-                        .expect("Firestore game_match_transaction()"),
+                        .expect("Firestore match_game_transaction()"),
                         None => LibraryTransactions::match_failed(
                             firestore,
                             &user_id,
