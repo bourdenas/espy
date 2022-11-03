@@ -1,6 +1,6 @@
-use super::{LibraryManager, ReconReport, Reconciler};
+use super::{LibraryManager, ReconReport};
 use crate::{
-    api::{self, FirestoreApi, GogApi, SteamApi},
+    api::{self, FirestoreApi, GogApi, IgdbApi, SteamApi},
     documents::{GameEntry, Keys, LibraryEntry, StoreEntry, UserData},
     util, Status,
 };
@@ -51,11 +51,11 @@ impl User {
 
     /// Synchronises user library with connected storefronts to retrieve
     /// updates.
-    #[instrument(level = "trace", skip(self, keys, recon_service))]
+    #[instrument(level = "trace", skip(self, keys, igdb))]
     pub async fn sync(
         &mut self,
         keys: &util::keys::Keys,
-        recon_service: Reconciler,
+        igdb: Arc<IgdbApi>,
     ) -> Result<ReconReport, Status> {
         let gog_api = match self.gog_token().await {
             Some(token) => {
@@ -76,7 +76,7 @@ impl User {
         };
 
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        let report = mgr.sync_library(steam_api, gog_api, recon_service).await?;
+        let report = mgr.sync_library(steam_api, gog_api, igdb).await?;
 
         commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
         Ok(report)
@@ -84,30 +84,29 @@ impl User {
 
     /// Manually uploads a set of StoreEntries to the user library for
     /// reconciling.
-    #[instrument(level = "trace", skip(self, entries, recon_service))]
+    #[instrument(level = "trace", skip(self, entries, igdb))]
     pub async fn upload(
         &mut self,
         entries: Vec<StoreEntry>,
-        recon_service: Reconciler,
+        igdb: Arc<IgdbApi>,
     ) -> Result<ReconReport, Status> {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        let report = mgr.recon_store_entries(entries, recon_service).await?;
+        let report = mgr.recon_store_entries(entries, igdb).await?;
 
         commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
         Ok(report)
     }
 
     /// Manually matches a StoreEntry with a LibraryEntry.
-    #[instrument(level = "trace", skip(self, recon_service))]
+    #[instrument(level = "trace", skip(self, igdb))]
     pub async fn match_entry(
         &mut self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
-        recon_service: Reconciler,
+        igdb: Arc<IgdbApi>,
     ) -> Result<(), Status> {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.manual_match(recon_service, store_entry, game_entry)
-            .await?;
+        mgr.manual_match(store_entry, game_entry, igdb).await?;
 
         commit_version(&mut self.data, &self.firestore.lock().unwrap())
     }
@@ -130,22 +129,17 @@ impl User {
     }
 
     /// Unmatches or deletes (based on `delete`) a StoreEntry with a LibraryEntry.
-    #[instrument(level = "trace", skip(self, recon_service))]
+    #[instrument(level = "trace", skip(self, igdb))]
     pub async fn rematch_entry(
         &mut self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
         existing_library_entry: LibraryEntry,
-        recon_service: Reconciler,
+        igdb: Arc<IgdbApi>,
     ) -> Result<(), Status> {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.rematch_game(
-            recon_service,
-            store_entry,
-            game_entry,
-            existing_library_entry,
-        )
-        .await?;
+        mgr.rematch_game(store_entry, game_entry, existing_library_entry, igdb)
+            .await?;
 
         commit_version(&mut self.data, &self.firestore.lock().unwrap())
     }
