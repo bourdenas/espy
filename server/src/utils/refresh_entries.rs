@@ -14,6 +14,10 @@ use tracing::{error, info, trace_span, warn, Instrument};
 #[derive(Parser)]
 struct Opts {
     /// JSON file that contains application keys for espy service.
+    #[clap(long)]
+    id: Option<u64>,
+
+    /// JSON file that contains application keys for espy service.
     #[clap(long, default_value = "keys.json")]
     key_store: String,
 
@@ -37,9 +41,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut igdb = api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
 
-    refresh_entries(&firestore, igdb).await?;
+    if let Some(id) = opts.id {
+        refresh_game(id, &firestore, igdb).await?;
+    } else {
+        refresh_entries(&firestore, igdb).await?;
+    }
 
     Ok(())
+}
+
+async fn refresh_game(id: u64, firestore: &FirestoreApi, igdb: IgdbApi) -> Result<(), Status> {
+    let game = LibraryOps::read_game_entry(firestore, id)?;
+    refresh(vec![game], firestore, igdb).await
 }
 
 /// Refreshes game entries info from IGDB in user's library.
@@ -50,7 +63,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 // )]
 async fn refresh_entries(firestore: &FirestoreApi, igdb: IgdbApi) -> Result<(), Status> {
     let game_entries = LibraryOps::list_games(firestore)?;
+    refresh(game_entries, firestore, igdb).await
+}
 
+async fn refresh(
+    game_entries: Vec<GameEntry>,
+    firestore: &FirestoreApi,
+    igdb: IgdbApi,
+) -> Result<(), Status> {
     let igdb = Arc::new(igdb);
     let (tx, rx) = mpsc::channel(32);
     let _handle = tokio::spawn(
