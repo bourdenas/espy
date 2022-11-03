@@ -2,51 +2,37 @@ import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterfire_ui/auth.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class Settings extends StatefulWidget {
+  Settings({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return SignInScreen(
-      providerConfigs: _providerConfigs,
-      actions: [],
-    );
-  }
+  State<Settings> createState() => _SettingsState();
 }
 
-class ProfilePage extends StatefulWidget {
-  ProfilePage({Key? key}) : super(key: key);
-
-  @override
-  State<ProfilePage> createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
-  _ProfilePageState() : _syncLog = '';
+class _SettingsState extends State<Settings> {
+  _SettingsState() : _syncLog = '';
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ProfileScreen(
-        //   providerConfigs: _providerConfigs,
-        //   actions: [
-        //     SignedOutAction((context) {
-        //       Navigator.pushReplacementNamed(context, '/');
-        //     }),
-        //   ],
-        // ),
+        SizedBox(height: 16),
+        Text(
+          'Settings',
+          style: Theme.of(context).textTheme.headline6!.copyWith(
+                color: Colors.white70,
+              ),
+        ),
+        SizedBox(height: 16),
         storefrontCodeBoxes(context),
         SizedBox(height: 16),
-        syncButtons(context),
+        syncButton(context),
         SizedBox(height: 32),
         manualEditBoxes(context),
         SizedBox(height: 16),
-        uploadButtons(context),
+        uploadButton(context),
         SizedBox(height: 32),
         syncLog(),
       ],
@@ -117,31 +103,40 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget syncButtons(BuildContext context) {
+  Widget syncButton(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ElevatedButton(
-          child: Text("Sync"),
-          onPressed: () async {
-            if (_formKey.currentState!.validate()) {
-              final keys = Keys(
-                gogToken: GogToken(
-                  oauthCode: _gogTextController.text,
-                ),
-                steamUserId: _steamTextController.text,
-                egsAuthCode: _egsTextController.text,
-              );
+        _syncLoading
+            ? CircularProgressIndicator()
+            : ElevatedButton(
+                child: Text("Sync"),
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    setState(() {
+                      _syncLog = 'Syncing storefronts...';
+                      _syncLoading = true;
+                    });
 
-              await context.read<UserDataModel>().setUserKeys(keys);
-              final response =
-                  await context.read<UserDataModel>().syncLibrary(keys);
-              setState(() {
-                _syncLog = response;
-              });
-            }
-          },
-        ),
+                    final keys = Keys(
+                      gogToken: GogToken(
+                        oauthCode: _gogTextController.text,
+                      ),
+                      steamUserId: _steamTextController.text,
+                      egsAuthCode: _egsTextController.text,
+                    );
+
+                    await context.read<UserDataModel>().setUserKeys(keys);
+                    final response =
+                        await context.read<UserDataModel>().syncLibrary(keys);
+
+                    setState(() {
+                      _syncLog = response;
+                      _syncLoading = false;
+                    });
+                  }
+                },
+              ),
       ],
     );
   }
@@ -198,49 +193,58 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget uploadButtons(BuildContext context) {
+  Widget uploadButton(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ElevatedButton(
-          child: Text("Upload"),
-          onPressed: () async {
-            if (_formKey.currentState!.validate()) {
-              final titles = Upload(
-                  entries: _egsTextController.text
-                      .split('\n')
-                      .map((line) =>
-                          StoreEntry(id: '', title: line, storefront: 'egs'))
-                      .toList());
+        _uploadLoading
+            ? CircularProgressIndicator()
+            : ElevatedButton(
+                child: Text("Upload"),
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    setState(() {
+                      _syncLog = 'uploading...';
+                      _uploadLoading = true;
+                    });
 
-              final response =
-                  await context.read<UserDataModel>().uploadLibrary(titles);
-              setState(() {
-                _syncLog = response;
-              });
-            }
-          },
-        ),
+                    final titles = Upload(
+                        entries: _egsTextController.text
+                            .split('\n')
+                            .map((line) => StoreEntry(
+                                id: '', title: line, storefront: 'egs'))
+                            .toList());
+
+                    final response = await context
+                        .read<UserDataModel>()
+                        .uploadLibrary(titles);
+
+                    setState(() {
+                      _syncLog = response;
+                      _uploadLoading = false;
+                    });
+                  }
+                },
+              ),
       ],
     );
   }
 
   String _syncLog;
+  bool _syncLoading = false;
+  bool _uploadLoading = false;
 
   Widget syncLog() {
     return Expanded(
       child: Container(
-        width: 300,
-        child: Text(_syncLog),
+        width: 400,
+        child: Text(
+          _syncLog,
+          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                color: Colors.white70,
+              ),
+        ),
       ),
     );
   }
 }
-
-const _providerConfigs = [
-  // EmailProviderConfiguration(),
-  GoogleProviderConfiguration(
-    clientId:
-        '478783154654-gq2jbr76gn0eggo0i71ak51bu9l3q7q5.apps.googleusercontent.com',
-  ),
-];
