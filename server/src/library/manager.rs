@@ -3,7 +3,8 @@ use crate::{
     documents::{GameEntry, LibraryEntry, StoreEntry},
     library::{
         library_ops::LibraryOps, library_transactions::LibraryTransactions,
-        library_transactions::Op, reconciler::Match, ReconReport, Reconciler,
+        library_transactions::Op, reconciler::Match, steam_data::SteamDataApi, ReconReport,
+        Reconciler,
     },
     traits, Status,
 };
@@ -34,7 +35,7 @@ impl LibraryManager {
     /// independenlty.
     #[instrument(
         level = "trace",
-        skip(self, steam_api, gog_api, igdb),
+        skip(self, steam_api, gog_api, igdb, steam),
         fields(user_id = %self.user_id),
     )]
     pub async fn sync_library(
@@ -42,6 +43,7 @@ impl LibraryManager {
         steam_api: Option<SteamApi>,
         gog_api: Option<GogApi>,
         igdb: Arc<IgdbApi>,
+        steam: Arc<SteamDataApi>,
     ) -> Result<ReconReport, Status> {
         if let Some(api) = steam_api {
             self.sync_storefront(&api).await?;
@@ -50,13 +52,13 @@ impl LibraryManager {
             self.sync_storefront(&api).await?;
         }
 
-        self.recon_unmatched_entries(igdb).await
+        self.recon_unmatched_entries(igdb, steam).await
     }
 
     /// Reconciles entries in the unmatched collection of user's library.
     #[instrument(
         level = "trace",
-        skip(self, store_entries, igdb),
+        skip(self, store_entries, igdb, steam),
         fields(
             user_id = %self.user_id,
             entries_num = %store_entries.len()
@@ -66,12 +68,15 @@ impl LibraryManager {
         &self,
         store_entries: Vec<StoreEntry>,
         igdb: Arc<IgdbApi>,
+        steam: Arc<SteamDataApi>,
     ) -> Result<ReconReport, Status> {
         let (tx, rx) = mpsc::channel(32);
 
         tokio::spawn(
             async move {
-                Reconciler::new(igdb).reconcile(tx, store_entries).await;
+                Reconciler::new(igdb, steam)
+                    .reconcile(tx, store_entries)
+                    .await;
             }
             .instrument(trace_span!("spawn recon job")),
         );
@@ -83,14 +88,15 @@ impl LibraryManager {
     /// user's library.
     ///
     /// Uses the `Reconciler` to retrieve full details for `GameEntry`.
-    #[instrument(level = "trace", skip(self, igdb))]
+    #[instrument(level = "trace", skip(self, igdb, steam))]
     pub async fn manual_match(
         &self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
         igdb: Arc<IgdbApi>,
+        steam: Arc<SteamDataApi>,
     ) -> Result<(), Status> {
-        let recon_service = Reconciler::new(igdb);
+        let recon_service = Reconciler::new(igdb, steam);
 
         // Retrieve full details GameEntry from recon service.
         let mut game_entry = self
@@ -144,13 +150,14 @@ impl LibraryManager {
         )
     }
 
-    #[instrument(level = "trace", skip(self, igdb))]
+    #[instrument(level = "trace", skip(self, igdb, steam))]
     pub async fn rematch_game(
         &self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
         existing_library_entry: LibraryEntry,
         igdb: Arc<IgdbApi>,
+        steam: Arc<SteamDataApi>,
     ) -> Result<(), Status> {
         LibraryTransactions::unmatch_game(
             &self.firestore.lock().unwrap(),
@@ -160,16 +167,22 @@ impl LibraryManager {
             Op::Unmatch,
         )?;
 
-        self.manual_match(store_entry, game_entry, igdb).await
+        self.manual_match(store_entry, game_entry, igdb, steam)
+            .await
     }
 
     /// Reconciles entries in the unmatched collection of user's library.
-    #[instrument(level = "trace", skip(self, igdb))]
-    async fn recon_unmatched_entries(&self, igdb: Arc<IgdbApi>) -> Result<ReconReport, Status> {
+    #[instrument(level = "trace", skip(self, igdb, steam))]
+    async fn recon_unmatched_entries(
+        &self,
+        igdb: Arc<IgdbApi>,
+        steam: Arc<SteamDataApi>,
+    ) -> Result<ReconReport, Status> {
         let unmatched_entries =
             LibraryOps::list_unmatched(&self.firestore.lock().unwrap(), &self.user_id)?;
 
-        self.recon_store_entries(unmatched_entries, igdb).await
+        self.recon_store_entries(unmatched_entries, igdb, steam)
+            .await
     }
 
     async fn receive_matches(&self, mut rx: mpsc::Receiver<Match>) -> ReconReport {
