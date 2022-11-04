@@ -68,10 +68,16 @@ class _GameChipsWrap extends StatelessWidget {
   }
 }
 
-class GameChipsListView extends StatelessWidget {
+class GameCardChips extends StatelessWidget {
   final LibraryEntry entry;
+  final bool includeCompanies;
+  final bool includeCollections;
 
-  const GameChipsListView(this.entry);
+  const GameCardChips(
+    this.entry, {
+    this.includeCompanies = false,
+    this.includeCollections = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,29 +89,31 @@ class GameChipsListView extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          // for (final company in entry.companies)
-          //   Padding(
-          //     padding: const EdgeInsets.all(4.0),
-          //     child: CompanyChip(
-          //       company,
-          //       onPressed: () => context.goNamed(
-          //         'games',
-          //         queryParams: LibraryFilter(companies: {company}).params(),
-          //       ),
-          //     ),
-          //   ),
-          for (final collection in entry.collections)
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: CollectionChip(
-                collection,
-                onPressed: () => context.goNamed(
-                  'games',
-                  queryParams:
-                      LibraryFilter(collections: {collection}).params(),
+          if (includeCompanies)
+            for (final company in entry.companies)
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: CompanyChip(
+                  company,
+                  onPressed: () => context.goNamed(
+                    'games',
+                    queryParams: LibraryFilter(companies: {company}).params(),
+                  ),
                 ),
               ),
-            ),
+          if (includeCollections)
+            for (final collection in entry.collections)
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: CollectionChip(
+                  collection,
+                  onPressed: () => context.goNamed(
+                    'games',
+                    queryParams:
+                        LibraryFilter(collections: {collection}).params(),
+                  ),
+                ),
+              ),
           for (final tag in entry.userData.tags)
             Padding(
               padding: const EdgeInsets.all(4.0),
