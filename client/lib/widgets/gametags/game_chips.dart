@@ -1,11 +1,10 @@
-import 'package:espy/modules/documents/annotation.dart';
 import 'package:flutter/material.dart';
 
 class CompanyChip extends EspyChip {
-  CompanyChip(Annotation company,
+  CompanyChip(String company,
       {VoidCallback? onPressed, VoidCallback? onDeleted})
       : super(
-          label: company.name,
+          label: company,
           color: Colors.redAccent,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
@@ -13,10 +12,10 @@ class CompanyChip extends EspyChip {
 }
 
 class CollectionChip extends EspyChip {
-  CollectionChip(Annotation collection,
+  CollectionChip(String collection,
       {VoidCallback? onPressed, VoidCallback? onDeleted})
       : super(
-          label: collection.name,
+          label: collection,
           color: Colors.indigoAccent,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
