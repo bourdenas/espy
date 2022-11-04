@@ -1,11 +1,12 @@
-use crate::documents::{Annotation, GameEntry, StoreEntry};
+use super::Annotation;
+use crate::documents::{Collection, Company, GameEntry, StoreEntry};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Document type under 'users/{user_id}/library_v2/{game_id}' that represents a
 /// game entry in user's library that has been matched with an IGDB entry.
 #[derive(Serialize, Deserialize, Default, Debug)]
-pub struct LibraryEntry {
+pub struct LegacyLibraryEntry {
     pub id: u64,
     pub name: String,
 
@@ -73,4 +74,38 @@ pub struct GameUserData {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     tags: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct LibraryEntry {
+    pub id: u64,
+    pub name: String,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cover: Option<String>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub release_date: Option<i64>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub collections: Vec<Collection>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub companies: Vec<Company>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub store_entries: Vec<StoreEntry>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub owned_versions: Vec<u64>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_data: Option<GameUserData>,
 }

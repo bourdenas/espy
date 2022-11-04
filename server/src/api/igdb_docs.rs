@@ -77,6 +77,37 @@ pub struct InvolvedCompany {
 
     #[serde(default)]
     pub publisher: bool,
+
+    #[serde(default)]
+    pub porting: bool,
+
+    #[serde(default)]
+    pub supporting: bool,
+}
+
+#[derive(Deserialize, Default, Debug, Clone)]
+pub struct Company {
+    pub id: u64,
+
+    #[serde(default)]
+    pub name: String,
+
+    #[serde(default)]
+    pub slug: String,
+
+    #[serde(default)]
+    pub logo: Option<u64>,
+}
+
+#[derive(Deserialize, Default, Debug)]
+pub struct Collection {
+    pub id: u64,
+
+    #[serde(default)]
+    pub name: String,
+
+    #[serde(default)]
+    pub slug: String,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]

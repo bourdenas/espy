@@ -7,8 +7,8 @@ mod store_entry;
 mod user_data;
 
 pub use annotation::Annotation;
-pub use game_entry::{GameEntry, Image, Website, WebsiteAuthority};
-pub use library_entry::LibraryEntry;
+pub use game_entry::*;
+pub use library_entry::{LegacyLibraryEntry, LibraryEntry};
 pub use recent::{Recent, RecentEntry};
 pub use steam_data::SteamData;
 pub use store_entry::StoreEntry;
