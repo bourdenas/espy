@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     if !&opts.external.is_empty() {
         let game = igdb
-            .match_store_entry(&StoreEntry {
+            .get_by_store_entry(&StoreEntry {
                 id: opts.external,
                 storefront_name: opts.external_store,
                 ..Default::default()
@@ -58,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     );
 
     if opts.expand && !games.is_empty() {
-        let game = igdb.get_game_by_id(games[0].id).await?.unwrap();
+        let game = igdb.resolve(games[0].id).await?.unwrap();
         println!("{:#?}", game);
     }
 
