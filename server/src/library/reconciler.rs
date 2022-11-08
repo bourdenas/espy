@@ -1,7 +1,7 @@
 use crate::{
     api::IgdbApi,
     documents::{GameEntry, StoreEntry},
-    library::{search, SteamDataApi},
+    library::SteamDataApi,
     Status,
 };
 use futures::stream::{self, StreamExt};
@@ -27,13 +27,25 @@ impl Reconciler {
         Reconciler { igdb, steam }
     }
 
-    /// Returns a fully resolved IGDB GameEntry matching input `id`.
+    /// Returns a shallow GameEntry based on its IGDB `id`.
     #[instrument(level = "trace", skip(self))]
-    pub async fn retrieve(&self, id: u64) -> Result<GameEntry, Status> {
-        get_entry(&self.igdb, id).await
+    pub async fn get(&self, id: u64) -> Result<GameEntry, Status> {
+        match self.igdb.get(id).await? {
+            Some(game) => Ok(game),
+            None => Err(Status::not_found(
+                "Failed to retrieve IGDB game with id={id}.",
+            )),
+        }
     }
 
-    /// Matches input `entries` with IGDB GameEntries.
+    /// Returns a fully reolved GameEntry based on its IGDB `id` that also
+    /// includes Steam data.
+    #[instrument(level = "trace", skip(self))]
+    pub async fn resolve(&self, id: u64) -> Result<GameEntry, Status> {
+        resolve_game(id, &self.igdb, &self.steam).await
+    }
+
+    /// Matches input `store_entries` with IGDB GameEntries.
     ///
     /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
     /// successful or failed matches.
@@ -50,7 +62,7 @@ impl Reconciler {
             tx: tx.clone(),
         }))
         .for_each_concurrent(4, match_task)
-        .instrument(trace_span!("spawn recon tasks"));
+        .instrument(trace_span!("spawn match tasks"));
 
         fut.await;
         drop(tx);
@@ -58,39 +70,38 @@ impl Reconciler {
 }
 
 impl Match {
-    async fn create(
+    async fn success(
         store_entry: StoreEntry,
         game_entry: GameEntry,
         igdb: &IgdbApi,
         steam: &SteamDataApi,
     ) -> Self {
-        let mut game_entry = match game_entry.parent {
-            Some(parent_id) => match igdb.get_game_by_id(parent_id).await {
-                Ok(game) => game,
+        let resolved = resolve_game(
+            match game_entry.parent {
+                Some(parent_id) => parent_id,
+                None => game_entry.id,
+            },
+            igdb,
+            steam,
+        )
+        .await;
+
+        Match {
+            store_entry,
+            game_entry: match resolved {
+                Ok(game_entry) => Some(game_entry),
                 Err(e) => {
                     error!(
-                        "Failed to retrieve base game (id={parent_id}) for '{}'\nerror: {e}",
-                        &game_entry.name
+                        "Failed to retrieve game '{}' ({}) or its base game ({:?})\nerror: {e}",
+                        &game_entry.name, game_entry.id, game_entry.parent,
                     );
                     None
                 }
             },
-            None => Some(game_entry),
-        };
-
-        if let Some(game) = &mut game_entry {
-            if let Err(e) = steam.retrieve_steam_data(game).await {
-                error!("Failed to retrieve SteamData for '{}' {e}", game.name);
-            }
-        }
-
-        Match {
-            store_entry,
-            game_entry,
         }
     }
 
-    fn failed(store_entry: StoreEntry) -> Self {
+    fn fail(store_entry: StoreEntry) -> Self {
         Match {
             store_entry,
             ..Default::default()
@@ -98,8 +109,24 @@ impl Match {
     }
 }
 
-/// Performs a `MatchingTask` to producea `Match` and transmits it over its
-/// task's channel.
+async fn resolve_game(
+    game_id: u64,
+    igdb: &IgdbApi,
+    steam: &SteamDataApi,
+) -> Result<GameEntry, Status> {
+    match igdb.resolve(game_id).await? {
+        Some(mut game) => {
+            if let Err(e) = steam.retrieve_steam_data(&mut game).await {
+                error!("Failed to retrieve SteamData for '{}' {e}", game.name);
+            }
+            Ok(game)
+        }
+        None => Err(Status::not_found(
+            "Failed to retrieve IGDB game with id={game_id}.",
+        )),
+    }
+}
+
 #[instrument(
     level = "trace",
     skip(task),
@@ -109,18 +136,18 @@ async fn match_task(task: MatchingTask) {
     let entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => match game_entry {
             Some(game_entry) => {
-                Match::create(task.store_entry, game_entry, &task.igdb, &task.steam).await
+                Match::success(task.store_entry, game_entry, &task.igdb, &task.steam).await
             }
-            None => match match_by_title(&task.igdb, &task.store_entry).await {
+            None => match match_by_title(&task.igdb, &task.store_entry.title).await {
                 Ok(game_entry) => match game_entry {
                     Some(game_entry) => {
-                        Match::create(task.store_entry, game_entry, &task.igdb, &task.steam).await
+                        Match::success(task.store_entry, game_entry, &task.igdb, &task.steam).await
                     }
-                    None => Match::failed(task.store_entry),
+                    None => Match::fail(task.store_entry),
                 },
                 Err(e) => {
                     error!("match_by_title '{}' failed: {e}", task.store_entry.title);
-                    Match::failed(task.store_entry)
+                    Match::fail(task.store_entry)
                 }
             },
         },
@@ -129,7 +156,7 @@ async fn match_task(task: MatchingTask) {
                 "match_by_external_id '{}' failed: {e}",
                 task.store_entry.title
             );
-            Match::failed(task.store_entry)
+            Match::fail(task.store_entry)
         }
     };
 
@@ -148,31 +175,18 @@ async fn match_by_external_id(
 
     match store_entry.id.is_empty() {
         true => Ok(None),
-        false => igdb.match_store_entry(store_entry).await,
+        false => igdb.get_by_store_entry(store_entry).await,
     }
 }
 
-/// Returns a `GameEntry` from IGDB matching the title in `StoreEntry`.
-async fn match_by_title(
-    igdb: &IgdbApi,
-    store_entry: &StoreEntry,
-) -> Result<Option<GameEntry>, Status> {
-    debug!("Searching '{}'", &store_entry.title);
+/// Returns a `GameEntry` from IGDB matching the `title`.
+async fn match_by_title(igdb: &IgdbApi, title: &str) -> Result<Option<GameEntry>, Status> {
+    debug!("Searching '{}'", title);
 
-    let candidates = search::get_candidates(igdb, &store_entry.title).await?;
+    let candidates = igdb.get_by_title(title).await?;
     match candidates.into_iter().next() {
-        Some(game_entry) => Ok(Some(get_entry(igdb, game_entry.id).await?)),
+        Some(game_entry) => Ok(Some(game_entry)),
         None => Ok(None),
-    }
-}
-
-/// Returns a `GameEntry` from IGDB that matches the input `id`.
-async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
-    match igdb.get_game_by_id(id).await? {
-        Some(game_entry) => Ok(game_entry),
-        None => Err(Status::not_found(&format!(
-            "Failed to retrieve game entry with id={id}"
-        ))),
     }
 }
 
