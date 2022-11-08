@@ -1,7 +1,7 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
     http::models,
-    library::{self, User},
+    library::{self, SteamDataApi, User},
     util, Status,
 };
 use std::{
@@ -12,12 +12,13 @@ use std::{
 use tracing::{debug, error, instrument, warn};
 use warp::http::StatusCode;
 
-#[instrument(level = "trace", skip(api_keys, firestore, igdb))]
+#[instrument(level = "trace", skip(api_keys, firestore, igdb, steam))]
 pub async fn post_sync(
     user_id: String,
     api_keys: Arc<util::keys::Keys>,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
     debug!("POST /library/{user_id}/sync");
     let started = SystemTime::now();
@@ -27,7 +28,7 @@ pub async fn post_sync(
         Err(err) => return Ok(log_err(err)),
     };
 
-    let report = match user.sync(&api_keys, igdb).await {
+    let report = match user.sync(&api_keys, igdb, steam).await {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };
@@ -39,12 +40,13 @@ pub async fn post_sync(
     Ok(resp)
 }
 
-#[instrument(level = "trace", skip(upload, firestore, igdb))]
+#[instrument(level = "trace", skip(upload, firestore, igdb, steam))]
 pub async fn post_upload(
     user_id: String,
     upload: models::Upload,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
     debug!("POST /library/{user_id}/upload");
     let started = SystemTime::now();
@@ -53,7 +55,7 @@ pub async fn post_upload(
         Ok(user) => user,
         Err(err) => return Ok(log_err(err)),
     };
-    let report = match user.upload(upload.entries, igdb).await {
+    let report = match user.upload(upload.entries, igdb, steam).await {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };
@@ -74,7 +76,7 @@ pub async fn post_search(
     let started = SystemTime::now();
 
     let resp: Result<Box<dyn warp::Reply>, Infallible> =
-        match library::search::get_candidates_with_covers(igdb, &search.title).await {
+        match igdb.get_by_title_with_cover(&search.title).await {
             Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
             Err(err) => {
                 error!("{err}");
@@ -87,12 +89,13 @@ pub async fn post_search(
     resp
 }
 
-#[instrument(level = "trace", skip(igdb, firestore))]
+// #[instrument(level = "trace", skip(firestore, igdb, steam))]
 pub async fn post_match(
     user_id: String,
     _match: models::Match,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
 ) -> Result<impl warp::Reply, Infallible> {
     debug!("POST /library/{user_id}/match");
 
@@ -105,7 +108,7 @@ pub async fn post_match(
     };
 
     match user
-        .match_entry(_match.store_entry, _match.game_entry, igdb)
+        .match_entry(_match.store_entry, _match.game_entry, igdb, steam)
         .await
     {
         Ok(()) => Ok(StatusCode::OK),
@@ -144,12 +147,13 @@ pub async fn post_unmatch(
     }
 }
 
-#[instrument(level = "trace", skip(igdb, firestore))]
+// #[instrument(level = "trace", skip(firestore, igdb, steam))]
 pub async fn post_rematch(
     user_id: String,
     rematch: models::Rematch,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
 ) -> Result<impl warp::Reply, Infallible> {
     debug!("POST /library/{user_id}/rematch");
 
@@ -167,6 +171,7 @@ pub async fn post_rematch(
             rematch.game_entry,
             rematch.library_entry,
             igdb,
+            steam,
         )
         .await
     {

@@ -11,5 +11,5 @@ pub use library_ops::LibraryOps;
 use manager::LibraryManager;
 pub use recon_report::ReconReport;
 use reconciler::Reconciler;
-use steam_data::SteamDataApi;
+pub use steam_data::SteamDataApi;
 pub use user::User;

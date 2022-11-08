@@ -3,7 +3,7 @@ use crate::{
     http,
 };
 use clap::Parser;
-use espy_server::*;
+use espy_server::{library::SteamDataApi, *};
 use std::{
     env,
     sync::{Arc, Mutex},
@@ -39,6 +39,8 @@ async fn main() -> Result<(), Status> {
     let mut igdb = IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
 
+    let steam = SteamDataApi::new();
+
     let firestore = Arc::new(Mutex::new(
         FirestoreApi::from_credentials(&opts.firestore_credentials)
             .expect("FirestoreApi.from_credentials()"),
@@ -54,7 +56,7 @@ async fn main() -> Result<(), Status> {
     };
 
     warp::serve(
-        http::routes::routes(Arc::new(keys), Arc::new(igdb), firestore).with(
+        http::routes::routes(Arc::new(keys), Arc::new(igdb), Arc::new(steam), firestore).with(
             warp::cors()
                 .allow_methods(vec!["GET", "POST"])
                 .allow_headers(vec!["Content-Type", "Authorization"])
