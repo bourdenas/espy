@@ -223,7 +223,7 @@ impl LibraryManager {
         id: u64,
         recon_service: &Reconciler,
     ) -> Result<GameEntry, Status> {
-        let game_entry = match LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id) {
+        let game_entry = match self.read_from_firestore(id) {
             Ok(game_entry) => game_entry,
             Err(_) => {
                 let game_entry = recon_service.resolve(id).await?;
@@ -232,6 +232,14 @@ impl LibraryManager {
         };
 
         Ok(game_entry)
+    }
+
+    /// NOTE: If this function is removed and inlined in `retrieve_game_entry()`
+    /// the warp routes are loosing it and complain about non Send/Sync objects
+    /// moved across threads. I don't get it yet...
+    #[instrument(level = "trace", skip(self))]
+    fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
+        LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
     }
 
     /// Retieves new game entries from the provided remote storefront and
