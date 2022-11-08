@@ -236,7 +236,7 @@ async fn retrieve_game_info(
     igdb_state: Arc<IgdbApiState>,
     igdb_game: igdb_docs::IgdbGame,
 ) -> Result<GameEntry, Status> {
-    let game = Arc::new(Mutex::new(GameEntry::from(igdb_game)));
+    let game = Arc::new(Mutex::new(GameEntry::from(&igdb_game)));
 
     let mut handles: Vec<JoinHandle<Result<(), Status>>> = vec![];
     if let Some(cover) = igdb_game.cover {
@@ -653,6 +653,34 @@ impl From<igdb_docs::IgdbGame> for GameEntry {
 
             websites: vec![Website {
                 url: igdb_game.url,
+                authority: WebsiteAuthority::Igdb,
+            }],
+
+            ..Default::default()
+        }
+    }
+}
+
+impl From<&igdb_docs::IgdbGame> for GameEntry {
+    fn from(igdb_game: &igdb_docs::IgdbGame) -> Self {
+        GameEntry {
+            id: igdb_game.id,
+            name: igdb_game.name.clone(),
+            summary: igdb_game.summary.clone(),
+            storyline: igdb_game.storyline.clone(),
+            release_date: igdb_game.first_release_date,
+
+            versions: igdb_game.bundles.clone(),
+            parent: match igdb_game.parent_game {
+                Some(parent) => Some(parent),
+                None => match igdb_game.version_parent {
+                    Some(parent) => Some(parent),
+                    None => None,
+                },
+            },
+
+            websites: vec![Website {
+                url: igdb_game.url.clone(),
                 authority: WebsiteAuthority::Igdb,
             }],
 
