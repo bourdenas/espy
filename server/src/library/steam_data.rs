@@ -4,6 +4,7 @@ use crate::{
     util::rate_limiter::RateLimiter,
     Status,
 };
+use std::time::Duration;
 use tracing::{instrument, warn};
 
 pub struct SteamDataApi {
@@ -13,7 +14,7 @@ pub struct SteamDataApi {
 impl SteamDataApi {
     pub fn new() -> Self {
         SteamDataApi {
-            qps: RateLimiter::new(4, 7),
+            qps: RateLimiter::new(200, Duration::from_secs(5 * 60), 7),
         }
     }
 

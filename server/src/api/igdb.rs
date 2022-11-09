@@ -9,7 +9,10 @@ use crate::{
 };
 use async_recursion::async_recursion;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::sync::{Arc, Mutex};
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 use tokio::task::JoinHandle;
 use tracing::{error, instrument, trace_span, Instrument};
 
@@ -54,7 +57,7 @@ impl IgdbApi {
         self.state = Some(Arc::new(IgdbApiState {
             client_id: self.client_id.clone(),
             oauth_token: resp.access_token,
-            qps: RateLimiter::new(4, 7),
+            qps: RateLimiter::new(4, Duration::from_secs(1), 7),
         }));
 
         Ok(())

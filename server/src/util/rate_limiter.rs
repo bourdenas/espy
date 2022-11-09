@@ -8,27 +8,28 @@ use tracing::instrument;
 /// Thread-safe RateLimiter for fixed amount of queries per second (QPS).
 #[derive(Debug)]
 pub struct RateLimiter {
-    qps_rate: i32,
+    quota: i32,
+    quota_period: Duration,
     active_connections: Semaphore,
     state: Mutex<RateLimiterState>,
 }
 
 #[derive(Debug)]
 struct RateLimiterState {
-    available_qps: i32,
+    available_quota: i32,
     next_reset: SystemTime,
 }
 
 impl RateLimiter {
-    pub fn new(qps_rate: i32, max_active_connections: i32) -> RateLimiter {
-        assert!(qps_rate > 0);
-        assert!(max_active_connections >= qps_rate);
+    pub fn new(quota: i32, quota_period: Duration, max_active_connections: i32) -> RateLimiter {
+        assert!(quota > 0);
 
         RateLimiter {
-            qps_rate,
+            quota,
+            quota_period,
             active_connections: Semaphore::new(max_active_connections as usize),
             state: Mutex::new(RateLimiterState {
-                available_qps: qps_rate,
+                available_quota: quota,
                 next_reset: SystemTime::now(),
             }),
         }
@@ -61,13 +62,13 @@ impl RateLimiter {
         let mut state = self.state.lock().unwrap();
 
         if state.next_reset < now {
-            state.available_qps = self.qps_rate;
-            state.next_reset = now.checked_add(Duration::from_secs(1)).unwrap();
+            state.available_quota = self.quota;
+            state.next_reset = now.checked_add(self.quota_period).unwrap();
         }
 
-        match state.available_qps > 0 {
+        match state.available_quota > 0 {
             true => {
-                state.available_qps -= 1;
+                state.available_quota -= 1;
                 Duration::from_micros(0)
             }
             false => state.next_reset.duration_since(now).unwrap(),
@@ -86,7 +87,7 @@ mod tests {
 
     #[test]
     fn sequencial_under_qps() {
-        let limiter = RateLimiter::new(4, 4);
+        let limiter = RateLimiter::new(4, Duration::from_secs(1), 4);
 
         let start = SystemTime::now();
         for _ in 0..2 {
@@ -98,7 +99,7 @@ mod tests {
 
     #[test]
     fn sequencial_over_qps() {
-        let limiter = RateLimiter::new(4, 4);
+        let limiter = RateLimiter::new(4, Duration::from_secs(1), 4);
 
         let start = SystemTime::now();
         for _ in 0..4 {
@@ -117,7 +118,7 @@ mod tests {
 
     #[test]
     fn parallel_under_qps() {
-        let limiter = Arc::new(RateLimiter::new(4, 4));
+        let limiter = Arc::new(RateLimiter::new(4, Duration::from_secs(1), 4));
 
         let start = SystemTime::now();
         let threads = (0..2)
@@ -138,7 +139,7 @@ mod tests {
 
     #[test]
     fn parallel_over_qps() {
-        let limiter = Arc::new(RateLimiter::new(4, 4));
+        let limiter = Arc::new(RateLimiter::new(4, Duration::from_secs(1), 4));
 
         let start = SystemTime::now();
         let threads = (0..5)
