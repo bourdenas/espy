@@ -121,9 +121,9 @@ async fn resolve_game(
             }
             Ok(game)
         }
-        None => Err(Status::not_found(
-            "Failed to retrieve IGDB game with id={game_id}.",
-        )),
+        None => Err(Status::not_found(format!(
+            "Failed to retrieve IGDB game with id={game_id}."
+        ))),
     }
 }
 
