@@ -57,7 +57,7 @@ impl IgdbApi {
         self.state = Some(Arc::new(IgdbApiState {
             client_id: self.client_id.clone(),
             oauth_token: resp.access_token,
-            qps: RateLimiter::new(4, Duration::from_secs(1), 7),
+            qps: RateLimiter::new(4, Duration::from_secs(1), 4),
         }));
 
         Ok(())
@@ -572,11 +572,16 @@ async fn get_companies(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Com
     .await?;
 
     let mut companies = vec![];
-    for (ic, company) in itertools::zip(involved_companies, igdb_companies) {
-        assert!(ic.company.unwrap() == company.id);
+    for company in igdb_companies {
         if company.name.is_empty() {
             continue;
         }
+
+        let ic = involved_companies
+            .iter()
+            .filter(|ic| ic.company.is_some())
+            .find(|ic| ic.company.unwrap() == company.id)
+            .expect("Failed to find company in involved companies.");
 
         companies.push(Company {
             id: company.id,
