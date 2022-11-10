@@ -13,7 +13,7 @@ impl LibraryOps {
     /// Returns a list of all games stored on espy Firestore.
     #[instrument(level = "trace", skip(firestore))]
     pub fn list_games(firestore: &FirestoreApi) -> Result<Vec<GameEntry>, Status> {
-        firestore.list(&format!("games_v2"))
+        firestore.list(&format!("games"))
     }
 
     /// Returns a list of all successfully matched games in user library.
@@ -94,7 +94,7 @@ impl LibraryOps {
     /// Returns a GameEntry doc based on `game_id` from Firestore.
     #[instrument(level = "trace", skip(firestore))]
     pub fn read_game_entry(firestore: &FirestoreApi, game_id: u64) -> Result<GameEntry, Status> {
-        firestore.read::<GameEntry>("games_v2", &game_id.to_string())
+        firestore.read::<GameEntry>("games", &game_id.to_string())
     }
 
     /// Writes a GameEntry doc in Firestore.
@@ -103,7 +103,7 @@ impl LibraryOps {
         firestore: &FirestoreApi,
         game_entry: &GameEntry,
     ) -> Result<(), Status> {
-        firestore.write("games_v2", Some(&game_entry.id.to_string()), game_entry)?;
+        firestore.write("games", Some(&game_entry.id.to_string()), game_entry)?;
         Ok(())
     }
 
