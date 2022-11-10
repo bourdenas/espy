@@ -32,9 +32,9 @@ impl Reconciler {
     pub async fn get(&self, id: u64) -> Result<GameEntry, Status> {
         match self.igdb.get(id).await? {
             Some(game) => Ok(game),
-            None => Err(Status::not_found(
-                "Failed to retrieve IGDB game with id={id}.",
-            )),
+            None => Err(Status::not_found(format!(
+                "Failed to retrieve IGDB game with id={id}."
+            ))),
         }
     }
 
