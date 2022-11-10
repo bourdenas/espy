@@ -16,8 +16,8 @@ class GameEntry {
   final List<int> versions;
   final int? parent;
 
-  final List<Annotation> collections;
-  final List<Annotation> companies;
+  final List<Collection> collections;
+  final List<Company> companies;
 
   final GameImage? cover;
   final List<GameImage> screenshots;
@@ -84,13 +84,13 @@ class GameEntry {
           collections: json.containsKey('collections')
               ? [
                   for (final entry in json['collections'])
-                    Annotation.fromJson(entry),
+                    Collection.fromJson(entry),
                 ]
               : [],
           companies: json.containsKey('companies')
               ? [
                   for (final entry in json['companies'])
-                    Annotation.fromJson(entry),
+                    Company.fromJson(entry),
                 ]
               : [],
           cover: json.containsKey('cover')
@@ -191,6 +191,74 @@ class GameImage {
       'image_id': imageId,
       'height': height,
       'width': width,
+    };
+  }
+}
+
+class Company {
+  final int id;
+  final String name;
+  final String slug;
+  final String role;
+  final GameImage? logo;
+
+  const Company({
+    required this.id,
+    required this.name,
+    required this.slug,
+    required this.role,
+    this.logo,
+  });
+
+  Company.fromJson(Map<String, dynamic> json)
+      : this(
+          id: json['id'],
+          name: json['name'],
+          slug: json['slug'],
+          role: json['role'],
+          logo: json.containsKey('logo')
+              ? GameImage.fromJson(json['logo'])
+              : null,
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'role': role,
+      if (logo != null) 'logo': logo!.toJson(),
+    };
+  }
+}
+
+class Collection {
+  final int id;
+  final String name;
+  final String slug;
+  final String igdbType;
+
+  const Collection({
+    required this.id,
+    required this.name,
+    required this.slug,
+    required this.igdbType,
+  });
+
+  Collection.fromJson(Map<String, dynamic> json)
+      : this(
+          id: json['id'],
+          name: json['name'],
+          slug: json['slug'],
+          igdbType: json['igdb_type'],
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'igdb_type': igdbType,
     };
   }
 }
