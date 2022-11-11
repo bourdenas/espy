@@ -1,3 +1,4 @@
+import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/home/espy_scaffold.dart';
@@ -49,6 +50,8 @@ class _TopLevelPageState extends State<TopLevelPage>
         actions: {
           SearchIntent: CallbackAction<SearchIntent>(
               onInvoke: (intent) => context.pushNamed('search')),
+          HomeIntent: CallbackAction<HomeIntent>(
+              onInvoke: (intent) => context.goNamed('home')),
         },
         child: Focus(
           autofocus: true,
