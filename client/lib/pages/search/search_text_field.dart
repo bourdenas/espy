@@ -14,32 +14,42 @@ class SearchTextField extends StatefulWidget {
 
 class _SearchTextFieldState extends State<SearchTextField> {
   @override
+  void initState() {
+    super.initState();
+    _searchFocusNode.requestFocus();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(
           flex: 6,
-          child: TextField(
-            key: Key('searchTextField'),
+          child: Focus(
             autofocus: true,
-            controller: _searchController,
-            onChanged: widget.onChanged,
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              prefixIcon: Icon(
-                Icons.search,
-                color: Colors.white70,
+            child: TextField(
+              key: Key('searchTextField'),
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              autofocus: true,
+              onChanged: widget.onChanged,
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.white70,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: BorderSide(color: Colors.white),
+                ),
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-                borderSide: BorderSide(color: Colors.white),
-              ),
+              textInputAction: TextInputAction.search,
+              cursorColor: Colors.white,
             ),
-            textInputAction: TextInputAction.search,
-            cursorColor: Colors.white,
           ),
         ),
       ],
@@ -47,4 +57,5 @@ class _SearchTextFieldState extends State<SearchTextField> {
   }
 
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 }
