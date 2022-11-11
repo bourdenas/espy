@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SlateTileData {
-  const SlateTileData({this.title, this.image, this.onTap});
+  const SlateTileData({this.title, this.image, this.onTap, this.onLongTap});
 
   final String? title;
   final String? image;
   final VoidCallback? onTap;
+  final VoidCallback? onLongTap;
 }
 
 class SlateTileSize {
@@ -41,8 +42,10 @@ class SlateTile extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.only(right: 8.0),
-      child: InkWell(
+      child: GestureDetector(
         onTap: data.onTap,
+        onSecondaryTap: data.onLongTap,
+        onLongPress: data.onLongTap,
         child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
           child: Stack(

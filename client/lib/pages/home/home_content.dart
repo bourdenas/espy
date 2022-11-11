@@ -1,4 +1,5 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
@@ -48,6 +49,8 @@ class HomeContent extends StatelessWidget {
                             '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
                         onTap: () => context.pushNamed('details',
                             params: {'gid': '${libraryEntry.id}'}),
+                        onLongTap: () =>
+                            EditEntryDialog.show(context, libraryEntry),
                       ))
                   .toList(),
             ),
