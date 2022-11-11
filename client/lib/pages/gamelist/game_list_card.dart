@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -16,10 +17,14 @@ class GameListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = AppConfigModel.isMobile(context);
+
     return GestureDetector(
       onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
       onSecondaryTap: () => EditEntryDialog.show(context, entry),
-      onLongPress: () => EditEntryDialog.show(context, entry),
+      onLongPress: () => isMobile
+          ? context.pushNamed('edit', params: {'gid': '${entry.id}'})
+          : EditEntryDialog.show(context, entry),
       child: Container(
         padding: EdgeInsets.all(8.0),
         margin: EdgeInsets.only(bottom: 16.0),

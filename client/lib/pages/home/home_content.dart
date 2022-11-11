@@ -28,15 +28,13 @@ class HomeContent extends StatelessWidget {
   Widget library(BuildContext context) {
     final slates = context.watch<HomeSlatesModel>().slates;
     final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
+    final isMobile = AppConfigModel.isMobile(context);
 
     return ListView(
       // crossAxisAlignment: CrossAxisAlignment.start,
       primary: true,
       children: [
-        if (AppConfigModel.isMobile(context))
-          HomeHeadline()
-        else
-          SizedBox(height: 16),
+        if (isMobile) HomeHeadline() else SizedBox(height: 16),
         for (final slate in slates)
           if (slate.entries.isNotEmpty)
             HomeSlate(
@@ -49,8 +47,10 @@ class HomeContent extends StatelessWidget {
                             '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
                         onTap: () => context.pushNamed('details',
                             params: {'gid': '${libraryEntry.id}'}),
-                        onLongTap: () =>
-                            EditEntryDialog.show(context, libraryEntry),
+                        onLongTap: () => isMobile
+                            ? context.pushNamed('edit',
+                                params: {'gid': '${libraryEntry.id}'})
+                            : EditEntryDialog.show(context, libraryEntry),
                       ))
                   .toList(),
             ),
@@ -59,7 +59,7 @@ class HomeContent extends StatelessWidget {
             title: 'Unmatched Entries',
             onExpand: () => context.goNamed('unmatched'),
             tiles: unmatchedEntries
-                .take(AppConfigModel.isMobile(context) ? 8 : 32)
+                .take(isMobile ? 8 : 32)
                 .map((entry) => SlateTileData(
                       title: entry.title,
                       image: null,

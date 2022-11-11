@@ -18,12 +18,15 @@ class GameGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = AppConfigModel.isMobile(context);
     final appConfig = context.watch<AppConfigModel>();
 
     return GestureDetector(
       onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
       onSecondaryTap: () => EditEntryDialog.show(context, entry),
-      onLongPress: () => EditEntryDialog.show(context, entry),
+      onLongPress: () => isMobile
+          ? context.pushNamed('edit', params: {'gid': '${entry.id}'})
+          : EditEntryDialog.show(context, entry),
       child: GridTile(
         footer: Material(
           color: Colors.transparent,
