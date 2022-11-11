@@ -1,3 +1,4 @@
+import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/intents/title_search_intent.dart';
@@ -110,6 +111,8 @@ class EspyMaterialApp extends StatelessWidget {
             const SearchIntent(),
         SingleActivator(LogicalKeyboardKey.keyG, control: true):
             const HomeIntent(),
+        SingleActivator(LogicalKeyboardKey.keyQ, control: true):
+            const AddGameIntent(),
       },
       child: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),

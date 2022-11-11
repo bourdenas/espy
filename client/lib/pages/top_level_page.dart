@@ -1,10 +1,14 @@
+import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
+import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/pages/home/espy_scaffold.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class TopLevelPage extends StatefulWidget {
   final Widget body;
@@ -52,6 +56,15 @@ class _TopLevelPageState extends State<TopLevelPage>
               onInvoke: (intent) => context.pushNamed('search')),
           HomeIntent: CallbackAction<HomeIntent>(
               onInvoke: (intent) => context.goNamed('home')),
+          AddGameIntent: CallbackAction<AddGameIntent>(
+              onInvoke: (intent) => MatchingDialog.show(
+                    context,
+                    onMatch: (storeEntry, gameEntry) {
+                      context
+                          .read<GameLibraryModel>()
+                          .matchEntry(storeEntry, gameEntry);
+                    },
+                  )),
         },
         child: Focus(
           autofocus: true,
