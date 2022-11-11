@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
@@ -8,28 +7,25 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 ///
 /// The index is computed on-the-fly in the client.
 class GameTagsModel extends ChangeNotifier {
-  Map<int, Annotation> _companies = {};
-  Map<int, Annotation> _collections = {};
+  SplayTreeSet<String> _companies = SplayTreeSet<String>();
+  SplayTreeSet<String> _collections = SplayTreeSet<String>();
   SplayTreeSet<String> _tags = SplayTreeSet<String>();
   SplayTreeSet<String> _stores = SplayTreeSet<String>();
 
-  UnmodifiableListView<Annotation> get companies =>
-      UnmodifiableListView(_companies.values);
-  UnmodifiableListView<Annotation> get collections =>
-      UnmodifiableListView(_collections.values);
+  UnmodifiableListView<String> get companies =>
+      UnmodifiableListView(_companies);
+  UnmodifiableListView<String> get collections =>
+      UnmodifiableListView(_collections);
   UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
   UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
 
-  Iterable<Annotation> filterCompanies(Iterable<String> terms) {
-    return companies.where((company) => terms.every((term) => company.name
-        .toLowerCase()
-        .split(' ')
-        .any((word) => word.startsWith(term))));
+  Iterable<String> filterCompanies(Iterable<String> terms) {
+    return companies.where((company) => terms.every((term) =>
+        company.toLowerCase().split(' ').any((word) => word.startsWith(term))));
   }
 
-  Iterable<Annotation> filterCollections(Iterable<String> terms) {
+  Iterable<String> filterCollections(Iterable<String> terms) {
     return collections.where((collection) => terms.every((term) => collection
-        .name
         .toLowerCase()
         .split(' ')
         .any((word) => word.startsWith(term))));
@@ -52,8 +48,8 @@ class GameTagsModel extends ChangeNotifier {
   void update(List<LibraryEntry> entries) {
     _tags.clear();
     for (final entry in entries) {
-      _companies.addEntries(entry.companies.map((c) => MapEntry(c.id, c)));
-      _collections.addEntries(entry.collections.map((c) => MapEntry(c.id, c)));
+      _companies.addAll(entry.companies.map((company) => company));
+      _collections.addAll(entry.collections.map((collection) => collection));
       _tags.addAll(entry.userData.tags);
       _stores.addAll(entry.storeEntries.map((e) => e.storefront));
     }

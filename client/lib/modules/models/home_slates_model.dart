@@ -18,6 +18,7 @@ class HomeSlatesModel extends ChangeNotifier {
       slate('GOG', LibraryFilter(stores: {'gog'})),
       slate('Steam', LibraryFilter(stores: {'steam'})),
       slate('EGS', LibraryFilter(stores: {'egs'})),
+      slate('Battle.Net', LibraryFilter(stores: {'battle.net'})),
       for (final tag in tags) slate(tag, LibraryFilter(tags: {tag})),
     ];
 

@@ -75,7 +75,7 @@ class SearchDialogField extends StatelessWidget {
               .take(4)
               .map(
                 (collection) => Suggestion(
-                  text: collection.name,
+                  text: collection,
                   icon: Icon(
                     Icons.circle,
                     color: Colors.indigoAccent,
@@ -94,7 +94,7 @@ class SearchDialogField extends StatelessWidget {
               .take(4)
               .map(
                 (company) => Suggestion(
-                  text: company.name,
+                  text: company,
                   icon: Icon(
                     Icons.business,
                     color: Colors.redAccent,

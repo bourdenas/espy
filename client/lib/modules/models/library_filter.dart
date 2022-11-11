@@ -12,8 +12,8 @@ class LibraryFilter {
   });
 
   String titleSearch;
-  Set<Annotation> companies;
-  Set<Annotation> collections;
+  Set<String> companies;
+  Set<String> collections;
   Set<String> tags;
   Set<String> stores;
   bool untagged;
@@ -38,8 +38,8 @@ class LibraryFilter {
 
   String encode() {
     return [
-      companies.map((c) => 'cmp=${c.id}').join('+'),
-      collections.map((c) => 'col=${c.id}').join('+'),
+      companies.map((company) => 'cmp=${company}').join('+'),
+      collections.map((collection) => 'col=${collection}').join('+'),
       tags.map((tag) => 'tag=$tag').join('+'),
       stores.map((store) => 'str=$store').join('+'),
       if (untagged) 'untagged',
@@ -48,10 +48,8 @@ class LibraryFilter {
 
   Map<String, String> params() {
     return {
-      if (companies.isNotEmpty)
-        'cmp': companies.map((c) => '${c.id}').join(','),
-      if (collections.isNotEmpty)
-        'col': collections.map((c) => '${c.id}').join(','),
+      if (companies.isNotEmpty) 'cmp': companies.map((c) => c).join(','),
+      if (collections.isNotEmpty) 'col': collections.map((c) => c).join(','),
       if (tags.isNotEmpty) 'tag': tags.map((t) => t).join(','),
       if (stores.isNotEmpty) 'str': stores.map((s) => s).join(','),
       if (untagged) 'untagged': '',
@@ -63,15 +61,9 @@ class LibraryFilter {
 
     params.forEach((key, value) {
       if (key == 'cmp') {
-        filter.companies = value
-            .split(',')
-            .map((e) => Annotation(id: int.tryParse(e) ?? 0, name: ''))
-            .toSet();
+        filter.companies = value.split(',').toSet();
       } else if (key == 'col') {
-        filter.collections = value
-            .split(',')
-            .map((e) => Annotation(id: int.tryParse(e) ?? 0, name: ''))
-            .toSet();
+        filter.collections = value.split(',').toSet();
       } else if (key == 'tag') {
         filter.tags = value.split(',').toSet();
       } else if (key == 'str') {
@@ -84,8 +76,8 @@ class LibraryFilter {
   }
 
   factory LibraryFilter.decode(String encodedFilter) {
-    final companies = Set<Annotation>();
-    final collections = Set<Annotation>();
+    final companies = Set<String>();
+    final collections = Set<String>();
     final tags = Set<String>();
     final stores = Set<String>();
     var untagged = false;
@@ -102,9 +94,9 @@ class LibraryFilter {
       }
 
       if (term[0] == 'cmp') {
-        companies.add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
+        companies.add(term[1]);
       } else if (term[0] == 'col') {
-        collections.add(Annotation(id: int.tryParse(term[1]) ?? 0, name: ''));
+        collections.add(term[1]);
       } else if (term[0] == 'tag') {
         tags.add(term[1]);
       } else if (term[0] == 'str') {
@@ -123,13 +115,13 @@ class LibraryFilter {
 
   bool _filterCompany(LibraryEntry entry) =>
       companies.isEmpty ||
-      companies.every((filter) =>
-          entry.companies.any((company) => company.id == filter.id));
+      companies.every(
+          (filter) => entry.companies.any((company) => company == filter));
 
   bool _filterCollection(LibraryEntry entry) =>
       collections.isEmpty ||
       collections.every((filter) =>
-          entry.collections.any((collection) => collection.id == filter.id));
+          entry.collections.any((collection) => collection == filter));
 
   bool _filterTag(LibraryEntry entry) =>
       tags.isEmpty ||

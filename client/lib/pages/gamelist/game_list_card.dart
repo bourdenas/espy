@@ -80,7 +80,7 @@ class GameListCard extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 16.0),
-                  GameChipsListView(entry),
+                  GameCardChips(entry),
                 ],
               ),
             )
