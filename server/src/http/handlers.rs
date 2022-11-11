@@ -89,7 +89,7 @@ pub async fn post_search(
     resp
 }
 
-// #[instrument(level = "trace", skip(firestore, igdb, steam))]
+#[instrument(level = "trace", skip(firestore, _match, igdb, steam))]
 pub async fn post_match(
     user_id: String,
     _match: models::Match,

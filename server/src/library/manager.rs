@@ -96,9 +96,11 @@ impl LibraryManager {
 
         let mut game_entry = recon_service.get(game_entry.id).await?;
         let owned_game_id = game_entry.id;
-        if let Some(parent_id) = game_entry.parent {
-            game_entry = self.retrieve_game_entry(parent_id, &recon_service).await?;
-        }
+        let game_id = match game_entry.parent {
+            Some(parent_id) => parent_id,
+            None => game_entry.id,
+        };
+        game_entry = self.retrieve_game_entry(game_id, &recon_service).await?;
 
         LibraryTransactions::match_game(
             &self.firestore.lock().unwrap(),
