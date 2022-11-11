@@ -94,13 +94,13 @@ impl LibraryManager {
     ) -> Result<(), Status> {
         let recon_service = Reconciler::new(igdb, steam);
 
-        let mut game_entry = recon_service.get(game_entry.id).await?;
+        let game_entry = recon_service.get(game_entry.id).await?;
         let owned_game_id = game_entry.id;
         let game_id = match game_entry.parent {
             Some(parent_id) => parent_id,
             None => game_entry.id,
         };
-        game_entry = self.retrieve_game_entry(game_id, &recon_service).await?;
+        let game_entry = self.retrieve_game_entry(game_id, &recon_service).await?;
 
         LibraryTransactions::match_game(
             &self.firestore.lock().unwrap(),
@@ -162,8 +162,33 @@ impl LibraryManager {
             Op::Unmatch,
         )?;
 
-        self.manual_match(store_entry, game_entry, igdb, steam)
+        self.exact_manual_match(store_entry, game_entry, igdb, steam)
             .await
+    }
+
+    /// Match a `StoreEntry` to a specified `GameEntry` and saving it in the
+    /// user's library. It matches with an explicit GameEntry instead of trying
+    /// to match it with its parent.
+    #[instrument(level = "trace", skip(self, igdb, steam))]
+    async fn exact_manual_match(
+        &self,
+        store_entry: StoreEntry,
+        game_entry: GameEntry,
+        igdb: Arc<IgdbApi>,
+        steam: Arc<SteamDataApi>,
+    ) -> Result<(), Status> {
+        let recon_service = Reconciler::new(igdb, steam);
+
+        let game_entry = self
+            .retrieve_game_entry(game_entry.id, &recon_service)
+            .await?;
+        LibraryTransactions::match_game(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            store_entry,
+            game_entry.id,
+            game_entry,
+        )
     }
 
     async fn receive_matches(&self, mut rx: mpsc::Receiver<Match>) -> ReconReport {
