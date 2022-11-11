@@ -1,9 +1,9 @@
-use super::{Annotation, SteamData};
+use super::SteamData;
 use serde::{Deserialize, Serialize};
 
 /// Document type under 'users/{user_id}/games' that represents a game entry in
 /// IGDB.
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct GameEntry {
     pub id: u64,
     pub name: String,
@@ -46,11 +46,11 @@ pub struct GameEntry {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub collections: Vec<Annotation>,
+    pub collections: Vec<Collection>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub companies: Vec<Annotation>,
+    pub companies: Vec<Company>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -73,20 +73,75 @@ pub struct GameEntry {
     pub steam_data: Option<SteamData>,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Image {
     pub image_id: String,
     pub height: i32,
     pub width: i32,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+pub struct Company {
+    pub id: u64,
+    pub name: String,
+
+    #[serde(default)]
+    pub slug: String,
+
+    #[serde(default)]
+    pub role: CompanyRole,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub logo: Option<Image>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum CompanyRole {
+    Unknown = 0,
+    Developer = 1,
+    Publisher = 2,
+    Porting = 3,
+    Support = 4,
+}
+
+impl Default for CompanyRole {
+    fn default() -> Self {
+        CompanyRole::Unknown
+    }
+}
+
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+pub struct Collection {
+    pub id: u64,
+    pub name: String,
+
+    #[serde(default)]
+    pub slug: String,
+
+    pub igdb_type: CollectionType,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum CollectionType {
+    Null = 0,
+    Collection = 1,
+    Franchise = 2,
+}
+
+impl Default for CollectionType {
+    fn default() -> Self {
+        CollectionType::Null
+    }
+}
+
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Website {
     pub url: String,
     pub authority: WebsiteAuthority,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum WebsiteAuthority {
     Null = 0,
     Official = 1,

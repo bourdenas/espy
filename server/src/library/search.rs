@@ -1,56 +1,12 @@
-use crate::{
-    api::{IgdbApi, IgdbGame},
-    documents::GameEntry,
-    Status,
-};
-use itertools::Itertools;
-use std::sync::{Arc, Mutex};
-use tracing::{debug, error, instrument, trace_span, Instrument};
+use crate::{api::IgdbApi, documents::GameEntry, Status};
+use tracing::{debug, instrument};
 
 /// Returns `GameEntry` candidates from IGDB entries matching input title.
 ///
 /// The candidates are ordered in descending order of matching criteria.
 #[instrument(level = "trace", skip(igdb))]
 pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<GameEntry>, Status> {
-    let igdb_games = match igdb.search_by_title(title).await {
-        Ok(r) => r,
-        Err(e) => {
-            return Err(Status::not_found(&format!(
-                "Failed to recon '{title}': {e}"
-            )))
-        }
-    };
-
-    let mut candidates = igdb_games
-        .into_iter()
-        .map(|game| Candidate {
-            score: edit_distance(title, &game.name),
-            game,
-            entry: GameEntry::default(),
-        })
-        .collect::<Vec<Candidate>>();
-    candidates.sort_by(|a, b| a.score.cmp(&b.score));
-
-    Ok(candidates
-        .into_iter()
-        .map(|candidate| GameEntry {
-            id: candidate.game.id,
-            name: candidate.game.name,
-            release_date: candidate.game.first_release_date,
-            ..Default::default()
-        })
-        .collect())
-}
-
-/// Returns `GameEntry` candidates from IGDB entries matching input title.
-///
-/// The candidates are ordered in descending order of matching criteria.
-#[instrument(level = "trace", skip(igdb))]
-pub async fn get_candidates_with_covers(
-    igdb: Arc<IgdbApi>,
-    title: &str,
-) -> Result<Vec<GameEntry>, Status> {
-    let igdb_games = match igdb.search_by_title(title).await {
+    let igdb_games = match igdb.get_by_title(title).await {
         Ok(r) => r,
         Err(e) => {
             return Err(Status::not_found(&format!(
@@ -60,57 +16,51 @@ pub async fn get_candidates_with_covers(
     };
     debug!("retrieved {} candidates", igdb_games.len());
 
-    let candidates = igdb_games
+    let mut candidates = igdb_games
         .into_iter()
-        .map(|game| Candidate {
-            score: edit_distance(title, &game.name),
-            entry: GameEntry::default(),
-            game: game,
+        .map(|game_entry| Candidate {
+            score: edit_distance(title, &game_entry.name),
+            game_entry,
         })
-        .collect::<Vec<Candidate>>();
+        .collect::<Vec<_>>();
+    candidates.sort_by(|a, b| a.score.cmp(&b.score));
 
-    let result = Arc::new(Mutex::new(vec![]));
-    let mut handles = vec![];
-    for mut candidate in candidates {
-        let igdb = Arc::clone(&igdb);
-        let result = Arc::clone(&result);
-
-        handles.push(tokio::spawn(
-            async move {
-                let cover = match candidate.game.cover {
-                    Some(cover) => match igdb.get_cover(cover).await {
-                        Ok(cover) => cover,
-                        Err(e) => {
-                            error!("Failed to retrieve cover: {e}");
-                            None
-                        }
-                    },
-                    None => None,
-                };
-
-                candidate.entry = GameEntry {
-                    id: candidate.game.id,
-                    name: candidate.game.name,
-                    release_date: candidate.game.first_release_date,
-                    cover,
-                    ..Default::default()
-                };
-                candidate.game = IgdbGame::default();
-
-                result.lock().unwrap().push(candidate);
-            }
-            .instrument(trace_span!("spawn")),
-        ));
-    }
-    futures::future::join_all(handles).await;
-
-    Ok(Arc::try_unwrap(result)
-        .unwrap()
-        .into_inner()
-        .unwrap()
+    Ok(candidates
         .into_iter()
-        .sorted_by(|left, right| left.score.cmp(&right.score))
-        .map(|candidate| candidate.entry)
+        .map(|candidate| candidate.game_entry)
+        .collect())
+}
+
+/// Returns `GameEntry` candidates from IGDB entries matching input title.
+///
+/// The candidates are ordered in descending order of matching criteria.
+#[instrument(level = "trace", skip(igdb))]
+pub async fn get_candidates_with_covers(
+    igdb: &IgdbApi,
+    title: &str,
+) -> Result<Vec<GameEntry>, Status> {
+    let igdb_games = match igdb.get_by_title_with_cover(title).await {
+        Ok(r) => r,
+        Err(e) => {
+            return Err(Status::not_found(&format!(
+                "Failed to recon '{title}': {e}"
+            )))
+        }
+    };
+    debug!("retrieved {} candidates", igdb_games.len());
+
+    let mut candidates = igdb_games
+        .into_iter()
+        .map(|game_entry| Candidate {
+            score: edit_distance(title, &game_entry.name),
+            game_entry,
+        })
+        .collect::<Vec<_>>();
+    candidates.sort_by(|a, b| a.score.cmp(&b.score));
+
+    Ok(candidates
+        .into_iter()
+        .map(|candidate| candidate.game_entry)
         .collect())
 }
 
@@ -118,14 +68,13 @@ pub async fn get_candidates_with_covers(
 // the command line tool.
 #[derive(Debug)]
 struct Candidate {
-    game: IgdbGame,
-    entry: GameEntry,
+    game_entry: GameEntry,
     score: i32,
 }
 
 impl std::fmt::Display for Candidate {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{} ({})", self.game.name, self.score)
+        write!(f, "{} ({})", self.game_entry.name, self.score)
     }
 }
 

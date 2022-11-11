@@ -1,13 +1,18 @@
 use crate::{
     api::IgdbApi,
     documents::{GameEntry, StoreEntry},
-    library::{search, steam_data},
+    library::SteamDataApi,
     Status,
 };
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tracing::{debug, error, instrument, trace_span, Instrument};
+
+pub struct Reconciler {
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+}
 
 // The result of a reconcile operation on a `store_entry` with a `game_entry`
 // from IGDB.
@@ -17,50 +22,30 @@ pub struct Match {
     pub game_entry: Option<GameEntry>,
 }
 
-impl Match {
-    async fn create(store_entry: StoreEntry, game_entry: GameEntry, igdb: &IgdbApi) -> Self {
-        Match {
-            store_entry,
-            game_entry: match game_entry.parent {
-                Some(parent_id) => match igdb.get_game_by_id(parent_id).await {
-                    Ok(game) => game,
-                    Err(e) => {
-                        error!(
-                            "Failed to retrieve base game (id={parent_id}) for '{}'\nerror: {e}",
-                            &game_entry.name
-                        );
-                        None
-                    }
-                },
-                None => Some(game_entry),
-            },
-        }
-    }
-
-    fn failed(store_entry: StoreEntry) -> Self {
-        Match {
-            store_entry,
-            ..Default::default()
-        }
-    }
-}
-
-pub struct Reconciler {
-    igdb: Arc<IgdbApi>,
-}
-
 impl Reconciler {
-    pub fn new(igdb: Arc<IgdbApi>) -> Reconciler {
-        Reconciler { igdb }
+    pub fn new(igdb: Arc<IgdbApi>, steam: Arc<SteamDataApi>) -> Reconciler {
+        Reconciler { igdb, steam }
     }
 
-    /// Returns a fully resolved IGDB GameEntry matching input `id`.
+    /// Returns a shallow GameEntry based on its IGDB `id`.
     #[instrument(level = "trace", skip(self))]
-    pub async fn retrieve(&self, id: u64) -> Result<GameEntry, Status> {
-        get_entry(&self.igdb, id).await
+    pub async fn get(&self, id: u64) -> Result<GameEntry, Status> {
+        match self.igdb.get(id).await? {
+            Some(game) => Ok(game),
+            None => Err(Status::not_found(format!(
+                "Failed to retrieve IGDB game with id={id}."
+            ))),
+        }
     }
 
-    /// Matches input `entries` with IGDB GameEntries.
+    /// Returns a fully reolved GameEntry based on its IGDB `id` that also
+    /// includes Steam data.
+    #[instrument(level = "trace", skip(self))]
+    pub async fn resolve(&self, id: u64) -> Result<GameEntry, Status> {
+        resolve_game(id, &self.igdb, &self.steam).await
+    }
+
+    /// Matches input `store_entries` with IGDB GameEntries.
     ///
     /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
     /// successful or failed matches.
@@ -73,37 +58,96 @@ impl Reconciler {
         let fut = stream::iter(store_entries.into_iter().map(|store_entry| MatchingTask {
             store_entry,
             igdb: Arc::clone(&self.igdb),
+            steam: Arc::clone(&self.steam),
             tx: tx.clone(),
         }))
         .for_each_concurrent(4, match_task)
-        .instrument(trace_span!("spawn recon tasks"));
+        .instrument(trace_span!("spawn match tasks"));
 
         fut.await;
         drop(tx);
     }
 }
 
-/// Performs a `MatchingTask` to producea `Match` and transmits it over its
-/// task's channel.
+impl Match {
+    async fn success(
+        store_entry: StoreEntry,
+        game_entry: GameEntry,
+        igdb: &IgdbApi,
+        steam: &SteamDataApi,
+    ) -> Self {
+        let resolved = resolve_game(
+            match game_entry.parent {
+                Some(parent_id) => parent_id,
+                None => game_entry.id,
+            },
+            igdb,
+            steam,
+        )
+        .await;
+
+        Match {
+            store_entry,
+            game_entry: match resolved {
+                Ok(game_entry) => Some(game_entry),
+                Err(e) => {
+                    error!(
+                        "Failed to retrieve game '{}' ({}) or its base game ({:?})\nerror: {e}",
+                        &game_entry.name, game_entry.id, game_entry.parent,
+                    );
+                    None
+                }
+            },
+        }
+    }
+
+    fn fail(store_entry: StoreEntry) -> Self {
+        Match {
+            store_entry,
+            ..Default::default()
+        }
+    }
+}
+
+async fn resolve_game(
+    game_id: u64,
+    igdb: &IgdbApi,
+    steam: &SteamDataApi,
+) -> Result<GameEntry, Status> {
+    match igdb.resolve(game_id).await? {
+        Some(mut game) => {
+            if let Err(e) = steam.retrieve_steam_data(&mut game).await {
+                error!("Failed to retrieve SteamData for '{}' {e}", game.name);
+            }
+            Ok(game)
+        }
+        None => Err(Status::not_found(format!(
+            "Failed to retrieve IGDB game with id={game_id}."
+        ))),
+    }
+}
+
 #[instrument(
     level = "trace",
     skip(task),
     fields(store_entry = %task.store_entry),
 )]
 async fn match_task(task: MatchingTask) {
-    let mut entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
+    let entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => match game_entry {
-            Some(game_entry) => Match::create(task.store_entry, game_entry, &task.igdb).await,
-            None => match match_by_title(&task.igdb, &task.store_entry).await {
+            Some(game_entry) => {
+                Match::success(task.store_entry, game_entry, &task.igdb, &task.steam).await
+            }
+            None => match match_by_title(&task.igdb, &task.store_entry.title).await {
                 Ok(game_entry) => match game_entry {
                     Some(game_entry) => {
-                        Match::create(task.store_entry, game_entry, &task.igdb).await
+                        Match::success(task.store_entry, game_entry, &task.igdb, &task.steam).await
                     }
-                    None => Match::failed(task.store_entry),
+                    None => Match::fail(task.store_entry),
                 },
                 Err(e) => {
                     error!("match_by_title '{}' failed: {e}", task.store_entry.title);
-                    Match::failed(task.store_entry)
+                    Match::fail(task.store_entry)
                 }
             },
         },
@@ -112,16 +156,9 @@ async fn match_task(task: MatchingTask) {
                 "match_by_external_id '{}' failed: {e}",
                 task.store_entry.title
             );
-            Match::failed(task.store_entry)
+            Match::fail(task.store_entry)
         }
     };
-
-    // Retrieve Steam data for matched GameEntry.
-    if let Some(game_entry) = &mut entry_match.game_entry {
-        if let Err(e) = steam_data::retrieve_steam_data(game_entry).await {
-            error!("{e}");
-        }
-    }
 
     if let Err(e) = task.tx.send(entry_match).await {
         error!("{e}");
@@ -138,31 +175,18 @@ async fn match_by_external_id(
 
     match store_entry.id.is_empty() {
         true => Ok(None),
-        false => igdb.match_store_entry(store_entry).await,
+        false => igdb.get_by_store_entry(store_entry).await,
     }
 }
 
-/// Returns a `GameEntry` from IGDB matching the title in `StoreEntry`.
-async fn match_by_title(
-    igdb: &IgdbApi,
-    store_entry: &StoreEntry,
-) -> Result<Option<GameEntry>, Status> {
-    debug!("Searching '{}'", &store_entry.title);
+/// Returns a `GameEntry` from IGDB matching the `title`.
+async fn match_by_title(igdb: &IgdbApi, title: &str) -> Result<Option<GameEntry>, Status> {
+    debug!("Searching '{}'", title);
 
-    let candidates = search::get_candidates(igdb, &store_entry.title).await?;
+    let candidates = igdb.get_by_title(title).await?;
     match candidates.into_iter().next() {
-        Some(game_entry) => Ok(Some(get_entry(igdb, game_entry.id).await?)),
+        Some(game_entry) => Ok(Some(game_entry)),
         None => Ok(None),
-    }
-}
-
-/// Returns a `GameEntry` from IGDB that matches the input `id`.
-async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
-    match igdb.get_game_by_id(id).await? {
-        Some(game_entry) => Ok(game_entry),
-        None => Err(Status::not_found(&format!(
-            "Failed to retrieve game entry with id={id}"
-        ))),
     }
 }
 
@@ -170,5 +194,6 @@ async fn get_entry(igdb: &IgdbApi, id: u64) -> Result<GameEntry, Status> {
 struct MatchingTask {
     store_entry: StoreEntry,
     igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
     tx: mpsc::Sender<Match>,
 }

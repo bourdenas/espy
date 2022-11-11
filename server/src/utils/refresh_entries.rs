@@ -2,13 +2,13 @@ use clap::Parser;
 use espy_server::{
     api::{FirestoreApi, IgdbApi},
     documents::GameEntry,
-    library::{steam_data, LibraryOps},
+    library::{LibraryOps, Reconciler, SteamDataApi},
     *,
 };
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
-use tracing::{error, info, trace_span, warn, Instrument};
+use tracing::{error, info, instrument, trace_span, Instrument};
 
 /// Espy util for refreshing IGDB and Steam data for GameEntries.
 #[derive(Parser)]
@@ -34,50 +34,58 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Tracing::setup("utils/refresh_entries")?;
 
     let opts: Opts = Opts::parse();
-    let firestore = api::FirestoreApi::from_credentials(&opts.firestore_credentials)
+    let firestore = FirestoreApi::from_credentials(&opts.firestore_credentials)
         .expect("FirestoreApi.from_credentials()");
 
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
-    let mut igdb = api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
+    let mut igdb = IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
+    let steam = SteamDataApi::new();
 
     if let Some(id) = opts.id {
-        refresh_game(id, &firestore, igdb).await?;
+        refresh_game(id, &firestore, igdb, steam).await?;
     } else {
-        refresh_entries(&firestore, igdb).await?;
+        refresh_entries(&firestore, igdb, steam).await?;
     }
 
     Ok(())
 }
 
-async fn refresh_game(id: u64, firestore: &FirestoreApi, igdb: IgdbApi) -> Result<(), Status> {
+async fn refresh_game(
+    id: u64,
+    firestore: &FirestoreApi,
+    igdb: IgdbApi,
+    steam: SteamDataApi,
+) -> Result<(), Status> {
     let game = LibraryOps::read_game_entry(firestore, id)?;
-    refresh(vec![game], firestore, igdb).await
+    refresh(vec![game], firestore, igdb, steam).await
 }
 
-/// Refreshes game entries info from IGDB in user's library.
-// #[instrument(
-//     level = "trace",
-//     skip(self, recon_service),
-//     fields(user_id = %self.user_id),
-// )]
-async fn refresh_entries(firestore: &FirestoreApi, igdb: IgdbApi) -> Result<(), Status> {
+#[instrument(level = "trace", skip(firestore, igdb, steam))]
+async fn refresh_entries(
+    firestore: &FirestoreApi,
+    igdb: IgdbApi,
+    steam: SteamDataApi,
+) -> Result<(), Status> {
     let game_entries = LibraryOps::list_games(firestore)?;
-    refresh(game_entries, firestore, igdb).await
+    refresh(game_entries, firestore, igdb, steam).await
 }
 
 async fn refresh(
     game_entries: Vec<GameEntry>,
     firestore: &FirestoreApi,
     igdb: IgdbApi,
+    steam: SteamDataApi,
 ) -> Result<(), Status> {
     let igdb = Arc::new(igdb);
+    let steam = Arc::new(steam);
     let (tx, rx) = mpsc::channel(32);
     let _handle = tokio::spawn(
         async move {
             let fut = stream::iter(game_entries.into_iter().map(|game_entry| RefreshTask {
                 game_entry,
                 igdb: Arc::clone(&igdb),
+                steam: Arc::clone(&steam),
                 tx: tx.clone(),
             }))
             .for_each_concurrent(2, refresh_task)
@@ -97,44 +105,36 @@ async fn refresh(
 struct RefreshTask {
     game_entry: GameEntry,
     igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
     tx: mpsc::Sender<GameEntry>,
 }
 
 async fn refresh_task(task: RefreshTask) {
     info!("Refreshing '{}'", &task.game_entry.name);
 
-    let game_entry = match task.igdb.get_game_by_id(task.game_entry.id).await {
-        Ok(game_entry) => match game_entry {
-            Some(game_entry) => game_entry,
-            None => {
-                error!(
-                    "Failed to refresh '{}': IGDB game with {} was not fonud.",
-                    task.game_entry.name, task.game_entry.id
-                );
-                task.game_entry
-            }
-        },
+    let recon_service = Reconciler::new(task.igdb, task.steam);
+
+    let game_entry = match recon_service.resolve(task.game_entry.id).await {
+        Ok(game_entry) => Some(game_entry),
         Err(e) => {
             error!("Failed to refresh '{}': {e}", task.game_entry.name);
-            task.game_entry
+            None
         }
     };
 
-    if let Err(e) = task.tx.send(game_entry).await {
-        error!("{e}");
+    if let Some(game_entry) = game_entry {
+        if let Err(e) = task.tx.send(game_entry).await {
+            error!("{e}");
+        }
     }
 }
 
 async fn receive_games(firestore: &FirestoreApi, mut rx: mpsc::Receiver<GameEntry>) {
-    while let Some(mut game_entry) = rx.recv().await {
-        if let Err(e) = steam_data::retrieve_steam_data(&mut game_entry).await {
-            error!("{e}");
-            warn!(
-                "Skipping update of '{}' due to failing to retrieve Steam data.",
-                game_entry.name
-            );
-        }
-        LibraryOps::write_game_entry(firestore, &game_entry)
-            .expect("Firestore update_library_entry():");
+    while let Some(game_entry) = rx.recv().await {
+        info!("Updating '{}'", game_entry.name);
+        LibraryOps::write_game_entry(firestore, &game_entry).expect(&format!(
+            "Firestore write_game_entry('{}'):",
+            game_entry.name
+        ));
     }
 }
