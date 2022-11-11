@@ -12,12 +12,9 @@ class EditEntryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final libraryEntry = context.read<GameEntriesModel>().getEntryById(id);
 
-    return Focus(
-      autofocus: true,
-      child: Scaffold(
-        appBar: AppBar(),
-        body: EditEntryContent(entry: libraryEntry!),
-      ),
+    return Scaffold(
+      appBar: AppBar(),
+      body: EditEntryContent(entry: libraryEntry!),
     );
   }
 }

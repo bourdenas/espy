@@ -32,19 +32,16 @@ class _GameListPageState extends State<GameListPage> {
         HomeIntent: CallbackAction<HomeIntent>(
             onInvoke: (intent) => context.goNamed('home')),
       },
-      child: Focus(
-        autofocus: true,
-        child: Scaffold(
-          appBar: AppBar(
-            title: GameChipsFilter(widget.filter),
-            backgroundColor: Colors.black.withOpacity(0.6),
-            elevation: 0.0,
-          ),
-          body: context.watch<AppConfigModel>().libraryLayout ==
-                  LibraryLayout.GRID
-              ? GameGridView(entries: entries)
-              : GameListView(entries: entries),
+      child: Scaffold(
+        appBar: AppBar(
+          title: GameChipsFilter(widget.filter),
+          backgroundColor: Colors.black.withOpacity(0.6),
+          elevation: 0.0,
         ),
+        body:
+            context.watch<AppConfigModel>().libraryLayout == LibraryLayout.GRID
+                ? GameGridView(entries: entries)
+                : GameListView(entries: entries),
       ),
     );
   }

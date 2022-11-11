@@ -89,17 +89,6 @@ class _EspyScaffoldState extends State<EspyScaffold>
 
     return AppBar(
       toolbarOpacity: 0.6,
-      leading: widget.onShowMenu != null
-          ? IconButton(
-              key: Key('drawerButton'),
-              icon: Icon(Icons.menu),
-              splashRadius: 20.0,
-              onPressed: widget.onShowMenu,
-            )
-          : Image.asset(
-              'assets/images/espy-logo_800.png',
-              fit: BoxFit.cover,
-            ),
       title: Text(
         'espy',
         style: TextStyle(

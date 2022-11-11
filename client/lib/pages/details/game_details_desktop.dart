@@ -78,6 +78,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
             : '';
 
     return SliverAppBar(
+      leading: Container(),
       pinned: true,
       expandedHeight: 320.0,
       flexibleSpace: FlexibleSpaceBar(
@@ -102,27 +103,23 @@ class GameDetailsContentDesktop extends StatelessWidget {
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      Hero(
-                        tag: '${gameEntry.id}_cover',
-                        child: CachedNetworkImage(
-                          imageUrl:
-                              '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
-                          errorWidget: (context, url, error) =>
-                              Icon(Icons.error),
-                        ),
+                      CachedNetworkImage(
+                        imageUrl:
+                            '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                       ),
-                      Positioned(
-                        right: 0,
-                        child: FloatingActionButton(
-                          mini: true,
-                          tooltip: 'Edit',
-                          child: Icon(Icons.edit),
-                          backgroundColor: Color.fromARGB(64, 255, 255, 255),
-                          onPressed: () {
-                            // GameEntryEditDialog.show(context, libraryEntry);
-                          },
-                        ),
-                      ),
+                      // Positioned(
+                      //   right: 0,
+                      //   child: FloatingActionButton(
+                      //     mini: true,
+                      //     tooltip: 'Edit',
+                      //     child: Icon(Icons.edit),
+                      //     backgroundColor: Color.fromARGB(64, 255, 255, 255),
+                      //     onPressed: () {
+                      //       // GameEntryEditDialog.show(context, libraryEntry);
+                      //     },
+                      //   ),
+                      // ),
                     ],
                   ),
                   Padding(padding: EdgeInsets.all(8)),

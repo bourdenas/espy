@@ -19,11 +19,9 @@ class HomeContent extends StatelessWidget {
     final entries = context.watch<GameEntriesModel>().getEntries(null);
     final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
 
-    return Scaffold(
-      body: entries.isNotEmpty || unmatchedEntries.isNotEmpty
-          ? library(context)
-          : EmptyLibrary(),
-    );
+    return entries.isNotEmpty || unmatchedEntries.isNotEmpty
+        ? library(context)
+        : EmptyLibrary();
   }
 
   Widget library(BuildContext context) {
@@ -37,7 +35,7 @@ class HomeContent extends StatelessWidget {
         if (AppConfigModel.isMobile(context))
           HomeHeadline()
         else
-          SizedBox(height: 64),
+          SizedBox(height: 16),
         for (final slate in slates)
           if (slate.entries.isNotEmpty)
             HomeSlate(

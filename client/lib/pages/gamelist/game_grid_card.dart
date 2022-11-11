@@ -43,17 +43,14 @@ class GameGridCard extends StatelessWidget {
           elevation: 10,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           clipBehavior: Clip.antiAlias,
-          child: Hero(
-            tag: '${entry.id}_cover',
-            child: entry.cover != null && entry.cover!.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl:
-                        '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
-                    errorWidget: (context, url, error) => Icon(Icons.error),
-                    fit: BoxFit.fitHeight,
-                  )
-                : Image.asset('assets/images/placeholder.png'),
-          ),
+          child: entry.cover != null && entry.cover!.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl:
+                      '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                  fit: BoxFit.fitHeight,
+                )
+              : Image.asset('assets/images/placeholder.png'),
         ),
       ),
     );

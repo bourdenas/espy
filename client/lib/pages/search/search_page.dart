@@ -10,36 +10,31 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Search'),
-      ),
-      body: CustomScrollView(
-        primary: true,
-        shrinkWrap: true,
-        slivers: [
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: SearchBar(
-              minHeight: 80.0,
-              maxHeight: 120.0,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SearchTextField(
-                  onChanged: (text) {
-                    text.toLowerCase().split(' ');
-                    setState(() {
-                      _text = text;
-                    });
-                  },
-                ),
+    return CustomScrollView(
+      primary: true,
+      shrinkWrap: true,
+      slivers: [
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: SearchBar(
+            minHeight: 80.0,
+            maxHeight: 120.0,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SearchTextField(
+                onChanged: (text) {
+                  text.toLowerCase().split(' ');
+                  setState(() {
+                    _text = text;
+                  });
+                },
               ),
             ),
           ),
-          TagSearchResults(query: _text),
-          GameSearchResults(query: _text),
-        ],
-      ),
+        ),
+        TagSearchResults(query: _text),
+        GameSearchResults(query: _text),
+      ],
     );
   }
 

@@ -26,40 +26,34 @@ class GameDetailsPage extends StatelessWidget {
         HomeIntent: CallbackAction<HomeIntent>(
             onInvoke: (intent) => context.goNamed('home')),
       },
-      child: Focus(
-        autofocus: true,
-        child: Scaffold(
-          body: FutureBuilder(
-            future:
-                FirebaseFirestore.instance.collection('games').doc(id).get(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return Center(
-                    child: Text("Something went wrong: ${snapshot.error}"));
-              }
+      child: FutureBuilder(
+        future: FirebaseFirestore.instance.collection('games').doc(id).get(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+                child: Text("Something went wrong: ${snapshot.error}"));
+          }
 
-              if (snapshot.connectionState == ConnectionState.done &&
-                  !snapshot.hasData) {
-                return Center(child: Text("Document does not exist"));
-              }
+          if (snapshot.connectionState == ConnectionState.done &&
+              !snapshot.hasData) {
+            return Center(child: Text("Document does not exist"));
+          }
 
-              if (snapshot.connectionState == ConnectionState.done &&
-                  snapshot.hasData) {
-                final jData = (snapshot.data! as DocumentSnapshot).data()
-                    as Map<String, dynamic>;
-                final gameEntry = GameEntry.fromJson(jData);
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData) {
+            final jData = (snapshot.data! as DocumentSnapshot).data()
+                as Map<String, dynamic>;
+            final gameEntry = GameEntry.fromJson(jData);
 
-                return GameDetailsContent(
-                  libraryEntry: libraryEntry!,
-                  gameEntry: gameEntry,
-                  childPath: ids.sublist(1),
-                );
-              }
+            return GameDetailsContent(
+              libraryEntry: libraryEntry!,
+              gameEntry: gameEntry,
+              childPath: ids.sublist(1),
+            );
+          }
 
-              return Center(child: CircularProgressIndicator());
-            },
-          ),
-        ),
+          return Center(child: CircularProgressIndicator());
+        },
       ),
     );
   }
