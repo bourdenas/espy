@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 /// Document type under 'users/{user_id}/games' that represents a game entry in
 /// IGDB.
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct GameEntry {
     pub id: u64,
     pub name: String,
@@ -73,14 +73,14 @@ pub struct GameEntry {
     pub steam_data: Option<SteamData>,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Image {
     pub image_id: String,
     pub height: i32,
     pub width: i32,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Company {
     pub id: u64,
     pub name: String,
@@ -96,7 +96,7 @@ pub struct Company {
     pub logo: Option<Image>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum CompanyRole {
     Unknown = 0,
     Developer = 1,
@@ -111,7 +111,7 @@ impl Default for CompanyRole {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Collection {
     pub id: u64,
     pub name: String,
@@ -122,7 +122,7 @@ pub struct Collection {
     pub igdb_type: CollectionType,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum CollectionType {
     Null = 0,
     Collection = 1,
@@ -135,13 +135,13 @@ impl Default for CollectionType {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Website {
     pub url: String,
     pub authority: WebsiteAuthority,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum WebsiteAuthority {
     Null = 0,
     Official = 1,
