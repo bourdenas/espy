@@ -22,7 +22,7 @@ impl LibraryOps {
         firestore: &FirestoreApi,
         user_id: &str,
     ) -> Result<Vec<LibraryEntry>, Status> {
-        firestore.list(&format!("users/{user_id}/library_v2"))
+        firestore.list(&format!("users/{user_id}/library"))
     }
 
     /// Write a `game_entry` and the associated `library_entry` on Firestore.
@@ -36,7 +36,7 @@ impl LibraryOps {
         library_entry: &LibraryEntry,
     ) -> Result<(), Status> {
         firestore.write(
-            &format!("users/{user_id}/library_v2"),
+            &format!("users/{user_id}/library"),
             Some(&library_entry.id.to_string()),
             library_entry,
         )?;
@@ -53,7 +53,7 @@ impl LibraryOps {
 
         // Merge new LibraryEntry with existing one.
         if let Ok(existing) = firestore.read::<LibraryEntry>(
-            &format!("users/{user_id}/library_v2"),
+            &format!("users/{user_id}/library"),
             &library_entry.id.to_string(),
         ) {
             library_entry
@@ -83,7 +83,7 @@ impl LibraryOps {
         });
 
         if library_entry.store_entries.is_empty() {
-            firestore.delete(&format!("users/{user_id}/library_v2/{}", library_entry.id))?;
+            firestore.delete(&format!("users/{user_id}/library/{}", library_entry.id))?;
         } else {
             LibraryOps::write_library_entry(firestore, user_id, &library_entry)?;
         }
