@@ -16,8 +16,8 @@ class EditEntryContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return ListView(
+      shrinkWrap: true,
       children: [
         SizedBox(height: 16.0),
         Padding(
@@ -61,13 +61,16 @@ class EditEntryContent extends StatelessWidget {
           ),
         ),
         Card(
-          child: ExpandablePanel(
-            header: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Storefronts'),
+          child: ExpandableNotifier(
+            initialExpanded: true,
+            child: ExpandablePanel(
+              header: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Storefronts'),
+              ),
+              collapsed: Container(),
+              expanded: StorefrontDropdown(entry),
             ),
-            collapsed: Container(),
-            expanded: StorefrontDropdown(entry),
           ),
         ),
       ],
