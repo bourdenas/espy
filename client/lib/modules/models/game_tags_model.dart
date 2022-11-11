@@ -48,8 +48,8 @@ class GameTagsModel extends ChangeNotifier {
   void update(List<LibraryEntry> entries) {
     _tags.clear();
     for (final entry in entries) {
-      _companies.addAll(entry.companies.map((c) => c.name));
-      _collections.addAll(entry.collections.map((c) => c.name));
+      _companies.addAll(entry.companies.map((company) => company));
+      _collections.addAll(entry.collections.map((collection) => collection));
       _tags.addAll(entry.userData.tags);
       _stores.addAll(entry.storeEntries.map((e) => e.storefront));
     }

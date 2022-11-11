@@ -116,12 +116,12 @@ class LibraryFilter {
   bool _filterCompany(LibraryEntry entry) =>
       companies.isEmpty ||
       companies.every(
-          (filter) => entry.companies.any((company) => company.name == filter));
+          (filter) => entry.companies.any((company) => company == filter));
 
   bool _filterCollection(LibraryEntry entry) =>
       collections.isEmpty ||
       collections.every((filter) =>
-          entry.collections.any((collection) => collection.name == filter));
+          entry.collections.any((collection) => collection == filter));
 
   bool _filterTag(LibraryEntry entry) =>
       tags.isEmpty ||

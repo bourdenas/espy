@@ -37,19 +37,18 @@ class _GameChipsWrap extends StatelessWidget {
       children: [
         for (final company in entry.companies)
           CompanyChip(
-            company.name,
+            company,
             onPressed: () => context.goNamed(
               'games',
-              queryParams: LibraryFilter(companies: {company.name}).params(),
+              queryParams: LibraryFilter(companies: {company}).params(),
             ),
           ),
         for (final collection in entry.collections)
           CollectionChip(
-            collection.name,
+            collection,
             onPressed: () => context.goNamed(
               'games',
-              queryParams:
-                  LibraryFilter(collections: {collection.name}).params(),
+              queryParams: LibraryFilter(collections: {collection}).params(),
             ),
           ),
         for (final tag in entry.userData.tags)
@@ -95,11 +94,10 @@ class GameCardChips extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: CompanyChip(
-                  company.name,
+                  company,
                   onPressed: () => context.goNamed(
                     'games',
-                    queryParams:
-                        LibraryFilter(companies: {company.name}).params(),
+                    queryParams: LibraryFilter(companies: {company}).params(),
                   ),
                 ),
               ),
@@ -108,11 +106,11 @@ class GameCardChips extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: CollectionChip(
-                  collection.name,
+                  collection,
                   onPressed: () => context.goNamed(
                     'games',
                     queryParams:
-                        LibraryFilter(collections: {collection.name}).params(),
+                        LibraryFilter(collections: {collection}).params(),
                   ),
                 ),
               ),

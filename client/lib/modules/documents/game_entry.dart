@@ -1,4 +1,3 @@
-import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/steam_data.dart';
 
 class GameEntry {
@@ -54,65 +53,45 @@ class GameEntry {
           summary: json['summary'] ?? '',
           storyline: json['storyline'] ?? '',
           releaseDate: json['release_date'] ?? 0,
-          expansions: json.containsKey('expansions')
-              ? [
-                  for (final entry in json['expansions'])
-                    GameEntry.fromJson(entry),
-                ]
-              : [],
-          dlcs: json.containsKey('dlcs')
-              ? [
-                  for (final entry in json['dlcs']) GameEntry.fromJson(entry),
-                ]
-              : [],
-          remakes: json.containsKey('remakes')
-              ? [
-                  for (final entry in json['remakes'])
-                    GameEntry.fromJson(entry),
-                ]
-              : [],
-          remasters: json.containsKey('remasters')
-              ? [
-                  for (final entry in json['remasters'])
-                    GameEntry.fromJson(entry),
-                ]
-              : [],
-          versions: json.containsKey('versions')
-              ? [for (final version in json['versions']) version]
-              : [],
+          expansions: [
+            for (final entry in json['expansions'] ?? [])
+              GameEntry.fromJson(entry),
+          ],
+          dlcs: [
+            for (final entry in json['dlcs'] ?? []) GameEntry.fromJson(entry),
+          ],
+          remakes: [
+            for (final entry in json['remakes'] ?? [])
+              GameEntry.fromJson(entry),
+          ],
+          remasters: [
+            for (final entry in json['remasters'] ?? [])
+              GameEntry.fromJson(entry),
+          ],
+          versions: [for (final version in json['versions'] ?? []) version],
           parent: json['parent'],
-          collections: json.containsKey('collections')
-              ? [
-                  for (final entry in json['collections'])
-                    Collection.fromJson(entry),
-                ]
-              : [],
-          companies: json.containsKey('companies')
-              ? [
-                  for (final entry in json['companies'])
-                    Company.fromJson(entry),
-                ]
-              : [],
+          collections: [
+            for (final entry in json['collections'] ?? [])
+              Collection.fromJson(entry),
+          ],
+          companies: [
+            for (final entry in json['companies'] ?? [])
+              Company.fromJson(entry),
+          ],
           cover: json.containsKey('cover')
               ? GameImage.fromJson(json['cover'])
               : null,
-          screenshots: json.containsKey('screenshots')
-              ? [
-                  for (final entry in json['screenshots'])
-                    GameImage.fromJson(entry),
-                ]
-              : [],
-          artwork: json.containsKey('artwork')
-              ? [
-                  for (final entry in json['artwork'])
-                    GameImage.fromJson(entry),
-                ]
-              : [],
-          websites: json.containsKey('websites')
-              ? [
-                  for (final entry in json['websites']) Website.fromJson(entry),
-                ]
-              : [],
+          screenshots: [
+            for (final entry in json['screenshots'] ?? [])
+              GameImage.fromJson(entry),
+          ],
+          artwork: [
+            for (final entry in json['artwork'] ?? [])
+              GameImage.fromJson(entry),
+          ],
+          websites: [
+            for (final entry in json['websites'] ?? []) Website.fromJson(entry),
+          ],
           steamData: json.containsKey('steam_data')
               ? SteamData.fromJson(json['steam_data'])
               : null,
