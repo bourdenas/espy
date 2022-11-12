@@ -2,6 +2,7 @@ import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/espy_rail.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -74,7 +75,13 @@ class _EspyScaffoldState extends State<EspyScaffold>
                 ),
                 body: NotificationListener<ScrollNotification>(
                   onNotification: _scrollListener,
-                  child: widget.body,
+                  child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context)
+                          .copyWith(dragDevices: {
+                        PointerDeviceKind.touch,
+                        PointerDeviceKind.mouse,
+                      }),
+                      child: widget.body),
                 ),
               );
             },
