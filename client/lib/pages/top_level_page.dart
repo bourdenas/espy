@@ -12,8 +12,9 @@ import 'package:provider/provider.dart';
 
 class TopLevelPage extends StatefulWidget {
   final Widget body;
+  final String path;
 
-  TopLevelPage({required this.body});
+  TopLevelPage({required this.body, required this.path});
 
   @override
   State<TopLevelPage> createState() => _TopLevelPageState();
@@ -79,6 +80,7 @@ class _TopLevelPageState extends State<TopLevelPage>
   Widget _desktopPage(BuildContext context) {
     return EspyScaffold(
       body: widget.body,
+      path: widget.path,
     );
   }
 
@@ -110,6 +112,7 @@ class _TopLevelPageState extends State<TopLevelPage>
                   borderRadius: BorderRadius.circular(radius),
                   child: EspyScaffold(
                     body: widget.body,
+                    path: widget.path,
                     onShowMenu: () {
                       _drawerAnimationController.forward();
                     },

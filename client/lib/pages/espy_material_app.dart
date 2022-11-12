@@ -30,6 +30,7 @@ class EspyMaterialApp extends StatelessWidget {
           key: state.pageKey,
           child: TopLevelPage(
             body: HomeContent(),
+            path: state.path!,
           ),
         ),
       ),
@@ -41,6 +42,7 @@ class EspyMaterialApp extends StatelessWidget {
           child: TopLevelPage(
             body: GameListPage(
                 filter: LibraryFilter.fromParams(state.queryParams)),
+            path: state.path!,
           ),
         ),
       ),
@@ -50,6 +52,7 @@ class EspyMaterialApp extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           child: TopLevelPage(
             body: GameDetailsPage(path: state.params['gid']!),
+            path: state.path!,
           ),
         ),
         routes: [
@@ -73,6 +76,7 @@ class EspyMaterialApp extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           child: TopLevelPage(
             body: SearchPage(),
+            path: state.path!,
           ),
         ),
       ),
@@ -82,6 +86,7 @@ class EspyMaterialApp extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           child: TopLevelPage(
             body: UnmatchedPage(),
+            path: state.path!,
           ),
         ),
       ),
@@ -91,6 +96,7 @@ class EspyMaterialApp extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           child: TopLevelPage(
             body: ProfilePage(),
+            path: state.path!,
           ),
         ),
       ),
@@ -99,6 +105,7 @@ class EspyMaterialApp extends StatelessWidget {
       body: Center(
         child: Text('Page not found :('),
       ),
+      path: '',
     ),
   );
 

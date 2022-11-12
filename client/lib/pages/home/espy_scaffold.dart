@@ -10,8 +10,9 @@ import 'package:provider/provider.dart';
 class EspyScaffold extends StatefulWidget {
   final void Function()? onShowMenu;
   final Widget body;
+  final String path;
 
-  EspyScaffold({required this.body, this.onShowMenu});
+  EspyScaffold({required this.body, required this.path, this.onShowMenu});
 
   @override
   State<EspyScaffold> createState() => _EspyScaffoldState();
@@ -54,7 +55,7 @@ class _EspyScaffoldState extends State<EspyScaffold>
   Widget build(BuildContext context) {
     return Row(
       children: [
-        if (widget.onShowMenu == null) EspyNavigationRail(false),
+        if (widget.onShowMenu == null) EspyNavigationRail(false, widget.path),
         Expanded(
           child: AnimatedBuilder(
             animation: _colorAnimationController,

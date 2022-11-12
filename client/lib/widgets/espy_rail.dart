@@ -1,32 +1,47 @@
+import 'package:badges/badges.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/unmatched_library_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class EspyNavigationRail extends StatefulWidget {
   final bool extended;
+  final String path;
 
-  const EspyNavigationRail(this.extended);
+  const EspyNavigationRail(this.extended, this.path);
 
   @override
   State<StatefulWidget> createState() {
-    return EspyNavigationRailState(extended);
+    return EspyNavigationRailState();
   }
 }
 
 class EspyNavigationRailState extends State<EspyNavigationRail> {
-  final bool extended;
   int _selectedIndex = 0;
+  Map<String, int> _mapping = {
+    '/': 0,
+    '/games': 1,
+    '/unmatched': 3,
+    '/profile': 4,
+  };
 
-  EspyNavigationRailState(this.extended);
+  @override
+  void initState() {
+    super.initState();
+
+    _selectedIndex = _mapping[widget.path] ?? 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
     return NavigationRail(
-      extended: extended,
-      labelType: !extended ? NavigationRailLabelType.selected : null,
+      extended: widget.extended,
+      labelType: !widget.extended ? NavigationRailLabelType.selected : null,
       selectedIndex: _selectedIndex,
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -42,13 +57,22 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       destinations: _menuItems
           .map((e) => NavigationRailDestination(
                 label: Text(e.label),
-                icon: Icon(e.icon),
+                icon: e.badgeText != null
+                    ? Badge(
+                        badgeContent: e.badgeText!(context),
+                        position: BadgePosition.topEnd(top: -24, end: -18),
+                        borderRadius: BorderRadius.circular(1),
+                        child: Icon(e.icon),
+                      )
+                    : Icon(e.icon),
                 selectedIcon: Icon(e.selectedIcon),
               ))
           .toList(),
       onDestinationSelected: (index) {
-        _selectedIndex = index;
-        _menuItems[_selectedIndex].onTap(context);
+        _menuItems[index].onTap(context);
+        setState(() {
+          _selectedIndex = index;
+        });
       },
     );
   }
@@ -60,12 +84,14 @@ class _MenuItem {
     required this.icon,
     required this.selectedIcon,
     required this.onTap,
+    this.badgeText,
   });
 
   final String label;
   final IconData? icon;
   final IconData? selectedIcon;
   final Function(BuildContext context) onTap;
+  final Widget Function(BuildContext context)? badgeText;
 }
 
 List<_MenuItem> _menuItems = [
@@ -80,6 +106,8 @@ List<_MenuItem> _menuItems = [
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
     onTap: (context) => context.goNamed('games'),
+    badgeText: (context) =>
+        Text('${context.watch<GameLibraryModel>().entries.length}'),
   ),
   _MenuItem(
     label: 'Untagged',
@@ -93,6 +121,8 @@ List<_MenuItem> _menuItems = [
     icon: Icons.error_outline,
     selectedIcon: Icons.error,
     onTap: (context) => context.goNamed('unmatched'),
+    badgeText: (context) =>
+        Text('${context.watch<UnmatchedLibraryModel>().entries.length}'),
   ),
   _MenuItem(
     label: 'Settings',
