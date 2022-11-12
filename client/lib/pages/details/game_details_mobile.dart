@@ -41,6 +41,7 @@ class GameDetailsContentMobile extends StatelessWidget {
       key: Key('gameDetailsScrollView'),
       slivers: [
         SliverAppBar(
+          leading: Container(),
           pinned: true,
           expandedHeight: 250.0,
           flexibleSpace: FlexibleSpaceBar(
