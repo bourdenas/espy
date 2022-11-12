@@ -187,7 +187,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         SizedBox(height: 32.0),
         ListTile(
           key: Key('libraryListTile'),
-          onTap: () => context.goNamed('games'),
+          onTap: () => context.pushNamed('games'),
           leading: Icon(Icons.my_library_books),
           title: Text('Library'),
           // selected: data.state == figure out,
@@ -202,7 +202,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         ),
         ListTile(
           key: Key('unmatchedListTile'),
-          onTap: () => context.goNamed('unmatched'),
+          onTap: () => context.pushNamed('unmatched'),
           leading: Icon(Icons.device_unknown),
           title: Text('Unmatched Titles'),
           // selected: data.state == figure out,
@@ -217,7 +217,7 @@ class _TopLevelPageState extends State<TopLevelPage>
         ),
         ListTile(
           key: Key('settingsListTile'),
-          onTap: () => context.goNamed('profile'),
+          onTap: () => context.pushNamed('profile'),
           leading: Icon(Icons.settings),
           title: Text('Settings'),
           iconColor: Colors.white70,

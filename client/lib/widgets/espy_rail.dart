@@ -105,7 +105,7 @@ List<_MenuItem> _menuItems = [
     label: 'Library',
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
-    onTap: (context) => context.goNamed('games'),
+    onTap: (context) => context.pushNamed('games'),
     badgeText: (context) =>
         Text('${context.watch<GameLibraryModel>().entries.length}'),
   ),
@@ -113,14 +113,14 @@ List<_MenuItem> _menuItems = [
     label: 'Untagged',
     icon: Icons.label_off_outlined,
     selectedIcon: Icons.label_off,
-    onTap: (context) => context.goNamed('games',
+    onTap: (context) => context.pushNamed('games',
         queryParams: LibraryFilter(untagged: true).params()),
   ),
   _MenuItem(
     label: 'Failed',
     icon: Icons.error_outline,
     selectedIcon: Icons.error,
-    onTap: (context) => context.goNamed('unmatched'),
+    onTap: (context) => context.pushNamed('unmatched'),
     badgeText: (context) =>
         Text('${context.watch<UnmatchedLibraryModel>().entries.length}'),
   ),
@@ -128,6 +128,6 @@ List<_MenuItem> _menuItems = [
     label: 'Settings',
     icon: Icons.settings,
     selectedIcon: Icons.settings,
-    onTap: (context) => context.goNamed('profile'),
+    onTap: (context) => context.pushNamed('profile'),
   ),
 ];

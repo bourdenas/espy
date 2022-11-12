@@ -70,7 +70,7 @@ class TagSearchResults extends StatelessWidget {
         .filterStores(searchTerms)
         .map((store) => StoreChip(
               store,
-              onPressed: () => context.goNamed(
+              onPressed: () => context.pushNamed(
                 'games',
                 queryParams: LibraryFilter(stores: {store}).params(),
               ),
@@ -81,7 +81,7 @@ class TagSearchResults extends StatelessWidget {
         .filterTags(searchTerms)
         .map((tag) => TagChip(
               tag,
-              onPressed: () => context.goNamed(
+              onPressed: () => context.pushNamed(
                 'games',
                 queryParams: LibraryFilter(tags: {tag}).params(),
               ),
@@ -92,7 +92,7 @@ class TagSearchResults extends StatelessWidget {
         .filterCompanies(searchTerms)
         .map((company) => CompanyChip(
               company,
-              onPressed: () => context.goNamed(
+              onPressed: () => context.pushNamed(
                 'games',
                 queryParams: LibraryFilter(companies: {company}).params(),
               ),
@@ -103,7 +103,7 @@ class TagSearchResults extends StatelessWidget {
         .filterCollections(searchTerms)
         .map((collection) => CollectionChip(
               collection,
-              onPressed: () => context.goNamed(
+              onPressed: () => context.pushNamed(
                 'games',
                 queryParams: LibraryFilter(collections: {collection}).params(),
               ),
