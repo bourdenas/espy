@@ -1,4 +1,4 @@
-import 'package:espy/pages/espy_material_app.dart';
+import 'package:espy/pages/espy_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +20,7 @@ class _EspyAppState extends State<EspyApp> {
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
-          return EspyMaterialApp();
+          return EspyRouter();
         }
 
         return Text('loading...');

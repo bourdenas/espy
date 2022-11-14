@@ -1,4 +1,3 @@
-import 'package:espy/modules/documents/annotation.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 
 class LibraryFilter {

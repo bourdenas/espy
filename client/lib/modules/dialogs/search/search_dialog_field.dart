@@ -31,7 +31,7 @@ class SearchDialogField extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    context.goNamed('games',
+                    context.pushNamed('games',
                         queryParams: LibraryFilter(stores: {store}).params());
                   },
                 ),
@@ -45,7 +45,7 @@ class SearchDialogField extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    context.goNamed('games',
+                    context.pushNamed('games',
                         queryParams: LibraryFilter(tags: {tag}).params());
                   },
                 ),
@@ -82,7 +82,7 @@ class SearchDialogField extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    context.goNamed('games',
+                    context.pushNamed('games',
                         queryParams:
                             LibraryFilter(collections: {collection}).params());
                   },
@@ -101,7 +101,7 @@ class SearchDialogField extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
-                    context.goNamed('games',
+                    context.pushNamed('games',
                         queryParams:
                             LibraryFilter(companies: {company}).params());
                   },

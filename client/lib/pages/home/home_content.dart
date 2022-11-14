@@ -39,8 +39,8 @@ class HomeContent extends StatelessWidget {
           if (slate.entries.isNotEmpty)
             HomeSlate(
               title: slate.title,
-              onExpand: () =>
-                  context.goNamed('games', queryParams: slate.filter.params()),
+              onExpand: () => context.pushNamed('games',
+                  queryParams: slate.filter.params()),
               tiles: slate.entries
                   .map((libraryEntry) => SlateTileData(
                         image:
@@ -57,7 +57,7 @@ class HomeContent extends StatelessWidget {
         if (slates.isEmpty && unmatchedEntries.isNotEmpty)
           HomeSlate(
             title: 'Unmatched Entries',
-            onExpand: () => context.goNamed('unmatched'),
+            onExpand: () => context.pushNamed('unmatched'),
             tiles: unmatchedEntries
                 .take(isMobile ? 8 : 32)
                 .map((entry) => SlateTileData(

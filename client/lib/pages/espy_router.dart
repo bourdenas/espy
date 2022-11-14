@@ -20,7 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
 
-class EspyMaterialApp extends StatelessWidget {
+class EspyRouter extends StatelessWidget {
   final _router = GoRouter(
     routes: [
       GoRoute(

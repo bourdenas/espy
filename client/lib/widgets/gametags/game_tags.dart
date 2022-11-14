@@ -38,7 +38,7 @@ class _GameChipsWrap extends StatelessWidget {
         for (final company in entry.companies)
           CompanyChip(
             company,
-            onPressed: () => context.goNamed(
+            onPressed: () => context.pushNamed(
               'games',
               queryParams: LibraryFilter(companies: {company}).params(),
             ),
@@ -46,7 +46,7 @@ class _GameChipsWrap extends StatelessWidget {
         for (final collection in entry.collections)
           CollectionChip(
             collection,
-            onPressed: () => context.goNamed(
+            onPressed: () => context.pushNamed(
               'games',
               queryParams: LibraryFilter(collections: {collection}).params(),
             ),
@@ -54,7 +54,7 @@ class _GameChipsWrap extends StatelessWidget {
         for (final tag in entry.userData.tags)
           TagChip(
             tag,
-            onPressed: () => context.goNamed(
+            onPressed: () => context.pushNamed(
               'games',
               queryParams: LibraryFilter(tags: {tag}).params(),
             ),
@@ -95,7 +95,7 @@ class GameCardChips extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: CompanyChip(
                   company,
-                  onPressed: () => context.goNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParams: LibraryFilter(companies: {company}).params(),
                   ),
@@ -107,7 +107,7 @@ class GameCardChips extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: CollectionChip(
                   collection,
-                  onPressed: () => context.goNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParams:
                         LibraryFilter(collections: {collection}).params(),
@@ -119,7 +119,7 @@ class GameCardChips extends StatelessWidget {
               padding: const EdgeInsets.all(4.0),
               child: TagChip(
                 tag,
-                onPressed: () => context.goNamed(
+                onPressed: () => context.pushNamed(
                   'games',
                   queryParams: LibraryFilter(tags: {tag}).params(),
                 ),
