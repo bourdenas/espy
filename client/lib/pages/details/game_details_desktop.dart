@@ -56,8 +56,36 @@ class GameDetailsContentDesktop extends StatelessWidget {
             children: [
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: 600),
-                child: Html(
-                  data: description,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Html(
+                      data: description,
+                    ),
+                    SizedBox(height: 8.0),
+                    if (gameEntry.genres.isNotEmpty)
+                      Text(
+                        'Genres: ${gameEntry.genres.join(", ")}',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    SizedBox(height: 4.0),
+                    if (gameEntry.keywords.isNotEmpty)
+                      Text(
+                        'Keywords: ${gameEntry.keywords.join(", ")}',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    SizedBox(height: 16.0),
+                  ],
                 ),
               ),
             ],

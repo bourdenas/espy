@@ -106,24 +106,28 @@ class GameDetailsContentMobile extends StatelessWidget {
                       )
                     },
                   ),
-                  // Text(
-                  //   gameEntry.summary,
-                  //   style: TextStyle(
-                  //     fontSize: 14.0,
-                  //     fontWeight: FontWeight.w400,
-                  //     letterSpacing: 1.2,
-                  //   ),
-                  // ),
                   SizedBox(height: 8.0),
-                  Text(
-                    'Franchise: Foo, Bar',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 1.2,
+                  if (gameEntry.genres.isNotEmpty)
+                    Text(
+                      'Genres: ${gameEntry.genres.join(", ")}',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 1.2,
+                      ),
                     ),
-                  ),
+                  SizedBox(height: 4.0),
+                  if (gameEntry.keywords.isNotEmpty)
+                    Text(
+                      'Keywords: ${gameEntry.keywords.join(", ")}',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
                   SizedBox(height: 16.0),
                   if (gameEntry.expansions.isNotEmpty ||
                       gameEntry.dlcs.isNotEmpty) ...[
