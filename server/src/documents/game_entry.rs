@@ -21,6 +21,18 @@ pub struct GameEntry {
     pub release_date: Option<i64>,
 
     #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub igdb_rating: Option<f64>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub genres: Vec<String>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub keywords: Vec<String>,
+
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub expansions: Vec<GameEntry>,
 

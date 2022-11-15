@@ -1,4 +1,4 @@
-use super::igdb_docs;
+use super::igdb_docs::{self, Annotation};
 use crate::{
     documents::{
         Collection, CollectionType, Company, CompanyRole, GameEntry, Image, StoreEntry, Website,
@@ -290,7 +290,30 @@ async fn retrieve_game_info(
             .instrument(trace_span!("spawn_get_companies")),
         ));
     }
-    if igdb_game.artworks.len() > 0 {
+    if !igdb_game.genres.is_empty() {
+        let igdb_state = Arc::clone(&igdb_state);
+        let game = Arc::clone(&game);
+        handles.push(tokio::spawn(
+            async move {
+                game.lock().unwrap().genres = get_genres(&igdb_state, &igdb_game.genres).await?;
+                Ok(())
+            }
+            .instrument(trace_span!("spawn_get_genres")),
+        ));
+    }
+    if !igdb_game.keywords.is_empty() {
+        let igdb_state = Arc::clone(&igdb_state);
+        let game = Arc::clone(&game);
+        handles.push(tokio::spawn(
+            async move {
+                game.lock().unwrap().keywords =
+                    get_keywords(&igdb_state, &igdb_game.keywords).await?;
+                Ok(())
+            }
+            .instrument(trace_span!("spawn_get_keywords")),
+        ));
+    }
+    if !igdb_game.artworks.is_empty() {
         let igdb_state = Arc::clone(&igdb_state);
         let game = Arc::clone(&game);
         handles.push(tokio::spawn(
@@ -432,6 +455,46 @@ async fn get_company_logo(igdb_state: &IgdbApiState, id: u64) -> Result<Option<I
     .await?;
 
     Ok(result.into_iter().next())
+}
+
+/// Returns game genres based on id from the igdb/genres endpoint.
+#[instrument(level = "trace", skip(igdb_state))]
+async fn get_genres(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<String>, Status> {
+    Ok(post::<Vec<Annotation>>(
+        igdb_state,
+        GENRES_ENDPOINT,
+        &format!(
+            "fields *; where id = ({});",
+            ids.iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<String>>()
+                .join(",")
+        ),
+    )
+    .await?
+    .into_iter()
+    .map(|genre| genre.name)
+    .collect())
+}
+
+/// Returns game keywords based on id from the igdb/keywords endpoint.
+#[instrument(level = "trace", skip(igdb_state))]
+async fn get_keywords(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<String>, Status> {
+    Ok(post::<Vec<Annotation>>(
+        igdb_state,
+        KEYWORDS_ENDPOINT,
+        &format!(
+            "fields *; where id = ({});",
+            ids.iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<String>>()
+                .join(",")
+        ),
+    )
+    .await?
+    .into_iter()
+    .map(|genre| genre.name)
+    .collect())
 }
 
 /// Returns game screenshots based on id from the igdb/screenshots endpoint.
@@ -677,6 +740,7 @@ impl From<&igdb_docs::IgdbGame> for GameEntry {
             summary: igdb_game.summary.clone(),
             storyline: igdb_game.storyline.clone(),
             release_date: igdb_game.first_release_date,
+            igdb_rating: igdb_game.total_rating,
 
             versions: igdb_game.bundles.clone(),
             parent: match igdb_game.parent_game {
@@ -706,6 +770,8 @@ const COMPANY_LOGOS_ENDPOINT: &str = "company_logos";
 const FRANCHISES_ENDPOINT: &str = "franchises";
 const COLLECTIONS_ENDPOINT: &str = "collections";
 const ARTWORKS_ENDPOINT: &str = "artworks";
+const GENRES_ENDPOINT: &str = "genres";
+const KEYWORDS_ENDPOINT: &str = "keywords";
 const SCREENSHOTS_ENDPOINT: &str = "screenshots";
 const WEBSITES_ENDPOINT: &str = "websites";
 const COMPANIES_ENDPOINT: &str = "companies";
