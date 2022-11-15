@@ -8,6 +8,10 @@ class SteamData {
   final String? headerImage;
   final String? backgroundImage;
 
+  final List<String> developers;
+  final List<String> publishers;
+
+  final List<Genre> genres;
   final List<Screenshot> screenshots;
   final List<Movie> movies;
 
@@ -19,6 +23,9 @@ class SteamData {
     required this.aboutTheGame,
     this.headerImage = '',
     this.backgroundImage = '',
+    this.developers = const [],
+    this.publishers = const [],
+    this.genres = const [],
     this.screenshots = const [],
     this.movies = const [],
   });
@@ -32,17 +39,22 @@ class SteamData {
           aboutTheGame: json['about_the_game']!,
           headerImage: json['header_image'],
           backgroundImage: json['background_raw'],
-          screenshots: json.containsKey('screenshots')
-              ? [
-                  for (final screenshot in json['screenshots'])
-                    Screenshot.fromJson(screenshot),
-                ]
-              : [],
-          movies: json.containsKey('movies')
-              ? [
-                  for (final movie in json['movies']) Movie.fromJson(movie),
-                ]
-              : [],
+          developers: [
+            for (final developer in json['developers'] ?? []) developer,
+          ],
+          publishers: [
+            for (final publisher in json['publishers'] ?? []) publisher,
+          ],
+          genres: [
+            for (final genre in json['genres'] ?? []) Genre.fromJson(genre),
+          ],
+          screenshots: [
+            for (final screenshot in json['screenshots'] ?? [])
+              Screenshot.fromJson(screenshot),
+          ],
+          // movies: [
+          //   for (final movie in json['movies'] ?? []) Movie.fromJson(movie),
+          // ],
         );
 
   Map<String, dynamic> toJson() {
@@ -54,6 +66,12 @@ class SteamData {
       'about_the_game': aboutTheGame,
       if (headerImage != null) 'header_image': headerImage,
       if (backgroundImage != null) 'background_raw': backgroundImage,
+      if (developers.isNotEmpty) 'developers': developers,
+      if (publishers.isNotEmpty) 'publishers': publishers,
+      if (genres.isNotEmpty)
+        'genres': [
+          for (final genre in genres) genre.toJson(),
+        ],
       if (screenshots.isNotEmpty)
         'screenshots': [
           for (final screenshot in screenshots) screenshot.toJson(),
@@ -62,6 +80,29 @@ class SteamData {
         'movies': [
           for (final movie in movies) movie.toJson(),
         ],
+    };
+  }
+}
+
+class Genre {
+  final String id;
+  final String name;
+
+  const Genre({
+    required this.id,
+    required this.name,
+  });
+
+  Genre.fromJson(Map<String, dynamic> json)
+      : this(
+          id: json['id'] ?? '',
+          name: json['name'] ?? '',
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
     };
   }
 }

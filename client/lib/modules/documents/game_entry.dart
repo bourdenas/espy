@@ -7,6 +7,10 @@ class GameEntry {
   final String summary;
   final String storyline;
   final int releaseDate;
+  final double igdbRating;
+
+  final List<String> genres;
+  final List<String> keywords;
 
   final List<GameEntry> expansions;
   final List<GameEntry> dlcs;
@@ -31,6 +35,9 @@ class GameEntry {
     this.summary = '',
     this.storyline = '',
     this.releaseDate = 0,
+    this.igdbRating = 0.0,
+    this.genres = const [],
+    this.keywords = const [],
     this.expansions = const [],
     this.dlcs = const [],
     this.remakes = const [],
@@ -53,6 +60,13 @@ class GameEntry {
           summary: json['summary'] ?? '',
           storyline: json['storyline'] ?? '',
           releaseDate: json['release_date'] ?? 0,
+          igdbRating: json['igdb_rating'] ?? 0,
+          genres: [
+            for (final genre in json['genres'] ?? []) genre,
+          ],
+          keywords: [
+            for (final kw in json['keywords'] ?? []) kw,
+          ],
           expansions: [
             for (final entry in json['expansions'] ?? [])
               GameEntry.fromJson(entry),
@@ -104,6 +118,9 @@ class GameEntry {
       if (summary.isNotEmpty) 'summary': summary,
       if (storyline.isNotEmpty) 'storyline': storyline,
       if (releaseDate > 0) 'release_date': releaseDate,
+      if (igdbRating > 0.0) 'igdb_rating': igdbRating,
+      if (genres.isNotEmpty) 'genres': genres,
+      if (keywords.isNotEmpty) 'keywords': keywords,
       if (expansions.isNotEmpty)
         'expansions': [
           for (final entry in expansions) entry.toJson(),
