@@ -14,7 +14,7 @@ class EditEntryPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(),
-      body: EditEntryContent(entry: libraryEntry!),
+      body: EditEntryContent(libraryEntry: libraryEntry!),
     );
   }
 }

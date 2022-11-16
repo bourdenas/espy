@@ -21,10 +21,11 @@ class GameListCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
-      onSecondaryTap: () => EditEntryDialog.show(context, entry),
+      onSecondaryTap: () =>
+          EditEntryDialog.show(context, entry, gameId: entry.id),
       onLongPress: () => isMobile
           ? context.pushNamed('edit', params: {'gid': '${entry.id}'})
-          : EditEntryDialog.show(context, entry),
+          : EditEntryDialog.show(context, entry, gameId: entry.id),
       child: Container(
         padding: EdgeInsets.all(8.0),
         margin: EdgeInsets.only(bottom: 16.0),

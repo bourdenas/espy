@@ -21,7 +21,8 @@ class GameGridView extends StatelessWidget {
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: entries.map((entry) => GameGridCard(entry: entry)).toList(),
+        children:
+            entries.map((entry) => GameGridCard(libraryEntry: entry)).toList(),
       ),
     );
   }

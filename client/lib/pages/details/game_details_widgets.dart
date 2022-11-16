@@ -61,7 +61,11 @@ class GameEntryActionBar extends StatelessWidget {
         IconButton(
           onPressed: () => AppConfigModel.isMobile(context)
               ? context.pushNamed('edit', params: {'gid': '${libraryEntry.id}'})
-              : EditEntryDialog.show(context, libraryEntry),
+              : EditEntryDialog.show(
+                  context,
+                  libraryEntry,
+                  gameEntry: gameEntry,
+                ),
           icon: Icon(
             Icons.edit,
             size: 24.0,

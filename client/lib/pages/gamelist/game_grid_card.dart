@@ -11,10 +11,10 @@ import 'package:provider/provider.dart';
 class GameGridCard extends StatelessWidget {
   GameGridCard({
     Key? key,
-    required this.entry,
+    required this.libraryEntry,
   }) : super(key: key);
 
-  final LibraryEntry entry;
+  final LibraryEntry libraryEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +22,17 @@ class GameGridCard extends StatelessWidget {
     final appConfig = context.watch<AppConfigModel>();
 
     return GestureDetector(
-      onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
-      onSecondaryTap: () => EditEntryDialog.show(context, entry),
+      onTap: () =>
+          context.pushNamed('details', params: {'gid': '${libraryEntry.id}'}),
+      onSecondaryTap: () =>
+          EditEntryDialog.show(context, libraryEntry, gameId: libraryEntry.id),
       onLongPress: () => isMobile
-          ? context.pushNamed('edit', params: {'gid': '${entry.id}'})
-          : EditEntryDialog.show(context, entry),
+          ? context.pushNamed('edit', params: {'gid': '${libraryEntry.id}'})
+          : EditEntryDialog.show(
+              context,
+              libraryEntry,
+              gameId: libraryEntry.id,
+            ),
       child: GridTile(
         footer: Material(
           color: Colors.transparent,
@@ -35,19 +41,19 @@ class GameGridCard extends StatelessWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: appConfig.cardDecoration == CardDecoration.TAGS
-              ? TagsTileBar(entry)
+              ? TagsTileBar(libraryEntry)
               : appConfig.cardDecoration == CardDecoration.INFO
-                  ? InfoTileBar(entry)
+                  ? InfoTileBar(libraryEntry)
                   : null,
         ),
         child: Material(
           elevation: 10,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           clipBehavior: Clip.antiAlias,
-          child: entry.cover != null && entry.cover!.isNotEmpty
+          child: libraryEntry.cover != null && libraryEntry.cover!.isNotEmpty
               ? CachedNetworkImage(
                   imageUrl:
-                      '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+                      '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
                   errorWidget: (context, url, error) => Icon(Icons.error),
                   fit: BoxFit.fitHeight,
                 )

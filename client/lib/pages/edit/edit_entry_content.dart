@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/storefront_dropdown.dart';
+import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/choice_tags.dart';
 import 'package:expandable/expandable.dart';
@@ -9,10 +10,12 @@ import 'package:flutter/material.dart';
 class EditEntryContent extends StatelessWidget {
   const EditEntryContent({
     Key? key,
-    required this.entry,
+    required this.libraryEntry,
+    this.gameEntry,
   }) : super(key: key);
 
-  final LibraryEntry entry;
+  final LibraryEntry libraryEntry;
+  final GameEntry? gameEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +29,13 @@ class EditEntryContent extends StatelessWidget {
             children: [
               CircleAvatar(
                 foregroundImage: CachedNetworkImageProvider(
-                  '${Urls.imageProvider}/t_thumb/${entry.cover}.jpg',
+                  '${Urls.imageProvider}/t_thumb/${libraryEntry.cover}.jpg',
                 ),
               ),
               SizedBox(width: 16.0),
               Expanded(
                 child: Text(
-                  entry.name,
+                  libraryEntry.name,
                   style: Theme.of(context).textTheme.headline5,
                   overflow: TextOverflow.ellipsis,
                   softWrap: false,
@@ -53,7 +56,11 @@ class EditEntryContent extends StatelessWidget {
               collapsed: Container(),
               expanded: Column(
                 children: [
-                  ChoiceTags(entry),
+                  ChoiceTags(
+                      libraryEntry,
+                      gameEntry != null
+                          ? gameEntry!.keywords + gameEntry!.genres
+                          : []),
                   SizedBox(height: 16.0),
                 ],
               ),
@@ -69,7 +76,7 @@ class EditEntryContent extends StatelessWidget {
                 child: Text('Storefronts'),
               ),
               collapsed: Container(),
-              expanded: StorefrontDropdown(entry),
+              expanded: StorefrontDropdown(libraryEntry),
             ),
           ),
         ),
