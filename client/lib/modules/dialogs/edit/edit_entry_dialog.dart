@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/pages/edit/edit_entry_content.dart';
 import 'package:espy/modules/documents/library_entry.dart';
@@ -29,48 +28,12 @@ class EditEntryDialog extends StatelessWidget {
       content: SizedBox(
         width: 500.0,
         height: 800.0,
-        child: gameEntry != null
-            ? EditEntryContent(
-                libraryEntry: libraryEntry,
-                gameEntry: gameEntry,
-              )
-            : buildWithFuture(context),
+        child: EditEntryContent(
+          libraryEntry: libraryEntry,
+          gameEntry: gameEntry,
+          gameId: gameId,
+        ),
       ),
-    );
-  }
-
-  Widget buildWithFuture(BuildContext context) {
-    return FutureBuilder(
-      future: FirebaseFirestore.instance
-          .collection('games')
-          .doc('${gameId!}')
-          .get(),
-      builder: (context, snapshot) {
-        final defaultContext = EditEntryContent(libraryEntry: libraryEntry);
-
-        if (snapshot.hasError) {
-          return defaultContext;
-        }
-
-        if (snapshot.connectionState == ConnectionState.done &&
-            !snapshot.hasData) {
-          return defaultContext;
-        }
-
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
-          final jData = (snapshot.data! as DocumentSnapshot).data()
-              as Map<String, dynamic>;
-          final gameEntry = GameEntry.fromJson(jData);
-
-          return EditEntryContent(
-            libraryEntry: libraryEntry,
-            gameEntry: gameEntry,
-          );
-        }
-
-        return defaultContext;
-      },
     );
   }
 }

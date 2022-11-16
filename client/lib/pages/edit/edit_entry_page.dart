@@ -13,8 +13,10 @@ class EditEntryPage extends StatelessWidget {
     final libraryEntry = context.read<GameEntriesModel>().getEntryById(id);
 
     return Scaffold(
-      appBar: AppBar(),
-      body: EditEntryContent(libraryEntry: libraryEntry!),
-    );
+        appBar: AppBar(),
+        body: EditEntryContent(
+          libraryEntry: libraryEntry!,
+          gameId: libraryEntry.id,
+        ));
   }
 }

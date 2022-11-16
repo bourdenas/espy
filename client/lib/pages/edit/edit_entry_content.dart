@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/storefront_dropdown.dart';
 import 'package:espy/modules/documents/game_entry.dart';
@@ -9,6 +10,56 @@ import 'package:flutter/material.dart';
 
 class EditEntryContent extends StatelessWidget {
   const EditEntryContent({
+    required this.libraryEntry,
+    this.gameEntry,
+    this.gameId,
+  });
+
+  final LibraryEntry libraryEntry;
+  final GameEntry? gameEntry;
+  final int? gameId;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future:
+          gameEntry == null ? _getGameEntry(gameId!) : Future.value(gameEntry!),
+      builder: (BuildContext context, AsyncSnapshot<GameEntry?> snapshot) {
+        final defaultContext = _EditEntryView(libraryEntry: libraryEntry);
+
+        if (snapshot.hasError) {
+          return defaultContext;
+        }
+
+        if (snapshot.connectionState == ConnectionState.done &&
+            !snapshot.hasData) {
+          return defaultContext;
+        }
+
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.hasData) {
+          return _EditEntryView(
+            libraryEntry: libraryEntry,
+            gameEntry: snapshot.data,
+          );
+        }
+
+        return defaultContext;
+      },
+    );
+  }
+}
+
+Future<GameEntry> _getGameEntry(int gameId) async {
+  final snapshot = await FirebaseFirestore.instance
+      .collection('games')
+      .doc('${gameId}')
+      .get();
+  return GameEntry.fromJson(snapshot.data()!);
+}
+
+class _EditEntryView extends StatelessWidget {
+  const _EditEntryView({
     Key? key,
     required this.libraryEntry,
     this.gameEntry,
