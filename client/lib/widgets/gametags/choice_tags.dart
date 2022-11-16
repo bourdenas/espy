@@ -121,7 +121,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
     for (final kw in widget.keywords) {
       final distance = _editDistance(tag.toLowerCase(), kw.toLowerCase()) /
           max(tag.length, kw.length);
-      if (distance < .2) {
+      if (distance < .3) {
         return true;
       }
     }

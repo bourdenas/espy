@@ -19,6 +19,9 @@ class EditEntryContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<String> keywords =
+        gameEntry != null ? gameEntry!.genres + gameEntry!.keywords : [];
+
     return ListView(
       shrinkWrap: true,
       children: [
@@ -55,12 +58,23 @@ class EditEntryContent extends StatelessWidget {
               ),
               collapsed: Container(),
               expanded: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ChoiceTags(
-                      libraryEntry,
-                      gameEntry != null
-                          ? gameEntry!.keywords + gameEntry!.genres
-                          : []),
+                  SizedBox(height: 4.0),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'Keywords: ${keywords.join(", ")}',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8.0),
+                  ChoiceTags(libraryEntry, keywords),
                   SizedBox(height: 16.0),
                 ],
               ),
