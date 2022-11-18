@@ -4,7 +4,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/unmatched_library_model.dart';
+import 'package:espy/modules/models/failed_entries_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -45,8 +45,8 @@ Future<void> main() async {
           return model!..update(libraryModel.entries, gameTagsModel.tags);
         },
       ),
-      ChangeNotifierProxyProvider<UserDataModel, UnmatchedLibraryModel>(
-        create: (_) => UnmatchedLibraryModel(),
+      ChangeNotifierProxyProvider<UserDataModel, FailedEntriesModel>(
+        create: (_) => FailedEntriesModel(),
         update: (_, userDataModel, model) {
           if (userDataModel.userData != null) {
             return model!..update(userDataModel.userId);
@@ -55,7 +55,7 @@ Future<void> main() async {
           }
         },
       ),
-      ChangeNotifierProxyProvider<UnmatchedLibraryModel, UnmatchedEntriesModel>(
+      ChangeNotifierProxyProvider<FailedEntriesModel, UnmatchedEntriesModel>(
         create: (_) => UnmatchedEntriesModel(),
         update: (_, unmatchedLibraryModel, model) {
           return model!..update(unmatchedLibraryModel, '');

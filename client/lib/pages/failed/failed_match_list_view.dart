@@ -1,11 +1,11 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:espy/modules/models/unmatched_library_model.dart';
-import 'package:espy/pages/unmatched/unmatched_card.dart';
+import 'package:espy/modules/models/failed_entries_model.dart';
+import 'package:espy/pages/failed/failed_match_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
-class UnmatchedListView extends StatelessWidget {
-  const UnmatchedListView({Key? key}) : super(key: key);
+class FailedMatchListView extends StatelessWidget {
+  const FailedMatchListView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class UnmatchedListView extends StatelessWidget {
           key: Key('unmatchedListView'),
           itemCount: unmatchedEntries.length,
           itemBuilder: (context, index) {
-            return UnmatchedCard(
+            return FailedMatchCard(
               entry: unmatchedEntries[index],
             );
           },
