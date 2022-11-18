@@ -1,5 +1,4 @@
 import 'package:badges/badges.dart';
-import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/modules/models/unmatched_library_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -106,8 +105,6 @@ List<_MenuItem> _menuItems = [
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
     onTap: (context) => context.pushNamed('games'),
-    badgeText: (context) =>
-        Text('${context.watch<GameLibraryModel>().entries.length}'),
   ),
   _MenuItem(
     label: 'Untagged',

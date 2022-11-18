@@ -50,7 +50,11 @@ class HomeContent extends StatelessWidget {
                         onLongTap: () => isMobile
                             ? context.pushNamed('edit',
                                 params: {'gid': '${libraryEntry.id}'})
-                            : EditEntryDialog.show(context, libraryEntry),
+                            : EditEntryDialog.show(
+                                context,
+                                libraryEntry,
+                                gameId: libraryEntry.id,
+                              ),
                       ))
                   .toList(),
             ),

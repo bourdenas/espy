@@ -25,17 +25,19 @@ class GameEntryActionBar extends StatelessWidget {
         Row(
           children: [
             releaseYear(),
+            SizedBox(width: 8.0),
+            storeIcons(context),
             SizedBox(width: 16.0),
             actionButtons(context),
-            SizedBox(width: 16.0),
-            linkButtons(context, gameEntry),
+            // SizedBox(width: 16.0),
+            // linkButtons(context, gameEntry),
           ],
         ),
       ],
     );
   }
 
-  Container releaseYear() {
+  Widget releaseYear() {
     return Container(
       padding: EdgeInsets.symmetric(
         vertical: 2.0,
@@ -55,13 +57,30 @@ class GameEntryActionBar extends StatelessWidget {
     );
   }
 
+  Widget storeIcons(BuildContext context) {
+    return Row(
+      children: [
+        for (final store in libraryEntry.storeEntries)
+          IconButton(
+            onPressed: () {},
+            icon: storeIcon(store.storefront),
+            splashRadius: 20.0,
+          ),
+      ],
+    );
+  }
+
   Widget actionButtons(BuildContext context) {
     return Row(
       children: [
         IconButton(
           onPressed: () => AppConfigModel.isMobile(context)
               ? context.pushNamed('edit', params: {'gid': '${libraryEntry.id}'})
-              : EditEntryDialog.show(context, libraryEntry),
+              : EditEntryDialog.show(
+                  context,
+                  libraryEntry,
+                  gameEntry: gameEntry,
+                ),
           icon: Icon(
             Icons.edit,
             size: 24.0,
@@ -95,6 +114,18 @@ class GameEntryActionBar extends StatelessWidget {
             )
       ],
     );
+  }
+
+  Widget storeIcon(String storeName) {
+    switch (storeName) {
+      case "gog":
+        return Image.asset('assets/images/gog-128.png');
+      case "steam":
+        return Image.asset('assets/images/steam-128.png');
+      case "egs":
+        return Image.asset('assets/images/egs-128.png');
+    }
+    return Icon(Icons.error);
   }
 
   Widget websiteIcon(String website) {
