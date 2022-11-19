@@ -35,7 +35,7 @@ Future<void> main() async {
       ChangeNotifierProxyProvider<GameLibraryModel, GameTagsModel>(
         create: (_) => GameTagsModel(),
         update: (_, libraryModel, model) {
-          return model!..update(libraryModel.entries);
+          return model!..update(libraryModel.userId, libraryModel.entries);
         },
       ),
       ChangeNotifierProxyProvider2<GameLibraryModel, GameTagsModel,
