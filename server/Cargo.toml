@@ -17,6 +17,10 @@ path = "src/utils/sync_library.rs"
 name = "refresh_entries"
 path = "src/utils/refresh_entries.rs"
 
+[[bin]] 
+name = "refresh_library_entries"
+path = "src/utils/refresh_library_entries.rs"
+
 [[bin]]
 name = "search_igdb"
 path = "src/utils/search_igdb.rs"

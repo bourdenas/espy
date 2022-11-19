@@ -106,5 +106,5 @@ impl fmt::Display for LibraryEntry {
 pub struct GameUserData {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    tags: Vec<String>,
+    pub tags: Vec<String>,
 }
