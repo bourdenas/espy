@@ -62,7 +62,6 @@ impl LibraryOps {
             library_entry
                 .owned_versions
                 .extend(existing.owned_versions.into_iter());
-            library_entry.user_data = existing.user_data;
         }
 
         LibraryOps::write_library_entry(firestore, user_id, &library_entry)
