@@ -34,19 +34,10 @@ pub struct LibraryEntry {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub owned_versions: Vec<u64>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub user_data: Option<GameUserData>,
 }
 
 impl LibraryEntry {
-    pub fn new(
-        game: GameEntry,
-        store_entries: Vec<StoreEntry>,
-        owned_versions: Vec<u64>,
-        user_data: Option<GameUserData>,
-    ) -> Self {
+    pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>, owned_versions: Vec<u64>) -> Self {
         LibraryEntry {
             id: game.id,
             name: game.name,
@@ -91,7 +82,6 @@ impl LibraryEntry {
 
             store_entries,
             owned_versions,
-            user_data,
         }
     }
 }
@@ -100,11 +90,4 @@ impl fmt::Display for LibraryEntry {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "LibraryEntry({}): '{}'", &self.id, &self.name)
     }
-}
-
-#[derive(Serialize, Deserialize, Default, Debug)]
-pub struct GameUserData {
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub tags: Vec<String>,
 }
