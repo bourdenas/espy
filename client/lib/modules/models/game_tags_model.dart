@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_tags.dart';
-import 'package:flutter/foundation.dart' show ChangeNotifier;
+import 'package:flutter/foundation.dart' show ChangeNotifier, debugPrint;
 
 /// Index of tags extracted from user's library.
 ///
@@ -14,6 +14,8 @@ class GameTagsModel extends ChangeNotifier {
   Set<String> _collections = {};
 
   UserTags _userTags = UserTags(tags: []);
+  Map<int, List<String>> _tagsByEntry = {};
+  Map<String, List<int>> _entriesByTag = {};
   String _userId = '';
 
   UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
@@ -24,17 +26,12 @@ class GameTagsModel extends ChangeNotifier {
   UnmodifiableListView<String> get tags =>
       UnmodifiableListView(_userTags.tags.map((e) => e.name).toList()..sort());
 
-  List<String> userTags(int gameId) {
-    return _userTags.tags
-        .where((e) => e.gameIds.contains(gameId))
-        .map((e) => e.name)
-        .toList();
-  }
+  List<String> tagsByEntry(int gameId) => _tagsByEntry[gameId] ?? [];
 
   void addUserTag(String label, int gameId) async {
     _addTag(label, gameId);
 
-    await FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
         .collection('user_data')
@@ -59,7 +56,7 @@ class GameTagsModel extends ChangeNotifier {
       }
     }
 
-    await FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('users')
         .doc(_userId)
         .collection('user_data')
@@ -100,7 +97,7 @@ class GameTagsModel extends ChangeNotifier {
       _collections.addAll(entry.collections.map((collection) => collection));
     }
 
-    if (userId.isNotEmpty) {
+    if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;
       await _loadUserTags(userId);
     }
@@ -120,6 +117,29 @@ class GameTagsModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<UserTags> snapshot) {
       _userTags = snapshot.data() ?? UserTags(tags: []);
+
+      _tagsByEntry.clear();
+      _entriesByTag.clear();
+
+      for (final tag in _userTags.tags) {
+        for (final id in tag.gameIds) {
+          var tags = _tagsByEntry[id];
+          if (tags != null) {
+            tags.add(tag.name);
+          } else {
+            _tagsByEntry[id] = [tag.name];
+          }
+
+          var entries = _entriesByTag[tag.name];
+          if (entries != null) {
+            entries.add(id);
+          } else {
+            _entriesByTag[tag.name] = [id];
+          }
+        }
+      }
+      debugPrint('🎯 updated tags snapshot');
+
       notifyListeners();
     });
   }

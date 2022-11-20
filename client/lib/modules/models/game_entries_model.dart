@@ -13,8 +13,9 @@ class GameEntriesModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Iterable<LibraryEntry> getEntries({LibraryFilter? filter}) => _entries.where(
-      (e) => filter != null ? filter.apply(e, _gameTags.userTags(e.id)) : true);
+  Iterable<LibraryEntry> getEntries({LibraryFilter? filter}) =>
+      _entries.where((e) =>
+          filter != null ? filter.apply(e, _gameTags.tagsByEntry(e.id)) : true);
 
   LibraryEntry? getEntryById(String id) {
     final gameId = int.tryParse(id);

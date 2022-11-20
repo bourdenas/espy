@@ -31,17 +31,19 @@ class FailedEntriesModel extends ChangeNotifier {
           toFirestore: (entry, _) => entry.toJson(),
         )
         .snapshots()
-        .listen((QuerySnapshot<StoreEntry> snapshot) {
-      _entries = snapshot.docs
-          .map(
-            (doc) => doc.data(),
-          )
-          .toList()
-        ..sort((l, r) {
-          return l.title.compareTo(r.title);
-        });
-      notifyListeners();
-    });
+        .listen(
+      (QuerySnapshot<StoreEntry> snapshot) {
+        _entries = snapshot.docs
+            .map(
+              (doc) => doc.data(),
+            )
+            .toList()
+          ..sort((l, r) {
+            return l.title.compareTo(r.title);
+          });
+        notifyListeners();
+      },
+    );
   }
 }
 

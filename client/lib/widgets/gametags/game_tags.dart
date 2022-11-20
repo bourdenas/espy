@@ -52,7 +52,7 @@ class _GameChipsWrap extends StatelessWidget {
               queryParams: LibraryFilter(collections: {collection}).params(),
             ),
           ),
-        for (final tag in context.watch<GameTagsModel>().userTags(entry.id))
+        for (final tag in context.watch<GameTagsModel>().tagsByEntry(entry.id))
           TagChip(
             tag,
             onPressed: () => context.pushNamed(
@@ -114,7 +114,8 @@ class GameCardChips extends StatelessWidget {
                   ),
                 ),
               ),
-          for (final tag in context.watch<GameTagsModel>().userTags(entry.id))
+          for (final tag
+              in context.watch<GameTagsModel>().tagsByEntry(entry.id))
             Padding(
               padding: const EdgeInsets.all(4.0),
               child: TagChip(
