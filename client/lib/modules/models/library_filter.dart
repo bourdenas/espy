@@ -27,13 +27,13 @@ class LibraryFilter {
       stores.isNotEmpty ||
       untagged;
 
-  bool apply(LibraryEntry entry) =>
+  bool apply(LibraryEntry entry, List<String> entryUserTags) =>
+      _filterStore(entry) &&
       _filterCompany(entry) &&
       _filterCollection(entry) &&
-      _filterTag(entry) &&
-      _filterStore(entry) &&
+      _filterTag(entryUserTags) &&
       _filterTitle(entry) &&
-      _filterUntagged(entry);
+      _filterUntagged(entryUserTags);
 
   String encode() {
     return [
@@ -112,6 +112,11 @@ class LibraryFilter {
     );
   }
 
+  bool _filterStore(LibraryEntry entry) =>
+      stores.isEmpty ||
+      stores.every((filter) =>
+          entry.storeEntries.any((store) => store.storefront == filter));
+
   bool _filterCompany(LibraryEntry entry) =>
       companies.isEmpty ||
       companies.every(
@@ -122,18 +127,12 @@ class LibraryFilter {
       collections.every((filter) =>
           entry.collections.any((collection) => collection == filter));
 
-  bool _filterTag(LibraryEntry entry) =>
-      tags.isEmpty ||
-      tags.every((filter) => entry.userData.tags.contains(filter));
-
-  bool _filterStore(LibraryEntry entry) =>
-      stores.isEmpty ||
-      stores.every((filter) =>
-          entry.storeEntries.any((store) => store.storefront == filter));
+  bool _filterTag(List<String> entryUserTags) =>
+      tags.isEmpty || tags.every((filter) => entryUserTags.contains(filter));
 
   bool _filterTitle(LibraryEntry entry) =>
       entry.name.toLowerCase().contains(titleSearch);
 
-  bool _filterUntagged(LibraryEntry entry) =>
-      !untagged || entry.userData.tags.isEmpty;
+  bool _filterUntagged(List<String> entryUserTags) =>
+      !untagged || entryUserTags.isEmpty;
 }

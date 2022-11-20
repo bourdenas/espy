@@ -26,12 +26,6 @@ Future<void> main() async {
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
-      ChangeNotifierProxyProvider<GameLibraryModel, GameEntriesModel>(
-        create: (_) => GameEntriesModel(),
-        update: (_, libraryModel, model) {
-          return model!..update(libraryModel.entries);
-        },
-      ),
       ChangeNotifierProxyProvider<GameLibraryModel, GameTagsModel>(
         create: (_) => GameTagsModel(),
         update: (_, libraryModel, model) {
@@ -39,10 +33,17 @@ Future<void> main() async {
         },
       ),
       ChangeNotifierProxyProvider2<GameLibraryModel, GameTagsModel,
+          GameEntriesModel>(
+        create: (_) => GameEntriesModel(),
+        update: (_, libraryModel, gameTagsModel, model) {
+          return model!..update(libraryModel.entries, gameTagsModel);
+        },
+      ),
+      ChangeNotifierProxyProvider2<GameEntriesModel, GameTagsModel,
           HomeSlatesModel>(
         create: (_) => HomeSlatesModel(),
-        update: (_, libraryModel, gameTagsModel, model) {
-          return model!..update(libraryModel.entries, gameTagsModel.tags);
+        update: (_, gameEntriesModel, gameTagsModel, model) {
+          return model!..update(gameEntriesModel, gameTagsModel.tags);
         },
       ),
       ChangeNotifierProxyProvider<UserDataModel, FailedEntriesModel>(

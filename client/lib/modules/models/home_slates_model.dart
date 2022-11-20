@@ -1,4 +1,7 @@
+import 'dart:js';
+
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
@@ -7,10 +10,9 @@ class HomeSlatesModel extends ChangeNotifier {
 
   List<_SlateInfo> get slates => _slates;
 
-  void update(List<LibraryEntry> entries, List<String> tags) {
+  void update(GameEntriesModel gameEntries, Iterable<String> tags) {
     _SlateInfo slate(String title, LibraryFilter filter) {
-      final filteredEntries =
-          entries.where((e) => filter.apply(e)).take(32).toList();
+      final filteredEntries = gameEntries.getEntries(filter: filter);
       return _SlateInfo(title: title, filter: filter, entries: filteredEntries);
     }
 
@@ -35,5 +37,5 @@ class _SlateInfo {
 
   String title;
   LibraryFilter filter;
-  List<LibraryEntry> entries = [];
+  Iterable<LibraryEntry> entries = [];
 }

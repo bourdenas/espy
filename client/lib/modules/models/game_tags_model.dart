@@ -100,8 +100,10 @@ class GameTagsModel extends ChangeNotifier {
       _collections.addAll(entry.collections.map((collection) => collection));
     }
 
-    _userId = userId;
-    await _loadUserTags(userId);
+    if (userId.isNotEmpty) {
+      _userId = userId;
+      await _loadUserTags(userId);
+    }
     // NOTE: notifyListeners() happens on the user tags snapshot callback.
   }
 

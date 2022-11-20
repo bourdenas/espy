@@ -17,7 +17,7 @@ import 'package:provider/src/provider.dart';
 class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final entries = context.watch<GameEntriesModel>().getEntries(null);
+    final entries = context.watch<GameEntriesModel>().getEntries();
     final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
 
     return entries.isNotEmpty || unmatchedEntries.isNotEmpty
