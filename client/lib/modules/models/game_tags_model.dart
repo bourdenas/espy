@@ -55,8 +55,7 @@ class GameTagsModel extends ChangeNotifier {
   void removeUserTag(String label, int gameId) async {
     for (final tag in _userTags.tags) {
       if (tag.name == label) {
-        tag.gameIds.add(gameId);
-        return;
+        tag.gameIds.remove(gameId);
       }
     }
 
