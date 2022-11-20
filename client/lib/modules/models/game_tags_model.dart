@@ -13,7 +13,6 @@ class GameTagsModel extends ChangeNotifier {
   Set<String> _companies = {};
   Set<String> _collections = {};
 
-  Map<String, List<int>> _tags = {};
   UserTags _userTags = UserTags(tags: []);
   String _userId = '';
 
@@ -22,12 +21,13 @@ class GameTagsModel extends ChangeNotifier {
       UnmodifiableListView(_companies);
   UnmodifiableListView<String> get collections =>
       UnmodifiableListView(_collections);
-  UnmodifiableListView<String> get tags => UnmodifiableListView(_tags.keys);
+  UnmodifiableListView<String> get tags =>
+      UnmodifiableListView(_userTags.tags.map((e) => e.name));
 
   List<String> userTags(int gameId) {
-    return _tags.entries
-        .where((e) => e.value.contains(gameId))
-        .map((e) => e.key)
+    return _userTags.tags
+        .where((e) => e.gameIds.contains(gameId))
+        .map((e) => e.name)
         .toList();
   }
 
@@ -94,7 +94,6 @@ class GameTagsModel extends ChangeNotifier {
   }
 
   void update(String userId, List<LibraryEntry> entries) async {
-    _tags.clear();
     for (final entry in entries) {
       _stores.addAll(entry.storeEntries.map((e) => e.storefront));
       _companies.addAll(entry.companies.map((company) => company));
@@ -118,17 +117,7 @@ class GameTagsModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<UserTags> snapshot) {
-      final user_tags = snapshot.data();
-      if (user_tags == null) {
-        notifyListeners();
-        return;
-      }
-
-      _userTags = user_tags;
-      for (final tag in user_tags.tags) {
-        _tags[tag.name] = tag.gameIds;
-      }
-
+      _userTags = snapshot.data() ?? UserTags(tags: []);
       notifyListeners();
     });
   }
