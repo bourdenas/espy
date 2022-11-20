@@ -86,21 +86,6 @@ class GameLibraryModel extends ChangeNotifier {
     entries.addAll(snapshot.docs.map((doc) => doc.data()));
   }
 
-  void postDetails(LibraryEntry entry) async {
-    entry.userData.tags.sort();
-
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('library')
-        .doc(entry.id.toString())
-        .set(entry.toJson());
-
-    await _saveLibraryLocally(DateTime.now().millisecondsSinceEpoch);
-
-    notifyListeners();
-  }
-
   Future<List<GameEntry>> searchByTitle(String title) async {
     if (title.isEmpty) return [];
 
