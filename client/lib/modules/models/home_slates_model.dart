@@ -1,5 +1,3 @@
-import 'dart:js';
-
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
