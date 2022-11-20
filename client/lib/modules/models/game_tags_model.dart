@@ -9,10 +9,13 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 ///
 /// The index is computed on-the-fly in the client.
 class GameTagsModel extends ChangeNotifier {
-  SplayTreeSet<String> _stores = SplayTreeSet<String>();
-  SplayTreeSet<String> _companies = SplayTreeSet<String>();
-  SplayTreeSet<String> _collections = SplayTreeSet<String>();
+  Set<String> _stores = {};
+  Set<String> _companies = {};
+  Set<String> _collections = {};
+
   Map<String, List<int>> _tags = {};
+  UserTags _userTags = UserTags(tags: []);
+  String _userId = '';
 
   UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
   UnmodifiableListView<String> get companies =>
@@ -20,6 +23,50 @@ class GameTagsModel extends ChangeNotifier {
   UnmodifiableListView<String> get collections =>
       UnmodifiableListView(_collections);
   UnmodifiableListView<String> get tags => UnmodifiableListView(_tags.keys);
+
+  List<String> userTags(int gameId) {
+    return _tags.entries
+        .where((e) => e.value.contains(gameId))
+        .map((e) => e.key)
+        .toList();
+  }
+
+  void addUserTag(String label, int gameId) async {
+    _addTag(label, gameId);
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('user_data')
+        .doc('tags')
+        .set(_userTags.toJson());
+  }
+
+  void _addTag(String label, int gameId) {
+    for (final tag in _userTags.tags) {
+      if (tag.name == label) {
+        tag.gameIds.add(gameId);
+        return;
+      }
+    }
+    _userTags.tags.add(Tag(name: label, gameIds: [gameId]));
+  }
+
+  void removeUserTag(String label, int gameId) async {
+    for (final tag in _userTags.tags) {
+      if (tag.name == label) {
+        tag.gameIds.add(gameId);
+        return;
+      }
+    }
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('user_data')
+        .doc('tags')
+        .set(_userTags.toJson());
+  }
 
   Iterable<String> filterCompanies(Iterable<String> terms) {
     return companies.where((company) => terms.every((term) =>
@@ -55,6 +102,7 @@ class GameTagsModel extends ChangeNotifier {
       _collections.addAll(entry.collections.map((collection) => collection));
     }
 
+    _userId = userId;
     await _loadUserTags(userId);
     // NOTE: notifyListeners() happens on the user tags snapshot callback.
   }
@@ -77,9 +125,11 @@ class GameTagsModel extends ChangeNotifier {
         return;
       }
 
+      _userTags = user_tags;
       for (final tag in user_tags.tags) {
         _tags[tag.name] = tag.gameIds;
       }
+
       notifyListeners();
     });
   }
