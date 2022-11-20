@@ -22,7 +22,7 @@ class GameTagsModel extends ChangeNotifier {
   UnmodifiableListView<String> get collections =>
       UnmodifiableListView(_collections);
   UnmodifiableListView<String> get tags =>
-      UnmodifiableListView(_userTags.tags.map((e) => e.name));
+      UnmodifiableListView(_userTags.tags.map((e) => e.name).toList()..sort());
 
   List<String> userTags(int gameId) {
     return _userTags.tags
