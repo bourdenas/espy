@@ -14,7 +14,9 @@ class UserTags {
 
   Map<String, dynamic> toJson() {
     return {
-      'tags': tags,
+      'tags': [
+        for (final tag in tags) tag.toJson(),
+      ],
     };
   }
 }
