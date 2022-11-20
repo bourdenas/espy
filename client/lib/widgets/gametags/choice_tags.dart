@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,24 +22,18 @@ class _ChoiceTagsState extends State<ChoiceTags> {
 
   @override
   Widget build(BuildContext context) {
-    // Forces the widget to rebuild when library entries update (e.g. tags).
-    context.watch<GameLibraryModel>();
-
     final onSelected = (bool selected, String tag) {
-      setState(() {
-        if (selected)
-          selectedTags.add(tag);
-        else
-          selectedTags.remove(tag);
-
-        widget.entry.userData = GameUserData(tags: selectedTags.toList());
-        context.read<GameLibraryModel>().postDetails(widget.entry);
-      });
+      if (selected) {
+        context.read<GameTagsModel>().addUserTag(tag, widget.entry.id);
+      } else {
+        context.read<GameTagsModel>().removeUserTag(tag, widget.entry.id);
+      }
     };
 
-    selectedTags.addAll(widget.entry.userData.tags);
-    final filteredTags =
-        context.read<GameTagsModel>().filterTags(filter.split(' '));
+    final tagsModel = context.watch<GameTagsModel>();
+    final filteredTags = tagsModel.filterTags(filter.split(' '));
+    selectedTags.clear();
+    selectedTags.addAll(tagsModel.userTags(widget.entry.id));
 
     return Column(
       children: [
@@ -99,12 +92,8 @@ class _ChoiceTagsState extends State<ChoiceTags> {
               });
             },
             onFieldSubmitted: (text) {
+              context.read<GameTagsModel>().addUserTag(text, widget.entry.id);
               setState(() {
-                selectedTags.add(text);
-
-                widget.entry.userData =
-                    GameUserData(tags: selectedTags.toList());
-                context.read<GameLibraryModel>().postDetails(widget.entry);
                 _textController.text = '';
                 filter = '';
               });
