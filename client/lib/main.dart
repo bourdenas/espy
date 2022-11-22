@@ -4,7 +4,6 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/failed_entries_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -44,16 +43,6 @@ Future<void> main() async {
         create: (_) => HomeSlatesModel(),
         update: (_, gameEntriesModel, gameTagsModel, model) {
           return model!..update(gameEntriesModel, gameTagsModel.tags);
-        },
-      ),
-      ChangeNotifierProxyProvider<UserDataModel, FailedEntriesModel>(
-        create: (_) => FailedEntriesModel(),
-        update: (_, userDataModel, model) {
-          if (userDataModel.userData != null) {
-            return model!..update(userDataModel.userId);
-          } else {
-            return model!;
-          }
         },
       ),
     ],
