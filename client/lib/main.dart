@@ -56,12 +56,6 @@ Future<void> main() async {
           }
         },
       ),
-      ChangeNotifierProxyProvider<FailedEntriesModel, UnmatchedEntriesModel>(
-        create: (_) => UnmatchedEntriesModel(),
-        update: (_, unmatchedLibraryModel, model) {
-          return model!..update(unmatchedLibraryModel, '');
-        },
-      ),
     ],
     child: EspyApp(),
   ));

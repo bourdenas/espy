@@ -46,20 +46,3 @@ class FailedEntriesModel extends ChangeNotifier {
     );
   }
 }
-
-class UnmatchedEntriesModel extends ChangeNotifier {
-  FailedEntriesModel? _unknownModel;
-  String _searchPhrase = '';
-
-  UnmodifiableListView<StoreEntry> get entries => _unknownModel != null
-      ? UnmodifiableListView(_unknownModel!.entries
-          .where((e) => e.title.toLowerCase().contains(_searchPhrase)))
-      : UnmodifiableListView([]);
-
-  void update(FailedEntriesModel unknownModel, String searchPhrase) {
-    _unknownModel = unknownModel;
-    _searchPhrase = searchPhrase;
-
-    notifyListeners();
-  }
-}

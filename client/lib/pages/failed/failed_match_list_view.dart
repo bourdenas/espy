@@ -9,7 +9,7 @@ class FailedMatchListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
+    final unmatchedEntries = context.watch<FailedEntriesModel>().entries;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -18,7 +18,7 @@ class FailedMatchListView extends StatelessWidget {
         duration: Duration(milliseconds: 500),
         child: ListView.builder(
           primary: true,
-          key: Key('unmatchedListView'),
+          key: Key('failedListView'),
           itemCount: unmatchedEntries.length,
           itemBuilder: (context, index) {
             return FailedMatchCard(

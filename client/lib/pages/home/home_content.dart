@@ -18,7 +18,7 @@ class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final entries = context.watch<GameEntriesModel>().getEntries();
-    final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
+    final unmatchedEntries = context.watch<FailedEntriesModel>().entries;
 
     return entries.isNotEmpty || unmatchedEntries.isNotEmpty
         ? library(context)
@@ -27,7 +27,7 @@ class HomeContent extends StatelessWidget {
 
   Widget library(BuildContext context) {
     final slates = context.watch<HomeSlatesModel>().slates;
-    final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
+    final unmatchedEntries = context.watch<FailedEntriesModel>().entries;
     final isMobile = AppConfigModel.isMobile(context);
 
     return ListView(
