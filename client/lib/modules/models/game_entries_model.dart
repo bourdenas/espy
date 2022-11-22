@@ -13,9 +13,21 @@ class GameEntriesModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Iterable<LibraryEntry> getEntries({LibraryFilter? filter}) =>
-      _entries.where((e) =>
-          filter != null ? filter.apply(e, _gameTags.tagsByEntry(e.id)) : true);
+  Iterable<LibraryEntry> getEntries({LibraryFilter? filter}) {
+    if (filter == null) {
+      return _entries;
+    }
+
+    final taggedEntries = filter.tags.isNotEmpty
+        ? Set<int>.from(_gameTags.entriesByTag(filter.tags.first))
+        : null;
+
+    final entries = taggedEntries != null
+        ? _entries.where((e) => taggedEntries.contains(e.id))
+        : _entries;
+
+    return entries.where((e) => filter.apply(e));
+  }
 
   LibraryEntry? getEntryById(String id) {
     final gameId = int.tryParse(id);
