@@ -4,7 +4,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/unmatched_library_model.dart';
+import 'package:espy/modules/models/failed_entries_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -26,27 +26,28 @@ Future<void> main() async {
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
-      ChangeNotifierProxyProvider<GameLibraryModel, GameEntriesModel>(
-        create: (_) => GameEntriesModel(),
-        update: (_, libraryModel, model) {
-          return model!..update(libraryModel.entries);
-        },
-      ),
       ChangeNotifierProxyProvider<GameLibraryModel, GameTagsModel>(
         create: (_) => GameTagsModel(),
         update: (_, libraryModel, model) {
-          return model!..update(libraryModel.entries);
+          return model!..update(libraryModel.userId, libraryModel.entries);
         },
       ),
       ChangeNotifierProxyProvider2<GameLibraryModel, GameTagsModel,
-          HomeSlatesModel>(
-        create: (_) => HomeSlatesModel(),
+          GameEntriesModel>(
+        create: (_) => GameEntriesModel(),
         update: (_, libraryModel, gameTagsModel, model) {
-          return model!..update(libraryModel.entries, gameTagsModel.tags);
+          return model!..update(libraryModel.entries, gameTagsModel);
         },
       ),
-      ChangeNotifierProxyProvider<UserDataModel, UnmatchedLibraryModel>(
-        create: (_) => UnmatchedLibraryModel(),
+      ChangeNotifierProxyProvider2<GameEntriesModel, GameTagsModel,
+          HomeSlatesModel>(
+        create: (_) => HomeSlatesModel(),
+        update: (_, gameEntriesModel, gameTagsModel, model) {
+          return model!..update(gameEntriesModel, gameTagsModel.tags);
+        },
+      ),
+      ChangeNotifierProxyProvider<UserDataModel, FailedEntriesModel>(
+        create: (_) => FailedEntriesModel(),
         update: (_, userDataModel, model) {
           if (userDataModel.userData != null) {
             return model!..update(userDataModel.userId);
@@ -55,7 +56,7 @@ Future<void> main() async {
           }
         },
       ),
-      ChangeNotifierProxyProvider<UnmatchedLibraryModel, UnmatchedEntriesModel>(
+      ChangeNotifierProxyProvider<FailedEntriesModel, UnmatchedEntriesModel>(
         create: (_) => UnmatchedEntriesModel(),
         update: (_, unmatchedLibraryModel, model) {
           return model!..update(unmatchedLibraryModel, '');

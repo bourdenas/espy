@@ -5,7 +5,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/unmatched_library_model.dart';
+import 'package:espy/modules/models/failed_entries_model.dart';
 import 'package:espy/pages/home/home_slate.dart';
 import 'package:espy/pages/home/slate_tile.dart';
 import 'package:espy/widgets/empty_library.dart';
@@ -17,7 +17,7 @@ import 'package:provider/src/provider.dart';
 class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final entries = context.watch<GameEntriesModel>().getEntries(null);
+    final entries = context.watch<GameEntriesModel>().getEntries();
     final unmatchedEntries = context.watch<UnmatchedEntriesModel>().entries;
 
     return entries.isNotEmpty || unmatchedEntries.isNotEmpty

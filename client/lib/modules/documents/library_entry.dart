@@ -13,8 +13,6 @@ class LibraryEntry {
   final List<StoreEntry> storeEntries;
   final List<int> ownedVersions;
 
-  GameUserData userData;
-
   LibraryEntry({
     required this.id,
     required this.name,
@@ -24,7 +22,6 @@ class LibraryEntry {
     this.companies = const [],
     this.storeEntries = const [],
     this.ownedVersions = const [],
-    this.userData = const GameUserData(),
   });
 
   LibraryEntry.fromJson(Map<String, dynamic> json)
@@ -46,9 +43,6 @@ class LibraryEntry {
           ownedVersions: [
             for (final version in json['owned_versions'] ?? []) version
           ],
-          userData: json.containsKey('user_data')
-              ? GameUserData.fromJson(json['user_data'])
-              : GameUserData(),
         );
 
   Map<String, dynamic> toJson() {
@@ -64,26 +58,6 @@ class LibraryEntry {
           for (final entry in storeEntries) entry.toJson(),
         ],
       if (ownedVersions.isNotEmpty) 'owned_versions': ownedVersions,
-      'user_data': userData.toJson(),
-    };
-  }
-}
-
-class GameUserData {
-  final List<String> tags;
-
-  const GameUserData({
-    this.tags = const [],
-  });
-
-  GameUserData.fromJson(Map<String, dynamic> json)
-      : this(
-          tags: [for (final tag in json['tags'] ?? []) tag],
-        );
-
-  Map<String, dynamic> toJson() {
-    return {
-      if (tags.isNotEmpty) 'tags': tags,
     };
   }
 }

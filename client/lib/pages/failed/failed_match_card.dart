@@ -5,8 +5,8 @@ import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class UnmatchedCard extends StatelessWidget {
-  UnmatchedCard({
+class FailedMatchCard extends StatelessWidget {
+  FailedMatchCard({
     Key? key,
     required this.entry,
   }) : super(key: key);

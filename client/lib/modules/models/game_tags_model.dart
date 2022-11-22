@@ -1,27 +1,87 @@
 import 'dart:collection';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:flutter/foundation.dart' show ChangeNotifier;
+import 'package:espy/modules/documents/user_tags.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier, debugPrint;
 
 /// Index of tags extracted from user's library.
 ///
 /// The index is computed on-the-fly in the client.
 class GameTagsModel extends ChangeNotifier {
-  SplayTreeSet<String> _companies = SplayTreeSet<String>();
-  SplayTreeSet<String> _collections = SplayTreeSet<String>();
-  SplayTreeSet<String> _tags = SplayTreeSet<String>();
-  SplayTreeSet<String> _stores = SplayTreeSet<String>();
+  Set<String> _stores = {};
+  Set<String> _companies = {};
+  Set<String> _collections = {};
 
+  UserTags _userTags = UserTags(tags: []);
+  Map<int, List<String>> _tagsByEntry = {};
+  Map<String, List<int>> _entriesByTag = {};
+  String _userId = '';
+
+  UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
   UnmodifiableListView<String> get companies =>
       UnmodifiableListView(_companies);
   UnmodifiableListView<String> get collections =>
       UnmodifiableListView(_collections);
-  UnmodifiableListView<String> get tags => UnmodifiableListView(_tags);
-  UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
+  UnmodifiableListView<String> get tags =>
+      UnmodifiableListView(_userTags.tags.map((e) => e.name).toList()..sort());
+
+  List<String> tagsByEntry(int gameId) => _tagsByEntry[gameId] ?? [];
+  List<int> entriesByTag(String tag) => _entriesByTag[tag] ?? [];
+
+  void addUserTag(String label, int gameId) async {
+    _addTag(label, gameId);
+
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('user_data')
+        .doc('tags')
+        .set(_userTags.toJson());
+  }
+
+  void _addTag(String label, int gameId) {
+    for (final tag in _userTags.tags) {
+      if (tag.name == label) {
+        tag.gameIds.add(gameId);
+        return;
+      }
+    }
+    _userTags.tags.add(Tag(name: label, gameIds: [gameId]));
+  }
+
+  void removeUserTag(String label, int gameId) async {
+    int index = 0;
+    for (final tag in _userTags.tags) {
+      if (tag.name == label) {
+        tag.gameIds.remove(gameId);
+
+        if (tag.gameIds.isEmpty) {
+          _userTags.tags.removeAt(index);
+        }
+        break;
+      }
+      ++index;
+    }
+
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('user_data')
+        .doc('tags')
+        .set(_userTags.toJson());
+  }
 
   Iterable<String> filterCompanies(Iterable<String> terms) {
     return companies.where((company) => terms.every((term) =>
         company.toLowerCase().split(' ').any((word) => word.startsWith(term))));
+  }
+
+  Iterable<String> filterStores(Iterable<String> terms) {
+    return stores.where(
+      (store) => terms.every((term) =>
+          store.toLowerCase().split(' ').any((word) => word.startsWith(term))),
+    );
   }
 
   Iterable<String> filterCollections(Iterable<String> terms) {
@@ -38,22 +98,57 @@ class GameTagsModel extends ChangeNotifier {
     );
   }
 
-  Iterable<String> filterStores(Iterable<String> terms) {
-    return stores.where(
-      (store) => terms.every((term) =>
-          store.toLowerCase().split(' ').any((word) => word.startsWith(term))),
-    );
-  }
-
-  void update(List<LibraryEntry> entries) {
-    _tags.clear();
+  void update(String userId, List<LibraryEntry> entries) async {
     for (final entry in entries) {
+      _stores.addAll(entry.storeEntries.map((e) => e.storefront));
       _companies.addAll(entry.companies.map((company) => company));
       _collections.addAll(entry.collections.map((collection) => collection));
-      _tags.addAll(entry.userData.tags);
-      _stores.addAll(entry.storeEntries.map((e) => e.storefront));
     }
 
-    notifyListeners();
+    if (userId.isNotEmpty && _userId != userId) {
+      _userId = userId;
+      await _loadUserTags(userId);
+    }
+    // NOTE: notifyListeners() happens on the user tags snapshot callback.
+  }
+
+  Future<void> _loadUserTags(String userId) async {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('user_data')
+        .doc('tags')
+        .withConverter<UserTags>(
+          fromFirestore: (snapshot, _) => UserTags.fromJson(snapshot.data()!),
+          toFirestore: (entry, _) => entry.toJson(),
+        )
+        .snapshots()
+        .listen((DocumentSnapshot<UserTags> snapshot) {
+      _userTags = snapshot.data() ?? UserTags(tags: []);
+
+      _tagsByEntry.clear();
+      _entriesByTag.clear();
+
+      for (final tag in _userTags.tags) {
+        for (final id in tag.gameIds) {
+          var tags = _tagsByEntry[id];
+          if (tags != null) {
+            tags.add(tag.name);
+          } else {
+            _tagsByEntry[id] = [tag.name];
+          }
+
+          var entries = _entriesByTag[tag.name];
+          if (entries != null) {
+            entries.add(id);
+          } else {
+            _entriesByTag[tag.name] = [id];
+          }
+        }
+      }
+      debugPrint('🎯 updated tags snapshot');
+
+      notifyListeners();
+    });
   }
 }

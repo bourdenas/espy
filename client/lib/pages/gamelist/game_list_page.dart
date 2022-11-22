@@ -20,8 +20,10 @@ class GameListPage extends StatefulWidget {
 class _GameListPageState extends State<GameListPage> {
   @override
   Widget build(BuildContext context) {
-    final entries =
-        context.watch<GameEntriesModel>().getEntries(widget.filter).toList();
+    final entries = context
+        .watch<GameEntriesModel>()
+        .getEntries(filter: widget.filter)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(

@@ -5,7 +5,7 @@ import 'package:espy/modules/documents/store_entry.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 /// Model of all unreconciled entries in user's library.
-class UnmatchedLibraryModel extends ChangeNotifier {
+class FailedEntriesModel extends ChangeNotifier {
   String _uid = '';
   List<StoreEntry> _entries = [];
 
@@ -31,22 +31,24 @@ class UnmatchedLibraryModel extends ChangeNotifier {
           toFirestore: (entry, _) => entry.toJson(),
         )
         .snapshots()
-        .listen((snapshot) {
-      _entries = snapshot.docs
-          .map(
-            (doc) => doc.data(),
-          )
-          .toList()
-        ..sort((l, r) {
-          return l.title.compareTo(r.title);
-        });
-      notifyListeners();
-    });
+        .listen(
+      (QuerySnapshot<StoreEntry> snapshot) {
+        _entries = snapshot.docs
+            .map(
+              (doc) => doc.data(),
+            )
+            .toList()
+          ..sort((l, r) {
+            return l.title.compareTo(r.title);
+          });
+        notifyListeners();
+      },
+    );
   }
 }
 
 class UnmatchedEntriesModel extends ChangeNotifier {
-  UnmatchedLibraryModel? _unknownModel;
+  FailedEntriesModel? _unknownModel;
   String _searchPhrase = '';
 
   UnmodifiableListView<StoreEntry> get entries => _unknownModel != null
@@ -54,7 +56,7 @@ class UnmatchedEntriesModel extends ChangeNotifier {
           .where((e) => e.title.toLowerCase().contains(_searchPhrase)))
       : UnmodifiableListView([]);
 
-  void update(UnmatchedLibraryModel unknownModel, String searchPhrase) {
+  void update(FailedEntriesModel unknownModel, String searchPhrase) {
     _unknownModel = unknownModel;
     _searchPhrase = searchPhrase;
 

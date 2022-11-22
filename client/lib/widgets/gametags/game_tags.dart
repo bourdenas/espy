@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +52,7 @@ class _GameChipsWrap extends StatelessWidget {
               queryParams: LibraryFilter(collections: {collection}).params(),
             ),
           ),
-        for (final tag in entry.userData.tags)
+        for (final tag in context.watch<GameTagsModel>().tagsByEntry(entry.id))
           TagChip(
             tag,
             onPressed: () => context.pushNamed(
@@ -59,8 +60,7 @@ class _GameChipsWrap extends StatelessWidget {
               queryParams: LibraryFilter(tags: {tag}).params(),
             ),
             onDeleted: () {
-              entry.userData.tags.remove(tag);
-              context.read<GameLibraryModel>().postDetails(entry);
+              context.read<GameTagsModel>().removeUserTag(tag, entry.id);
             },
           ),
       ],
@@ -114,7 +114,8 @@ class GameCardChips extends StatelessWidget {
                   ),
                 ),
               ),
-          for (final tag in entry.userData.tags)
+          for (final tag
+              in context.watch<GameTagsModel>().tagsByEntry(entry.id))
             Padding(
               padding: const EdgeInsets.all(4.0),
               child: TagChip(
@@ -124,8 +125,7 @@ class GameCardChips extends StatelessWidget {
                   queryParams: LibraryFilter(tags: {tag}).params(),
                 ),
                 onDeleted: () {
-                  entry.userData.tags.remove(tag);
-                  context.read<GameLibraryModel>().postDetails(entry);
+                  context.read<GameTagsModel>().removeUserTag(tag, entry.id);
                 },
               ),
             ),
