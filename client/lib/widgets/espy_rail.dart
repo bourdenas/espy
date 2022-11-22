@@ -1,6 +1,6 @@
 import 'package:badges/badges.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
-import 'package:espy/modules/models/failed_entries_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -119,7 +119,7 @@ List<_MenuItem> _menuItems = [
     selectedIcon: Icons.error,
     onTap: (context) => context.pushNamed('unmatched'),
     badgeText: (context) =>
-        Text('${context.watch<FailedEntriesModel>().entries.length}'),
+        Text('${context.watch<GameLibraryModel>().failedEntries.length}'),
   ),
   _MenuItem(
     label: 'Settings',

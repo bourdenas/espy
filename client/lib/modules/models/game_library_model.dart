@@ -13,14 +13,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Model that handles interactions with remote library data store.
 class GameLibraryModel extends ChangeNotifier {
-  List<LibraryEntry> entries = [];
+  List<LibraryEntry> _entries = [];
+  List<StoreEntry> _failedEntries = [];
   String userId = '';
   int _firebaseLibraryVersion = 0;
+
+  List<LibraryEntry> get entries => _entries;
+  List<StoreEntry> get failedEntries => _failedEntries;
 
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
-      entries.clear();
+      _entries.clear();
+      _failedEntries.clear();
       return;
     }
 
@@ -38,12 +43,17 @@ class GameLibraryModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     final localVersion = prefs.getInt('${userId}_version') ?? 0;
-    final encodedLibrary = prefs.getString(userId);
+    final encodedLibrary = prefs.getString('${userId}_library');
+    final encodedFailed = prefs.getString('${userId}_failed');
 
     if (_firebaseLibraryVersion == localVersion && encodedLibrary != null) {
       print('found local library for $userId @$localVersion');
-      final jsonMap = jsonDecode(encodedLibrary) as Map<String, dynamic>;
-      entries = Library.fromJson(jsonMap).entries;
+      _entries =
+          Library.fromJson(jsonDecode(encodedLibrary) as Map<String, dynamic>)
+              .entries;
+      _failedEntries = FailedEntries.fromJson(
+              jsonDecode(encodedFailed ?? '') as Map<String, dynamic>)
+          .entries;
     } else {
       print(
           'retrieving library for $userId last updated @$_firebaseLibraryVersion');
@@ -54,23 +64,14 @@ class GameLibraryModel extends ChangeNotifier {
 
   Future<void> _saveLibraryLocally(int version) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(userId, jsonEncode(Library(entries)));
+    await prefs.setString('${userId}_library', jsonEncode(Library(_entries)));
+    await prefs.setString(
+        '${userId}_failed', jsonEncode(FailedEntries(_failedEntries)));
     await prefs.setInt('${userId}_version', version);
-
-    if (version == _firebaseLibraryVersion) {
-      // No need to notify Firebase, version came from there.
-      return;
-    }
-
-    _firebaseLibraryVersion = version;
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .update({'version': version});
   }
 
   Future<void> _fetchLibrary() async {
-    final snapshot = await FirebaseFirestore.instance
+    final librarySnapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
         .collection('library')
@@ -81,9 +82,19 @@ class GameLibraryModel extends ChangeNotifier {
         )
         .orderBy('release_date', descending: true)
         .get();
+    _entries = librarySnapshot.docs.map((doc) => doc.data()).toList();
 
-    entries.clear();
-    entries.addAll(snapshot.docs.map((doc) => doc.data()));
+    final failedSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('failed')
+        .withConverter<StoreEntry>(
+          fromFirestore: (snapshot, _) => StoreEntry.fromJson(snapshot.data()!),
+          toFirestore: (entry, _) => entry.toJson(),
+        )
+        .orderBy('title')
+        .get();
+    _failedEntries = failedSnapshot.docs.map((doc) => doc.data()).toList();
   }
 
   Future<List<GameEntry>> searchByTitle(String title) async {
