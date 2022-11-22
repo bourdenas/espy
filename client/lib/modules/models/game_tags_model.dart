@@ -50,10 +50,17 @@ class GameTagsModel extends ChangeNotifier {
   }
 
   void removeUserTag(String label, int gameId) async {
+    int index = 0;
     for (final tag in _userTags.tags) {
       if (tag.name == label) {
         tag.gameIds.remove(gameId);
+
+        if (tag.gameIds.isEmpty) {
+          _userTags.tags.removeAt(index);
+        }
+        break;
       }
+      ++index;
     }
 
     FirebaseFirestore.instance
