@@ -59,7 +59,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
                 icon: e.badgeText != null
                     ? Badge(
                         badgeContent: e.badgeText!(context),
-                        position: BadgePosition.topEnd(top: -24, end: -18),
+                        position: BadgePosition.topEnd(top: -24, end: -16),
                         borderRadius: BorderRadius.circular(1),
                         child: Icon(e.icon),
                       )
