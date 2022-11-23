@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart' show ChangeNotifier, debugPrint;
 class GameTagsModel extends ChangeNotifier {
   Set<String> _stores = {};
   Set<String> _companies = {};
-  Set<String> _collections = {};
+  Map<String, int> _collections = {};
 
   UserTags _userTags = UserTags(tags: []);
   Map<int, List<String>> _tagsByEntry = {};
@@ -22,7 +22,11 @@ class GameTagsModel extends ChangeNotifier {
   UnmodifiableListView<String> get companies =>
       UnmodifiableListView(_companies);
   UnmodifiableListView<String> get collections =>
-      UnmodifiableListView(_collections);
+      UnmodifiableListView(_collections.entries
+          .where((entry) => entry.value > 1)
+          .map((entry) => entry.key)
+          .toList()
+        ..sort());
   UnmodifiableListView<String> get tags =>
       UnmodifiableListView(_userTags.tags.map((e) => e.name).toList()..sort());
 
@@ -99,10 +103,14 @@ class GameTagsModel extends ChangeNotifier {
   }
 
   void update(String userId, List<LibraryEntry> entries) async {
+    _collections.clear();
+
     for (final entry in entries) {
       _stores.addAll(entry.storeEntries.map((e) => e.storefront));
       _companies.addAll(entry.companies.map((company) => company));
-      _collections.addAll(entry.collections.map((collection) => collection));
+      for (final collection in entry.collections) {
+        _collections[collection] = (_collections[collection] ?? 0) + 1;
+      }
     }
 
     if (userId.isNotEmpty && _userId != userId) {
