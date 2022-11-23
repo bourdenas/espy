@@ -1,7 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/intents/add_game_intent.dart';
+import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/foundation.dart';
@@ -26,73 +29,86 @@ class GameDetailsContentDesktop extends StatelessWidget {
         ? gameEntry.steamData!.aboutTheGame
         : gameEntry.summary;
 
-    return CustomScrollView(
-      primary: true,
-      slivers: [
-        header(context, libraryEntry, gameEntry),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                GameEntryActionBar(
-                  libraryEntry: libraryEntry,
-                  gameEntry: gameEntry,
-                ),
-                SizedBox(height: 16.0),
-                relatedGames(
+    return Actions(
+      actions: {
+        EditDialogIntent: CallbackAction<EditDialogIntent>(
+            onInvoke: (intent) => EditEntryDialog.show(
                   context,
-                  gameEntry,
-                  ['${libraryEntry.id}', ...childPath],
-                ),
-                SizedBox(height: 16.0),
-              ],
-            ),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 600),
+                  libraryEntry,
+                  gameEntry: gameEntry,
+                )),
+      },
+      child: Focus(
+        autofocus: true,
+        child: CustomScrollView(
+          primary: true,
+          slivers: [
+            header(context, libraryEntry, gameEntry),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Html(
-                      data: description,
+                    GameEntryActionBar(
+                      libraryEntry: libraryEntry,
+                      gameEntry: gameEntry,
                     ),
-                    SizedBox(height: 8.0),
-                    if (gameEntry.genres.isNotEmpty)
-                      Text(
-                        'Genres: ${gameEntry.genres.join(", ")}',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    SizedBox(height: 4.0),
-                    if (gameEntry.keywords.isNotEmpty)
-                      Text(
-                        'Keywords: ${gameEntry.keywords.join(", ")}',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
+                    SizedBox(height: 16.0),
+                    relatedGames(
+                      context,
+                      gameEntry,
+                      ['${libraryEntry.id}', ...childPath],
+                    ),
                     SizedBox(height: 16.0),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            SliverToBoxAdapter(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Html(
+                          data: description,
+                        ),
+                        SizedBox(height: 8.0),
+                        if (gameEntry.genres.isNotEmpty)
+                          Text(
+                            'Genres: ${gameEntry.genres.join(", ")}',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        SizedBox(height: 4.0),
+                        if (gameEntry.keywords.isNotEmpty)
+                          Text(
+                            'Keywords: ${gameEntry.keywords.join(", ")}',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        SizedBox(height: 16.0),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            screenshot(context, gameEntry),
+          ],
         ),
-        screenshot(context, gameEntry),
-      ],
+      ),
     );
   }
 

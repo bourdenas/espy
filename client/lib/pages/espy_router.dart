@@ -1,7 +1,7 @@
 import 'package:espy/modules/intents/add_game_intent.dart';
+import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
-import 'package:espy/modules/intents/title_search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/details/game_details_page.dart';
@@ -113,11 +113,13 @@ class EspyRouter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: {
-        SingleActivator(LogicalKeyboardKey.slash): const TitleSearchIntent(),
+        SingleActivator(LogicalKeyboardKey.slash): const SearchIntent(),
         SingleActivator(LogicalKeyboardKey.keyF, control: true):
             const SearchIntent(),
         SingleActivator(LogicalKeyboardKey.keyG, control: true):
             const HomeIntent(),
+        SingleActivator(LogicalKeyboardKey.period, control: true):
+            const EditDialogIntent(),
         SingleActivator(LogicalKeyboardKey.keyQ, control: true):
             const AddGameIntent(),
       },

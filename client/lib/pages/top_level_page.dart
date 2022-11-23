@@ -49,38 +49,35 @@ class _TopLevelPageState extends State<TopLevelPage>
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Color(0xFF26262F),
-      child: Actions(
-        actions: {
-          SearchIntent: CallbackAction<SearchIntent>(
-              onInvoke: (intent) => context.pushNamed('search')),
-          HomeIntent: CallbackAction<HomeIntent>(
-              onInvoke: (intent) => context.goNamed('home')),
-          AddGameIntent: CallbackAction<AddGameIntent>(
-              onInvoke: (intent) => MatchingDialog.show(
-                    context,
-                    onMatch: (storeEntry, gameEntry) {
-                      context
-                          .read<GameLibraryModel>()
-                          .matchEntry(storeEntry, gameEntry);
-                    },
-                  )),
-        },
-        child: Focus(
-          autofocus: true,
-          child: AppConfigModel.isMobile(context)
-              ? _mobilePage(context)
-              : _desktopPage(context),
-        ),
-      ),
-    );
+    return AppConfigModel.isMobile(context)
+        ? _mobilePage(context)
+        : _desktopPage(context);
   }
 
   Widget _desktopPage(BuildContext context) {
-    return EspyScaffold(
-      body: widget.body,
-      path: widget.path,
+    return Actions(
+      actions: {
+        SearchIntent: CallbackAction<SearchIntent>(
+            onInvoke: (intent) => context.pushNamed('search')),
+        HomeIntent: CallbackAction<HomeIntent>(
+            onInvoke: (intent) => context.goNamed('home')),
+        AddGameIntent: CallbackAction<AddGameIntent>(
+            onInvoke: (intent) => MatchingDialog.show(
+                  context,
+                  onMatch: (storeEntry, gameEntry) {
+                    context
+                        .read<GameLibraryModel>()
+                        .matchEntry(storeEntry, gameEntry);
+                  },
+                )),
+      },
+      child: Focus(
+        autofocus: !widget.path.startsWith('/details'),
+        child: EspyScaffold(
+          body: widget.body,
+          path: widget.path,
+        ),
+      ),
     );
   }
 
