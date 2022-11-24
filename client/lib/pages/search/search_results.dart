@@ -114,17 +114,17 @@ class TagSearchResults extends StatelessWidget {
       itemExtent: 90.0,
       delegate: SliverChildListDelegate(
         [
-          if (tagChips.isNotEmpty)
-            _ChipResults(
-              title: 'Tags',
-              color: Colors.blueGrey,
-              chips: tagChips,
-            ),
           if (storeChips.isNotEmpty)
             _ChipResults(
               title: 'Stores',
               color: Colors.deepPurpleAccent,
               chips: storeChips,
+            ),
+          if (tagChips.isNotEmpty)
+            _ChipResults(
+              title: 'Tags',
+              color: Colors.blueGrey,
+              chips: tagChips,
             ),
           if (companyChips.isNotEmpty)
             _ChipResults(

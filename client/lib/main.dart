@@ -42,7 +42,7 @@ Future<void> main() async {
           HomeSlatesModel>(
         create: (_) => HomeSlatesModel(),
         update: (_, gameEntriesModel, gameTagsModel, model) {
-          return model!..update(gameEntriesModel, gameTagsModel.tags);
+          return model!..update(gameEntriesModel, gameTagsModel);
         },
       ),
     ],
