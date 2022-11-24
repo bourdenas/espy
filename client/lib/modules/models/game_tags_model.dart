@@ -30,6 +30,8 @@ class GameTagsModel extends ChangeNotifier {
   UnmodifiableListView<String> get tags =>
       UnmodifiableListView(_userTags.tags.map((e) => e.name).toList()..sort());
 
+  int getCollectionSize(String collection) => _collections[collection] ?? 0;
+
   List<String> tagsByEntry(int gameId) => _tagsByEntry[gameId] ?? [];
   List<int> entriesByTag(String tag) => _entriesByTag[tag] ?? [];
 

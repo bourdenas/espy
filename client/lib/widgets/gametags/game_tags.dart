@@ -29,8 +29,7 @@ class _GameChipsWrap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Forces the widget to rebuild when library entries update (e.g. tags).
-    context.watch<GameLibraryModel>();
+    final tagsModel = context.watch<GameTagsModel>();
 
     return Wrap(
       spacing: 8.0,
@@ -45,13 +44,14 @@ class _GameChipsWrap extends StatelessWidget {
             ),
           ),
         for (final collection in entry.collections)
-          CollectionChip(
-            collection,
-            onPressed: () => context.pushNamed(
-              'games',
-              queryParams: LibraryFilter(collections: {collection}).params(),
+          if (tagsModel.getCollectionSize(collection) > 1)
+            CollectionChip(
+              collection,
+              onPressed: () => context.pushNamed(
+                'games',
+                queryParams: LibraryFilter(collections: {collection}).params(),
+              ),
             ),
-          ),
         for (final tag in context.watch<GameTagsModel>().tagsByEntry(entry.id))
           TagChip(
             tag,
@@ -81,8 +81,7 @@ class GameCardChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Forces the widget to rebuild when library entries update (e.g. tags).
-    context.watch<GameLibraryModel>();
+    final tagsModel = context.watch<GameTagsModel>();
 
     return Container(
       height: 40.0,
@@ -103,17 +102,18 @@ class GameCardChips extends StatelessWidget {
               ),
           if (includeCollections)
             for (final collection in entry.collections)
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: CollectionChip(
-                  collection,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParams:
-                        LibraryFilter(collections: {collection}).params(),
+              if (tagsModel.getCollectionSize(collection) > 1)
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: CollectionChip(
+                    collection,
+                    onPressed: () => context.pushNamed(
+                      'games',
+                      queryParams:
+                          LibraryFilter(collections: {collection}).params(),
+                    ),
                   ),
                 ),
-              ),
           for (final tag
               in context.watch<GameTagsModel>().tagsByEntry(entry.id))
             Padding(
