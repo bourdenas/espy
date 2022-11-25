@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,14 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     final ngrams = _text.toLowerCase().split(' ');
 
+    final storeMatches =
+        context.read<GameTagsModel>().filterStores(ngrams).toList();
+    final userTagMatches =
+        context.read<GameTagsModel>().filterTags(ngrams).toList();
+    final companyMatches =
+        context.read<GameTagsModel>().filterCompanies(ngrams).toList();
+    final collectionMatches =
+        context.read<GameTagsModel>().filterCollections(ngrams).toList();
     final titleMatches = _text.isNotEmpty
         ? context
             .read<GameLibraryModel>()
@@ -33,12 +42,18 @@ class _SearchPageState extends State<SearchPage> {
         SliverPersistentHeader(
           delegate: searchBox(),
         ),
-        SliverPersistentHeader(
-          pinned: true,
-          floating: true,
-          delegate: section('Tag Matches', Colors.indigo),
-        ),
-        TagSearchResults(query: _text),
+        // SliverPersistentHeader(
+        //   pinned: true,
+        //   floating: true,
+        //   delegate: section('Tag Matches', Colors.indigo),
+        // ),
+        if (_text.length < 3)
+          TagSearchResults(
+            storeMatches,
+            userTagMatches,
+            companyMatches,
+            collectionMatches,
+          ),
         if (titleMatches.isNotEmpty) ...[
           SliverPersistentHeader(
             pinned: true,

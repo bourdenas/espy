@@ -1,6 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/gamelist/game_list_card.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
@@ -41,89 +40,81 @@ class GameSearchResults extends StatelessWidget {
 }
 
 class TagSearchResults extends StatelessWidget {
-  const TagSearchResults({
+  const TagSearchResults(
+    this.stores,
+    this.userTags,
+    this.companies,
+    this.collections, {
     Key? key,
-    required this.query,
   }) : super(key: key);
 
-  final String query;
+  final List<String> stores;
+  final List<String> userTags;
+  final List<String> companies;
+  final List<String> collections;
 
   @override
   Widget build(BuildContext context) {
-    final searchTerms = query.toLowerCase().split(' ');
-
-    final storeChips = context
-        .read<GameTagsModel>()
-        .filterStores(searchTerms)
-        .map((store) => StoreChip(
-              store,
-              onPressed: () => context.pushNamed(
-                'games',
-                queryParams: LibraryFilter(stores: {store}).params(),
-              ),
-            ))
-        .toList();
-    final tagChips = context
-        .read<GameTagsModel>()
-        .filterTags(searchTerms)
-        .map((tag) => TagChip(
-              tag,
-              onPressed: () => context.pushNamed(
-                'games',
-                queryParams: LibraryFilter(tags: {tag}).params(),
-              ),
-            ))
-        .toList();
-    final companyChips = context
-        .read<GameTagsModel>()
-        .filterCompanies(searchTerms)
-        .map((company) => CompanyChip(
-              company,
-              onPressed: () => context.pushNamed(
-                'games',
-                queryParams: LibraryFilter(companies: {company}).params(),
-              ),
-            ))
-        .toList();
-    final collectionChips = context
-        .read<GameTagsModel>()
-        .filterCollections(searchTerms)
-        .map((collection) => CollectionChip(
-              collection,
-              onPressed: () => context.pushNamed(
-                'games',
-                queryParams: LibraryFilter(collections: {collection}).params(),
-              ),
-            ))
-        .toList();
-
     return SliverFixedExtentList(
       itemExtent: 90.0,
       delegate: SliverChildListDelegate(
         [
-          if (storeChips.isNotEmpty)
+          if (stores.isNotEmpty)
             _ChipResults(
               title: 'Stores',
               color: Colors.deepPurpleAccent,
-              chips: storeChips,
+              chips: stores.map(
+                (store) => StoreChip(
+                  store,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParams: LibraryFilter(stores: {store}).params(),
+                  ),
+                ),
+              ),
             ),
-          if (tagChips.isNotEmpty)
+          if (userTags.isNotEmpty)
             _ChipResults(
               title: 'Tags',
               color: Colors.blueGrey,
-              chips: tagChips,
+              chips: userTags.map(
+                (tag) => TagChip(
+                  tag,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParams: LibraryFilter(tags: {tag}).params(),
+                  ),
+                ),
+              ),
             ),
-          if (companyChips.isNotEmpty)
+          if (companies.isNotEmpty)
             _ChipResults(
               title: 'Companies',
               color: Colors.redAccent,
-              chips: companyChips,
+              chips: companies.map(
+                (company) => CompanyChip(
+                  company,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParams: LibraryFilter(companies: {company}).params(),
+                  ),
+                ),
+              ),
             ),
-          if (collectionChips.isNotEmpty)
+          if (collections.isNotEmpty)
             _ChipResults(
               title: 'Collections',
               color: Colors.indigoAccent,
-              chips: collectionChips,
+              chips: collections.map(
+                (collection) => CollectionChip(
+                  collection,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParams:
+                        LibraryFilter(collections: {collection}).params(),
+                  ),
+                ),
+              ),
             ),
         ],
       ),
@@ -140,7 +131,7 @@ class _ChipResults extends StatelessWidget {
   }) : super(key: key);
 
   final String title;
-  final List<EspyChip> chips;
+  final Iterable<EspyChip> chips;
   final Color? color;
 
   @override
