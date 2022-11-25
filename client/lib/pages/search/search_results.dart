@@ -1,6 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/gamelist/game_list_card.dart';
@@ -12,28 +11,16 @@ import 'package:provider/src/provider.dart';
 class GameSearchResults extends StatelessWidget {
   const GameSearchResults({
     Key? key,
-    required this.query,
+    required this.entries,
   }) : super(key: key);
 
-  final String query;
+  final List<LibraryEntry> entries;
 
   @override
   Widget build(BuildContext context) {
-    final searchTerms = query.toLowerCase().split(' ');
-    final matchedEntries = query.isNotEmpty
-        ? context
-            .read<GameLibraryModel>()
-            .entries
-            .where((entry) => searchTerms.every((term) => entry.name
-                .toLowerCase()
-                .split(' ')
-                .any((word) => word.startsWith(term))))
-            .toList()
-        : <LibraryEntry>[];
-
     return context.watch<AppConfigModel>().libraryLayout == LibraryLayout.GRID
-        ? gridView(matchedEntries)
-        : listView(matchedEntries);
+        ? gridView(entries)
+        : listView(entries);
   }
 
   SliverGrid gridView(List<LibraryEntry> matchedEntries) {

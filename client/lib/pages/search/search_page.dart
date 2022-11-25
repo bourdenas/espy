@@ -1,6 +1,9 @@
+import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -10,6 +13,19 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
+    final ngrams = _text.toLowerCase().split(' ');
+
+    final titleMatches = _text.isNotEmpty
+        ? context
+            .read<GameLibraryModel>()
+            .entries
+            .where((entry) => ngrams.every((term) => entry.name
+                .toLowerCase()
+                .split(' ')
+                .any((word) => word.startsWith(term))))
+            .toList()
+        : <LibraryEntry>[];
+
     return CustomScrollView(
       primary: true,
       shrinkWrap: true,
@@ -23,12 +39,14 @@ class _SearchPageState extends State<SearchPage> {
           delegate: section('Tag Matches', Colors.indigo),
         ),
         TagSearchResults(query: _text),
-        SliverPersistentHeader(
-          pinned: true,
-          floating: true,
-          delegate: section('Title Matches', Colors.blue),
-        ),
-        GameSearchResults(query: _text),
+        if (titleMatches.isNotEmpty) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            floating: true,
+            delegate: section('Title Matches', Colors.blue),
+          ),
+          GameSearchResults(entries: titleMatches),
+        ],
       ],
     );
   }
