@@ -34,7 +34,7 @@ class GameTagsModel extends ChangeNotifier {
     final list = _entriesByTag.entries
         .map((e) => MapEntry(e.key, e.value.length))
         .toList()
-      ..sort(((a, b) => -a.value.compareTo(b.value)));
+      ..sort((a, b) => -a.value.compareTo(b.value));
     return UnmodifiableListView(list.map((e) => e.key));
   }
 

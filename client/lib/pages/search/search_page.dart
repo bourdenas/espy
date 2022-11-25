@@ -1,6 +1,8 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
 import 'package:flutter/material.dart';
@@ -42,11 +44,6 @@ class _SearchPageState extends State<SearchPage> {
         SliverPersistentHeader(
           delegate: searchBox(),
         ),
-        // SliverPersistentHeader(
-        //   pinned: true,
-        //   floating: true,
-        //   delegate: section('Tag Matches', Colors.indigo),
-        // ),
         if (_text.length < 3)
           TagSearchResults(
             storeMatches,
@@ -54,11 +51,45 @@ class _SearchPageState extends State<SearchPage> {
             companyMatches,
             collectionMatches,
           ),
+        if (_text.length >= 3) ...[
+          for (final company in companyMatches) ...[
+            SliverPersistentHeader(
+              pinned: true,
+              floating: true,
+              delegate: section(company, Colors.redAccent),
+            ),
+            GameSearchResults(
+                entries: context
+                    .read<GameEntriesModel>()
+                    .getEntries(filter: LibraryFilter(companies: {company}))),
+          ],
+          for (final collection in collectionMatches) ...[
+            SliverPersistentHeader(
+              pinned: true,
+              floating: true,
+              delegate: section(collection, Colors.indigoAccent),
+            ),
+            GameSearchResults(
+                entries: context.read<GameEntriesModel>().getEntries(
+                    filter: LibraryFilter(collections: {collection}))),
+          ],
+          for (final tag in userTagMatches) ...[
+            SliverPersistentHeader(
+              pinned: true,
+              floating: true,
+              delegate: section(tag, Colors.blueGrey),
+            ),
+            GameSearchResults(
+                entries: context
+                    .read<GameEntriesModel>()
+                    .getEntries(filter: LibraryFilter(tags: {tag}))),
+          ],
+        ],
         if (titleMatches.isNotEmpty) ...[
           SliverPersistentHeader(
             pinned: true,
             floating: true,
-            delegate: section('Title Matches', Colors.blue),
+            delegate: section('Title Matches', Colors.grey),
           ),
           GameSearchResults(entries: titleMatches),
         ],

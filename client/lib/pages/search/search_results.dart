@@ -13,7 +13,7 @@ class GameSearchResults extends StatelessWidget {
     required this.entries,
   }) : super(key: key);
 
-  final List<LibraryEntry> entries;
+  final Iterable<LibraryEntry> entries;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class GameSearchResults extends StatelessWidget {
         : listView(entries);
   }
 
-  SliverGrid gridView(List<LibraryEntry> matchedEntries) {
+  SliverGrid gridView(Iterable<LibraryEntry> matchedEntries) {
     return SliverGrid.extent(
       maxCrossAxisExtent: 300.0,
       childAspectRatio: .75,
@@ -30,7 +30,7 @@ class GameSearchResults extends StatelessWidget {
     );
   }
 
-  SliverGrid listView(List<LibraryEntry> matchedEntries) {
+  SliverGrid listView(Iterable<LibraryEntry> matchedEntries) {
     return SliverGrid.extent(
       maxCrossAxisExtent: 600.0,
       childAspectRatio: 2.5,
