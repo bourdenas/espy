@@ -101,17 +101,37 @@ class _SearchPageState extends State<SearchPage> {
     return _SectionHeader(
       minHeight: 50.0,
       maxHeight: 50.0,
-      child: Stack(
-        children: [
-          Expanded(
-              child: Container(
-            color: color,
-          )),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(title),
-          ),
-        ],
+      child: Material(
+        elevation: 10.0,
+        color: Color.fromARGB(255, 51, 51, 51),
+        child: Stack(
+          children: [
+            Expanded(
+              child: Container(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Icon(Icons.arrow_drop_down),
+                  Text(
+                    'Results for ',
+                    style: TextStyle(
+                      fontSize: 16.0,
+                    ),
+                  ),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: color,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
