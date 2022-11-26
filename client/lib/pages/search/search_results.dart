@@ -73,20 +73,6 @@ class TagSearchResults extends StatelessWidget {
                 ),
               ),
             ),
-          if (userTags.isNotEmpty)
-            _ChipResults(
-              title: 'Tags',
-              color: Colors.blueGrey,
-              chips: userTags.map(
-                (tag) => TagChip(
-                  tag,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParams: LibraryFilter(tags: {tag}).params(),
-                  ),
-                ),
-              ),
-            ),
           if (companies.isNotEmpty)
             _ChipResults(
               title: 'Companies',
@@ -112,6 +98,20 @@ class TagSearchResults extends StatelessWidget {
                     'games',
                     queryParams:
                         LibraryFilter(collections: {collection}).params(),
+                  ),
+                ),
+              ),
+            ),
+          if (userTags.isNotEmpty)
+            _ChipResults(
+              title: 'Tags',
+              color: Colors.blueGrey,
+              chips: userTags.map(
+                (tag) => TagChip(
+                  tag,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParams: LibraryFilter(tags: {tag}).params(),
                   ),
                 ),
               ),

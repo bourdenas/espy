@@ -6,6 +6,7 @@ import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
@@ -56,7 +57,8 @@ class _SearchPageState extends State<SearchPage> {
             SliverPersistentHeader(
               pinned: true,
               floating: true,
-              delegate: section(company, Colors.redAccent),
+              delegate: section(context, company, Colors.redAccent,
+                  LibraryFilter(companies: {company})),
             ),
             GameSearchResults(
                 entries: context
@@ -67,7 +69,8 @@ class _SearchPageState extends State<SearchPage> {
             SliverPersistentHeader(
               pinned: true,
               floating: true,
-              delegate: section(collection, Colors.indigoAccent),
+              delegate: section(context, collection, Colors.indigoAccent,
+                  LibraryFilter(collections: {collection})),
             ),
             GameSearchResults(
                 entries: context.read<GameEntriesModel>().getEntries(
@@ -77,7 +80,8 @@ class _SearchPageState extends State<SearchPage> {
             SliverPersistentHeader(
               pinned: true,
               floating: true,
-              delegate: section(tag, Colors.blueGrey),
+              delegate: section(
+                  context, tag, Colors.blueGrey, LibraryFilter(tags: {tag})),
             ),
             GameSearchResults(
                 entries: context
@@ -89,7 +93,7 @@ class _SearchPageState extends State<SearchPage> {
           SliverPersistentHeader(
             pinned: true,
             floating: true,
-            delegate: section('Title Matches', Colors.grey),
+            delegate: section(context, 'Title Matches', Colors.grey),
           ),
           GameSearchResults(entries: titleMatches),
         ],
@@ -97,40 +101,40 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  _SectionHeader section(String title, Color color) {
+  _SectionHeader section(BuildContext context, String title, Color color,
+      [LibraryFilter? filter]) {
     return _SectionHeader(
       minHeight: 50.0,
       maxHeight: 50.0,
       child: Material(
         elevation: 10.0,
-        color: Color.fromARGB(255, 51, 51, 51),
-        child: Stack(
-          children: [
-            Expanded(
-              child: Container(),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Icon(Icons.arrow_drop_down),
-                  Text(
-                    'Results for ',
-                    style: TextStyle(
-                      fontSize: 16.0,
-                    ),
-                  ),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: color,
-                    ),
-                  )
-                ],
+        color: Color.fromARGB(255, 72, 72, 72),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Icon(Icons.arrow_drop_down),
+              Text(
+                'Results for ',
+                style: TextStyle(
+                  fontSize: 16.0,
+                ),
               ),
-            ),
-          ],
+              TextButton(
+                onPressed: filter != null
+                    ? () =>
+                        context.pushNamed('games', queryParams: filter.params())
+                    : null,
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: color,
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
