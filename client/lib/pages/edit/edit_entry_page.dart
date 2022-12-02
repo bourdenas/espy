@@ -10,7 +10,8 @@ class EditEntryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final libraryEntry = context.read<GameEntriesModel>().getEntryById(id);
+    final libraryEntry =
+        context.read<GameEntriesModel>().getEntryByStringId(id);
 
     return Scaffold(
         appBar: AppBar(),

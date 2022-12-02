@@ -35,12 +35,16 @@ class GameEntriesModel extends ChangeNotifier {
     return sortedEntries.where((e) => filter.apply(e));
   }
 
-  LibraryEntry? getEntryById(String id) {
+  LibraryEntry? getEntryByStringId(String id) {
     final gameId = int.tryParse(id);
     if (gameId == null) {
       return null;
     }
 
     return _entries[gameId];
+  }
+
+  LibraryEntry? getEntryById(int id) {
+    return _entries[id];
   }
 }

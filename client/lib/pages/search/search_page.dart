@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
@@ -18,6 +21,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final ngrams = _text.toLowerCase().split(' ');
+    final gameEntriesModel = context.read<GameEntriesModel>();
 
     final storeMatches =
         context.read<GameTagsModel>().filterStores(ngrams).toList();
@@ -97,6 +101,30 @@ class _SearchPageState extends State<SearchPage> {
           ),
           GameSearchResults(entries: titleMatches),
         ],
+        if (_fetchingRemoteGames) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            floating: true,
+            delegate: section(context, 'Not in Library', Colors.grey),
+          ),
+        ],
+        if (_remoteGames.isNotEmpty) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            floating: true,
+            delegate: section(context, 'Not in Library', Colors.grey),
+          ),
+          GameSearchResults(
+              entries: _remoteGames
+                  .where((gameEntry) =>
+                      gameEntriesModel.getEntryById(gameEntry.id) == null)
+                  .map((gameEntry) => LibraryEntry(
+                        id: gameEntry.id,
+                        name: gameEntry.name,
+                        releaseDate: gameEntry.releaseDate,
+                        cover: gameEntry.cover?.imageId,
+                      ))),
+        ],
       ],
     );
   }
@@ -152,6 +180,22 @@ class _SearchPageState extends State<SearchPage> {
             setState(() {
               _text = text;
             });
+
+            _remoteGames.clear();
+            _timer.cancel();
+            _timer = Timer(const Duration(seconds: 1), () async {
+              print('searching for "$text"');
+              setState(() {
+                _fetchingRemoteGames = true;
+              });
+              final remoteGames = await context
+                  .read<GameLibraryModel>()
+                  .searchByTitle(text, baseGameOnly: true);
+              setState(() {
+                _fetchingRemoteGames = false;
+                _remoteGames = remoteGames;
+              });
+            });
           },
         ),
       ),
@@ -159,6 +203,9 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   String _text = '';
+  Timer _timer = Timer(const Duration(seconds: 0), () {});
+  bool _fetchingRemoteGames = false;
+  List<GameEntry> _remoteGames = [];
 }
 
 class _SectionHeader extends SliverPersistentHeaderDelegate {
