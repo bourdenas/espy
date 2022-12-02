@@ -3,6 +3,7 @@ mod gog;
 mod gog_token;
 mod igdb;
 mod igdb_docs;
+mod igdb_ranking;
 mod steam;
 
 pub use firestore::FirestoreApi;
