@@ -175,10 +175,7 @@ class _SectionHeader extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Align(
-      alignment: Alignment.center,
-      child: SizedBox.expand(child: child),
-    );
+    return SizedBox.expand(child: child);
   }
 
   @override
