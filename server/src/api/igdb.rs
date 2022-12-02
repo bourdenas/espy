@@ -160,8 +160,15 @@ impl IgdbApi {
     /// The returned GameEntries are shallow lookups similar to
     /// `get_by_title()`, but have their cover image resolved.
     #[instrument(level = "trace", skip(self))]
-    pub async fn get_by_title_with_cover(&self, title: &str) -> Result<Vec<GameEntry>, Status> {
-        let igdb_games = self.search(title).await?;
+    pub async fn get_by_title_with_cover(
+        &self,
+        title: &str,
+        base_games_only: bool,
+    ) -> Result<Vec<GameEntry>, Status> {
+        let mut igdb_games = self.search(title).await?;
+        if base_games_only {
+            igdb_games.retain(|game| game.parent_game.is_none());
+        }
 
         let igdb_state = self.igdb_state()?;
         let mut handles = vec![];

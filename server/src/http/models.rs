@@ -9,6 +9,9 @@ pub struct Upload {
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Search {
     pub title: String,
+
+    #[serde(default)]
+    pub base_game_only: bool,
 }
 
 impl std::fmt::Display for Search {
