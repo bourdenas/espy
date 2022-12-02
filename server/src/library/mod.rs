@@ -3,7 +3,6 @@ mod library_transactions;
 mod manager;
 mod recon_report;
 mod reconciler;
-pub mod search;
 mod steam_data;
 mod user;
 

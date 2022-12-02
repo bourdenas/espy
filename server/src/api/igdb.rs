@@ -1,4 +1,7 @@
-use super::igdb_docs::{self, Annotation};
+use super::{
+    igdb_docs::{self, Annotation},
+    igdb_ranking,
+};
 use crate::{
     documents::{
         Collection, CollectionType, Company, CompanyRole, GameEntry, Image, StoreEntry, Website,
@@ -135,12 +138,14 @@ impl IgdbApi {
     /// fully resolved lookups.
     #[instrument(level = "trace", skip(self))]
     pub async fn get_by_title(&self, title: &str) -> Result<Vec<GameEntry>, Status> {
-        Ok(self
-            .search(title)
-            .await?
-            .into_iter()
-            .map(|igdb_game| GameEntry::from(igdb_game))
-            .collect())
+        Ok(igdb_ranking::sorted_by_relevance(
+            title,
+            self.search(title)
+                .await?
+                .into_iter()
+                .map(|igdb_game| GameEntry::from(igdb_game))
+                .collect(),
+        ))
     }
 
     /// Returns a fully resolved GameEntry based on its IGDB `id`.
@@ -155,8 +160,15 @@ impl IgdbApi {
     /// The returned GameEntries are shallow lookups similar to
     /// `get_by_title()`, but have their cover image resolved.
     #[instrument(level = "trace", skip(self))]
-    pub async fn get_by_title_with_cover(&self, title: &str) -> Result<Vec<GameEntry>, Status> {
-        let igdb_games = self.search(title).await?;
+    pub async fn get_by_title_with_cover(
+        &self,
+        title: &str,
+        base_games_only: bool,
+    ) -> Result<Vec<GameEntry>, Status> {
+        let mut igdb_games = self.search(title).await?;
+        if base_games_only {
+            igdb_games.retain(|game| game.parent_game.is_none());
+        }
 
         let igdb_state = self.igdb_state()?;
         let mut handles = vec![];
@@ -183,11 +195,14 @@ impl IgdbApi {
             ));
         }
 
-        Ok(futures::future::join_all(handles)
-            .await
-            .into_iter()
-            .filter_map(|x| x.ok())
-            .collect::<Vec<_>>())
+        Ok(igdb_ranking::sorted_by_relevance(
+            title,
+            futures::future::join_all(handles)
+                .await
+                .into_iter()
+                .filter_map(|x| x.ok())
+                .collect::<Vec<_>>(),
+        ))
     }
 
     async fn search(&self, title: &str) -> Result<Vec<igdb_docs::IgdbGame>, Status> {

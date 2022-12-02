@@ -1,21 +1,7 @@
-use crate::{api::IgdbApi, documents::GameEntry, Status};
-use tracing::{debug, instrument};
+use crate::documents::GameEntry;
 
-/// Returns `GameEntry` candidates from IGDB entries matching input title.
-///
-/// The candidates are ordered in descending order of matching criteria.
-#[instrument(level = "trace", skip(igdb))]
-pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<GameEntry>, Status> {
-    let igdb_games = match igdb.get_by_title(title).await {
-        Ok(r) => r,
-        Err(e) => {
-            return Err(Status::not_found(&format!(
-                "Failed to recon '{title}': {e}"
-            )))
-        }
-    };
-    debug!("retrieved {} candidates", igdb_games.len());
-
+/// Sorts GameEntries by title relevance in descending order.
+pub fn sorted_by_relevance(title: &str, igdb_games: Vec<GameEntry>) -> Vec<GameEntry> {
     let mut candidates = igdb_games
         .into_iter()
         .map(|game_entry| Candidate {
@@ -25,43 +11,10 @@ pub async fn get_candidates(igdb: &IgdbApi, title: &str) -> Result<Vec<GameEntry
         .collect::<Vec<_>>();
     candidates.sort_by(|a, b| a.score.cmp(&b.score));
 
-    Ok(candidates
+    candidates
         .into_iter()
         .map(|candidate| candidate.game_entry)
-        .collect())
-}
-
-/// Returns `GameEntry` candidates from IGDB entries matching input title.
-///
-/// The candidates are ordered in descending order of matching criteria.
-#[instrument(level = "trace", skip(igdb))]
-pub async fn get_candidates_with_covers(
-    igdb: &IgdbApi,
-    title: &str,
-) -> Result<Vec<GameEntry>, Status> {
-    let igdb_games = match igdb.get_by_title_with_cover(title).await {
-        Ok(r) => r,
-        Err(e) => {
-            return Err(Status::not_found(&format!(
-                "Failed to recon '{title}': {e}"
-            )))
-        }
-    };
-    debug!("retrieved {} candidates", igdb_games.len());
-
-    let mut candidates = igdb_games
-        .into_iter()
-        .map(|game_entry| Candidate {
-            score: edit_distance(title, &game_entry.name),
-            game_entry,
-        })
-        .collect::<Vec<_>>();
-    candidates.sort_by(|a, b| a.score.cmp(&b.score));
-
-    Ok(candidates
-        .into_iter()
-        .map(|candidate| candidate.game_entry)
-        .collect())
+        .collect()
 }
 
 // Internal struct that is only exposed for debug reasons (search by title) in
@@ -140,7 +93,7 @@ mod tests {
     fn edit_distance_emoji() {
         assert_eq!(edit_distance("😊", ""), 1);
         assert_eq!(edit_distance("😊", "😊😊"), 1);
-        assert_eq!(edit_distance("😊❤️", "❤️😊❤️"), 2);
-        assert_eq!(edit_distance("😊❤️", "😊❤️"), 0);
+        assert_eq!(edit_distance("😊🦀", "🦀😊🦀"), 1);
+        assert_eq!(edit_distance("😊🦀", "😊🦀"), 0);
     }
 }

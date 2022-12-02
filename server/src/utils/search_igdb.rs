@@ -1,5 +1,5 @@
 use clap::Parser;
-use espy_server::{documents::StoreEntry, library::search, *};
+use espy_server::{documents::StoreEntry, *};
 use itertools::Itertools;
 
 /// IGDB search utility.
@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         return Ok(());
     }
 
-    let games = search::get_candidates(&igdb, &opts.search).await?;
+    let games = igdb.get_by_title(&opts.search).await?;
     println!(
         "Found {} candidates.\n{}",
         games.len(),
