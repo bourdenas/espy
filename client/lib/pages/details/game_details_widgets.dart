@@ -26,6 +26,8 @@ class GameEntryActionBar extends StatelessWidget {
           children: [
             releaseYear(),
             SizedBox(width: 8.0),
+            rating(),
+            SizedBox(width: 16.0),
             storeIcons(context),
             SizedBox(width: 16.0),
             actionButtons(context),
@@ -54,6 +56,20 @@ class GameEntryActionBar extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
+    );
+  }
+
+  Widget rating() {
+    return Row(
+      children: [
+        Icon(
+          Icons.star,
+          color: Colors.amber,
+          size: 18.0,
+        ),
+        SizedBox(width: 4.0),
+        Text((5 * gameEntry.igdbRating / 100.0).toStringAsFixed(1)),
+      ],
     );
   }
 
