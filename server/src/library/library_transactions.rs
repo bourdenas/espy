@@ -25,12 +25,8 @@ impl LibraryTransactions {
         LibraryOps::delete_unmatched(firestore, user_id, &store_entry)?;
         LibraryOps::delete_failed(firestore, user_id, &store_entry)?;
 
-        let library_entry = LibraryEntry::new(
-            game_entry,
-            vec![store_entry.clone()],
-            vec![owned_version],
-            None,
-        );
+        let library_entry =
+            LibraryEntry::new(game_entry, vec![store_entry.clone()], vec![owned_version]);
 
         LibraryOps::append_to_recent(firestore, user_id, library_entry.id, store_entry)?;
 

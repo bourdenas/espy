@@ -1,6 +1,6 @@
 use crate::{
     api::FirestoreApi,
-    documents::{GameEntry, LibraryEntry, Recent, RecentEntry, StoreEntry},
+    documents::{GameEntry, LibraryEntry, Recent, RecentEntry, StoreEntry, UserTags},
     Status,
 };
 use serde::{Deserialize, Serialize};
@@ -62,7 +62,6 @@ impl LibraryOps {
             library_entry
                 .owned_versions
                 .extend(existing.owned_versions.into_iter());
-            library_entry.user_data = existing.user_data;
         }
 
         LibraryOps::write_library_entry(firestore, user_id, &library_entry)
@@ -104,6 +103,59 @@ impl LibraryOps {
         game_entry: &GameEntry,
     ) -> Result<(), Status> {
         firestore.write("games", Some(&game_entry.id.to_string()), game_entry)?;
+        Ok(())
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn read_user_tags(firestore: &FirestoreApi, user_id: &str) -> UserTags {
+        match firestore.read::<UserTags>(&format!("users/{user_id}/user_data"), "tags") {
+            Ok(tags) => tags,
+            Err(_) => UserTags { tags: vec![] },
+        }
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn write_user_tags(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        user_tags: &UserTags,
+    ) -> Result<(), Status> {
+        firestore.write(
+            &format!("users/{user_id}/user_data"),
+            Some("tags"),
+            user_tags,
+        )?;
+
+        Ok(())
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn add_user_tag(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        game_id: u64,
+        tag_name: String,
+    ) -> Result<(), Status> {
+        let mut user_tags = Self::read_user_tags(firestore, user_id);
+
+        if user_tags.add(game_id, tag_name) {
+            Self::write_user_tags(firestore, user_id, &user_tags)?;
+        }
+        Ok(())
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn remove_user_tag(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        game_id: u64,
+        tag_name: &str,
+    ) -> Result<(), Status> {
+        let mut user_tags = Self::read_user_tags(firestore, user_id);
+
+        if user_tags.remove(game_id, tag_name) {
+            Self::write_user_tags(firestore, user_id, &user_tags)?;
+        }
         Ok(())
     }
 
