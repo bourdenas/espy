@@ -18,9 +18,6 @@ class GameGridView extends StatelessWidget {
         restorationId: 'grid_view_game_entries_grid_offset',
         maxCrossAxisExtent: _maxCardWidth,
         childAspectRatio: _cardAspectRation,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
         children: entries.map((entry) => GameGridCard(entry: entry)).toList(),
       ),
     );
