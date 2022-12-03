@@ -1,6 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/pages/gamelist/game_grid_card.dart';
 import 'package:espy/pages/gamelist/game_list_card.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,7 @@ class GameSearchResults extends StatelessWidget {
     return SliverGrid.extent(
       maxCrossAxisExtent: 200.0,
       childAspectRatio: .75,
-      children: matchedEntries.map((e) => GameListCard(entry: e)).toList(),
+      children: matchedEntries.map((e) => GameGridCard(entry: e)).toList(),
     );
   }
 
