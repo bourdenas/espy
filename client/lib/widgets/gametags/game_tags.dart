@@ -1,5 +1,4 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';

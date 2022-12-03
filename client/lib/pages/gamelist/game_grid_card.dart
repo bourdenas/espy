@@ -88,7 +88,9 @@ class InfoTileBar extends StatelessWidget {
           GameTitleText(
               '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
         Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
-        GameTitleText(entry.storeEntries.map((e) => e.storefront).join(', ')),
+        if (entry.storeEntries.isNotEmpty)
+          GameTitleText(
+              entry.storeEntries.map((e) => e.storefront).toSet().join(', ')),
       ]),
     );
   }
