@@ -118,12 +118,7 @@ class _SearchPageState extends State<SearchPage> {
               entries: _remoteGames
                   .where((gameEntry) =>
                       gameEntriesModel.getEntryById(gameEntry.id) == null)
-                  .map((gameEntry) => LibraryEntry(
-                        id: gameEntry.id,
-                        name: gameEntry.name,
-                        releaseDate: gameEntry.releaseDate,
-                        cover: gameEntry.cover?.imageId,
-                      ))),
+                  .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))),
         ],
       ],
     );
