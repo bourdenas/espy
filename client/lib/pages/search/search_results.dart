@@ -49,10 +49,10 @@ class TagSearchResults extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  final List<String> stores;
-  final List<String> userTags;
-  final List<String> companies;
-  final List<String> collections;
+  final Iterable<String> stores;
+  final Iterable<String> userTags;
+  final Iterable<String> companies;
+  final Iterable<String> collections;
 
   @override
   Widget build(BuildContext context) {

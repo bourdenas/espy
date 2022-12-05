@@ -22,15 +22,8 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     final ngrams = _text.toLowerCase().split(' ');
     final gameEntriesModel = context.read<GameEntriesModel>();
+    final tagsModel = context.read<GameTagsModel>();
 
-    final storeMatches =
-        context.read<GameTagsModel>().filterStores(ngrams).toList();
-    final userTagMatches =
-        context.read<GameTagsModel>().filterTags(ngrams).toList();
-    final companyMatches =
-        context.read<GameTagsModel>().filterCompanies(ngrams).toList();
-    final collectionMatches =
-        context.read<GameTagsModel>().filterCollections(ngrams).toList();
     final titleMatches = _text.isNotEmpty
         ? context
             .read<GameLibraryModel>()
@@ -49,49 +42,46 @@ class _SearchPageState extends State<SearchPage> {
         SliverPersistentHeader(
           delegate: searchBox(),
         ),
-        if (_text.length < 3)
-          TagSearchResults(
-            storeMatches,
-            userTagMatches,
-            companyMatches,
-            collectionMatches,
+        TagSearchResults(
+          tagsModel.filterStores(ngrams),
+          tagsModel.filterTags(ngrams),
+          tagsModel.filterCompanies(ngrams),
+          tagsModel.filterCollections(ngrams),
+        ),
+        for (final company in tagsModel.filterCompaniesExact(ngrams)) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            floating: true,
+            delegate: section(context, company, Colors.redAccent,
+                LibraryFilter(companies: {company})),
           ),
-        if (_text.length >= 3) ...[
-          for (final company in companyMatches) ...[
-            SliverPersistentHeader(
-              pinned: true,
-              floating: true,
-              delegate: section(context, company, Colors.redAccent,
-                  LibraryFilter(companies: {company})),
-            ),
-            GameSearchResults(
-                entries: context
-                    .read<GameEntriesModel>()
-                    .getEntries(filter: LibraryFilter(companies: {company}))),
-          ],
-          for (final collection in collectionMatches) ...[
-            SliverPersistentHeader(
-              pinned: true,
-              floating: true,
-              delegate: section(context, collection, Colors.indigoAccent,
-                  LibraryFilter(collections: {collection})),
-            ),
-            GameSearchResults(
-                entries: context.read<GameEntriesModel>().getEntries(
-                    filter: LibraryFilter(collections: {collection}))),
-          ],
-          for (final tag in userTagMatches) ...[
-            SliverPersistentHeader(
-              pinned: true,
-              floating: true,
-              delegate: section(
-                  context, tag, Colors.blueGrey, LibraryFilter(tags: {tag})),
-            ),
-            GameSearchResults(
-                entries: context
-                    .read<GameEntriesModel>()
-                    .getEntries(filter: LibraryFilter(tags: {tag}))),
-          ],
+          GameSearchResults(
+              entries: context
+                  .read<GameEntriesModel>()
+                  .getEntries(filter: LibraryFilter(companies: {company}))),
+        ],
+        for (final collection in tagsModel.filterCollectionsExact(ngrams)) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            floating: true,
+            delegate: section(context, collection, Colors.indigoAccent,
+                LibraryFilter(collections: {collection})),
+          ),
+          GameSearchResults(
+              entries: context.read<GameEntriesModel>().getEntries(
+                  filter: LibraryFilter(collections: {collection}))),
+        ],
+        for (final tag in tagsModel.filterTagsExact(ngrams)) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            floating: true,
+            delegate: section(
+                context, tag, Colors.blueGrey, LibraryFilter(tags: {tag})),
+          ),
+          GameSearchResults(
+              entries: context
+                  .read<GameEntriesModel>()
+                  .getEntries(filter: LibraryFilter(tags: {tag}))),
         ],
         if (titleMatches.isNotEmpty) ...[
           SliverPersistentHeader(
