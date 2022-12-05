@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
 import 'package:flutter/material.dart';
@@ -14,34 +15,30 @@ class GameDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final ids = path.split(',');
     final id = ids[0];
-    final libraryEntry = context.watch<GameEntriesModel>().getEntryById(id);
+    final libraryEntry =
+        context.watch<GameEntriesModel>().getEntryByStringId(id);
 
-    return FutureBuilder(
-      future: FirebaseFirestore.instance.collection('games').doc(id).get(),
-      builder: (context, snapshot) {
+    return StreamBuilder(
+      stream:
+          FirebaseFirestore.instance.collection('games').doc(id).snapshots(),
+      builder: (BuildContext context,
+          AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text("Something went wrong: ${snapshot.error}"));
-        }
-
-        if (snapshot.connectionState == ConnectionState.done &&
-            !snapshot.hasData) {
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (!snapshot.hasData) {
           return Center(child: Text("Document does not exist"));
         }
 
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
-          final jData = (snapshot.data! as DocumentSnapshot).data()
-              as Map<String, dynamic>;
-          final gameEntry = GameEntry.fromJson(jData);
+        final jsonObj = snapshot.data?.data();
+        final gameEntry = GameEntry.fromJson(jsonObj!);
 
-          return GameDetailsContent(
-            libraryEntry: libraryEntry!,
-            gameEntry: gameEntry,
-            childPath: ids.sublist(1),
-          );
-        }
-
-        return Center(child: CircularProgressIndicator());
+        return GameDetailsContent(
+          libraryEntry: libraryEntry ?? LibraryEntry.fromGameEntry(gameEntry),
+          gameEntry: gameEntry,
+          childPath: ids.sublist(1),
+        );
       },
     );
   }

@@ -11,10 +11,10 @@ import 'package:provider/provider.dart';
 class GameGridCard extends StatelessWidget {
   GameGridCard({
     Key? key,
-    required this.libraryEntry,
+    required this.entry,
   }) : super(key: key);
 
-  final LibraryEntry libraryEntry;
+  final LibraryEntry entry;
 
   @override
   Widget build(BuildContext context) {
@@ -22,44 +22,53 @@ class GameGridCard extends StatelessWidget {
     final appConfig = context.watch<AppConfigModel>();
 
     return GestureDetector(
-      onTap: () =>
-          context.pushNamed('details', params: {'gid': '${libraryEntry.id}'}),
+      onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
       onSecondaryTap: () =>
-          EditEntryDialog.show(context, libraryEntry, gameId: libraryEntry.id),
+          EditEntryDialog.show(context, entry, gameId: entry.id),
       onLongPress: () => isMobile
-          ? context.pushNamed('edit', params: {'gid': '${libraryEntry.id}'})
+          ? context.pushNamed('edit', params: {'gid': '${entry.id}'})
           : EditEntryDialog.show(
               context,
-              libraryEntry,
-              gameId: libraryEntry.id,
+              entry,
+              gameId: entry.id,
             ),
-      child: GridTile(
-        footer: Material(
-          color: Colors.transparent,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: appConfig.cardDecoration == CardDecoration.TAGS
-              ? TagsTileBar(libraryEntry)
-              : appConfig.cardDecoration == CardDecoration.INFO
-                  ? InfoTileBar(libraryEntry)
-                  : null,
-        ),
-        child: Material(
-          elevation: 10,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          clipBehavior: Clip.antiAlias,
-          child: libraryEntry.cover != null && libraryEntry.cover!.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl:
-                      '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
-                  errorWidget: (context, url, error) => Icon(Icons.error),
-                  fit: BoxFit.fitHeight,
-                )
-              : Image.asset('assets/images/placeholder.png'),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GridTile(
+          child: coverImage(),
+          footer: cardFooter(appConfig),
         ),
       ),
+    );
+  }
+
+  Widget coverImage() {
+    return Material(
+      elevation: 10,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      clipBehavior: Clip.antiAlias,
+      child: entry.cover != null && entry.cover!.isNotEmpty
+          ? CachedNetworkImage(
+              imageUrl: '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+              errorWidget: (context, url, error) => Icon(Icons.error),
+              fit: BoxFit.fitHeight,
+            )
+          : Image.asset('assets/images/placeholder.png'),
+    );
+  }
+
+  Widget cardFooter(AppConfigModel appConfig) {
+    return Material(
+      color: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: appConfig.cardDecoration == CardDecoration.TAGS
+          ? TagsTileBar(entry)
+          : appConfig.cardDecoration == CardDecoration.INFO
+              ? InfoTileBar(entry)
+              : null,
     );
   }
 }
@@ -79,7 +88,9 @@ class InfoTileBar extends StatelessWidget {
           GameTitleText(
               '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
         Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
-        GameTitleText(entry.storeEntries.map((e) => e.storefront).join(', ')),
+        if (entry.storeEntries.isNotEmpty)
+          GameTitleText(
+              entry.storeEntries.map((e) => e.storefront).toSet().join(', ')),
       ]),
     );
   }

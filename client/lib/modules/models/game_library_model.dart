@@ -97,7 +97,10 @@ class GameLibraryModel extends ChangeNotifier {
     _failedEntries = failedSnapshot.docs.map((doc) => doc.data()).toList();
   }
 
-  Future<List<GameEntry>> searchByTitle(String title) async {
+  Future<List<GameEntry>> searchByTitle(
+    String title, {
+    baseGameOnly = false,
+  }) async {
     if (title.isEmpty) return [];
 
     var response = await http.post(
@@ -107,6 +110,7 @@ class GameLibraryModel extends ChangeNotifier {
       },
       body: jsonEncode({
         'title': title,
+        'base_game_only': baseGameOnly,
       }),
     );
 

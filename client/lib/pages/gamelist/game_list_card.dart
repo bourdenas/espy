@@ -36,62 +36,69 @@ class GameListCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: CachedNetworkImage(
-                imageUrl:
-                    '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
-                placeholder: (context, url) => Center(
-                  child: CircularProgressIndicator(),
-                ),
-                errorWidget: (context, url, error) => Icon(Icons.error),
-              ),
-            ),
+            coverImage(),
             SizedBox(width: 16.0),
-            Flexible(
-              flex: 1,
-              fit: FlexFit.tight,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    entry.name,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.headline6,
-                    maxLines: 1,
-                  ),
-                  SizedBox(height: 4.0),
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 2.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        child: Text(
-                            '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
-                      ),
-                      SizedBox(width: 16.0),
-                      Icon(
-                        Icons.star,
-                        color: Colors.amber,
-                        size: 18.0,
-                      ),
-                      SizedBox(width: 4.0),
-                      Text('4.3'),
-                    ],
-                  ),
-                  SizedBox(height: 16.0),
-                  GameCardChips(entry),
-                ],
-              ),
-            )
+            cardInfo(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget coverImage() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8.0),
+      child: CachedNetworkImage(
+        imageUrl: '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+        placeholder: (context, url) => Center(
+          child: CircularProgressIndicator(),
+        ),
+        errorWidget: (context, url, error) => Icon(Icons.error),
+      ),
+    );
+  }
+
+  Widget cardInfo(BuildContext context) {
+    return Flexible(
+      flex: 1,
+      fit: FlexFit.tight,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            entry.name,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.headline6,
+            maxLines: 1,
+          ),
+          SizedBox(height: 4.0),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 2.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(4.0),
+                ),
+                child: Text(
+                    '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
+              ),
+              SizedBox(width: 16.0),
+              Icon(
+                Icons.star,
+                color: Colors.amber,
+                size: 18.0,
+              ),
+              SizedBox(width: 4.0),
+              Text('4.3'),
+            ],
+          ),
+          SizedBox(height: 16.0),
+          GameCardChips(entry),
+        ],
       ),
     );
   }

@@ -34,7 +34,7 @@ class GameTagsModel extends ChangeNotifier {
     final list = _entriesByTag.entries
         .map((e) => MapEntry(e.key, e.value.length))
         .toList()
-      ..sort(((a, b) => -a.value.compareTo(b.value)));
+      ..sort((a, b) => -a.value.compareTo(b.value));
     return UnmodifiableListView(list.map((e) => e.key));
   }
 
@@ -86,16 +86,21 @@ class GameTagsModel extends ChangeNotifier {
         .set(_userTags.toJson());
   }
 
-  Iterable<String> filterCompanies(Iterable<String> terms) {
-    return companies.where((company) => terms.every((term) =>
-        company.toLowerCase().split(' ').any((word) => word.startsWith(term))));
-  }
-
   Iterable<String> filterStores(Iterable<String> terms) {
     return stores.where(
       (store) => terms.every((term) =>
           store.toLowerCase().split(' ').any((word) => word.startsWith(term))),
     );
+  }
+
+  Iterable<String> filterCompanies(Iterable<String> terms) {
+    return companies.where((company) => terms.every((term) =>
+        company.toLowerCase().split(' ').any((word) => word.startsWith(term))));
+  }
+
+  Iterable<String> filterCompaniesExact(Iterable<String> terms) {
+    return companies.where((company) => terms.every((term) =>
+        company.toLowerCase().split(' ').any((word) => word == term)));
   }
 
   Iterable<String> filterCollections(Iterable<String> terms) {
@@ -105,10 +110,22 @@ class GameTagsModel extends ChangeNotifier {
         .any((word) => word.startsWith(term))));
   }
 
+  Iterable<String> filterCollectionsExact(Iterable<String> terms) {
+    return collections.where((collection) => terms.every((term) =>
+        collection.toLowerCase().split(' ').any((word) => word == term)));
+  }
+
   Iterable<String> filterTags(Iterable<String> terms) {
     return tags.where(
       (tag) => terms.every((term) =>
           tag.toLowerCase().split(' ').any((word) => word.startsWith(term))),
+    );
+  }
+
+  Iterable<String> filterTagsExact(Iterable<String> terms) {
+    return tags.where(
+      (tag) => terms.every(
+          (term) => tag.toLowerCase().split(' ').any((word) => word == term)),
     );
   }
 

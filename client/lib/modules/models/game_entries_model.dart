@@ -4,42 +4,47 @@ import 'package:espy/modules/models/library_filter.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class GameEntriesModel extends ChangeNotifier {
-  List<LibraryEntry> _entries = [];
+  Map<int, LibraryEntry> _entries = {};
   GameTagsModel _gameTags = GameTagsModel();
 
   void update(List<LibraryEntry> entries, GameTagsModel gameTags) {
-    _entries = entries;
+    _entries = Map.fromEntries(entries.map((e) => MapEntry(e.id, e)));
     _gameTags = gameTags;
     notifyListeners();
   }
 
   Iterable<LibraryEntry> getEntries({LibraryFilter? filter}) {
     if (filter == null) {
-      return _entries;
+      return _entries.values;
     }
 
     final taggedEntries = filter.tags.isNotEmpty
-        ? Set<int>.from(_gameTags.entriesByTag(filter.tags.first))
+        ? _gameTags.entriesByTag(filter.tags.first)
         : null;
 
     final entries = taggedEntries != null
-        ? _entries.where((e) => taggedEntries.contains(e.id))
-        : _entries;
+        ? taggedEntries
+            .map((id) => _entries[id])
+            .whereType<LibraryEntry>()
+            .toList()
+        : _entries.values;
 
-    return entries.where((e) => filter.apply(e));
+    final sortedEntries = entries.toList()
+      ..sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
+
+    return sortedEntries.where((e) => filter.apply(e));
   }
 
-  LibraryEntry? getEntryById(String id) {
+  LibraryEntry? getEntryByStringId(String id) {
     final gameId = int.tryParse(id);
     if (gameId == null) {
       return null;
     }
 
-    for (final entry in _entries) {
-      if (entry.id == gameId) {
-        return entry;
-      }
-    }
-    return null;
+    return _entries[gameId];
+  }
+
+  LibraryEntry? getEntryById(int id) {
+    return _entries[id];
   }
 }

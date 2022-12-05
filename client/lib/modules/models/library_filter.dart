@@ -2,7 +2,6 @@ import 'package:espy/modules/documents/library_entry.dart';
 
 class LibraryFilter {
   LibraryFilter({
-    this.titleSearch = '',
     this.companies = const {},
     this.collections = const {},
     this.tags = const {},
@@ -10,7 +9,6 @@ class LibraryFilter {
     this.untagged = false,
   });
 
-  String titleSearch;
   Set<String> companies;
   Set<String> collections;
   Set<String> tags;
@@ -20,7 +18,6 @@ class LibraryFilter {
   bool get isEmpty => !isNotEmpty;
 
   bool get isNotEmpty =>
-      titleSearch.isNotEmpty ||
       companies.isNotEmpty ||
       collections.isNotEmpty ||
       tags.isNotEmpty ||
@@ -28,10 +25,7 @@ class LibraryFilter {
       untagged;
 
   bool apply(LibraryEntry entry) =>
-      _filterStore(entry) &&
-      _filterCompany(entry) &&
-      _filterCollection(entry) &&
-      _filterTitle(entry);
+      _filterStore(entry) && _filterCompany(entry) && _filterCollection(entry);
   // _filterUntagged(entryUserTags);
 
   String encode() {
@@ -125,9 +119,6 @@ class LibraryFilter {
       collections.isEmpty ||
       collections.every((filter) =>
           entry.collections.any((collection) => collection == filter));
-
-  bool _filterTitle(LibraryEntry entry) =>
-      titleSearch.isEmpty || entry.name.toLowerCase().contains(titleSearch);
 
   bool _filterUntagged(List<String> entryUserTags) =>
       !untagged || entryUserTags.isEmpty;

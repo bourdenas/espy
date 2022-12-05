@@ -1,3 +1,4 @@
+import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 
 class LibraryEntry {
@@ -23,6 +24,14 @@ class LibraryEntry {
     this.storeEntries = const [],
     this.ownedVersions = const [],
   });
+
+  LibraryEntry.fromGameEntry(GameEntry gameEntry)
+      : this(
+          id: gameEntry.id,
+          name: gameEntry.name,
+          releaseDate: gameEntry.releaseDate,
+          cover: gameEntry.cover?.imageId,
+        );
 
   LibraryEntry.fromJson(Map<String, dynamic> json)
       : this(
