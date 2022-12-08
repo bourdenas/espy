@@ -91,19 +91,21 @@ class _SearchPageState extends State<SearchPage> {
           ),
           GameSearchResults(entries: titleMatches),
         ],
-        if (_fetchingRemoteGames) ...[
+        if (_fetchingRemoteGames || _remoteGames.isNotEmpty) ...[
           SliverPersistentHeader(
             pinned: true,
             floating: true,
             delegate: section(context, 'Not in Library', Colors.grey),
           ),
-        ],
-        if (_remoteGames.isNotEmpty) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, 'Not in Library', Colors.grey),
-          ),
+          if (_fetchingRemoteGames)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
           GameSearchResults(
               entries: _remoteGames
                   .where((gameEntry) =>
