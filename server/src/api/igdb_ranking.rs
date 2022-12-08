@@ -9,7 +9,7 @@ pub fn sorted_by_relevance(title: &str, igdb_games: Vec<GameEntry>) -> Vec<GameE
             game_entry,
         })
         .collect::<Vec<_>>();
-    candidates.sort_by(|a, b| a.score.cmp(&b.score));
+    candidates.sort_by(|a, b| a.score.total_cmp(&b.score));
 
     candidates
         .into_iter()
@@ -22,7 +22,7 @@ pub fn sorted_by_relevance(title: &str, igdb_games: Vec<GameEntry>) -> Vec<GameE
 #[derive(Debug)]
 struct Candidate {
     game_entry: GameEntry,
-    score: i32,
+    score: f64,
 }
 
 impl std::fmt::Display for Candidate {
@@ -32,9 +32,15 @@ impl std::fmt::Display for Candidate {
 }
 
 // Returns edit distance between two strings.
-fn edit_distance(a: &str, b: &str) -> i32 {
+fn edit_distance(a: &str, b: &str) -> f64 {
     let a_len = a.chars().count();
     let b_len = b.chars().count();
+
+    if a_len == 0 {
+        return b_len as f64;
+    } else if b_len == 0 {
+        return a_len as f64;
+    }
 
     let mut matrix: Vec<i32> = vec![0; (a_len + 1) * (b_len + 1)];
     let row_size = b_len + 1;
@@ -62,38 +68,49 @@ fn edit_distance(a: &str, b: &str) -> i32 {
         }
     }
 
-    *matrix.last().unwrap()
+    *matrix.last().unwrap() as f64 / std::cmp::max(a_len, b_len) as f64
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    macro_rules! assert_delta {
+        ($x:expr, $y:expr, $d:expr) => {
+            if !(($x - $y).abs() < $d || ($y - $x).abs() < $d) {
+                panic!(
+                    "{} is not equal to {} with an error margin of {}",
+                    $x, $y, $d
+                );
+            }
+        };
+    }
+
     #[test]
     fn edit_distance_equal() {
-        assert_eq!(edit_distance("hello", "hello"), 0);
-        assert_eq!(edit_distance("hello there", "hello there"), 0);
+        assert_eq!(edit_distance("hello", "hello"), 0.0);
+        assert_eq!(edit_distance("hello there", "hello there"), 0.0);
     }
 
     #[test]
     fn edit_distance_diff() {
-        assert_eq!(edit_distance("hello", "hallo"), 1);
-        assert_eq!(edit_distance("go", "got"), 1);
-        assert_eq!(edit_distance("hello there", "hello world"), 5);
+        assert_eq!(edit_distance("hello", "hallo"), 0.2);
+        assert_delta!(edit_distance("go", "got"), 0.33, 0.004);
+        assert_delta!(edit_distance("hello there", "hello world"), 0.45, 0.005);
     }
 
     #[test]
     fn edit_distance_empty() {
-        assert_eq!(edit_distance("", ""), 0);
-        assert_eq!(edit_distance("hello", ""), 5);
-        assert_eq!(edit_distance("", "hello"), 5);
+        assert_eq!(edit_distance("", ""), 0.0);
+        assert_eq!(edit_distance("hello", ""), 5.0);
+        assert_eq!(edit_distance("", "hello"), 5.0);
     }
 
     #[test]
     fn edit_distance_emoji() {
-        assert_eq!(edit_distance("😊", ""), 1);
-        assert_eq!(edit_distance("😊", "😊😊"), 1);
-        assert_eq!(edit_distance("😊🦀", "🦀😊🦀"), 1);
-        assert_eq!(edit_distance("😊🦀", "😊🦀"), 0);
+        assert_eq!(edit_distance("😊", ""), 1.0);
+        assert_eq!(edit_distance("😊", "😊😊"), 0.5);
+        assert_delta!(edit_distance("😊🦀", "🦀😊🦀"), 0.33, 0.004);
+        assert_eq!(edit_distance("😊🦀", "😊🦀"), 0.0);
     }
 }
