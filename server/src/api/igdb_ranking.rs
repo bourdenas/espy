@@ -17,6 +17,27 @@ pub fn sorted_by_relevance(title: &str, igdb_games: Vec<GameEntry>) -> Vec<GameE
         .collect()
 }
 
+pub fn sorted_by_relevance_with_threshold(
+    title: &str,
+    igdb_games: Vec<GameEntry>,
+    threshold: f64,
+) -> Vec<GameEntry> {
+    let mut candidates = igdb_games
+        .into_iter()
+        .map(|game_entry| Candidate {
+            score: edit_distance(title, &game_entry.name),
+            game_entry,
+        })
+        .filter(|c| c.score <= threshold)
+        .collect::<Vec<_>>();
+    candidates.sort_by(|a, b| a.score.total_cmp(&b.score));
+
+    candidates
+        .into_iter()
+        .map(|candidate| candidate.game_entry)
+        .collect()
+}
+
 // Internal struct that is only exposed for debug reasons (search by title) in
 // the command line tool.
 #[derive(Debug)]

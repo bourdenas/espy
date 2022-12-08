@@ -195,13 +195,14 @@ impl IgdbApi {
             ));
         }
 
-        Ok(igdb_ranking::sorted_by_relevance(
+        Ok(igdb_ranking::sorted_by_relevance_with_threshold(
             title,
             futures::future::join_all(handles)
                 .await
                 .into_iter()
                 .filter_map(|x| x.ok())
                 .collect::<Vec<_>>(),
+            0.5,
         ))
     }
 
