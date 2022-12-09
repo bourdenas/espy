@@ -13,9 +13,13 @@ use tracing::{error, info, instrument, trace_span, Instrument};
 /// Espy util for refreshing IGDB and Steam data for GameEntries.
 #[derive(Parser)]
 struct Opts {
-    /// JSON file that contains application keys for espy service.
+    /// Refresh only game with specified id.
     #[clap(long)]
     id: Option<u64>,
+
+    /// If set, delete game entry instead of refreshing it.
+    #[clap(long)]
+    delete: bool,
 
     /// JSON file that contains application keys for espy service.
     #[clap(long, default_value = "keys.json")]
@@ -43,7 +47,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let steam = SteamDataApi::new();
 
     if let Some(id) = opts.id {
-        refresh_game(id, &firestore, igdb, steam).await?;
+        match opts.delete {
+            false => refresh_game(id, &firestore, igdb, steam).await?,
+            true => LibraryOps::delete_game_entry(&firestore, id)?,
+        }
     } else {
         refresh_entries(&firestore, igdb, steam).await?;
     }
