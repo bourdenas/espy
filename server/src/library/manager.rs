@@ -102,8 +102,10 @@ impl LibraryManager {
         };
         let game_entry = self.retrieve_game_entry(game_id, &recon_service).await?;
 
+        let firestore = &self.firestore.lock().unwrap();
+        LibraryOps::write_game_entry(firestore, &game_entry)?;
         LibraryTransactions::match_game(
-            &self.firestore.lock().unwrap(),
+            firestore,
             &self.user_id,
             store_entry,
             owned_game_id,
@@ -182,8 +184,11 @@ impl LibraryManager {
         let game_entry = self
             .retrieve_game_entry(game_entry.id, &recon_service)
             .await?;
+
+        let firestore = &self.firestore.lock().unwrap();
+        LibraryOps::write_game_entry(firestore, &game_entry)?;
         LibraryTransactions::match_game(
-            &self.firestore.lock().unwrap(),
+            firestore,
             &self.user_id,
             store_entry,
             game_entry.id,
@@ -214,14 +219,18 @@ impl LibraryManager {
                 async move {
                     let firestore = &firestore.lock().unwrap();
                     match entry_match.game_entry {
-                        Some(game_entry) => LibraryTransactions::match_game(
-                            firestore,
-                            &user_id,
-                            entry_match.store_entry,
-                            game_entry.id,
-                            game_entry,
-                        )
-                        .expect("Firestore match_game_transaction()"),
+                        Some(game_entry) => {
+                            LibraryOps::write_game_entry(firestore, &game_entry)
+                                .expect("Firestore write_game_entry()");
+                            LibraryTransactions::match_game(
+                                firestore,
+                                &user_id,
+                                entry_match.store_entry,
+                                game_entry.id,
+                                game_entry,
+                            )
+                            .expect("Firestore match_game_transaction()")
+                        }
                         None => LibraryTransactions::match_failed(
                             firestore,
                             &user_id,
