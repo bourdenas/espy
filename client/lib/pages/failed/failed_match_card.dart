@@ -3,6 +3,7 @@ import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class FailedMatchCard extends StatelessWidget {
@@ -19,8 +20,10 @@ class FailedMatchCard extends StatelessWidget {
       onTap: () => MatchingDialog.show(
         context,
         storeEntry: entry,
-        onMatch: (storeEntry, gameEntry) =>
-            context.read<GameLibraryModel>().matchEntry(storeEntry, gameEntry),
+        onMatch: (storeEntry, gameEntry) {
+          context.read<GameLibraryModel>().matchEntry(storeEntry, gameEntry);
+          context.pushNamed('details', params: {'gid': '${gameEntry.id}'});
+        },
       ),
       onSecondaryTap: () {},
       child: Container(

@@ -3,6 +3,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class StorefrontDropdown extends StatefulWidget {
@@ -88,8 +89,7 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
         context
             .read<GameLibraryModel>()
             .rematchEntry(storeEntry, widget.libraryEntry, gameEntry);
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
+        context.pushNamed('details', params: {'gid': '${gameEntry.id}'});
       },
     );
   }
