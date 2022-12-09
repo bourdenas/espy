@@ -99,7 +99,6 @@ impl LibraryManager {
     ) -> Result<(), Status> {
         let recon_service = Reconciler::new(igdb, steam);
 
-        let game_entry = recon_service.get(game_entry.id).await?;
         let owned_game_id = game_entry.id;
         let game_id = match game_entry.parent {
             Some(parent_id) => parent_id,
@@ -260,6 +259,11 @@ impl LibraryManager {
         recon_service: &Reconciler,
     ) -> Result<GameEntry, Status> {
         let game_entry = match self.read_from_firestore(id) {
+            // NOTE: There is a corner case that if a read is captured on a
+            // GameEntry that is currently incrementally build (by another
+            // request) the LibraryEntry that will be build from the returned
+            // GameEntry can be incomplete. I just ignore the corner-case for
+            // now.
             Ok(game_entry) => game_entry,
             Err(_) => {
                 let (tx, mut rx) = mpsc::channel(32);
