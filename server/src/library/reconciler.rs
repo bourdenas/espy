@@ -114,8 +114,14 @@ async fn resolve_game(
     igdb: &IgdbApi,
     steam: &SteamDataApi,
 ) -> Result<GameEntry, Status> {
-    match igdb.resolve(game_id).await? {
+    let (tx, mut rx) = mpsc::channel(32);
+
+    match igdb.resolve(game_id, tx).await? {
         Some(mut game) => {
+            while let Some(fragment) = rx.recv().await {
+                game.merge(fragment);
+            }
+
             if let Err(e) = steam.retrieve_steam_data(&mut game).await {
                 error!("Failed to retrieve SteamData for '{}' {e}", game.name);
             }
