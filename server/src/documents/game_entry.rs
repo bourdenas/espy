@@ -25,12 +25,32 @@ pub struct GameEntry {
     pub igdb_rating: Option<f64>,
 
     #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<u64>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cover: Option<Image>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steam_data: Option<SteamData>,
+
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub genres: Vec<String>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub keywords: Vec<String>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub collections: Vec<Collection>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub companies: Vec<Company>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -50,26 +70,6 @@ pub struct GameEntry {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub versions: Vec<u64>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parent: Option<u64>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub collections: Vec<Collection>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub companies: Vec<Company>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub cover: Option<Image>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub screenshots: Vec<Image>,
 
     #[serde(default)]
@@ -79,10 +79,6 @@ pub struct GameEntry {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub websites: Vec<Website>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub steam_data: Option<SteamData>,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
@@ -168,5 +164,46 @@ pub enum WebsiteAuthority {
 impl Default for WebsiteAuthority {
     fn default() -> Self {
         WebsiteAuthority::Null
+    }
+}
+
+impl GameEntry {
+    pub fn merge(&mut self, other: GameEntry) {
+        if other.cover.is_some() {
+            self.cover = other.cover;
+        }
+        if !other.genres.is_empty() {
+            self.genres.extend(other.genres);
+        }
+        if !other.keywords.is_empty() {
+            self.keywords.extend(other.keywords);
+        }
+        if !other.collections.is_empty() {
+            self.collections.extend(other.collections);
+        }
+        if !other.companies.is_empty() {
+            self.companies.extend(other.companies);
+        }
+        if !other.expansions.is_empty() {
+            self.expansions.extend(other.expansions);
+        }
+        if !other.dlcs.is_empty() {
+            self.dlcs.extend(other.dlcs);
+        }
+        if !other.remakes.is_empty() {
+            self.remakes.extend(other.remakes);
+        }
+        if !other.remasters.is_empty() {
+            self.remasters.extend(other.remasters);
+        }
+        if !other.screenshots.is_empty() {
+            self.screenshots.extend(other.screenshots);
+        }
+        if !other.artwork.is_empty() {
+            self.artwork.extend(other.artwork);
+        }
+        if !other.websites.is_empty() {
+            self.websites.extend(other.websites);
+        }
     }
 }
