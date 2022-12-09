@@ -6,11 +6,16 @@ use crate::{
         library_transactions::Op, reconciler::Match, steam_data::SteamDataApi, ReconReport,
         Reconciler,
     },
-    traits, Status,
+    traits,
+    util::rate_limiter::RateLimiter,
+    Status,
 };
-use std::sync::{Arc, Mutex};
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 use tokio::sync::mpsc;
-use tracing::{instrument, trace_span, Instrument};
+use tracing::{error, info, instrument, trace_span, Instrument};
 
 pub struct LibraryManager {
     user_id: String,
@@ -100,12 +105,10 @@ impl LibraryManager {
             Some(parent_id) => parent_id,
             None => game_entry.id,
         };
-        let game_entry = self.retrieve_game_entry(game_id, &recon_service).await?;
 
-        let firestore = &self.firestore.lock().unwrap();
-        LibraryOps::write_game_entry(firestore, &game_entry)?;
+        let game_entry = self.retrieve_game_entry(game_id, &recon_service).await?;
         LibraryTransactions::match_game(
-            firestore,
+            &self.firestore.lock().unwrap(),
             &self.user_id,
             store_entry,
             owned_game_id,
@@ -184,11 +187,8 @@ impl LibraryManager {
         let game_entry = self
             .retrieve_game_entry(game_entry.id, &recon_service)
             .await?;
-
-        let firestore = &self.firestore.lock().unwrap();
-        LibraryOps::write_game_entry(firestore, &game_entry)?;
         LibraryTransactions::match_game(
-            firestore,
+            &self.firestore.lock().unwrap(),
             &self.user_id,
             store_entry,
             game_entry.id,
@@ -262,7 +262,27 @@ impl LibraryManager {
         let game_entry = match self.read_from_firestore(id) {
             Ok(game_entry) => game_entry,
             Err(_) => {
-                let game_entry = recon_service.resolve(id).await?;
+                let (tx, mut rx) = mpsc::channel(32);
+                let mut game_entry = recon_service.resolve_incrementally(id, tx).await?;
+
+                // Limit Firestore fragment updates to 1 every 2 sec.
+                let rate_limiter = RateLimiter::new(1, Duration::from_secs(2), 1);
+                while let Some(fragment) = rx.recv().await {
+                    game_entry.merge(fragment);
+                    if rate_limiter.try_wait() == Duration::from_micros(0) {
+                        info!("uploading fragments to Firestore");
+                        let firestore = &self.firestore.lock().unwrap();
+                        LibraryOps::write_game_entry(firestore, &game_entry)?;
+                    }
+                }
+
+                if let Err(e) = recon_service.update_steam_data(&mut game_entry).await {
+                    error!("Failed to retrieve SteamData for '{}' {e}", game_entry.name);
+                }
+                info!("final game entry update to Firestore");
+                let firestore = &self.firestore.lock().unwrap();
+                LibraryOps::write_game_entry(firestore, &game_entry)?;
+
                 game_entry
             }
         };
@@ -270,9 +290,7 @@ impl LibraryManager {
         Ok(game_entry)
     }
 
-    /// NOTE: If this function is removed and inlined in `retrieve_game_entry()`
-    /// the warp routes are loosing it and complain about non Send/Sync objects
-    /// moved across threads. I don't get it yet...
+    /// NOTE: This function is needed to contain the lock scope.
     #[instrument(level = "trace", skip(self))]
     fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
         LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)

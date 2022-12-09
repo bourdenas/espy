@@ -38,11 +38,35 @@ impl Reconciler {
         }
     }
 
-    /// Returns a fully reolved GameEntry based on its IGDB `id` that also
+    /// Returns a fully resolved GameEntry based on its IGDB `id` that also
     /// includes Steam data.
     #[instrument(level = "trace", skip(self))]
     pub async fn resolve(&self, id: u64) -> Result<GameEntry, Status> {
         resolve_game(id, &self.igdb, &self.steam).await
+    }
+
+    /// Returns a resolved GameEntry based on its IGDB `id` incrementally.
+    ///
+    /// It returns directly a shallow GameEntry and then using the mpsc::Sender
+    /// provided it sends fragments of the remaining GameEntry until it is
+    /// resolved, but excludes Steam data.
+    #[instrument(level = "trace", skip(self))]
+    pub async fn resolve_incrementally(
+        &self,
+        id: u64,
+        tx: mpsc::Sender<GameEntry>,
+    ) -> Result<GameEntry, Status> {
+        match self.igdb.resolve(id, tx).await? {
+            Some(game) => Ok(game),
+            None => Err(Status::not_found(format!(
+                "Failed to retrieve IGDB game with id={id}."
+            ))),
+        }
+    }
+
+    /// Updated Steam data for GameEntry and all its sub-entries.
+    pub async fn update_steam_data(&self, game: &mut GameEntry) -> Result<(), Status> {
+        self.steam.retrieve_steam_data(game).await
     }
 
     /// Matches input `store_entries` with IGDB GameEntries.
