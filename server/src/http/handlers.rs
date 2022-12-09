@@ -91,7 +91,20 @@ pub async fn post_search(
     resp
 }
 
-#[instrument(level = "trace", skip(firestore, _match, igdb, steam))]
+#[instrument(level = "trace", skip(firestore, igdb, steam))]
+pub async fn post_retrieve(
+    user_id: String,
+    retrieve: models::Retrieve,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    debug!("POST /library/{user_id}/retrieve");
+
+    Ok(StatusCode::NOT_IMPLEMENTED)
+}
+
+#[instrument(level = "trace", skip(_match, firestore, igdb, steam))]
 pub async fn post_match(
     user_id: String,
     _match: models::Match,
