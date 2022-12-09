@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
@@ -27,11 +28,26 @@ class GameDetailsPage extends StatelessWidget {
           return Center(child: Text("Something went wrong: ${snapshot.error}"));
         } else if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
-        } else if (!snapshot.hasData) {
-          return Center(child: Text("Document does not exist"));
         }
 
-        final jsonObj = snapshot.data?.data();
+        if (!snapshot.hasData || snapshot.data?.data() == null) {
+          context
+              .read<GameLibraryModel>()
+              .retrieveGameEntry(int.tryParse(id) ?? 0);
+
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Document does not exist"),
+                SizedBox(height: 16),
+                CircularProgressIndicator(),
+              ],
+            ),
+          );
+        }
+
+        final jsonObj = snapshot.data!.data();
         final gameEntry = GameEntry.fromJson(jsonObj!);
 
         return GameDetailsContent(

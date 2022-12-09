@@ -124,6 +124,26 @@ class GameLibraryModel extends ChangeNotifier {
     return jsonObj.map((obj) => GameEntry.fromJson(obj)).toList();
   }
 
+  Future<bool> retrieveGameEntry(int gameId) async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/$userId/retrieve'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'game_id': gameId,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      print(
+          'retrieveGameEntry (error): ${response.statusCode} ${response.reasonPhrase}');
+      return false;
+    }
+
+    return true;
+  }
+
   Future<bool> matchEntry(StoreEntry storeEntry, GameEntry gameEntry) async {
     var response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/$userId/match'),
