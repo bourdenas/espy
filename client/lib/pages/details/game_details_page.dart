@@ -39,7 +39,7 @@ class GameDetailsPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Document does not exist"),
+                Text("Retrieving game info"),
                 SizedBox(height: 16),
                 CircularProgressIndicator(),
               ],
