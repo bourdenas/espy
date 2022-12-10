@@ -69,9 +69,13 @@ class HomeContent extends StatelessWidget {
                       onTap: () => MatchingDialog.show(
                         context,
                         storeEntry: entry,
-                        onMatch: (storeEntry, gameEntry) => context
-                            .read<GameLibraryModel>()
-                            .matchEntry(storeEntry, gameEntry),
+                        onMatch: (storeEntry, gameEntry) {
+                          context
+                              .read<GameLibraryModel>()
+                              .matchEntry(storeEntry, gameEntry);
+                          context.pushNamed('details',
+                              params: {'gid': '${gameEntry.id}'});
+                        },
                       ),
                     ))
                 .toList(),

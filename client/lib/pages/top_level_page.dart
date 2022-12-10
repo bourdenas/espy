@@ -68,6 +68,8 @@ class _TopLevelPageState extends State<TopLevelPage>
                     context
                         .read<GameLibraryModel>()
                         .matchEntry(storeEntry, gameEntry);
+                    context.pushNamed('details',
+                        params: {'gid': '${gameEntry.id}'});
                   },
                 )),
       },

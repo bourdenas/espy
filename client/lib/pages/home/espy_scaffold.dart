@@ -71,6 +71,8 @@ class _EspyScaffoldState extends State<EspyScaffold>
                       context
                           .read<GameLibraryModel>()
                           .matchEntry(storeEntry, gameEntry);
+                      context.pushNamed('details',
+                          params: {'gid': '${gameEntry.id}'});
                     },
                   ),
                 ),
