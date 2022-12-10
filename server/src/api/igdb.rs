@@ -235,7 +235,14 @@ async fn resolve_game(
     match result.into_iter().next() {
         Some(igdb_game) => {
             let game = Some(GameEntry::from(&igdb_game));
-            retrieve_game_info(igdb_state, igdb_game, tx).await?;
+            tokio::spawn(
+                async move {
+                    if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
+                        error!("Failed to resolve game: {e}");
+                    }
+                }
+                .instrument(trace_span!("spawn_retrieve_game_info")),
+            );
             Ok(game)
         }
         None => Ok(None),
