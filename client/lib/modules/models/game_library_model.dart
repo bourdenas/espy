@@ -126,7 +126,7 @@ class GameLibraryModel extends ChangeNotifier {
 
   Future<bool> retrieveGameEntry(int gameId) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$userId/retrieve'),
+      Uri.parse('${Urls.espyBackend}/library/retrieve'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
