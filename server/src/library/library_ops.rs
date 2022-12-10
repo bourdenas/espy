@@ -106,6 +106,12 @@ impl LibraryOps {
         Ok(())
     }
 
+    /// Returns a GameEntry doc based on `game_id` from Firestore.
+    #[instrument(level = "trace", skip(firestore))]
+    pub fn delete_game_entry(firestore: &FirestoreApi, game_id: u64) -> Result<(), Status> {
+        firestore.delete(&format!("games/{}", game_id.to_string()))
+    }
+
     #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn read_user_tags(firestore: &FirestoreApi, user_id: &str) -> UserTags {
         match firestore.read::<UserTags>(&format!("users/{user_id}/user_data"), "tags") {
