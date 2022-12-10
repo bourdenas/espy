@@ -173,9 +173,8 @@ class _SearchPageState extends State<SearchPage> {
               setState(() {
                 _fetchingRemoteGames = true;
               });
-              final remoteGames = await context
-                  .read<GameLibraryModel>()
-                  .searchByTitle(text, baseGameOnly: true);
+              final remoteGames =
+                  await context.read<GameLibraryModel>().searchByTitle(text);
               setState(() {
                 _fetchingRemoteGames = false;
                 _remoteGames = remoteGames;
