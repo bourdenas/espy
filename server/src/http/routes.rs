@@ -28,6 +28,11 @@ pub fn routes(
             Arc::clone(&steam),
         ))
         .or(post_search(Arc::clone(&igdb)))
+        .or(post_retrieve(
+            Arc::clone(&firestore),
+            Arc::clone(&igdb),
+            Arc::clone(&steam),
+        ))
         .or(post_match(
             Arc::clone(&firestore),
             Arc::clone(&igdb),
@@ -81,6 +86,21 @@ fn post_search(
         .and(search_body())
         .and(with_igdb(igdb))
         .and_then(handlers::post_search)
+}
+
+/// POST /library/{user_id}/retrieve
+fn post_retrieve(
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / "retrieve")
+        .and(warp::post())
+        .and(retrieve_body())
+        .and(with_firestore(firestore))
+        .and(with_igdb(igdb))
+        .and(with_steam(steam))
+        .and_then(handlers::post_retrieve)
 }
 
 /// POST /library/{user_id}/match
@@ -166,6 +186,10 @@ fn upload_body() -> impl Filter<Extract = (models::Upload,), Error = warp::Rejec
 
 fn search_body() -> impl Filter<Extract = (models::Search,), Error = warp::Rejection> + Clone {
     warp::body::content_length_limit(16 * 1024).and(warp::body::json())
+}
+
+fn retrieve_body() -> impl Filter<Extract = (models::Retrieve,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
 }
 
 fn match_body() -> impl Filter<Extract = (models::Match,), Error = warp::Rejection> + Clone {

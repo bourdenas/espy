@@ -1,7 +1,7 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
     http::models,
-    library::{self, SteamDataApi, User},
+    library::{self, LibraryManager, SteamDataApi, User},
     util, Status,
 };
 use std::{
@@ -9,7 +9,7 @@ use std::{
     sync::{Arc, Mutex},
     time::SystemTime,
 };
-use tracing::{debug, error, instrument, warn};
+use tracing::{debug, error, info, instrument, warn};
 use warp::http::StatusCode;
 
 #[instrument(level = "trace", skip(api_keys, firestore, igdb, steam))]
@@ -91,7 +91,25 @@ pub async fn post_search(
     resp
 }
 
-#[instrument(level = "trace", skip(firestore, _match, igdb, steam))]
+#[instrument(level = "trace", skip(firestore, igdb, steam))]
+pub async fn post_retrieve(
+    retrieve: models::Retrieve,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    info!("POST /library/retrieve");
+
+    match LibraryManager::resolve_incrementally(retrieve.game_id, igdb, steam, firestore).await {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(e) => {
+            error!("POST retrieve: {e}");
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[instrument(level = "trace", skip(_match, firestore, igdb, steam))]
 pub async fn post_match(
     user_id: String,
     _match: models::Match,

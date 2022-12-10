@@ -21,6 +21,11 @@ impl std::fmt::Display for Search {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
+pub struct Retrieve {
+    pub game_id: u64,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Match {
     pub store_entry: documents::StoreEntry,
     pub game_entry: documents::GameEntry,

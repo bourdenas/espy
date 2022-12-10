@@ -15,7 +15,7 @@ use std::{
     time::Duration,
 };
 use tokio::sync::mpsc;
-use tracing::{error, info, instrument, trace_span, Instrument};
+use tracing::{error, instrument, trace_span, Instrument};
 
 pub struct LibraryManager {
     user_id: String,
@@ -97,16 +97,13 @@ impl LibraryManager {
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
     ) -> Result<(), Status> {
-        let recon_service = Reconciler::new(igdb, steam);
-
-        let game_entry = recon_service.get(game_entry.id).await?;
         let owned_game_id = game_entry.id;
         let game_id = match game_entry.parent {
             Some(parent_id) => parent_id,
             None => game_entry.id,
         };
 
-        let game_entry = self.retrieve_game_entry(game_id, &recon_service).await?;
+        let game_entry = self.retrieve_game_entry(game_id, igdb, steam).await?;
         LibraryTransactions::match_game(
             &self.firestore.lock().unwrap(),
             &self.user_id,
@@ -182,11 +179,7 @@ impl LibraryManager {
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
     ) -> Result<(), Status> {
-        let recon_service = Reconciler::new(igdb, steam);
-
-        let game_entry = self
-            .retrieve_game_entry(game_entry.id, &recon_service)
-            .await?;
+        let game_entry = self.retrieve_game_entry(game_entry.id, igdb, steam).await?;
         LibraryTransactions::match_game(
             &self.firestore.lock().unwrap(),
             &self.user_id,
@@ -194,6 +187,50 @@ impl LibraryManager {
             game_entry.id,
             game_entry,
         )
+    }
+
+    #[instrument(level = "trace", skip(igdb, steam, firestore))]
+    pub async fn resolve_incrementally(
+        game_id: u64,
+        igdb: Arc<IgdbApi>,
+        steam: Arc<SteamDataApi>,
+        firestore: Arc<Mutex<FirestoreApi>>,
+    ) -> Result<GameEntry, Status> {
+        let recon_service = Reconciler::new(igdb, steam);
+
+        let (tx, mut rx) = mpsc::channel(32);
+        let mut game_entry = recon_service.resolve_incrementally(game_id, tx).await?;
+
+        // Limit Firestore firestore writes to 1 qps.
+        let rate_limiter = RateLimiter::new(1, Duration::from_secs(1), 1);
+
+        Self::update_firestore(firestore.clone(), &game_entry, &rate_limiter)?;
+        while let Some(fragment) = rx.recv().await {
+            game_entry.merge(fragment);
+            if rate_limiter.try_wait() == Duration::from_micros(0) {
+                let firestore = &firestore.lock().unwrap();
+                LibraryOps::write_game_entry(firestore, &game_entry)?;
+            }
+        }
+
+        if let Err(e) = recon_service.update_steam_data(&mut game_entry).await {
+            error!("Failed to retrieve SteamData for '{}' {e}", game_entry.name);
+        }
+        Self::update_firestore(firestore, &game_entry, &rate_limiter)?;
+
+        Ok(game_entry)
+    }
+
+    #[instrument(level = "trace", skip(firestore, rate_limiter))]
+    fn update_firestore(
+        firestore: Arc<Mutex<FirestoreApi>>,
+        game_entry: &GameEntry,
+        rate_limiter: &RateLimiter,
+    ) -> Result<(), Status> {
+        rate_limiter.wait();
+        let firestore = &firestore.lock().unwrap();
+        LibraryOps::write_game_entry(firestore, &game_entry)?;
+        Ok(())
     }
 
     async fn receive_matches(&self, mut rx: mpsc::Receiver<Match>) -> ReconReport {
@@ -245,49 +282,33 @@ impl LibraryManager {
         report
     }
 
-    /// Returns a GameEntry based on its IGDB `id`.
+    /// Returns a GameEntry based on its IGDB `game_id`.
     ///
     /// It first tries to lookup the GameEntry in Firestore and only attemps to
     /// resolve it from IGDB if the lookup fails.
     #[instrument(
         level = "trace",
-        skip(self, recon_service),
+        skip(self, igdb, steam),
         fields(user_id = %self.user_id),
     )]
     async fn retrieve_game_entry(
         &self,
-        id: u64,
-        recon_service: &Reconciler,
+        game_id: u64,
+        igdb: Arc<IgdbApi>,
+        steam: Arc<SteamDataApi>,
     ) -> Result<GameEntry, Status> {
-        let game_entry = match self.read_from_firestore(id) {
+        Ok(match self.read_from_firestore(game_id) {
+            // NOTE: There is a corner case that if a read is captured on a
+            // GameEntry that is currently incrementally build (by another
+            // request) the LibraryEntry that will be build from the returned
+            // GameEntry can be incomplete. I just ignore the corner-case for
+            // now.
             Ok(game_entry) => game_entry,
             Err(_) => {
-                let (tx, mut rx) = mpsc::channel(32);
-                let mut game_entry = recon_service.resolve_incrementally(id, tx).await?;
-
-                // Limit Firestore fragment updates to 1 every 2 sec.
-                let rate_limiter = RateLimiter::new(1, Duration::from_secs(2), 1);
-                while let Some(fragment) = rx.recv().await {
-                    game_entry.merge(fragment);
-                    if rate_limiter.try_wait() == Duration::from_micros(0) {
-                        info!("uploading fragments to Firestore");
-                        let firestore = &self.firestore.lock().unwrap();
-                        LibraryOps::write_game_entry(firestore, &game_entry)?;
-                    }
-                }
-
-                if let Err(e) = recon_service.update_steam_data(&mut game_entry).await {
-                    error!("Failed to retrieve SteamData for '{}' {e}", game_entry.name);
-                }
-                info!("final game entry update to Firestore");
-                let firestore = &self.firestore.lock().unwrap();
-                LibraryOps::write_game_entry(firestore, &game_entry)?;
-
-                game_entry
+                Self::resolve_incrementally(game_id, igdb, steam, Arc::clone(&self.firestore))
+                    .await?
             }
-        };
-
-        Ok(game_entry)
+        })
     }
 
     /// NOTE: This function is needed to contain the lock scope.

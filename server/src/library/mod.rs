@@ -7,7 +7,7 @@ mod steam_data;
 mod user;
 
 pub use library_ops::LibraryOps;
-use manager::LibraryManager;
+pub use manager::LibraryManager;
 pub use recon_report::ReconReport;
 pub use reconciler::Reconciler;
 pub use steam_data::SteamDataApi;
