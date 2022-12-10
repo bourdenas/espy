@@ -94,7 +94,7 @@ fn post_retrieve(
     igdb: Arc<IgdbApi>,
     steam: Arc<SteamDataApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "retrieve")
+    warp::path!("library" / "retrieve")
         .and(warp::post())
         .and(retrieve_body())
         .and(with_firestore(firestore))

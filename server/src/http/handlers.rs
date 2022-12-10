@@ -93,13 +93,12 @@ pub async fn post_search(
 
 #[instrument(level = "trace", skip(firestore, igdb, steam))]
 pub async fn post_retrieve(
-    user_id: String,
     retrieve: models::Retrieve,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
     steam: Arc<SteamDataApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    debug!("POST /library/{user_id}/retrieve");
+    info!("POST /library/retrieve");
 
     Ok(StatusCode::NOT_IMPLEMENTED)
 }
