@@ -40,7 +40,6 @@ class RecentModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<Recent> snapshot) {
       _recent = snapshot.data() ?? Recent();
-      debugPrint('🎯 updated recent snapshot');
 
       notifyListeners();
     });

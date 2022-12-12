@@ -44,11 +44,11 @@ Future<void> main() async {
           return model!..update(libraryModel.entries, gameTagsModel);
         },
       ),
-      ChangeNotifierProxyProvider2<GameEntriesModel, GameTagsModel,
+      ChangeNotifierProxyProvider3<GameEntriesModel, RecentModel, GameTagsModel,
           HomeSlatesModel>(
         create: (_) => HomeSlatesModel(),
-        update: (_, gameEntriesModel, gameTagsModel, model) {
-          return model!..update(gameEntriesModel, gameTagsModel);
+        update: (_, gameEntriesModel, recentModel, gameTagsModel, model) {
+          return model!..update(gameEntriesModel, recentModel, gameTagsModel);
         },
       ),
     ],
