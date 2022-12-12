@@ -4,6 +4,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
+import 'package:espy/modules/models/recent_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,11 @@ Future<void> main() async {
       ChangeNotifierProvider(create: (_) => UserDataModel()),
       ChangeNotifierProxyProvider<UserDataModel, GameLibraryModel>(
         create: (_) => GameLibraryModel(),
+        update: (_, userDataModel, model) =>
+            model!..update(userDataModel.userData),
+      ),
+      ChangeNotifierProxyProvider<UserDataModel, RecentModel>(
+        create: (_) => RecentModel(),
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
