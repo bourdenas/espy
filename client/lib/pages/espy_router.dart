@@ -126,7 +126,6 @@ class EspyRouter extends StatelessWidget {
       child: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          print('authStateChanges = ${snapshot.connectionState}');
           if (snapshot.connectionState == ConnectionState.waiting) {
             // TODO: Show a loading screen.
             return MaterialApp(home: Scaffold());

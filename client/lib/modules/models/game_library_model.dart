@@ -115,8 +115,6 @@ class GameLibraryModel extends ChangeNotifier {
     );
 
     if (response.statusCode != 200) {
-      print(
-          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return [];
     }
 
@@ -136,8 +134,6 @@ class GameLibraryModel extends ChangeNotifier {
     );
 
     if (response.statusCode != 200) {
-      print(
-          'retrieveGameEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return false;
     }
 
@@ -157,8 +153,6 @@ class GameLibraryModel extends ChangeNotifier {
     );
 
     if (response.statusCode != 200) {
-      print(
-          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return false;
     }
 
@@ -183,8 +177,6 @@ class GameLibraryModel extends ChangeNotifier {
     );
 
     if (response.statusCode != 200) {
-      print(
-          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return false;
     }
 
@@ -209,8 +201,6 @@ class GameLibraryModel extends ChangeNotifier {
     );
 
     if (response.statusCode != 200) {
-      print(
-          'matchEntry (error): ${response.statusCode} ${response.reasonPhrase}');
       return false;
     }
 

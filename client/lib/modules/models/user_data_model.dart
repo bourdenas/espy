@@ -44,7 +44,9 @@ class UserDataModel extends ChangeNotifier {
           },
           'steam_user_id': steamUserId,
         },
-      }).onError((error, _) => print('Failed to update user profile:$error'));
+      }).onError((error, _) {
+        // TODO: error reporting
+      });
     }
 
     _userData = UserData(

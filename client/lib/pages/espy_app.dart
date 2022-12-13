@@ -16,7 +16,7 @@ class _EspyAppState extends State<EspyApp> {
       future: _initialization,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          print("Failed to connect to Firebase: ${snapshot.error}");
+          // print("Failed to connect to Firebase: ${snapshot.error}");
         }
 
         if (snapshot.connectionState == ConnectionState.done) {

@@ -171,7 +171,6 @@ class _SearchPageState extends State<SearchPage> {
             _remoteGames.clear();
             _timer.cancel();
             _timer = Timer(const Duration(seconds: 1), () async {
-              print('searching for "$text"');
               setState(() {
                 _fetchingRemoteGames = true;
               });
