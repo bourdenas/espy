@@ -1,21 +1,22 @@
 class UserTags {
-  final List<Tag> tags;
+  final List<TagClass> classes;
 
   UserTags({
-    required this.tags,
+    required this.classes,
   });
 
   UserTags.fromJson(Map<String, dynamic> json)
       : this(
-          tags: [
-            for (final tag in json['tags'] ?? []) Tag.fromJson(tag),
+          classes: [
+            for (final _class in json['classes'] ?? [])
+              TagClass.fromJson(_class),
           ],
         );
 
   Map<String, dynamic> toJson() {
     return {
-      'tags': [
-        for (final tag in tags) tag.toJson(),
+      'classes': [
+        for (final _class in classes) _class.toJson(),
       ],
     };
   }

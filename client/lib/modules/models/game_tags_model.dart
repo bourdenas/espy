@@ -9,11 +9,13 @@ import 'package:flutter/foundation.dart' show ChangeNotifier, debugPrint;
 ///
 /// The index is computed on-the-fly in the client.
 class GameTagsModel extends ChangeNotifier {
+  // System defined tags.
   Set<String> _stores = {};
   Set<String> _companies = {};
   Map<String, int> _collections = {};
 
-  UserTags _userTags = UserTags(tags: []);
+  // User defined tags and generated indices for quick access.
+  UserTags _userTags = UserTags(classes: []);
   Map<int, List<String>> _tagsByEntry = {};
   Map<String, List<int>> _entriesByTag = {};
   String _userId = '';
@@ -29,7 +31,7 @@ class GameTagsModel extends ChangeNotifier {
         ..sort());
 
   UnmodifiableListView<String> get tags =>
-      UnmodifiableListView(_userTags.tags.map((e) => e.name).toList()..sort());
+      UnmodifiableListView(_entriesByTag.keys.toList()..sort());
   UnmodifiableListView<String> get tagsByPopulation {
     final list = _entriesByTag.entries
         .map((e) => MapEntry(e.key, e.value.length))
@@ -43,8 +45,8 @@ class GameTagsModel extends ChangeNotifier {
   List<String> tagsByEntry(int gameId) => _tagsByEntry[gameId] ?? [];
   List<int> entriesByTag(String tag) => _entriesByTag[tag] ?? [];
 
-  void addUserTag(String label, int gameId) async {
-    _addTag(label, gameId);
+  void addUserTag(String label, int gameId, {String className = ''}) async {
+    _addTag(label, gameId, className);
 
     FirebaseFirestore.instance
         .collection('users')
@@ -54,28 +56,54 @@ class GameTagsModel extends ChangeNotifier {
         .set(_userTags.toJson());
   }
 
-  void _addTag(String label, int gameId) {
-    for (final tag in _userTags.tags) {
-      if (tag.name == label) {
-        tag.gameIds.add(gameId);
-        return;
+  void _addTag(String label, int gameId, String className) {
+    for (final cl in _userTags.classes) {
+      if (cl.name != className) continue;
+
+      for (final tag in cl.tags) {
+        if (tag.name == label) {
+          tag.gameIds.add(gameId);
+          return;
+        }
       }
+
+      // New Tag, create new Tag in the class.
+      cl.tags.add(
+        Tag(
+          name: label,
+          gameIds: [gameId],
+        ),
+      );
+      return;
     }
-    _userTags.tags.add(Tag(name: label, gameIds: [gameId]));
+
+    // New TagClass, create both TagClass and Tag.
+    _userTags.classes.add(
+      TagClass(
+        name: className,
+        tags: [
+          Tag(name: label, gameIds: [gameId])
+        ],
+      ),
+    );
   }
 
-  void removeUserTag(String label, int gameId) async {
-    int index = 0;
-    for (final tag in _userTags.tags) {
-      if (tag.name == label) {
-        tag.gameIds.remove(gameId);
+  void removeUserTag(String label, int gameId, {String className = ''}) async {
+    for (final cl in _userTags.classes) {
+      if (cl.name != className) continue;
 
-        if (tag.gameIds.isEmpty) {
-          _userTags.tags.removeAt(index);
+      int index = 0;
+      for (final tag in cl.tags) {
+        if (tag.name == label) {
+          tag.gameIds.remove(gameId);
+
+          if (tag.gameIds.isEmpty) {
+            cl.tags.removeAt(index);
+          }
+          break;
         }
-        break;
+        ++index;
       }
-      ++index;
     }
 
     FirebaseFirestore.instance
@@ -159,25 +187,27 @@ class GameTagsModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<UserTags> snapshot) {
-      _userTags = snapshot.data() ?? UserTags(tags: []);
+      _userTags = snapshot.data() ?? UserTags(classes: []);
 
       _tagsByEntry.clear();
       _entriesByTag.clear();
 
-      for (final tag in _userTags.tags) {
-        for (final id in tag.gameIds) {
-          var tags = _tagsByEntry[id];
-          if (tags != null) {
-            tags.add(tag.name);
-          } else {
-            _tagsByEntry[id] = [tag.name];
-          }
+      for (final cl in _userTags.classes) {
+        for (final tag in cl.tags) {
+          for (final id in tag.gameIds) {
+            var tags = _tagsByEntry[id];
+            if (tags != null) {
+              tags.add(tag.name);
+            } else {
+              _tagsByEntry[id] = [tag.name];
+            }
 
-          var entries = _entriesByTag[tag.name];
-          if (entries != null) {
-            entries.add(id);
-          } else {
-            _entriesByTag[tag.name] = [id];
+            var entries = _entriesByTag[tag.name];
+            if (entries != null) {
+              entries.add(id);
+            } else {
+              _entriesByTag[tag.name] = [id];
+            }
           }
         }
       }
