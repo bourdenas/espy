@@ -21,6 +21,33 @@ class UserTags {
   }
 }
 
+class TagClass {
+  final String name;
+  final List<Tag> tags;
+
+  TagClass({
+    required this.name,
+    required this.tags,
+  });
+
+  TagClass.fromJson(Map<String, dynamic> json)
+      : this(
+          name: json['name'] ?? '',
+          tags: [
+            for (final tag in json['tags'] ?? []) Tag.fromJson(tag),
+          ],
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (name.isNotEmpty) 'name': name,
+      'tags': [
+        for (final tag in tags) tag.toJson(),
+      ],
+    };
+  }
+}
+
 class Tag {
   final String name;
   final List<int> gameIds;
