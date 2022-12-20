@@ -82,6 +82,27 @@ class GameTagsModel extends ChangeNotifier {
     );
   }
 
+  void moveUserTagCluster(UserTag userTag) async {
+    final cl = _userTags.classes[userTag._clusterId];
+    final newCluster = (userTag._clusterId + 1) % UserTag._tagClusters.length;
+
+    for (var i = 0; i < cl.tags.length; ++i) {
+      final tag = cl.tags[i];
+      if (tag.name == userTag.name) {
+        _userTags.classes[newCluster].tags.add(tag);
+        cl.tags.removeAt(i);
+        break;
+      }
+    }
+
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('user_data')
+        .doc('tags')
+        .set(_userTags.toJson());
+  }
+
   void removeUserTag(UserTag userTag, int gameId) async {
     for (final cl in _userTags.classes) {
       int index = 0;
@@ -190,7 +211,14 @@ class GameTagsModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<UserTags> snapshot) {
-      _userTags = snapshot.data() ?? UserTags(classes: []);
+      _userTags = snapshot.data() ?? UserTags();
+
+      // Ensure Firestore copy has at least as many classes as local clusters.
+      for (var i = _userTags.classes.length;
+          i < UserTag._tagClusters.length;
+          ++i) {
+        _userTags.classes.add(TagClass(name: UserTag._tagClusters[i].name));
+      }
 
       _entryToTags.clear();
       _tagToEntries.clear();

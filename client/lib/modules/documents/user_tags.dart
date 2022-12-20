@@ -28,7 +28,7 @@ class TagClass {
 
   TagClass({
     required this.name,
-    required this.tags,
+    this.tags = const [],
   });
 
   TagClass.fromJson(Map<String, dynamic> json)
