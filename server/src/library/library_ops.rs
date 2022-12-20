@@ -1,6 +1,8 @@
 use crate::{
     api::FirestoreApi,
-    documents::{GameEntry, LibraryEntry, Recent, RecentEntry, StoreEntry, UserTags},
+    documents::{
+        GameEntry, LegacyUserTags, LibraryEntry, Recent, RecentEntry, StoreEntry, UserTags,
+    },
     Status,
 };
 use serde::{Deserialize, Serialize};
@@ -113,10 +115,18 @@ impl LibraryOps {
     }
 
     #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn read_legacy_user_tags(firestore: &FirestoreApi, user_id: &str) -> LegacyUserTags {
+        match firestore.read::<LegacyUserTags>(&format!("users/{user_id}/user_data"), "tags") {
+            Ok(tags) => tags,
+            Err(_) => LegacyUserTags::default(),
+        }
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn read_user_tags(firestore: &FirestoreApi, user_id: &str) -> UserTags {
         match firestore.read::<UserTags>(&format!("users/{user_id}/user_data"), "tags") {
             Ok(tags) => tags,
-            Err(_) => UserTags { tags: vec![] },
+            Err(_) => UserTags::new(),
         }
     }
 
@@ -141,10 +151,11 @@ impl LibraryOps {
         user_id: &str,
         game_id: u64,
         tag_name: String,
+        class_name: Option<&str>,
     ) -> Result<(), Status> {
         let mut user_tags = Self::read_user_tags(firestore, user_id);
 
-        if user_tags.add(game_id, tag_name) {
+        if user_tags.add(game_id, tag_name, class_name) {
             Self::write_user_tags(firestore, user_id, &user_tags)?;
         }
         Ok(())
@@ -156,10 +167,11 @@ impl LibraryOps {
         user_id: &str,
         game_id: u64,
         tag_name: &str,
+        class_name: Option<&str>,
     ) -> Result<(), Status> {
         let mut user_tags = Self::read_user_tags(firestore, user_id);
 
-        if user_tags.remove(game_id, tag_name) {
+        if user_tags.remove(game_id, tag_name, class_name) {
             Self::write_user_tags(firestore, user_id, &user_tags)?;
         }
         Ok(())
