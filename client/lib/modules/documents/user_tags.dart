@@ -1,12 +1,39 @@
 class UserTags {
-  final List<Tag> tags;
+  final List<TagClass> classes;
 
   UserTags({
-    required this.tags,
+    this.classes = const [],
   });
 
   UserTags.fromJson(Map<String, dynamic> json)
       : this(
+          classes: [
+            for (final _class in json['classes'] ?? [])
+              TagClass.fromJson(_class),
+          ],
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'classes': [
+        for (final _class in classes) _class.toJson(),
+      ],
+    };
+  }
+}
+
+class TagClass {
+  final String name;
+  final List<Tag> tags;
+
+  TagClass({
+    required this.name,
+    this.tags = const [],
+  });
+
+  TagClass.fromJson(Map<String, dynamic> json)
+      : this(
+          name: json['name'] ?? '',
           tags: [
             for (final tag in json['tags'] ?? []) Tag.fromJson(tag),
           ],
@@ -14,6 +41,7 @@ class UserTags {
 
   Map<String, dynamic> toJson() {
     return {
+      if (name.isNotEmpty) 'name': name,
       'tags': [
         for (final tag in tags) tag.toJson(),
       ],

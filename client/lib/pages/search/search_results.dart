@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/gamelist/game_grid_card.dart';
 import 'package:espy/pages/gamelist/game_list_card.dart';
@@ -50,7 +51,7 @@ class TagSearchResults extends StatelessWidget {
   }) : super(key: key);
 
   final Iterable<String> stores;
-  final Iterable<String> userTags;
+  final Iterable<UserTag> userTags;
   final Iterable<String> companies;
   final Iterable<String> collections;
 
@@ -112,8 +113,10 @@ class TagSearchResults extends StatelessWidget {
                   tag,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(tags: {tag}).params(),
+                    queryParams: LibraryFilter(tags: {tag.name}).params(),
                   ),
+                  onRightClick: () =>
+                      context.read<GameTagsModel>().moveUserTagCluster(tag),
                 ),
               ),
             ),

@@ -20,32 +20,27 @@ class GameTagsField extends StatelessWidget {
         return [
           ...context
               .read<GameTagsModel>()
-              .tags
-              .where(
-                (tag) => searchTerms.every((term) => tag
-                    .toLowerCase()
-                    .split(' ')
-                    .any((word) => word.startsWith(term))),
-              )
+              .filterTagsStartsWith(searchTerms)
               .take(3)
               .map(
                 (tag) => Suggestion(
-                  text: tag,
+                  text: tag.name,
                   onTap: () => _addTag(context, tag),
                 ),
               ),
-          Suggestion(text: text, onTap: () => _addTag(context, text)),
+          Suggestion(
+              text: text, onTap: () => _addTag(context, UserTag(name: text))),
         ];
       },
       onSubmit: (text, suggestion) => _addTag(
         context,
-        suggestion?.text ?? text,
+        UserTag(name: suggestion?.text ?? text),
       ),
     );
   }
 
-  void _addTag(BuildContext context, String tag) {
-    if (tag.isNotEmpty) {
+  void _addTag(BuildContext context, UserTag tag) {
+    if (tag.name.isNotEmpty) {
       context.read<GameTagsModel>().addUserTag(tag, entry.id);
     }
   }

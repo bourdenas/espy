@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/material.dart';
 
 class CompanyChip extends EspyChip {
@@ -33,12 +34,17 @@ class StoreChip extends EspyChip {
 }
 
 class TagChip extends EspyChip {
-  const TagChip(String tag, {VoidCallback? onPressed, VoidCallback? onDeleted})
-      : super(
-          label: tag,
-          color: Colors.blueGrey,
+  TagChip(
+    UserTag tag, {
+    VoidCallback? onPressed,
+    VoidCallback? onDeleted,
+    VoidCallback? onRightClick,
+  }) : super(
+          label: tag.name,
+          color: tag.color,
           onPressed: onPressed,
           onDeleted: onDeleted,
+          onRightClick: onRightClick,
         );
 }
 
@@ -47,21 +53,26 @@ class EspyChip extends StatelessWidget {
   final Color color;
   final VoidCallback? onPressed;
   final VoidCallback? onDeleted;
+  final VoidCallback? onRightClick;
 
   const EspyChip({
     required this.label,
     required this.color,
     this.onPressed,
     this.onDeleted,
+    this.onRightClick,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InputChip(
-      label: Text(label),
-      backgroundColor: color,
-      onPressed: onPressed,
-      onDeleted: onDeleted,
+    return GestureDetector(
+      onSecondaryTap: onRightClick,
+      child: InputChip(
+        label: Text(label),
+        backgroundColor: color,
+        onPressed: onPressed,
+        onDeleted: onDeleted,
+      ),
     );
   }
 }

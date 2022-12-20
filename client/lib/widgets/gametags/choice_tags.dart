@@ -17,12 +17,12 @@ class ChoiceTags extends StatefulWidget {
 }
 
 class _ChoiceTagsState extends State<ChoiceTags> {
-  Set<String> selectedTags = {};
+  Set<UserTag> selectedTags = {};
   String filter = '';
 
   @override
   Widget build(BuildContext context) {
-    final onSelected = (bool selected, String tag) {
+    final onSelected = (bool selected, UserTag tag) {
       if (selected) {
         context.read<GameTagsModel>().addUserTag(tag, widget.entry.id);
       } else {
@@ -55,18 +55,29 @@ class _ChoiceTagsState extends State<ChoiceTags> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(50),
                             boxShadow: [
-                              if (matchKws(tag))
+                              if (matchKws(tag.name))
                                 BoxShadow(
-                                  color: Colors.blueGrey,
+                                  color: tag.color,
                                   blurRadius: 6.0,
                                   spreadRadius: 2.0,
                                 ),
                             ],
                           ),
                           child: ChoiceChip(
-                            label: Text(tag),
-                            selected: selectedTags.contains(tag),
-                            selectedColor: Colors.blueGrey,
+                            label: Text(
+                              tag.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText1!
+                                  .copyWith(
+                                      color: selectedTags
+                                              .any((e) => e.name == tag.name)
+                                          ? Colors.white
+                                          : tag.color[300]),
+                            ),
+                            selected:
+                                selectedTags.any((e) => e.name == tag.name),
+                            selectedColor: tag.color,
                             onSelected: (selected) => onSelected(selected, tag),
                           ),
                         ),
@@ -92,7 +103,9 @@ class _ChoiceTagsState extends State<ChoiceTags> {
               });
             },
             onFieldSubmitted: (text) {
-              context.read<GameTagsModel>().addUserTag(text, widget.entry.id);
+              context
+                  .read<GameTagsModel>()
+                  .addUserTag(UserTag(name: text), widget.entry.id);
               setState(() {
                 _textController.text = '';
                 filter = '';

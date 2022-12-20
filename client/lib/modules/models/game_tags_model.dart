@@ -3,19 +3,24 @@ import 'dart:collection';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_tags.dart';
-import 'package:flutter/foundation.dart' show ChangeNotifier, debugPrint;
+import 'package:flutter/material.dart'
+    show ChangeNotifier, Colors, MaterialColor;
 
 /// Index of tags extracted from user's library.
 ///
 /// The index is computed on-the-fly in the client.
 class GameTagsModel extends ChangeNotifier {
+  // System defined tags.
   Set<String> _stores = {};
   Set<String> _companies = {};
   Map<String, int> _collections = {};
 
-  UserTags _userTags = UserTags(tags: []);
-  Map<int, List<String>> _tagsByEntry = {};
-  Map<String, List<int>> _entriesByTag = {};
+  // User defined tags and generated indices for quick access.
+  UserTags _userTags = UserTags();
+
+  Map<int, List<UserTag>> _entryToTags = {};
+  Map<String, List<int>> _tagToEntries = {};
+  Map<String, int> _tagToCluster = {};
   String _userId = '';
 
   UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
@@ -28,10 +33,13 @@ class GameTagsModel extends ChangeNotifier {
           .toList()
         ..sort());
 
-  UnmodifiableListView<String> get tags =>
-      UnmodifiableListView(_userTags.tags.map((e) => e.name).toList()..sort());
+  UnmodifiableListView<UserTag> get tags =>
+      UnmodifiableListView(_tagToCluster.entries
+          .map((entry) => UserTag(name: entry.key, clusterId: entry.value))
+          .toList()
+        ..sort((a, b) => a.name.compareTo(b.name)));
   UnmodifiableListView<String> get tagsByPopulation {
-    final list = _entriesByTag.entries
+    final list = _tagToEntries.entries
         .map((e) => MapEntry(e.key, e.value.length))
         .toList()
       ..sort((a, b) => -a.value.compareTo(b.value));
@@ -40,11 +48,13 @@ class GameTagsModel extends ChangeNotifier {
 
   int getCollectionSize(String collection) => _collections[collection] ?? 0;
 
-  List<String> tagsByEntry(int gameId) => _tagsByEntry[gameId] ?? [];
-  List<int> entriesByTag(String tag) => _entriesByTag[tag] ?? [];
+  List<UserTag> tagsByEntry(int gameId) => _entryToTags[gameId] ?? [];
+  List<int> entriesByTag(String tag) => _tagToEntries[tag] ?? [];
+  UserTag tagByName(String name) =>
+      UserTag(name: name, clusterId: _tagToCluster[name] ?? 0);
 
-  void addUserTag(String label, int gameId) async {
-    _addTag(label, gameId);
+  void addUserTag(UserTag tag, int gameId) async {
+    _addTag(tag, gameId);
 
     FirebaseFirestore.instance
         .collection('users')
@@ -54,28 +64,60 @@ class GameTagsModel extends ChangeNotifier {
         .set(_userTags.toJson());
   }
 
-  void _addTag(String label, int gameId) {
-    for (final tag in _userTags.tags) {
-      if (tag.name == label) {
+  void _addTag(UserTag userTag, int gameId) {
+    final cl = _userTags.classes[userTag._clusterId];
+
+    for (final tag in cl.tags) {
+      if (tag.name == userTag.name) {
         tag.gameIds.add(gameId);
         return;
       }
     }
-    _userTags.tags.add(Tag(name: label, gameIds: [gameId]));
+
+    // New Tag, create new Tag in the class.
+    cl.tags.add(
+      Tag(
+        name: userTag.name,
+        gameIds: [gameId],
+      ),
+    );
   }
 
-  void removeUserTag(String label, int gameId) async {
-    int index = 0;
-    for (final tag in _userTags.tags) {
-      if (tag.name == label) {
-        tag.gameIds.remove(gameId);
+  void moveUserTagCluster(UserTag userTag) async {
+    final cl = _userTags.classes[userTag._clusterId];
+    final newCluster = (userTag._clusterId + 1) % UserTag._tagClusters.length;
 
-        if (tag.gameIds.isEmpty) {
-          _userTags.tags.removeAt(index);
-        }
+    for (var i = 0; i < cl.tags.length; ++i) {
+      final tag = cl.tags[i];
+      if (tag.name == userTag.name) {
+        _userTags.classes[newCluster].tags.add(tag);
+        cl.tags.removeAt(i);
         break;
       }
-      ++index;
+    }
+
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(_userId)
+        .collection('user_data')
+        .doc('tags')
+        .set(_userTags.toJson());
+  }
+
+  void removeUserTag(UserTag userTag, int gameId) async {
+    for (final cl in _userTags.classes) {
+      int index = 0;
+      for (final tag in cl.tags) {
+        if (tag.name == userTag.name) {
+          tag.gameIds.remove(gameId);
+
+          if (tag.gameIds.isEmpty) {
+            cl.tags.removeAt(index);
+          }
+          break;
+        }
+        ++index;
+      }
     }
 
     FirebaseFirestore.instance
@@ -115,17 +157,28 @@ class GameTagsModel extends ChangeNotifier {
         collection.toLowerCase().split(' ').any((word) => word == term)));
   }
 
-  Iterable<String> filterTags(Iterable<String> terms) {
+  Iterable<UserTag> filterTags(Iterable<String> terms) {
     return tags.where(
-      (tag) => terms.every((term) =>
-          tag.toLowerCase().split(' ').any((word) => word.startsWith(term))),
+      (tag) => terms.every((term) => tag.name
+          .toLowerCase()
+          .split(' ')
+          .any((word) => word.startsWith(term))),
     );
   }
 
-  Iterable<String> filterTagsExact(Iterable<String> terms) {
+  Iterable<UserTag> filterTagsExact(Iterable<String> terms) {
     return tags.where(
-      (tag) => terms.every(
-          (term) => tag.toLowerCase().split(' ').any((word) => word == term)),
+      (tag) => terms.every((term) =>
+          tag.name.toLowerCase().split(' ').any((word) => word == term)),
+    );
+  }
+
+  Iterable<UserTag> filterTagsStartsWith(Iterable<String> terms) {
+    return tags.where(
+      (tag) => terms.every((term) => tag.name
+          .toLowerCase()
+          .split(' ')
+          .any((word) => word.startsWith(term))),
     );
   }
 
@@ -159,25 +212,38 @@ class GameTagsModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<UserTags> snapshot) {
-      _userTags = snapshot.data() ?? UserTags(tags: []);
+      _userTags = snapshot.data() ?? UserTags();
 
-      _tagsByEntry.clear();
-      _entriesByTag.clear();
+      // Ensure Firestore copy has at least as many classes as local clusters.
+      for (var i = _userTags.classes.length;
+          i < UserTag._tagClusters.length;
+          ++i) {
+        _userTags.classes.add(TagClass(name: UserTag._tagClusters[i].name));
+      }
 
-      for (final tag in _userTags.tags) {
-        for (final id in tag.gameIds) {
-          var tags = _tagsByEntry[id];
-          if (tags != null) {
-            tags.add(tag.name);
-          } else {
-            _tagsByEntry[id] = [tag.name];
-          }
+      _entryToTags.clear();
+      _tagToEntries.clear();
+      _tagToCluster.clear();
 
-          var entries = _entriesByTag[tag.name];
-          if (entries != null) {
-            entries.add(id);
-          } else {
-            _entriesByTag[tag.name] = [id];
+      for (var i = 0; i < _userTags.classes.length; ++i) {
+        final cl = _userTags.classes[i];
+        for (final tag in cl.tags) {
+          _tagToCluster[tag.name] = i;
+
+          for (final id in tag.gameIds) {
+            var tags = _entryToTags[id];
+            if (tags != null) {
+              tags.add(UserTag(name: tag.name, clusterId: i));
+            } else {
+              _entryToTags[id] = [UserTag(name: tag.name, clusterId: i)];
+            }
+
+            var entries = _tagToEntries[tag.name];
+            if (entries != null) {
+              entries.add(id);
+            } else {
+              _tagToEntries[tag.name] = [id];
+            }
           }
         }
       }
@@ -185,4 +251,33 @@ class GameTagsModel extends ChangeNotifier {
       notifyListeners();
     });
   }
+}
+
+class UserTag {
+  String name;
+  int _clusterId;
+
+  UserTag({
+    required this.name,
+    clusterId = 0,
+  }) : _clusterId = clusterId;
+
+  MaterialColor get color => _tagClusters[_clusterId].color;
+
+  static List<_UserTagCluster> _tagClusters = [
+    _UserTagCluster(name: 'grey', color: Colors.blueGrey),
+    _UserTagCluster(name: 'orange', color: Colors.orange),
+    _UserTagCluster(name: 'green', color: Colors.green),
+    _UserTagCluster(name: 'lime', color: Colors.lime),
+  ];
+}
+
+class _UserTagCluster {
+  String name;
+  MaterialColor color;
+
+  _UserTagCluster({
+    required this.name,
+    required this.color,
+  });
 }

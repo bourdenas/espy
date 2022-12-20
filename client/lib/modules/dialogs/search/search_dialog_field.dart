@@ -38,15 +38,15 @@ class SearchDialogField extends StatelessWidget {
               ),
           ...context.read<GameTagsModel>().filterTags(searchTerms).take(4).map(
                 (tag) => Suggestion(
-                  text: tag,
+                  text: tag.name,
                   icon: Icon(
                     Icons.tag,
-                    color: Colors.blueGrey,
+                    color: tag.color,
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
                     context.pushNamed('games',
-                        queryParams: LibraryFilter(tags: {tag}).params());
+                        queryParams: LibraryFilter(tags: {tag.name}).params());
                   },
                 ),
               ),
