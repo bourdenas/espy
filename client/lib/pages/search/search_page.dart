@@ -22,7 +22,7 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     final ngrams = _text.toLowerCase().split(' ');
     final gameEntriesModel = context.read<GameEntriesModel>();
-    final tagsModel = context.read<GameTagsModel>();
+    final tagsModel = context.watch<GameTagsModel>();
 
     final titleMatches = _text.isNotEmpty
         ? context

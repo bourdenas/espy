@@ -58,9 +58,10 @@ class _GameChipsWrap extends StatelessWidget {
               'games',
               queryParams: LibraryFilter(tags: {tag.name}).params(),
             ),
-            onDeleted: () {
-              context.read<GameTagsModel>().removeUserTag(tag, entry.id);
-            },
+            onDeleted: () =>
+                context.read<GameTagsModel>().removeUserTag(tag, entry.id),
+            onRightClick: () =>
+                context.read<GameTagsModel>().moveUserTagCluster(tag),
           ),
       ],
     );
@@ -123,9 +124,10 @@ class GameCardChips extends StatelessWidget {
                   'games',
                   queryParams: LibraryFilter(tags: {tag.name}).params(),
                 ),
-                onDeleted: () {
-                  context.read<GameTagsModel>().removeUserTag(tag, entry.id);
-                },
+                onDeleted: () =>
+                    context.read<GameTagsModel>().removeUserTag(tag, entry.id),
+                onRightClick: () =>
+                    context.read<GameTagsModel>().moveUserTagCluster(tag),
               ),
             ),
         ],

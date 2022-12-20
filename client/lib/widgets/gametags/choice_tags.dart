@@ -57,14 +57,24 @@ class _ChoiceTagsState extends State<ChoiceTags> {
                             boxShadow: [
                               if (matchKws(tag.name))
                                 BoxShadow(
-                                  color: Colors.blueGrey,
+                                  color: tag.color,
                                   blurRadius: 6.0,
                                   spreadRadius: 2.0,
                                 ),
                             ],
                           ),
                           child: ChoiceChip(
-                            label: Text(tag.name),
+                            label: Text(
+                              tag.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText1!
+                                  .copyWith(
+                                      color: selectedTags
+                                              .any((e) => e.name == tag.name)
+                                          ? Colors.white
+                                          : tag.color[300]),
+                            ),
                             selected:
                                 selectedTags.any((e) => e.name == tag.name),
                             selectedColor: tag.color,

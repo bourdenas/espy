@@ -3,7 +3,8 @@ import 'dart:collection';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_tags.dart';
-import 'package:flutter/material.dart' show ChangeNotifier, Color, Colors;
+import 'package:flutter/material.dart'
+    show ChangeNotifier, Colors, MaterialColor;
 
 /// Index of tags extracted from user's library.
 ///
@@ -261,19 +262,19 @@ class UserTag {
     clusterId = 0,
   }) : _clusterId = clusterId;
 
-  Color get color => _tagClusters[_clusterId].color;
+  MaterialColor get color => _tagClusters[_clusterId].color;
 
   static List<_UserTagCluster> _tagClusters = [
     _UserTagCluster(name: 'grey', color: Colors.blueGrey),
-    _UserTagCluster(name: 'orange', color: Colors.orangeAccent),
-    _UserTagCluster(name: 'green', color: Colors.greenAccent),
-    _UserTagCluster(name: 'lime', color: Colors.limeAccent),
+    _UserTagCluster(name: 'orange', color: Colors.orange),
+    _UserTagCluster(name: 'green', color: Colors.green),
+    _UserTagCluster(name: 'lime', color: Colors.lime),
   ];
 }
 
 class _UserTagCluster {
   String name;
-  Color color;
+  MaterialColor color;
 
   _UserTagCluster({
     required this.name,
