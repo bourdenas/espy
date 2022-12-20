@@ -56,7 +56,7 @@ class _GameChipsWrap extends StatelessWidget {
             tag,
             onPressed: () => context.pushNamed(
               'games',
-              queryParams: LibraryFilter(tags: {tag}).params(),
+              queryParams: LibraryFilter(tags: {tag.name}).params(),
             ),
             onDeleted: () {
               context.read<GameTagsModel>().removeUserTag(tag, entry.id);
@@ -121,7 +121,7 @@ class GameCardChips extends StatelessWidget {
                 tag,
                 onPressed: () => context.pushNamed(
                   'games',
-                  queryParams: LibraryFilter(tags: {tag}).params(),
+                  queryParams: LibraryFilter(tags: {tag.name}).params(),
                 ),
                 onDeleted: () {
                   context.read<GameTagsModel>().removeUserTag(tag, entry.id);
@@ -145,6 +145,8 @@ class GameChipsFilter extends StatelessWidget {
       return Row(children: []);
     }
 
+    final tagsModel = context.read<GameTagsModel>();
+
     return Row(children: [
       for (final store in filter.stores) ...[
         Padding(
@@ -167,7 +169,7 @@ class GameChipsFilter extends StatelessWidget {
       for (final tag in filter.tags) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: TagChip(tag, onDeleted: () {}),
+          child: TagChip(tagsModel.tagByName(tag), onDeleted: () {}),
         ),
       ],
     ]);

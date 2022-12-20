@@ -2,7 +2,7 @@ class UserTags {
   final List<TagClass> classes;
 
   UserTags({
-    required this.classes,
+    this.classes = const [],
   });
 
   UserTags.fromJson(Map<String, dynamic> json)

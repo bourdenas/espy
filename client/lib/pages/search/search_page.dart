@@ -75,13 +75,13 @@ class _SearchPageState extends State<SearchPage> {
           SliverPersistentHeader(
             pinned: true,
             floating: true,
-            delegate: section(
-                context, tag, Colors.blueGrey, LibraryFilter(tags: {tag})),
+            delegate: section(context, tag.name, Colors.blueGrey,
+                LibraryFilter(tags: {tag.name})),
           ),
           GameSearchResults(
               entries: context
                   .read<GameEntriesModel>()
-                  .getEntries(filter: LibraryFilter(tags: {tag}))),
+                  .getEntries(filter: LibraryFilter(tags: {tag.name}))),
         ],
         if (titleMatches.isNotEmpty) ...[
           SliverPersistentHeader(

@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/material.dart';
 
 class CompanyChip extends EspyChip {
@@ -33,10 +34,10 @@ class StoreChip extends EspyChip {
 }
 
 class TagChip extends EspyChip {
-  const TagChip(String tag, {VoidCallback? onPressed, VoidCallback? onDeleted})
+  TagChip(UserTag tag, {VoidCallback? onPressed, VoidCallback? onDeleted})
       : super(
-          label: tag,
-          color: Colors.blueGrey,
+          label: tag.name,
+          color: tag.color,
           onPressed: onPressed,
           onDeleted: onDeleted,
         );
