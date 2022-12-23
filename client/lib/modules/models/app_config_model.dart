@@ -10,14 +10,13 @@ class AppConfigModel extends ChangeNotifier {
   get cardDecoration => _cardDecoration;
   get libraryLayout => _libraryLayout;
 
-  get theme => ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: backgrounColour,
-        backgroundColor: backgrounColour,
+  get theme => ThemeData.dark().copyWith(
+        appBarTheme: AppBarTheme(backgroundColor: backgrounColor),
+        scaffoldBackgroundColor: backgrounColor,
       );
 
-  get foregroundColour => Color(0xFF66A3BB);
-  get backgrounColour => Color(0xFF253A47);
+  static get foregroundColor => Color(0xFF0F1720);
+  static get backgrounColor => Color(0xFF1B2838);
 
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width <= 800;

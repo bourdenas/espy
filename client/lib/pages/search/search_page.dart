@@ -124,7 +124,7 @@ class _SearchPageState extends State<SearchPage> {
       maxHeight: 50.0,
       child: Material(
         elevation: 10.0,
-        color: Color.fromARGB(255, 72, 72, 72),
+        color: AppConfigModel.foregroundColor,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
