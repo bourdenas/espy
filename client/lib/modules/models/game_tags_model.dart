@@ -195,7 +195,7 @@ class GameTagsModel extends ChangeNotifier {
 
     if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;
-      await _loadUserTags(userId);
+      _loadUserTags(userId);
     }
     // NOTE: notifyListeners() happens on the user tags snapshot callback.
   }

@@ -4,6 +4,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
+import 'package:espy/modules/models/recent_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,11 @@ Future<void> main() async {
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
+      ChangeNotifierProxyProvider<UserDataModel, RecentModel>(
+        create: (_) => RecentModel(),
+        update: (_, userDataModel, model) =>
+            model!..update(userDataModel.userData),
+      ),
       ChangeNotifierProxyProvider<GameLibraryModel, GameTagsModel>(
         create: (_) => GameTagsModel(),
         update: (_, libraryModel, model) {
@@ -38,11 +44,11 @@ Future<void> main() async {
           return model!..update(libraryModel.entries, gameTagsModel);
         },
       ),
-      ChangeNotifierProxyProvider2<GameEntriesModel, GameTagsModel,
+      ChangeNotifierProxyProvider3<GameEntriesModel, RecentModel, GameTagsModel,
           HomeSlatesModel>(
         create: (_) => HomeSlatesModel(),
-        update: (_, gameEntriesModel, gameTagsModel, model) {
-          return model!..update(gameEntriesModel, gameTagsModel);
+        update: (_, gameEntriesModel, recentModel, gameTagsModel, model) {
+          return model!..update(gameEntriesModel, recentModel, gameTagsModel);
         },
       ),
     ],

@@ -38,8 +38,10 @@ class HomeContent extends StatelessWidget {
           if (slate.entries.isNotEmpty)
             HomeSlate(
               title: slate.title,
-              onExpand: () => context.pushNamed('games',
-                  queryParams: slate.filter.params()),
+              onExpand: slate.filter != null
+                  ? () => context.pushNamed('games',
+                      queryParams: slate.filter!.params())
+                  : null,
               tiles: slate.entries
                   .map((libraryEntry) => SlateTileData(
                         image:
