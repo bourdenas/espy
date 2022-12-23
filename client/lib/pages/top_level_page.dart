@@ -126,103 +126,106 @@ class _TopLevelPageState extends State<TopLevelPage>
   Widget _sideMenu(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 32.0),
-        GestureDetector(
-          key: Key('closeDrawerButton'),
-          onTap: () {
-            _drawerAnimationController.reverse();
-          },
-          child: Row(
-            children: [
-              SizedBox(width: 8.0),
-              CircleAvatar(
-                child: Icon(
-                  Icons.close,
+    return Material(
+      color: Colors.black,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 32.0),
+          GestureDetector(
+            key: Key('closeDrawerButton'),
+            onTap: () {
+              _drawerAnimationController.reverse();
+            },
+            child: Row(
+              children: [
+                SizedBox(width: 8.0),
+                CircleAvatar(
+                  child: Icon(
+                    Icons.close,
+                  ),
+                  backgroundColor: Colors.white,
                 ),
-                backgroundColor: Colors.white,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        SizedBox(height: 64.0),
-        if (user != null)
-          Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image(
-                    image: NetworkImage(user.photoURL!),
+          SizedBox(height: 64.0),
+          if (user != null)
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image(
+                      image: NetworkImage(user.photoURL!),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(width: 16.0),
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.displayName!,
-                      style: Theme.of(context).textTheme.headline6!.copyWith(
-                            fontSize: 16.0,
-                          ),
-                    ),
-                    Text(
-                      user.email!,
-                      style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                            color: Colors.white70,
-                          ),
-                    ),
-                  ],
-                ),
-              )
-            ],
+                SizedBox(width: 16.0),
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.displayName!,
+                        style: Theme.of(context).textTheme.headline6!.copyWith(
+                              fontSize: 16.0,
+                            ),
+                      ),
+                      Text(
+                        user.email!,
+                        style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                              color: Colors.white70,
+                            ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          SizedBox(height: 32.0),
+          ListTile(
+            key: Key('libraryListTile'),
+            onTap: () => context.pushNamed('games'),
+            leading: Icon(Icons.my_library_books),
+            title: Text('Library'),
+            // selected: data.state == figure out,
+            style: ListTileStyle.drawer,
+            iconColor: Colors.white70,
+            textColor: Colors.white70,
+            selectedColor: Colors.white,
+            selectedTileColor: Colors.redAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
           ),
-        SizedBox(height: 32.0),
-        ListTile(
-          key: Key('libraryListTile'),
-          onTap: () => context.pushNamed('games'),
-          leading: Icon(Icons.my_library_books),
-          title: Text('Library'),
-          // selected: data.state == figure out,
-          style: ListTileStyle.drawer,
-          iconColor: Colors.white70,
-          textColor: Colors.white70,
-          selectedColor: Colors.white,
-          selectedTileColor: Colors.redAccent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
+          ListTile(
+            key: Key('unmatchedListTile'),
+            onTap: () => context.pushNamed('unmatched'),
+            leading: Icon(Icons.device_unknown),
+            title: Text('Unmatched Titles'),
+            // selected: data.state == figure out,
+            style: ListTileStyle.drawer,
+            iconColor: Colors.white70,
+            textColor: Colors.white70,
+            selectedColor: Colors.white,
+            selectedTileColor: Colors.redAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
           ),
-        ),
-        ListTile(
-          key: Key('unmatchedListTile'),
-          onTap: () => context.pushNamed('unmatched'),
-          leading: Icon(Icons.device_unknown),
-          title: Text('Unmatched Titles'),
-          // selected: data.state == figure out,
-          style: ListTileStyle.drawer,
-          iconColor: Colors.white70,
-          textColor: Colors.white70,
-          selectedColor: Colors.white,
-          selectedTileColor: Colors.redAccent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
+          ListTile(
+            key: Key('settingsListTile'),
+            onTap: () => context.pushNamed('profile'),
+            leading: Icon(Icons.settings),
+            title: Text('Settings'),
+            iconColor: Colors.white70,
+            textColor: Colors.white70,
           ),
-        ),
-        ListTile(
-          key: Key('settingsListTile'),
-          onTap: () => context.pushNamed('profile'),
-          leading: Icon(Icons.settings),
-          title: Text('Settings'),
-          iconColor: Colors.white70,
-          textColor: Colors.white70,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

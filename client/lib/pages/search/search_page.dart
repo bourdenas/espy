@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
@@ -156,11 +157,14 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   _SectionHeader searchBox() {
+    final isMobile = AppConfigModel.isMobile(context);
     return _SectionHeader(
       minHeight: 80.0,
-      maxHeight: 120.0,
+      maxHeight: isMobile ? 200 : 120,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: isMobile
+            ? const EdgeInsets.only(top: 72, left: 16, right: 16)
+            : const EdgeInsets.all(16.0),
         child: SearchTextField(
           onChanged: (text) {
             text.toLowerCase().split(' ');
