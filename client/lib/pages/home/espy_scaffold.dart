@@ -79,12 +79,14 @@ class _EspyScaffoldState extends State<EspyScaffold>
                 body: NotificationListener<ScrollNotification>(
                   onNotification: _scrollListener,
                   child: ScrollConfiguration(
-                      behavior: ScrollConfiguration.of(context)
-                          .copyWith(dragDevices: {
+                    behavior: ScrollConfiguration.of(context).copyWith(
+                      dragDevices: {
                         PointerDeviceKind.touch,
                         PointerDeviceKind.mouse,
-                      }),
-                      child: widget.body),
+                      },
+                    ),
+                    child: widget.body,
+                  ),
                 ),
               );
             },
@@ -99,6 +101,13 @@ class _EspyScaffoldState extends State<EspyScaffold>
 
     return AppBar(
       toolbarOpacity: 0.6,
+      leading: AppConfigModel.isMobile(context) && !context.canPop()
+          ? IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: widget.onShowMenu,
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+            )
+          : null,
       title: Text(
         'espy',
         style: TextStyle(
