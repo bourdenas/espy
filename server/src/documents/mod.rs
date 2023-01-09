@@ -7,9 +7,9 @@ mod store_entry;
 mod user_data;
 mod user_tags;
 
-use game_digest::GameDigest;
+pub use game_digest::GameDigest;
 pub use game_entry::*;
-pub use library_entry::LibraryEntry;
+pub use library_entry::{LegacyLibraryEntry, LibraryEntry};
 pub use recent::{Recent, RecentEntry};
 pub use steam_data::SteamData;
 pub use store_entry::StoreEntry;

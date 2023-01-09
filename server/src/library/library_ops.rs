@@ -1,7 +1,8 @@
 use crate::{
     api::FirestoreApi,
     documents::{
-        GameEntry, LegacyUserTags, LibraryEntry, Recent, RecentEntry, StoreEntry, UserTags,
+        GameEntry, LegacyLibraryEntry, LegacyUserTags, LibraryEntry, Recent, RecentEntry,
+        StoreEntry, UserTags,
     },
     Status,
 };
@@ -24,13 +25,17 @@ impl LibraryOps {
         firestore: &FirestoreApi,
         user_id: &str,
     ) -> Result<Vec<LibraryEntry>, Status> {
+        firestore.list(&format!("users/{user_id}/library_v2"))
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn list_legacy_library(
+        firestore: &FirestoreApi,
+        user_id: &str,
+    ) -> Result<Vec<LegacyLibraryEntry>, Status> {
         firestore.list(&format!("users/{user_id}/library"))
     }
 
-    /// Write a `game_entry` and the associated `library_entry` on Firestore.
-    ///
-    /// The `library_entry` is updated with the input `game_entry` data but
-    /// maintains existing user date (tags, store entries).
     #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn write_library_entry(
         firestore: &FirestoreApi,
@@ -38,7 +43,7 @@ impl LibraryOps {
         library_entry: &LibraryEntry,
     ) -> Result<(), Status> {
         firestore.write(
-            &format!("users/{user_id}/library"),
+            &format!("users/{user_id}/library_v2"),
             Some(&library_entry.id.to_string()),
             library_entry,
         )?;
@@ -53,9 +58,10 @@ impl LibraryOps {
     ) -> Result<(), Status> {
         let mut library_entry = library_entry;
 
-        // Merge new LibraryEntry with existing one.
+        // Merge StoreEntries and owned version if there is an existing
+        // LibraryEntry.
         if let Ok(existing) = firestore.read::<LibraryEntry>(
-            &format!("users/{user_id}/library"),
+            &format!("users/{user_id}/library_v2"),
             &library_entry.id.to_string(),
         ) {
             library_entry
@@ -84,7 +90,7 @@ impl LibraryOps {
         });
 
         if library_entry.store_entries.is_empty() {
-            firestore.delete(&format!("users/{user_id}/library/{}", library_entry.id))?;
+            firestore.delete(&format!("users/{user_id}/library_v2/{}", library_entry.id))?;
         } else {
             LibraryOps::write_library_entry(firestore, user_id, &library_entry)?;
         }
