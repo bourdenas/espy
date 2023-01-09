@@ -1,8 +1,7 @@
 use crate::{
     api::FirestoreApi,
     documents::{
-        GameEntry, LegacyLibraryEntry, LegacyUserTags, LibraryEntry, Recent, RecentEntry,
-        StoreEntry, UserTags,
+        GameEntry, LegacyUserTags, LibraryEntry, Recent, RecentEntry, StoreEntry, UserTags,
     },
     Status,
 };
@@ -26,14 +25,6 @@ impl LibraryOps {
         user_id: &str,
     ) -> Result<Vec<LibraryEntry>, Status> {
         firestore.list(&format!("users/{user_id}/library_v2"))
-    }
-
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn list_legacy_library(
-        firestore: &FirestoreApi,
-        user_id: &str,
-    ) -> Result<Vec<LegacyLibraryEntry>, Status> {
-        firestore.list(&format!("users/{user_id}/library"))
     }
 
     #[instrument(level = "trace", skip(firestore, user_id))]

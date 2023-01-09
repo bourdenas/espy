@@ -20,36 +20,6 @@ pub struct LibraryEntry {
     pub owned_versions: Vec<u64>,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
-pub struct LegacyLibraryEntry {
-    pub id: u64,
-    pub name: String,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub cover: Option<String>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub release_date: Option<i64>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub collections: Vec<String>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub companies: Vec<String>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub store_entries: Vec<StoreEntry>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub owned_versions: Vec<u64>,
-}
-
 impl LibraryEntry {
     pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>, owned_versions: Vec<u64>) -> Self {
         LibraryEntry {
