@@ -12,4 +12,4 @@ pub use recent::{Recent, RecentEntry};
 pub use steam_data::SteamData;
 pub use store_entry::StoreEntry;
 pub use user_data::{Keys, UserData};
-pub use user_tags::{LegacyUserTags, Tag, UserTags};
+pub use user_tags::{Tag, UserTags};

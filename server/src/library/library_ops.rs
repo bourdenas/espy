@@ -1,8 +1,6 @@
 use crate::{
     api::FirestoreApi,
-    documents::{
-        GameEntry, LegacyUserTags, LibraryEntry, Recent, RecentEntry, StoreEntry, UserTags,
-    },
+    documents::{GameEntry, LibraryEntry, Recent, RecentEntry, StoreEntry, UserTags},
     Status,
 };
 use serde::{Deserialize, Serialize};
@@ -112,14 +110,6 @@ impl LibraryOps {
     #[instrument(level = "trace", skip(firestore))]
     pub fn delete_game_entry(firestore: &FirestoreApi, game_id: u64) -> Result<(), Status> {
         firestore.delete(&format!("games/{}", game_id.to_string()))
-    }
-
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn read_legacy_user_tags(firestore: &FirestoreApi, user_id: &str) -> LegacyUserTags {
-        match firestore.read::<LegacyUserTags>(&format!("users/{user_id}/user_data"), "tags") {
-            Ok(tags) => tags,
-            Err(_) => LegacyUserTags::default(),
-        }
     }
 
     #[instrument(level = "trace", skip(firestore, user_id))]
