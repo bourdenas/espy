@@ -1,3 +1,4 @@
+mod game_digest;
 mod game_entry;
 mod library_entry;
 mod recent;
@@ -6,6 +7,7 @@ mod store_entry;
 mod user_data;
 mod user_tags;
 
+pub use game_digest::GameDigest;
 pub use game_entry::*;
 pub use library_entry::LibraryEntry;
 pub use recent::{Recent, RecentEntry};

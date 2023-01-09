@@ -1,5 +1,5 @@
 use clap::Parser;
-use espy_server::{api::FirestoreApi, documents::UserTags, library::LibraryOps, *};
+use espy_server::{api::FirestoreApi, Status, Tracing};
 use tracing::instrument;
 
 /// Espy util for refreshing IGDB and Steam data for GameEntries.
@@ -29,10 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
-#[instrument(level = "trace", skip(firestore))]
-fn refresh_library_entries(firestore: &FirestoreApi, user_id: &str) -> Result<(), Status> {
-    let library_entries = LibraryOps::list_library(firestore, user_id)?;
-    // TODO: apply refesh
-
+#[instrument(level = "trace", skip(_firestore))]
+fn refresh_library_entries(_firestore: &FirestoreApi, user_id: &str) -> Result<(), Status> {
     Ok(())
 }
