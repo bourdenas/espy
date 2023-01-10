@@ -74,13 +74,12 @@ class GameLibraryModel extends ChangeNotifier {
     final librarySnapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
-        .collection('library')
+        .collection('library_v2')
         .withConverter<LibraryEntry>(
           fromFirestore: (snapshot, _) =>
               LibraryEntry.fromJson(snapshot.data()!),
           toFirestore: (entry, _) => entry.toJson(),
         )
-        .orderBy('release_date', descending: true)
         .get();
     _entries = librarySnapshot.docs.map((doc) => doc.data()).toList();
 

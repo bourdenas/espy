@@ -1,26 +1,24 @@
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 
 class LibraryEntry {
   final int id;
-  final String name;
-  final String? cover;
-
-  final int releaseDate;
-
-  final List<String> collections;
-  final List<String> companies;
+  final GameDigest digest;
 
   final List<StoreEntry> storeEntries;
   final List<int> ownedVersions;
 
+  String get name => digest.name;
+  String? get cover => digest.cover;
+  int get releaseDate => digest.releaseDate;
+  double get rating => digest.rating;
+  List<String> get collections => digest.collections;
+  List<String> get companies => digest.companies;
+
   LibraryEntry({
     required this.id,
-    required this.name,
-    this.cover,
-    this.releaseDate = 0,
-    this.collections = const [],
-    this.companies = const [],
+    required this.digest,
     this.storeEntries = const [],
     this.ownedVersions = const [],
   });
@@ -28,23 +26,13 @@ class LibraryEntry {
   LibraryEntry.fromGameEntry(GameEntry gameEntry)
       : this(
           id: gameEntry.id,
-          name: gameEntry.name,
-          releaseDate: gameEntry.releaseDate,
-          cover: gameEntry.cover?.imageId,
+          digest: GameDigest.fromGameEntry(gameEntry),
         );
 
   LibraryEntry.fromJson(Map<String, dynamic> json)
       : this(
           id: json['id']!,
-          name: json['name']!,
-          cover: json['cover'],
-          releaseDate: json['release_date'] ?? 0,
-          collections: [
-            for (final collection in json['collections'] ?? []) collection,
-          ],
-          companies: [
-            for (final company in json['companies'] ?? []) company,
-          ],
+          digest: GameDigest.fromJson(json['digest']!),
           storeEntries: [
             for (final entry in json['store_entries'] ?? [])
               StoreEntry.fromJson(entry),
@@ -57,11 +45,7 @@ class LibraryEntry {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
-      if (cover != null) 'cover': cover,
-      'release_date': releaseDate,
-      if (collections.isNotEmpty) 'collections': collections,
-      if (companies.isNotEmpty) 'companies': companies,
+      'digest': digest.toJson(),
       if (storeEntries.isNotEmpty)
         'store_entries': [
           for (final entry in storeEntries) entry.toJson(),
