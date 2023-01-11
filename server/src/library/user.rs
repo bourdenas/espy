@@ -119,8 +119,8 @@ impl User {
     #[instrument(level = "trace", skip(self, library_entry))]
     pub async fn unmatch_entry(
         &mut self,
-        store_entry: StoreEntry,
-        library_entry: LibraryEntry,
+        store_entry: &StoreEntry,
+        library_entry: &LibraryEntry,
         delete: bool,
     ) -> Result<(), Status> {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
@@ -138,7 +138,7 @@ impl User {
         &mut self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
-        existing_library_entry: LibraryEntry,
+        existing_library_entry: &LibraryEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
     ) -> Result<(), Status> {

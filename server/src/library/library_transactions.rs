@@ -11,6 +11,10 @@ pub struct LibraryTransactions;
 
 /// NOTE: All operations here should be transactions, but this is not currently
 /// supported by this library.
+///
+/// NOTE: LibraryTransactions are, in general, not re-entrant. Executing Library
+/// transactions on the same user in parallel is not deterministic and can cause
+/// errors.
 impl LibraryTransactions {
     /// Handles successfully resovled StoreEntry.
     #[instrument(level = "trace", skip(firestore, user_id))]
@@ -24,14 +28,11 @@ impl LibraryTransactions {
         LibraryOps::delete_unmatched(firestore, user_id, &store_entry)?;
         LibraryOps::delete_failed(firestore, user_id, &store_entry)?;
 
-        let library_entry =
-            LibraryEntry::new(game_entry, vec![store_entry.clone()], vec![owned_version]);
-
-        LibraryOps::append_to_recent(firestore, user_id, library_entry.id, store_entry)?;
-
-        // Update LibraryEntry. It might already exist from a different
-        // storefront.
-        LibraryOps::update_library_entry(firestore, user_id, library_entry)?;
+        add_library_entry(
+            firestore,
+            user_id,
+            LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version]),
+        )?;
 
         Ok(())
     }
@@ -42,18 +43,10 @@ impl LibraryTransactions {
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: &StoreEntry,
-        library_entry: LibraryEntry,
+        library_entry: &LibraryEntry,
         operation: Op,
     ) -> Result<(), Status> {
-        let mut library_entry = library_entry;
-        LibraryOps::remove_from_library_entry(
-            firestore,
-            user_id,
-            &store_entry,
-            &mut library_entry,
-        )?;
-
-        LibraryOps::remove_from_recent(firestore, user_id, &store_entry)?;
+        remove_library_entry(firestore, user_id, &store_entry, &library_entry)?;
 
         match operation {
             Op::Unmatch => (),
@@ -112,6 +105,59 @@ impl LibraryTransactions {
 
         Ok(())
     }
+}
+
+#[instrument(level = "trace", skip(firestore, user_id))]
+fn add_library_entry(
+    firestore: &FirestoreApi,
+    user_id: &str,
+    library_entry: LibraryEntry,
+) -> Result<(), Status> {
+    let mut library = LibraryOps::read_library(firestore, user_id)?;
+
+    match library
+        .entries
+        .iter_mut()
+        .find(|e| e.id == library_entry.id)
+    {
+        Some(existing_entry) => {
+            existing_entry
+                .store_entries
+                .extend(library_entry.store_entries.into_iter());
+            existing_entry
+                .owned_versions
+                .extend(library_entry.owned_versions.into_iter());
+        }
+        None => library.entries.push(library_entry),
+    }
+
+    LibraryOps::write_library(firestore, user_id, &library)
+}
+
+#[instrument(level = "trace", skip(firestore, user_id))]
+fn remove_library_entry(
+    firestore: &FirestoreApi,
+    user_id: &str,
+    store_entry: &StoreEntry,
+    library_entry: &LibraryEntry,
+) -> Result<(), Status> {
+    let mut library = LibraryOps::read_library(firestore, user_id)?;
+
+    library.entries.retain_mut(|e| {
+        if e.id != library_entry.id {
+            e.store_entries.retain(|se| {
+                se.storefront_name != store_entry.storefront_name
+                    || se.id != store_entry.id
+                    || se.title != store_entry.title
+            });
+
+            return !library_entry.store_entries.is_empty();
+        }
+
+        true
+    });
+
+    LibraryOps::write_library(firestore, user_id, &library)
 }
 
 pub enum Op {

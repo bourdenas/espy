@@ -156,7 +156,7 @@ pub async fn post_unmatch(
     };
 
     match user
-        .unmatch_entry(unmatch.store_entry, unmatch.library_entry, unmatch.delete)
+        .unmatch_entry(&unmatch.store_entry, &unmatch.library_entry, unmatch.delete)
         .await
     {
         Ok(()) => Ok(StatusCode::OK),
@@ -189,7 +189,7 @@ pub async fn post_rematch(
         .rematch_entry(
             rematch.store_entry,
             rematch.game_entry,
-            rematch.library_entry,
+            &rematch.library_entry,
             igdb,
             steam,
         )

@@ -119,7 +119,7 @@ impl LibraryManager {
     pub async fn unmatch_game(
         &self,
         store_entry: &StoreEntry,
-        library_entry: LibraryEntry,
+        library_entry: &LibraryEntry,
     ) -> Result<(), Status> {
         LibraryTransactions::unmatch_game(
             &self.firestore.lock().unwrap(),
@@ -136,7 +136,7 @@ impl LibraryManager {
     pub async fn delete_game(
         &self,
         store_entry: &StoreEntry,
-        library_entry: LibraryEntry,
+        library_entry: &LibraryEntry,
     ) -> Result<(), Status> {
         LibraryTransactions::unmatch_game(
             &self.firestore.lock().unwrap(),
@@ -152,7 +152,7 @@ impl LibraryManager {
         &self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
-        existing_library_entry: LibraryEntry,
+        existing_library_entry: &LibraryEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
     ) -> Result<(), Status> {
