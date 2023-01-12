@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/library.dart';
 import 'package:espy/modules/documents/user_data.dart';
@@ -30,6 +29,13 @@ class WishlistModel extends ChangeNotifier {
 
     _userId = userData.uid;
     _loadRecent(_userId);
+  }
+
+  LibraryEntry? getEntryById(int id) {
+    for (final entry in _wishlist.entries) {
+      if (entry.id == id) return entry;
+    }
+    return null;
   }
 
   Future<void> _loadRecent(String userId) async {

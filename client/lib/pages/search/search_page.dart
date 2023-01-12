@@ -7,6 +7,7 @@ import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
 import 'package:flutter/material.dart';
@@ -23,12 +24,21 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     final ngrams = _text.toLowerCase().split(' ');
     final gameEntriesModel = context.read<GameEntriesModel>();
+    final wishlistModel = context.watch<WishlistModel>();
     final tagsModel = context.watch<GameTagsModel>();
 
     final titleMatches = _text.isNotEmpty
         ? context
             .read<GameLibraryModel>()
             .entries
+            .where((entry) => ngrams.every((term) => entry.name
+                .toLowerCase()
+                .split(' ')
+                .any((word) => word.startsWith(term))))
+            .toList()
+        : <LibraryEntry>[];
+    final wishlistMatches = _text.isNotEmpty
+        ? wishlistModel.wishlist
             .where((entry) => ngrams.every((term) => entry.name
                 .toLowerCase()
                 .split(' ')
@@ -57,9 +67,9 @@ class _SearchPageState extends State<SearchPage> {
                 LibraryFilter(companies: {company})),
           ),
           GameSearchResults(
-            entries: context
-                .read<GameEntriesModel>()
-                .getEntries(filter: LibraryFilter(companies: {company})),
+            entries: gameEntriesModel.getEntries(
+              filter: LibraryFilter(companies: {company}),
+            ),
           ),
         ],
         for (final collection in tagsModel.filterCollectionsExact(ngrams)) ...[
@@ -70,9 +80,9 @@ class _SearchPageState extends State<SearchPage> {
                 LibraryFilter(collections: {collection})),
           ),
           GameSearchResults(
-            entries: context
-                .read<GameEntriesModel>()
-                .getEntries(filter: LibraryFilter(collections: {collection})),
+            entries: gameEntriesModel.getEntries(
+              filter: LibraryFilter(collections: {collection}),
+            ),
           ),
         ],
         for (final tag in tagsModel.filterTagsExact(ngrams)) ...[
@@ -83,9 +93,18 @@ class _SearchPageState extends State<SearchPage> {
                 LibraryFilter(tags: {tag.name})),
           ),
           GameSearchResults(
-              entries: context
-                  .read<GameEntriesModel>()
-                  .getEntries(filter: LibraryFilter(tags: {tag.name}))),
+            entries: gameEntriesModel.getEntries(
+              filter: LibraryFilter(tags: {tag.name}),
+            ),
+          ),
+        ],
+        if (wishlistMatches.isNotEmpty) ...[
+          SliverPersistentHeader(
+            pinned: true,
+            floating: true,
+            delegate: section(context, 'Wishlist Matches', Colors.grey),
+          ),
+          GameSearchResults(entries: wishlistMatches),
         ],
         if (titleMatches.isNotEmpty) ...[
           SliverPersistentHeader(
@@ -113,7 +132,8 @@ class _SearchPageState extends State<SearchPage> {
           GameSearchResults(
             entries: _remoteGames
                 .where((gameEntry) =>
-                    gameEntriesModel.getEntryById(gameEntry.id) == null)
+                    gameEntriesModel.getEntryById(gameEntry.id) == null &&
+                    wishlistModel.getEntryById(gameEntry.id) == null)
                 .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry)),
           ),
         ],
