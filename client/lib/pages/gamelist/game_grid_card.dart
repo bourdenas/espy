@@ -47,13 +47,38 @@ class GameGridCard extends StatelessWidget {
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       clipBehavior: Clip.antiAlias,
-      child: entry.cover != null && entry.cover!.isNotEmpty
-          ? CachedNetworkImage(
-              imageUrl: '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
-              errorWidget: (context, url, error) => Icon(Icons.error),
-              fit: BoxFit.fitHeight,
-            )
-          : Image.asset('assets/images/placeholder.png'),
+      child: Stack(
+        children: [
+          entry.cover != null && entry.cover!.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl:
+                      '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                  fit: BoxFit.fitHeight,
+                )
+              : Image.asset('assets/images/placeholder.png'),
+          if (entry.storeEntries.isEmpty)
+            Positioned(
+              right: -8,
+              child: SizedBox(
+                height: 32,
+                child: FloatingActionButton(
+                  mini: true,
+                  tooltip: 'Add...',
+                  child: Icon(
+                    Icons.add_box,
+                    color: Colors.green,
+                    size: 24,
+                  ),
+                  backgroundColor: Color(0x00FFFFFF),
+                  onPressed: () {
+                    // GameEntryEditDialog.show(context, libraryEntry);
+                  },
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

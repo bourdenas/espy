@@ -57,9 +57,10 @@ class _SearchPageState extends State<SearchPage> {
                 LibraryFilter(companies: {company})),
           ),
           GameSearchResults(
-              entries: context
-                  .read<GameEntriesModel>()
-                  .getEntries(filter: LibraryFilter(companies: {company}))),
+            entries: context
+                .read<GameEntriesModel>()
+                .getEntries(filter: LibraryFilter(companies: {company})),
+          ),
         ],
         for (final collection in tagsModel.filterCollectionsExact(ngrams)) ...[
           SliverPersistentHeader(
@@ -69,8 +70,10 @@ class _SearchPageState extends State<SearchPage> {
                 LibraryFilter(collections: {collection})),
           ),
           GameSearchResults(
-              entries: context.read<GameEntriesModel>().getEntries(
-                  filter: LibraryFilter(collections: {collection}))),
+            entries: context
+                .read<GameEntriesModel>()
+                .getEntries(filter: LibraryFilter(collections: {collection})),
+          ),
         ],
         for (final tag in tagsModel.filterTagsExact(ngrams)) ...[
           SliverPersistentHeader(
@@ -108,10 +111,11 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
           GameSearchResults(
-              entries: _remoteGames
-                  .where((gameEntry) =>
-                      gameEntriesModel.getEntryById(gameEntry.id) == null)
-                  .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))),
+            entries: _remoteGames
+                .where((gameEntry) =>
+                    gameEntriesModel.getEntryById(gameEntry.id) == null)
+                .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry)),
+          ),
         ],
       ],
     );
