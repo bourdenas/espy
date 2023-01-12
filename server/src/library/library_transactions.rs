@@ -70,6 +70,38 @@ impl LibraryTransactions {
         Ok(())
     }
 
+    #[instrument(
+        level = "trace",
+        skip(firestore, user_id, game_entry),
+        fields(game_id = %game_entry.id),
+    )]
+    pub fn add_to_wishlist(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        game_entry: GameEntry,
+    ) -> Result<(), Status> {
+        let mut wishlist = LibraryOps::read_wishlist(firestore, user_id)?;
+        wishlist
+            .entries
+            .push(LibraryEntry::new(game_entry, vec![], vec![]));
+        LibraryOps::write_wishlist(firestore, user_id, &wishlist)
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn remove_from_wishlist(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        game_id: u64,
+    ) -> Result<(), Status> {
+        let mut wishlist = LibraryOps::read_wishlist(firestore, user_id)?;
+        let original_len = wishlist.entries.len();
+        wishlist.entries.retain(|entry| entry.id != game_id);
+        if wishlist.entries.len() != original_len {
+            return LibraryOps::write_wishlist(firestore, user_id, &wishlist);
+        }
+        Ok(())
+    }
+
     /// Given store entries a remote storefront it updates user's library in
     /// Firestore.
     ///
@@ -78,6 +110,11 @@ impl LibraryTransactions {
     ///     storefront game ids owned by the user.
     /// (b) the `users/{user}/unmatched` collection with 'StoreEntry` documents that
     ///     correspond to new found entries.
+    #[instrument(
+        level = "trace",
+        skip(firestore, user_id, store_entries),
+        fields(entries = %store_entries.len()),
+    )]
     pub fn store_new_to_unmatched(
         firestore: &FirestoreApi,
         user_id: &str,
@@ -105,6 +142,12 @@ impl LibraryTransactions {
 
         Ok(())
     }
+}
+
+pub enum Op {
+    Unmatch,
+    Failed,
+    Delete,
 }
 
 #[instrument(level = "trace", skip(firestore, user_id))]
@@ -158,10 +201,4 @@ fn remove_library_entry(
     });
 
     LibraryOps::write_library(firestore, user_id, &library)
-}
-
-pub enum Op {
-    Unmatch,
-    Failed,
-    Delete,
 }

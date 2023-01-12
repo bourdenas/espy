@@ -40,7 +40,7 @@ impl LibraryOps {
 
     #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn read_library(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> {
-        Ok(firestore.read(&format!("users/{user_id}/games"), "library")?)
+        firestore.read(&format!("users/{user_id}/games"), "library")
     }
 
     #[instrument(level = "trace", skip(firestore, user_id))]
@@ -50,6 +50,25 @@ impl LibraryOps {
         library: &Library,
     ) -> Result<(), Status> {
         firestore.write(&format!("users/{user_id}/games"), Some(&"library"), library)?;
+        Ok(())
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn read_wishlist(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> {
+        firestore.read(&format!("users/{user_id}/games"), "wishlist")
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn write_wishlist(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        library: &Library,
+    ) -> Result<(), Status> {
+        firestore.write(
+            &format!("users/{user_id}/games"),
+            Some(&"wishlist"),
+            library,
+        )?;
         Ok(())
     }
 

@@ -317,6 +317,24 @@ impl LibraryManager {
         LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
     }
 
+    #[instrument(level = "trace", skip(self))]
+    pub async fn add_to_wishlist(&self, game_entry: GameEntry) -> Result<(), Status> {
+        LibraryTransactions::add_to_wishlist(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            game_entry,
+        )
+    }
+
+    #[instrument(level = "trace", skip(self))]
+    pub async fn remove_from_wishlist(&self, game_id: u64) -> Result<(), Status> {
+        LibraryTransactions::remove_from_wishlist(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            game_id,
+        )
+    }
+
     /// Retieves new game entries from the provided remote storefront and
     /// temporarily stores them in unmatched in Firestore.
     #[instrument(level = "trace", skip(self, api))]

@@ -149,6 +149,18 @@ impl User {
         commit_version(&mut self.data, &self.firestore.lock().unwrap())
     }
 
+    #[instrument(level = "trace", skip(self))]
+    pub async fn add_to_wishlist(&self, game_entry: GameEntry) -> Result<(), Status> {
+        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
+        mgr.add_to_wishlist(game_entry).await
+    }
+
+    #[instrument(level = "trace", skip(self))]
+    pub async fn remove_from_wishlist(&self, game_id: u64) -> Result<(), Status> {
+        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
+        mgr.remove_from_wishlist(game_id).await
+    }
+
     /// Tries to validate user's GogToken and returns a reference to it only if
     /// it succeeds.
     async fn gog_token<'a>(&'a mut self) -> Option<&'a mut api::GogToken> {
