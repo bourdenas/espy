@@ -1,6 +1,6 @@
 use crate::{
     api::FirestoreApi,
-    documents::{GameEntry, Library, LibraryEntry, Recent, RecentEntry, StoreEntry, UserTags},
+    documents::{GameEntry, Library, Recent, RecentEntry, StoreEntry, UserTags},
     Status,
 };
 use serde::{Deserialize, Serialize};
@@ -14,15 +14,6 @@ impl LibraryOps {
     #[instrument(level = "trace", skip(firestore))]
     pub fn list_games(firestore: &FirestoreApi) -> Result<Vec<GameEntry>, Status> {
         firestore.list(&format!("games"))
-    }
-
-    /// Returns a list of all successfully matched games in user library.
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn list_library(
-        firestore: &FirestoreApi,
-        user_id: &str,
-    ) -> Result<Vec<LibraryEntry>, Status> {
-        firestore.list(&format!("users/{user_id}/library_v2"))
     }
 
     /// Returns a GameEntry doc based on `game_id` from Firestore.

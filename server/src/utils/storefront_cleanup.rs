@@ -1,7 +1,7 @@
 use clap::Parser;
 use espy_server::{
     api::FirestoreApi,
-    documents::{LibraryEntry, StoreEntry},
+    documents::{Library, LibraryEntry, StoreEntry},
     library::LibraryOps,
     Tracing,
 };
@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let firestore = FirestoreApi::from_credentials(&opts.firestore_credentials)
         .expect("FirestoreApi.from_credentials()");
 
-    let user_library = LibraryOps::list_library(&firestore, &opts.user)?;
+    let user_library = LibraryOps::read_library(&firestore, &opts.user)?;
     let failed = LibraryOps::list_failed(&firestore, &opts.user)?;
 
     storefront_cleanup(&firestore, &opts.user, &user_library, &failed, "gog");
@@ -45,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 fn storefront_cleanup(
     firestore: &FirestoreApi,
     user_id: &str,
-    user_library: &[LibraryEntry],
+    user_library: &Library,
     user_failed: &[StoreEntry],
     storefront_name: &str,
 ) {
@@ -54,6 +54,7 @@ fn storefront_cleanup(
     let mut missing = vec![];
     for game_id in &owned_games {
         let iter = user_library
+            .entries
             .iter()
             .find(|entry| find_store_entry(entry, game_id, storefront_name));
         if let None = iter {
