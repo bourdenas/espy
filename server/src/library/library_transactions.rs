@@ -1,7 +1,7 @@
 use super::library_ops::LibraryOps;
 use crate::{
     api::FirestoreApi,
-    documents::{GameEntry, LibraryEntry, StoreEntry},
+    documents::{GameEntry, Library, LibraryEntry, StoreEntry},
     Status,
 };
 use std::collections::HashSet;
@@ -72,18 +72,19 @@ impl LibraryTransactions {
 
     #[instrument(
         level = "trace",
-        skip(firestore, user_id, game_entry),
-        fields(game_id = %game_entry.id),
+        skip(firestore, user_id, library_entry),
+        fields(game_id = %library_entry.id),
     )]
     pub fn add_to_wishlist(
         firestore: &FirestoreApi,
         user_id: &str,
-        game_entry: GameEntry,
+        library_entry: LibraryEntry,
     ) -> Result<(), Status> {
-        let mut wishlist = LibraryOps::read_wishlist(firestore, user_id)?;
-        wishlist
-            .entries
-            .push(LibraryEntry::new(game_entry, vec![], vec![]));
+        let mut wishlist = match LibraryOps::read_wishlist(firestore, user_id) {
+            Ok(wishlist) => wishlist,
+            Err(_) => Library { entries: vec![] },
+        };
+        wishlist.entries.push(library_entry);
         LibraryOps::write_wishlist(firestore, user_id, &wishlist)
     }
 

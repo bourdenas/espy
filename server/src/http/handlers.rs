@@ -167,7 +167,7 @@ pub async fn post_unmatch(
     }
 }
 
-// #[instrument(level = "trace", skip(firestore, igdb, steam))]
+#[instrument(level = "trace", skip(firestore, igdb, steam))]
 pub async fn post_rematch(
     user_id: String,
     rematch: models::Rematch,
@@ -201,6 +201,47 @@ pub async fn post_rematch(
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
+}
+
+#[instrument(level = "trace", skip(firestore))]
+pub async fn post_wishlist(
+    user_id: String,
+    wishlist: models::WishlistOp,
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> Result<impl warp::Reply, Infallible> {
+    debug!("POST /library/{user_id}/wishlist");
+
+    let user = match User::new(firestore, &user_id) {
+        Ok(user) => user,
+        Err(err) => {
+            error!("{err}");
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    match wishlist.add_game {
+        Some(game) => match user.add_to_wishlist(game).await {
+            Ok(()) => (),
+            Err(err) => {
+                error!("{err}");
+                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        },
+        None => (),
+    }
+
+    match wishlist.remove_game {
+        Some(game_id) => match user.remove_from_wishlist(game_id).await {
+            Ok(()) => (),
+            Err(err) => {
+                error!("{err}");
+                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        },
+        None => (),
+    }
+
+    Ok(StatusCode::OK)
 }
 
 pub async fn get_images(

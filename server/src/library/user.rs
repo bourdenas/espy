@@ -150,9 +150,9 @@ impl User {
     }
 
     #[instrument(level = "trace", skip(self))]
-    pub async fn add_to_wishlist(&self, game_entry: GameEntry) -> Result<(), Status> {
+    pub async fn add_to_wishlist(&self, library_entry: LibraryEntry) -> Result<(), Status> {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.add_to_wishlist(game_entry).await
+        mgr.add_to_wishlist(library_entry).await
     }
 
     #[instrument(level = "trace", skip(self))]

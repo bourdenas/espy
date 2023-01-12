@@ -44,3 +44,12 @@ pub struct Rematch {
     pub library_entry: documents::LibraryEntry,
     pub game_entry: documents::GameEntry,
 }
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct WishlistOp {
+    #[serde(default)]
+    pub add_game: Option<documents::LibraryEntry>,
+
+    #[serde(default)]
+    pub remove_game: Option<u64>,
+}

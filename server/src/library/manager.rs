@@ -318,11 +318,11 @@ impl LibraryManager {
     }
 
     #[instrument(level = "trace", skip(self))]
-    pub async fn add_to_wishlist(&self, game_entry: GameEntry) -> Result<(), Status> {
+    pub async fn add_to_wishlist(&self, library_entry: LibraryEntry) -> Result<(), Status> {
         LibraryTransactions::add_to_wishlist(
             &self.firestore.lock().unwrap(),
             &self.user_id,
-            game_entry,
+            library_entry,
         )
     }
 

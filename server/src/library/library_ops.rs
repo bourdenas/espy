@@ -64,11 +64,7 @@ impl LibraryOps {
         user_id: &str,
         library: &Library,
     ) -> Result<(), Status> {
-        firestore.write(
-            &format!("users/{user_id}/games"),
-            Some(&"wishlist"),
-            library,
-        )?;
+        firestore.write(&format!("users/{user_id}/games"), Some("wishlist"), library)?;
         Ok(())
     }
 

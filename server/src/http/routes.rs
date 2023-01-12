@@ -39,7 +39,8 @@ pub fn routes(
             Arc::clone(&steam),
         ))
         .or(post_unmatch(Arc::clone(&firestore)))
-        .or(post_rematch(firestore, igdb, steam))
+        .or(post_rematch(Arc::clone(&firestore), igdb, steam))
+        .or(post_wishlist(firestore))
         .or_else(|e| async {
             warn! {"Rejected route: {:?}", e};
             Err(e)
@@ -144,6 +145,17 @@ fn post_rematch(
         .and_then(handlers::post_rematch)
 }
 
+/// POST /library/{user_id}/wishlist
+fn post_wishlist(
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / String / "wishlist")
+        .and(warp::post())
+        .and(wishlist_body())
+        .and(with_firestore(firestore))
+        .and_then(handlers::post_wishlist)
+}
+
 /// GET /images/{resolution}/{image_id}
 fn get_images() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("images" / String / String)
@@ -201,5 +213,10 @@ fn unmatch_body() -> impl Filter<Extract = (models::Unmatch,), Error = warp::Rej
 }
 
 fn rematch_body() -> impl Filter<Extract = (models::Rematch,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
+}
+
+fn wishlist_body() -> impl Filter<Extract = (models::WishlistOp,), Error = warp::Rejection> + Clone
+{
     warp::body::content_length_limit(64 * 1024).and(warp::body::json())
 }
