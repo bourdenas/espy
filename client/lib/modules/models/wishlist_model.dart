@@ -1,10 +1,14 @@
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:espy/modules/documents/library.dart';
+import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/library.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
+import 'package:http/http.dart' as http;
 
 class WishlistModel extends ChangeNotifier {
   String _userId = '';
@@ -44,5 +48,17 @@ class WishlistModel extends ChangeNotifier {
 
       notifyListeners();
     });
+  }
+
+  Future<void> add_to_wishlist(LibraryEntry libraryEntry) async {
+    await http.post(
+      Uri.parse('${Urls.espyBackend}/library/$_userId/wishlist'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'add_game': libraryEntry.toJson(),
+      }),
+    );
   }
 }
