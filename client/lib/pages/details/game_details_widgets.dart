@@ -3,10 +3,12 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/home/home_slate.dart';
 import 'package:espy/pages/home/slate_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class GameEntryActionBar extends StatelessWidget {
   const GameEntryActionBar({
@@ -28,9 +30,9 @@ class GameEntryActionBar extends StatelessWidget {
             SizedBox(width: 8.0),
             rating(),
             SizedBox(width: 16.0),
-            storeIcons(context),
-            SizedBox(width: 16.0),
             actionButtons(context),
+            SizedBox(width: 16.0),
+            storeIcons(context),
             // SizedBox(width: 16.0),
             // linkButtons(context, gameEntry),
           ],
@@ -68,7 +70,9 @@ class GameEntryActionBar extends StatelessWidget {
           size: 18.0,
         ),
         SizedBox(width: 4.0),
-        Text((5 * gameEntry.igdbRating / 100.0).toStringAsFixed(1)),
+        Text(gameEntry.igdbRating > 0
+            ? (5 * gameEntry.igdbRating / 100.0).toStringAsFixed(1)
+            : '--'),
       ],
     );
   }
@@ -87,6 +91,8 @@ class GameEntryActionBar extends StatelessWidget {
   }
 
   Widget actionButtons(BuildContext context) {
+    final inWishlist = context.watch<WishlistModel>().contains(libraryEntry.id);
+
     return Row(
       children: [
         IconButton(
@@ -103,15 +109,24 @@ class GameEntryActionBar extends StatelessWidget {
           ),
           splashRadius: 20.0,
         ),
-        IconButton(
-          onPressed: () {},
-          icon: Icon(
-            Icons.favorite_border_outlined,
-            color: Colors.red,
-            size: 24.0,
+        if (libraryEntry.storeEntries.isEmpty)
+          IconButton(
+            onPressed: () {
+              if (inWishlist) {
+                context
+                    .read<WishlistModel>()
+                    .remove_from_wishlist(libraryEntry.id);
+              } else {
+                context.read<WishlistModel>().add_to_wishlist(libraryEntry);
+              }
+            },
+            icon: Icon(
+              inWishlist ? Icons.favorite : Icons.favorite_border_outlined,
+              color: Colors.red,
+              size: 24.0,
+            ),
+            splashRadius: 20.0,
           ),
-          splashRadius: 20.0,
-        ),
       ],
     );
   }

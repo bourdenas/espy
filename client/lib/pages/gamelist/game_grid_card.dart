@@ -3,6 +3,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -35,14 +36,14 @@ class GameGridCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: GridTile(
-          child: coverImage(),
+          child: coverImage(context),
           footer: cardFooter(appConfig),
         ),
       ),
     );
   }
 
-  Widget coverImage() {
+  Widget coverImage(BuildContext context) {
     return Material(
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
@@ -72,7 +73,7 @@ class GameGridCard extends StatelessWidget {
                   ),
                   backgroundColor: Color(0x00FFFFFF),
                   onPressed: () {
-                    // GameEntryEditDialog.show(context, libraryEntry);
+                    context.read<WishlistModel>().add_to_wishlist(entry);
                   },
                 ),
               ),

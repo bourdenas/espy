@@ -13,18 +13,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Model that handles interactions with remote library data store.
 class GameLibraryModel extends ChangeNotifier {
-  List<LibraryEntry> _entries = [];
+  // List<LibraryEntry> _entries = [];
+  Library _library = Library();
   List<StoreEntry> _failedEntries = [];
   String userId = '';
   int _firebaseLibraryVersion = 0;
 
-  List<LibraryEntry> get entries => _entries;
+  List<LibraryEntry> get entries => _library.entries;
   List<StoreEntry> get failedEntries => _failedEntries;
 
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
-      _entries.clear();
+      _library = Library();
       _failedEntries.clear();
       return;
     }
@@ -48,9 +49,8 @@ class GameLibraryModel extends ChangeNotifier {
 
     if (_firebaseLibraryVersion == localVersion && encodedLibrary != null) {
       print('found local library for $userId @$localVersion');
-      _entries =
-          Library.fromJson(jsonDecode(encodedLibrary) as Map<String, dynamic>)
-              .entries;
+      _library =
+          Library.fromJson(jsonDecode(encodedLibrary) as Map<String, dynamic>);
       _failedEntries = FailedEntries.fromJson(
               jsonDecode(encodedFailed ?? '') as Map<String, dynamic>)
           .entries;
@@ -64,7 +64,7 @@ class GameLibraryModel extends ChangeNotifier {
 
   Future<void> _saveLibraryLocally(int version) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('${userId}_library', jsonEncode(Library(_entries)));
+    await prefs.setString('${userId}_library', jsonEncode(_library));
     await prefs.setString(
         '${userId}_failed', jsonEncode(FailedEntries(_failedEntries)));
     await prefs.setInt('${userId}_version', version);
@@ -74,15 +74,14 @@ class GameLibraryModel extends ChangeNotifier {
     final librarySnapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
-        .collection('library')
-        .withConverter<LibraryEntry>(
-          fromFirestore: (snapshot, _) =>
-              LibraryEntry.fromJson(snapshot.data()!),
-          toFirestore: (entry, _) => entry.toJson(),
+        .collection('games')
+        .doc('library')
+        .withConverter<Library>(
+          fromFirestore: (snapshot, _) => Library.fromJson(snapshot.data()!),
+          toFirestore: (library, _) => library.toJson(),
         )
-        .orderBy('release_date', descending: true)
         .get();
-    _entries = librarySnapshot.docs.map((doc) => doc.data()).toList();
+    _library = librarySnapshot.data() ?? Library();
 
     final failedSnapshot = await FirebaseFirestore.instance
         .collection('users')

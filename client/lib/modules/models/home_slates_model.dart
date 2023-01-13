@@ -3,6 +3,7 @@ import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/modules/models/recent_model.dart';
+import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class HomeSlatesModel extends ChangeNotifier {
@@ -12,6 +13,7 @@ class HomeSlatesModel extends ChangeNotifier {
 
   void update(
     GameEntriesModel gameEntries,
+    WishlistModel wishlistModel,
     RecentModel recentModel,
     GameTagsModel tagsModel,
   ) {
@@ -30,6 +32,7 @@ class HomeSlatesModel extends ChangeNotifier {
       slate('Steam', filter: LibraryFilter(stores: {'steam'})),
       slate('EGS', filter: LibraryFilter(stores: {'egs'})),
       slate('Battle.Net', filter: LibraryFilter(stores: {'battle.net'})),
+      slate('Wishlist', entries: wishlistModel.wishlist),
       slate('Recent',
           entries: recentModel.recent
               .map((e) => gameEntries.getEntryById(e.libraryEntryId)!)),

@@ -7,8 +7,13 @@ class GameEntriesModel extends ChangeNotifier {
   Map<int, LibraryEntry> _entries = {};
   GameTagsModel _gameTags = GameTagsModel();
 
-  void update(List<LibraryEntry> entries, GameTagsModel gameTags) {
-    _entries = Map.fromEntries(entries.map((e) => MapEntry(e.id, e)));
+  void update(
+    List<LibraryEntry> library,
+    List<LibraryEntry> wishlist,
+    GameTagsModel gameTags,
+  ) {
+    _entries = Map.fromEntries(library.map((e) => MapEntry(e.id, e)));
+    _entries.addAll(Map.fromEntries(wishlist.map((e) => MapEntry(e.id, e))));
     _gameTags = gameTags;
     notifyListeners();
   }
