@@ -132,19 +132,20 @@ class _EditEntryView extends StatelessWidget {
             ),
           ),
         ),
-        Card(
-          child: ExpandableNotifier(
-            initialExpanded: true,
-            child: ExpandablePanel(
-              header: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text('Storefronts'),
+        if (libraryEntry.storeEntries.isNotEmpty)
+          Card(
+            child: ExpandableNotifier(
+              initialExpanded: false,
+              child: ExpandablePanel(
+                header: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text('Storefronts'),
+                ),
+                collapsed: Container(),
+                expanded: StorefrontDropdown(libraryEntry),
               ),
-              collapsed: Container(),
-              expanded: StorefrontDropdown(libraryEntry),
             ),
           ),
-        ),
       ],
     );
   }
