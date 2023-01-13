@@ -85,6 +85,15 @@ impl LibraryTransactions {
             Ok(wishlist) => wishlist,
             Err(_) => Library { entries: vec![] },
         };
+
+        if let Some(_) = wishlist
+            .entries
+            .iter()
+            .find(|entry| entry.id == library_entry.id)
+        {
+            return Ok(());
+        }
+
         wishlist.entries.push(library_entry);
         LibraryOps::write_wishlist(firestore, user_id, &wishlist)
     }
@@ -96,6 +105,7 @@ impl LibraryTransactions {
         game_id: u64,
     ) -> Result<(), Status> {
         let mut wishlist = LibraryOps::read_wishlist(firestore, user_id)?;
+        
         let original_len = wishlist.entries.len();
         wishlist.entries.retain(|entry| entry.id != game_id);
         if wishlist.entries.len() != original_len {
