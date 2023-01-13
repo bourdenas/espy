@@ -27,6 +27,7 @@ impl LibraryTransactions {
     ) -> Result<(), Status> {
         LibraryOps::delete_unmatched(firestore, user_id, &store_entry)?;
         LibraryOps::delete_failed(firestore, user_id, &store_entry)?;
+        Self::remove_from_wishlist(firestore, user_id, game_entry.id)?;
 
         add_library_entry(
             firestore,
