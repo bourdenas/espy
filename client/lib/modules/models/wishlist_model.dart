@@ -31,11 +31,11 @@ class WishlistModel extends ChangeNotifier {
     _loadRecent(_userId);
   }
 
-  LibraryEntry? getEntryById(int id) {
+  bool contains(int game_id) {
     for (final entry in _wishlist.entries) {
-      if (entry.id == id) return entry;
+      if (entry.id == game_id) return true;
     }
-    return null;
+    return false;
   }
 
   Future<void> _loadRecent(String userId) async {
@@ -64,6 +64,18 @@ class WishlistModel extends ChangeNotifier {
       },
       body: jsonEncode({
         'add_game': libraryEntry.toJson(),
+      }),
+    );
+  }
+
+  Future<void> remove_from_wishlist(int game_id) async {
+    await http.post(
+      Uri.parse('${Urls.espyBackend}/library/$_userId/wishlist'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'remove_game': game_id,
       }),
     );
   }
