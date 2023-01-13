@@ -1,6 +1,6 @@
 use crate::{
     api::FirestoreApi,
-    documents::{GameEntry, LibraryEntry, Recent, RecentEntry, StoreEntry, UserTags},
+    documents::{GameEntry, Library, Recent, RecentEntry, StoreEntry, UserTags},
     Status,
 };
 use serde::{Deserialize, Serialize};
@@ -14,77 +14,6 @@ impl LibraryOps {
     #[instrument(level = "trace", skip(firestore))]
     pub fn list_games(firestore: &FirestoreApi) -> Result<Vec<GameEntry>, Status> {
         firestore.list(&format!("games"))
-    }
-
-    /// Returns a list of all successfully matched games in user library.
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn list_library(
-        firestore: &FirestoreApi,
-        user_id: &str,
-    ) -> Result<Vec<LibraryEntry>, Status> {
-        firestore.list(&format!("users/{user_id}/library_v2"))
-    }
-
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn write_library_entry(
-        firestore: &FirestoreApi,
-        user_id: &str,
-        library_entry: &LibraryEntry,
-    ) -> Result<(), Status> {
-        firestore.write(
-            &format!("users/{user_id}/library_v2"),
-            Some(&library_entry.id.to_string()),
-            library_entry,
-        )?;
-        Ok(())
-    }
-
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn update_library_entry(
-        firestore: &FirestoreApi,
-        user_id: &str,
-        library_entry: LibraryEntry,
-    ) -> Result<(), Status> {
-        let mut library_entry = library_entry;
-
-        // Merge StoreEntries and owned version if there is an existing
-        // LibraryEntry.
-        if let Ok(existing) = firestore.read::<LibraryEntry>(
-            &format!("users/{user_id}/library_v2"),
-            &library_entry.id.to_string(),
-        ) {
-            library_entry
-                .store_entries
-                .extend(existing.store_entries.into_iter());
-            library_entry
-                .owned_versions
-                .extend(existing.owned_versions.into_iter());
-        }
-
-        LibraryOps::write_library_entry(firestore, user_id, &library_entry)
-    }
-
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn remove_from_library_entry(
-        firestore: &FirestoreApi,
-        user_id: &str,
-        store_entry: &StoreEntry,
-        library_entry: &mut LibraryEntry,
-    ) -> Result<(), Status> {
-        // let mut library_entry = library_entry;
-        library_entry.store_entries.retain(|entry| {
-            entry.storefront_name != store_entry.storefront_name
-                || entry.id != store_entry.id
-                || entry.title != store_entry.title
-        });
-
-        if library_entry.store_entries.is_empty() {
-            firestore.delete(&format!("users/{user_id}/library_v2/{}", library_entry.id))?;
-        } else {
-            LibraryOps::write_library_entry(firestore, user_id, &library_entry)?;
-        }
-
-        Ok(())
     }
 
     /// Returns a GameEntry doc based on `game_id` from Firestore.
@@ -107,6 +36,36 @@ impl LibraryOps {
     #[instrument(level = "trace", skip(firestore))]
     pub fn delete_game_entry(firestore: &FirestoreApi, game_id: u64) -> Result<(), Status> {
         firestore.delete(&format!("games/{}", game_id.to_string()))
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn read_library(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> {
+        firestore.read(&format!("users/{user_id}/games"), "library")
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn write_library(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        library: &Library,
+    ) -> Result<(), Status> {
+        firestore.write(&format!("users/{user_id}/games"), Some(&"library"), library)?;
+        Ok(())
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn read_wishlist(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> {
+        firestore.read(&format!("users/{user_id}/games"), "wishlist")
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn write_wishlist(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        library: &Library,
+    ) -> Result<(), Status> {
+        firestore.write(&format!("users/{user_id}/games"), Some("wishlist"), library)?;
+        Ok(())
     }
 
     #[instrument(level = "trace", skip(firestore, user_id))]

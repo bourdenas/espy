@@ -2,14 +2,28 @@ use super::{CompanyRole, GameDigest};
 use crate::documents::{GameEntry, StoreEntry};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use std::{cmp::Ordering, collections::HashSet, fmt};
+use std::{
+    cmp::Ordering,
+    collections::HashSet,
+    fmt,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
-/// Document type under 'users/{user_id}/library/{game_id}' that represents a
-/// game entry in user's library that has been matched with an IGDB entry.
+/// Document type under 'users/{user_id}/games/library' that includes user's
+/// library with games matched with an IGDB entry.
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct Library {
+    pub entries: Vec<LibraryEntry>,
+}
+
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct LibraryEntry {
     pub id: u64,
     pub digest: GameDigest,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub added_date: Option<u64>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -35,15 +49,15 @@ impl LibraryEntry {
 
                 collections: game
                     .collections
-                    .iter()
-                    .map(|collection| collection.name.clone())
+                    .into_iter()
+                    .map(|collection| collection.name)
                     .collect::<HashSet<_>>()
                     .into_iter()
                     .collect(),
 
                 companies: game
                     .companies
-                    .iter()
+                    .into_iter()
                     .filter(|company| match company.role {
                         CompanyRole::Developer => true,
                         CompanyRole::Publisher => true,
@@ -61,11 +75,19 @@ impl LibraryEntry {
                         },
                         _ => Ordering::Less,
                     })
-                    .map(|company| company.name.clone())
+                    .map(|company| company.name)
                     .collect::<HashSet<_>>()
                     .into_iter()
                     .collect(),
             },
+
+            added_date: Some(
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            ),
+
             store_entries,
             owned_versions,
         }

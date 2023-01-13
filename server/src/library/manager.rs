@@ -119,7 +119,7 @@ impl LibraryManager {
     pub async fn unmatch_game(
         &self,
         store_entry: &StoreEntry,
-        library_entry: LibraryEntry,
+        library_entry: &LibraryEntry,
     ) -> Result<(), Status> {
         LibraryTransactions::unmatch_game(
             &self.firestore.lock().unwrap(),
@@ -136,7 +136,7 @@ impl LibraryManager {
     pub async fn delete_game(
         &self,
         store_entry: &StoreEntry,
-        library_entry: LibraryEntry,
+        library_entry: &LibraryEntry,
     ) -> Result<(), Status> {
         LibraryTransactions::unmatch_game(
             &self.firestore.lock().unwrap(),
@@ -152,7 +152,7 @@ impl LibraryManager {
         &self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
-        existing_library_entry: LibraryEntry,
+        existing_library_entry: &LibraryEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
     ) -> Result<(), Status> {
@@ -315,6 +315,24 @@ impl LibraryManager {
     #[instrument(level = "trace", skip(self))]
     fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
         LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
+    }
+
+    #[instrument(level = "trace", skip(self))]
+    pub async fn add_to_wishlist(&self, library_entry: LibraryEntry) -> Result<(), Status> {
+        LibraryTransactions::add_to_wishlist(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            library_entry,
+        )
+    }
+
+    #[instrument(level = "trace", skip(self))]
+    pub async fn remove_from_wishlist(&self, game_id: u64) -> Result<(), Status> {
+        LibraryTransactions::remove_from_wishlist(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            game_id,
+        )
     }
 
     /// Retieves new game entries from the provided remote storefront and
