@@ -23,22 +23,12 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final ngrams = _text.toLowerCase().split(' ');
-    final gameEntriesModel = context.read<GameEntriesModel>();
-    final wishlistModel = context.watch<WishlistModel>();
+    final gameEntriesModel = context.watch<GameEntriesModel>();
     final tagsModel = context.watch<GameTagsModel>();
 
     final titleMatches = _text.isNotEmpty
-        ? context
-            .read<GameLibraryModel>()
-            .entries
-            .where((entry) => ngrams.every((term) => entry.name
-                .toLowerCase()
-                .split(' ')
-                .any((word) => word.startsWith(term))))
-            .toList()
-        : <LibraryEntry>[];
-    final wishlistMatches = _text.isNotEmpty
-        ? wishlistModel.wishlist
+        ? gameEntriesModel
+            .getEntries()
             .where((entry) => ngrams.every((term) => entry.name
                 .toLowerCase()
                 .split(' ')
@@ -98,14 +88,6 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
         ],
-        if (wishlistMatches.isNotEmpty) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, 'Wishlist Matches', Colors.grey),
-          ),
-          GameSearchResults(entries: wishlistMatches),
-        ],
         if (titleMatches.isNotEmpty) ...[
           SliverPersistentHeader(
             pinned: true,
@@ -132,8 +114,7 @@ class _SearchPageState extends State<SearchPage> {
           GameSearchResults(
             entries: _remoteGames
                 .where((gameEntry) =>
-                    gameEntriesModel.getEntryById(gameEntry.id) == null &&
-                    wishlistModel.getEntryById(gameEntry.id) == null)
+                    gameEntriesModel.getEntryById(gameEntry.id) == null)
                 .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry)),
           ),
         ],
