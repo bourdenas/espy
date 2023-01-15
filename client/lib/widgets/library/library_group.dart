@@ -1,3 +1,4 @@
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
@@ -13,11 +14,13 @@ class LibraryGroup extends StatefulWidget {
     required this.title,
     this.color,
     this.filter,
+    this.entries,
   }) : super(key: key);
 
   final String title;
   final Color? color;
   final LibraryFilter? filter;
+  final Iterable<LibraryEntry>? entries;
 
   @override
   State<LibraryGroup> createState() => _LibraryGroupState();
@@ -43,9 +46,11 @@ class _LibraryGroupState extends State<LibraryGroup> {
         ),
         if (expanded)
           GameSearchResults(
-            entries: context
-                .watch<GameEntriesModel>()
-                .getEntries(filter: widget.filter),
+            entries: widget.entries != null
+                ? widget.entries!
+                : context
+                    .watch<GameEntriesModel>()
+                    .getEntries(filter: widget.filter),
           ),
       ],
     );
