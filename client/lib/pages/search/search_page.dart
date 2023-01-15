@@ -7,9 +7,9 @@ import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
-import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
+import 'package:espy/widgets/library/library_group.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -50,42 +50,24 @@ class _SearchPageState extends State<SearchPage> {
           tagsModel.filterCollections(ngrams),
         ),
         for (final company in tagsModel.filterCompaniesExact(ngrams)) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, company, Colors.redAccent,
-                LibraryFilter(companies: {company})),
-          ),
-          GameSearchResults(
-            entries: gameEntriesModel.getEntries(
-              filter: LibraryFilter(companies: {company}),
-            ),
+          LibraryGroup(
+            title: company,
+            color: Colors.redAccent,
+            filter: LibraryFilter(companies: {company}),
           ),
         ],
         for (final collection in tagsModel.filterCollectionsExact(ngrams)) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, collection, Colors.indigoAccent,
-                LibraryFilter(collections: {collection})),
-          ),
-          GameSearchResults(
-            entries: gameEntriesModel.getEntries(
-              filter: LibraryFilter(collections: {collection}),
-            ),
+          LibraryGroup(
+            title: collection,
+            color: Colors.indigoAccent,
+            filter: LibraryFilter(collections: {collection}),
           ),
         ],
         for (final tag in tagsModel.filterTagsExact(ngrams)) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, tag.name, Colors.blueGrey,
-                LibraryFilter(tags: {tag.name})),
-          ),
-          GameSearchResults(
-            entries: gameEntriesModel.getEntries(
-              filter: LibraryFilter(tags: {tag.name}),
-            ),
+          LibraryGroup(
+            title: tag.name,
+            color: Colors.blueGrey,
+            filter: LibraryFilter(tags: {tag.name}),
           ),
         ],
         if (titleMatches.isNotEmpty) ...[
