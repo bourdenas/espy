@@ -16,12 +16,17 @@ class LibraryGroup extends StatefulWidget {
     this.color,
     this.filter,
     this.entries,
+    this.cardWidth,
+    this.cardAspectRatio,
   }) : super(key: key);
 
   final String title;
   final Color? color;
   final LibraryFilter? filter;
   final Iterable<LibraryEntry>? entries;
+
+  final double? cardWidth;
+  final double? cardAspectRatio;
 
   @override
   State<LibraryGroup> createState() => _LibraryGroupState();
@@ -52,6 +57,8 @@ class _LibraryGroupState extends State<LibraryGroup> {
                 : context
                     .watch<GameEntriesModel>()
                     .getEntries(filter: widget.filter),
+            cardWidth: widget.cardWidth,
+            cardAspectRatio: widget.cardAspectRatio,
           ),
       ],
     );

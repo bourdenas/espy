@@ -13,9 +13,13 @@ class GameSearchResults extends StatelessWidget {
   const GameSearchResults({
     Key? key,
     required this.entries,
+    this.cardWidth,
+    this.cardAspectRatio,
   }) : super(key: key);
 
   final Iterable<LibraryEntry> entries;
+  final double? cardWidth;
+  final double? cardAspectRatio;
 
   @override
   Widget build(BuildContext context) {
@@ -26,16 +30,16 @@ class GameSearchResults extends StatelessWidget {
 
   SliverGrid gridView(Iterable<LibraryEntry> matchedEntries) {
     return SliverGrid.extent(
-      maxCrossAxisExtent: 200.0,
-      childAspectRatio: .75,
+      maxCrossAxisExtent: cardWidth ?? 200,
+      childAspectRatio: cardAspectRatio ?? .75,
       children: matchedEntries.map((e) => GameGridCard(entry: e)).toList(),
     );
   }
 
   SliverGrid listView(Iterable<LibraryEntry> matchedEntries) {
     return SliverGrid.extent(
-      maxCrossAxisExtent: 600.0,
-      childAspectRatio: 2.5,
+      maxCrossAxisExtent: cardWidth ?? 600.0,
+      childAspectRatio: cardAspectRatio ?? 2.5,
       children: matchedEntries.map((e) => GameListCard(entry: e)).toList(),
     );
   }
