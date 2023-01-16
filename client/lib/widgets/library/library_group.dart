@@ -3,6 +3,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/search/search_results.dart';
+import 'package:espy/widgets/library/library_header.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +38,7 @@ class _LibraryGroupState extends State<LibraryGroup> {
         SliverPersistentHeader(
           pinned: true,
           floating: true,
-          delegate: headerDelegate(
+          delegate: header(
             context,
             widget.title,
             widget.color,
@@ -56,10 +57,9 @@ class _LibraryGroupState extends State<LibraryGroup> {
     );
   }
 
-  _SectionHeaderDelegate headerDelegate(
-      BuildContext context, String title, Color? color,
+  LibraryHeaderDelegate header(BuildContext context, String title, Color? color,
       {LibraryFilter? filter}) {
-    return _SectionHeaderDelegate(
+    return LibraryHeaderDelegate(
       minHeight: 50.0,
       maxHeight: 50.0,
       child: GestureDetector(
@@ -101,36 +101,5 @@ class _LibraryGroupState extends State<LibraryGroup> {
         ),
       ),
     );
-  }
-}
-
-class _SectionHeaderDelegate extends SliverPersistentHeaderDelegate {
-  _SectionHeaderDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  bool shouldRebuild(_SectionHeaderDelegate oldSearchBar) {
-    return maxHeight != oldSearchBar.maxHeight ||
-        minHeight != oldSearchBar.minHeight ||
-        child != oldSearchBar.child;
   }
 }

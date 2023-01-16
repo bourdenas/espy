@@ -9,6 +9,7 @@ import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
 import 'package:espy/widgets/library/library_group.dart';
+import 'package:espy/widgets/library/library_header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -85,9 +86,9 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  _SectionHeader searchBox() {
+  LibraryHeaderDelegate searchBox() {
     final isMobile = AppConfigModel.isMobile(context);
-    return _SectionHeader(
+    return LibraryHeaderDelegate(
       minHeight: 80.0,
       maxHeight: isMobile ? 200 : 120,
       child: Padding(
@@ -131,35 +132,4 @@ class _SearchPageState extends State<SearchPage> {
   Timer _timer = Timer(const Duration(seconds: 0), () {});
   bool _fetchingRemoteGames = false;
   List<LibraryEntry> _remoteGames = [];
-}
-
-class _SectionHeader extends SliverPersistentHeaderDelegate {
-  _SectionHeader({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  bool shouldRebuild(_SectionHeader oldSearchBar) {
-    return maxHeight != oldSearchBar.maxHeight ||
-        minHeight != oldSearchBar.minHeight ||
-        child != oldSearchBar.child;
-  }
 }
