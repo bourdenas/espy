@@ -13,65 +13,51 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Model that handles interactions with remote library data store.
 class GameLibraryModel extends ChangeNotifier {
-  // List<LibraryEntry> _entries = [];
   Library _library = Library();
-  List<StoreEntry> _failedEntries = [];
+  FailedEntries _failedEntries = FailedEntries();
   String userId = '';
-  int _firebaseLibraryVersion = 0;
 
   List<LibraryEntry> get entries => _library.entries;
-  List<StoreEntry> get failedEntries => _failedEntries;
+  List<StoreEntry> get failedEntries => _failedEntries.entries;
 
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
       _library = Library();
-      _failedEntries.clear();
+      _failedEntries = FailedEntries();
       return;
     }
 
-    if (userData.uid == userId && userData.version == _firebaseLibraryVersion) {
+    if (userData.uid == userId) {
       return;
     }
     userId = userData.uid;
-    _firebaseLibraryVersion = userData.version ?? 0;
 
     await _loadLibrary();
     notifyListeners();
   }
 
   Future<void> _loadLibrary() async {
-    final prefs = await SharedPreferences.getInstance();
+    // final prefs = await SharedPreferences.getInstance();
 
-    final localVersion = prefs.getInt('${userId}_version') ?? 0;
-    final encodedLibrary = prefs.getString('${userId}_library');
-    final encodedFailed = prefs.getString('${userId}_failed');
+    // final encodedLibrary = prefs.getString('${userId}_library');
+    //   _library =
+    //       Library.fromJson(jsonDecode(encodedLibrary) as Map<String, dynamic>);
+    // final encodedFailed = prefs.getString('${userId}_failed');
+    //   _failedEntries = FailedEntries.fromJson(
+    //       jsonDecode(encodedFailed ?? '') as Map<String, dynamic>);
 
-    if (_firebaseLibraryVersion == localVersion && encodedLibrary != null) {
-      print('found local library for $userId @$localVersion');
-      _library =
-          Library.fromJson(jsonDecode(encodedLibrary) as Map<String, dynamic>);
-      _failedEntries = FailedEntries.fromJson(
-              jsonDecode(encodedFailed ?? '') as Map<String, dynamic>)
-          .entries;
-    } else {
-      print(
-          'retrieving library for $userId last updated @$_firebaseLibraryVersion');
-      await _fetchLibrary();
-      await _saveLibraryLocally(_firebaseLibraryVersion);
-    }
+    await _fetchLibrary();
   }
 
-  Future<void> _saveLibraryLocally(int version) async {
+  Future<void> _saveLibraryLocally() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('${userId}_library', jsonEncode(_library));
-    await prefs.setString(
-        '${userId}_failed', jsonEncode(FailedEntries(_failedEntries)));
-    await prefs.setInt('${userId}_version', version);
+    await prefs.setString('${userId}_failed', jsonEncode(_failedEntries));
   }
 
   Future<void> _fetchLibrary() async {
-    final librarySnapshot = await FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
         .collection('games')
@@ -80,20 +66,23 @@ class GameLibraryModel extends ChangeNotifier {
           fromFirestore: (snapshot, _) => Library.fromJson(snapshot.data()!),
           toFirestore: (library, _) => library.toJson(),
         )
-        .get();
-    _library = librarySnapshot.data() ?? Library();
+        .snapshots()
+        .listen((DocumentSnapshot<Library> snapshot) =>
+            _library = snapshot.data() ?? Library());
 
-    final failedSnapshot = await FirebaseFirestore.instance
+    FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
-        .collection('failed')
-        .withConverter<StoreEntry>(
-          fromFirestore: (snapshot, _) => StoreEntry.fromJson(snapshot.data()!),
+        .collection('games')
+        .doc('failed')
+        .withConverter<FailedEntries>(
+          fromFirestore: (snapshot, _) =>
+              FailedEntries.fromJson(snapshot.data()!),
           toFirestore: (entry, _) => entry.toJson(),
         )
-        .orderBy('title')
-        .get();
-    _failedEntries = failedSnapshot.docs.map((doc) => doc.data()).toList();
+        .snapshots()
+        .listen((DocumentSnapshot<FailedEntries> snapshot) =>
+            _failedEntries = snapshot.data() ?? FailedEntries());
   }
 
   Future<List<GameEntry>> searchByTitle(

@@ -24,24 +24,18 @@ class Library {
 class FailedEntries {
   final List<StoreEntry> entries;
 
-  FailedEntries(this.entries);
+  FailedEntries({this.entries = const []});
 
   FailedEntries.fromJson(Map<String, dynamic> json)
-      : this(
-          json.containsKey('entries')
-              ? [
-                  for (final entry in json['entries'])
-                    StoreEntry.fromJson(entry),
-                ]
-              : [],
-        );
+      : this(entries: [
+          for (final entry in json['entries'] ?? []) StoreEntry.fromJson(entry),
+        ]);
 
   Map<String, dynamic> toJson() {
     return {
-      if (entries.isNotEmpty)
-        'entries': [
-          for (final entry in entries) entry.toJson(),
-        ],
+      'entries': [
+        for (final entry in entries) entry.toJson(),
+      ],
     };
   }
 }
