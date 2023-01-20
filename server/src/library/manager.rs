@@ -1,15 +1,13 @@
 use crate::{
     api::{FirestoreApi, GogApi, IgdbApi, SteamApi},
     documents::{GameEntry, LibraryEntry, StoreEntry},
-    library::{
-        library_transactions::LibraryTransactions, reconciler::Match, steam_data::SteamDataApi,
-        ReconReport, Reconciler,
-    },
+    library::{reconciler::Match, steam_data::SteamDataApi, ReconReport, Reconciler},
     traits,
     util::rate_limiter::RateLimiter,
     Status,
 };
 use std::{
+    collections::HashSet,
     sync::{Arc, Mutex},
     time::Duration,
 };
@@ -323,11 +321,26 @@ impl LibraryManager {
     #[instrument(level = "trace", skip(self, api))]
     async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
         let store_entries = api.get_owned_games().await?;
-        LibraryTransactions::store_new_to_unmatched(
-            &self.firestore.lock().unwrap(),
+
+        let firestore = &self.firestore.lock().unwrap();
+
+        let mut game_ids = HashSet::<String>::from_iter(
+            firestore::storefront::read(firestore, &self.user_id, &T::id()).into_iter(),
+        );
+
+        let mut store_entries = store_entries;
+        store_entries.retain(|entry| !game_ids.contains(&entry.id));
+
+        for entry in &store_entries {
+            firestore::unmatched::write(firestore, &self.user_id, entry)?;
+        }
+
+        game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
+        firestore::storefront::write(
+            firestore,
             &self.user_id,
             &T::id(),
-            store_entries,
+            game_ids.into_iter().collect::<Vec<_>>(),
         )
     }
 }
