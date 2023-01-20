@@ -1,6 +1,11 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct FailedEntries {
+    pub entries: Vec<StoreEntry>,
+}
+
 /// Document type under 'users/{user_id}/unknown/{entry_id}' that represents
 /// user ownership of a title in a storefront that has not yet been matched with
 /// an IGDB entry.
