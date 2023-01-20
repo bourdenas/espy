@@ -1,6 +1,6 @@
 use crate::{
     api::FirestoreApi,
-    documents::{GameEntry, Library, Recent, RecentEntry, StoreEntry, UserTags},
+    documents::{FailedEntries, GameEntry, Library, Recent, RecentEntry, StoreEntry, UserTags},
     Status,
 };
 use serde::{Deserialize, Serialize};
@@ -327,67 +327,18 @@ impl LibraryOps {
         Ok(())
     }
 
-    /// Returns a list of all failed to match games in user library.
     #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn list_failed(firestore: &FirestoreApi, user_id: &str) -> Result<Vec<StoreEntry>, Status> {
-        firestore.list(&format!("users/{user_id}/failed"))
+    pub fn read_failed(firestore: &FirestoreApi, user_id: &str) -> Result<FailedEntries, Status> {
+        firestore.read(&format!("users/{user_id}/games"), "failed")
     }
 
-    /// Store storefront entries to user's library under unmatched entries.
-    ///
-    /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
-    /// in Firestore.
     #[instrument(level = "trace", skip(firestore, user_id))]
     pub fn write_failed(
         firestore: &FirestoreApi,
         user_id: &str,
-        store_entry: &StoreEntry,
+        failed: &FailedEntries,
     ) -> Result<(), Status> {
-        let mut title = String::default();
-        if store_entry.id.is_empty() {
-            title = safe_title(store_entry);
-        }
-
-        firestore.write(
-            &format!("users/{user_id}/failed"),
-            Some(&format!(
-                "{}_{}",
-                &store_entry.storefront_name,
-                match store_entry.id.is_empty() {
-                    false => &store_entry.id,
-                    true => &title,
-                },
-            )),
-            &store_entry,
-        )?;
-
-        Ok(())
-    }
-
-    /// Deletes store entry to user's failed collection.
-    ///
-    /// Deletes `StoreEntry` documents under collection `users/{user}/failed`
-    /// in Firestore.
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn delete_failed(
-        firestore: &FirestoreApi,
-        user_id: &str,
-        store_entry: &StoreEntry,
-    ) -> Result<(), Status> {
-        let mut title = String::default();
-        if store_entry.id.is_empty() {
-            title = safe_title(store_entry);
-        }
-
-        firestore.delete(&format!(
-            "users/{user_id}/failed/{}_{}",
-            &store_entry.storefront_name,
-            match store_entry.id.is_empty() {
-                false => &store_entry.id,
-                true => &title,
-            },
-        ))?;
-
+        firestore.write(&format!("users/{user_id}/games"), Some("failed"), failed)?;
         Ok(())
     }
 }

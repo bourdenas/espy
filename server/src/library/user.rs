@@ -119,13 +119,13 @@ impl User {
     #[instrument(level = "trace", skip(self, library_entry))]
     pub async fn unmatch_entry(
         &mut self,
-        store_entry: &StoreEntry,
+        store_entry: StoreEntry,
         library_entry: &LibraryEntry,
         delete: bool,
     ) -> Result<(), Status> {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         match delete {
-            false => mgr.unmatch_game(&store_entry, library_entry).await?,
+            false => mgr.unmatch_game(store_entry, library_entry).await?,
             true => mgr.delete_game(&store_entry, library_entry).await?,
         }
 

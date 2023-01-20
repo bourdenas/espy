@@ -156,7 +156,7 @@ pub async fn post_unmatch(
     };
 
     match user
-        .unmatch_entry(&unmatch.store_entry, &unmatch.library_entry, unmatch.delete)
+        .unmatch_entry(unmatch.store_entry, &unmatch.library_entry, unmatch.delete)
         .await
     {
         Ok(()) => Ok(StatusCode::OK),

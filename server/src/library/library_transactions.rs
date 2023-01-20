@@ -1,7 +1,7 @@
 use super::library_ops::LibraryOps;
 use crate::{
     api::FirestoreApi,
-    documents::{GameEntry, Library, LibraryEntry, StoreEntry},
+    documents::{FailedEntries, GameEntry, Library, LibraryEntry, StoreEntry},
     Status,
 };
 use std::collections::HashSet;
@@ -16,58 +16,35 @@ pub struct LibraryTransactions;
 /// transactions on the same user in parallel is not deterministic and can cause
 /// errors.
 impl LibraryTransactions {
-    /// Handles successfully resovled StoreEntry.
     #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn match_game(
+    pub fn add_library_entry(
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: StoreEntry,
         owned_version: u64,
         game_entry: GameEntry,
     ) -> Result<(), Status> {
-        LibraryOps::delete_unmatched(firestore, user_id, &store_entry)?;
-        LibraryOps::delete_failed(firestore, user_id, &store_entry)?;
-        Self::remove_from_wishlist(firestore, user_id, game_entry.id)?;
+        Self::remove_wishlist_entry(firestore, user_id, game_entry.id)?;
 
-        add_library_entry(
-            firestore,
-            user_id,
-            LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version]),
-        )?;
-
+        let library_entry = LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version]);
+        let mut library = LibraryOps::read_library(firestore, user_id)?;
+        if add_to_library(library_entry, &mut library) {
+            LibraryOps::write_library(firestore, user_id, &library)?;
+        }
         Ok(())
     }
 
-    /// Delete or unmatches (based on `delete`) a StoreEntry from the library.
-    #[instrument(level = "trace", skip(firestore, user_id, operation))]
-    pub fn unmatch_game(
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn remove_library_entry(
         firestore: &FirestoreApi,
         user_id: &str,
         store_entry: &StoreEntry,
         library_entry: &LibraryEntry,
-        operation: Op,
     ) -> Result<(), Status> {
-        remove_library_entry(firestore, user_id, &store_entry, &library_entry)?;
-
-        match operation {
-            Op::Unmatch => (),
-            Op::Failed => LibraryOps::write_failed(firestore, user_id, &store_entry)?,
-            Op::Delete => LibraryOps::remove_from_storefront_ids(firestore, user_id, &store_entry)?,
-        };
-
-        Ok(())
-    }
-
-    /// Handles failed to resolve StoreEntry.
-    #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn match_failed(
-        firestore: &FirestoreApi,
-        user_id: &str,
-        store_entry: &StoreEntry,
-    ) -> Result<(), Status> {
-        LibraryOps::delete_unmatched(firestore, user_id, store_entry)?;
-        LibraryOps::write_failed(firestore, user_id, store_entry)?;
-
+        let mut library = LibraryOps::read_library(firestore, user_id)?;
+        if remove_from_library(store_entry, library_entry, &mut library) {
+            LibraryOps::write_library(firestore, user_id, &library)?;
+        }
         Ok(())
     }
 
@@ -76,7 +53,7 @@ impl LibraryTransactions {
         skip(firestore, user_id, library_entry),
         fields(game_id = %library_entry.id),
     )]
-    pub fn add_to_wishlist(
+    pub fn add_wishlist_entry(
         firestore: &FirestoreApi,
         user_id: &str,
         library_entry: LibraryEntry,
@@ -86,30 +63,51 @@ impl LibraryTransactions {
             Err(_) => Library { entries: vec![] },
         };
 
-        if let Some(_) = wishlist
-            .entries
-            .iter()
-            .find(|entry| entry.id == library_entry.id)
-        {
-            return Ok(());
+        if add_to_wishlist(library_entry, &mut wishlist) {
+            LibraryOps::write_wishlist(firestore, user_id, &wishlist)?;
         }
-
-        wishlist.entries.push(library_entry);
-        LibraryOps::write_wishlist(firestore, user_id, &wishlist)
+        Ok(())
     }
 
     #[instrument(level = "trace", skip(firestore, user_id))]
-    pub fn remove_from_wishlist(
+    pub fn remove_wishlist_entry(
         firestore: &FirestoreApi,
         user_id: &str,
         game_id: u64,
     ) -> Result<(), Status> {
         let mut wishlist = LibraryOps::read_wishlist(firestore, user_id)?;
-        
-        let original_len = wishlist.entries.len();
-        wishlist.entries.retain(|entry| entry.id != game_id);
-        if wishlist.entries.len() != original_len {
+        if remove_from_wishlist(game_id, &mut wishlist) {
             return LibraryOps::write_wishlist(firestore, user_id, &wishlist);
+        }
+        Ok(())
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn add_failed_entry(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        store_entry: StoreEntry,
+    ) -> Result<(), Status> {
+        let mut failed = match LibraryOps::read_failed(firestore, user_id) {
+            Ok(failed) => failed,
+            Err(_) => FailedEntries { entries: vec![] },
+        };
+
+        if add_to_failed(store_entry, &mut failed) {
+            LibraryOps::write_failed(firestore, user_id, &failed)?;
+        }
+        Ok(())
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id))]
+    pub fn remove_failed_entry(
+        firestore: &FirestoreApi,
+        user_id: &str,
+        store_entry: &StoreEntry,
+    ) -> Result<(), Status> {
+        let mut failed = LibraryOps::read_failed(firestore, user_id)?;
+        if remove_from_failed(store_entry, &mut failed) {
+            return LibraryOps::write_failed(firestore, user_id, &failed);
         }
         Ok(())
     }
@@ -156,20 +154,7 @@ impl LibraryTransactions {
     }
 }
 
-pub enum Op {
-    Unmatch,
-    Failed,
-    Delete,
-}
-
-#[instrument(level = "trace", skip(firestore, user_id))]
-fn add_library_entry(
-    firestore: &FirestoreApi,
-    user_id: &str,
-    library_entry: LibraryEntry,
-) -> Result<(), Status> {
-    let mut library = LibraryOps::read_library(firestore, user_id)?;
-
+fn add_to_library(library_entry: LibraryEntry, library: &mut Library) -> bool {
     match library
         .entries
         .iter_mut()
@@ -186,18 +171,39 @@ fn add_library_entry(
         None => library.entries.push(library_entry),
     }
 
-    LibraryOps::write_library(firestore, user_id, &library)
+    true
 }
 
-#[instrument(level = "trace", skip(firestore, user_id))]
-fn remove_library_entry(
-    firestore: &FirestoreApi,
-    user_id: &str,
+fn add_to_wishlist(library_entry: LibraryEntry, wishlist: &mut Library) -> bool {
+    match wishlist.entries.iter().find(|e| e.id == library_entry.id) {
+        Some(_) => false,
+        None => {
+            wishlist.entries.push(library_entry);
+            true
+        }
+    }
+}
+
+fn add_to_failed(store_entry: StoreEntry, failed: &mut FailedEntries) -> bool {
+    match failed
+        .entries
+        .iter()
+        .find(|e| e.id == store_entry.id && e.storefront_name == store_entry.storefront_name)
+    {
+        Some(_) => false,
+        None => {
+            failed.entries.push(store_entry);
+            true
+        }
+    }
+}
+
+fn remove_from_library(
     store_entry: &StoreEntry,
     library_entry: &LibraryEntry,
-) -> Result<(), Status> {
-    let mut library = LibraryOps::read_library(firestore, user_id)?;
-
+    library: &mut Library,
+) -> bool {
+    let original_len = library.entries.len();
     library.entries.retain_mut(|e| {
         if e.id != library_entry.id {
             e.store_entries.retain(|se| {
@@ -212,5 +218,20 @@ fn remove_library_entry(
         true
     });
 
-    LibraryOps::write_library(firestore, user_id, &library)
+    library.entries.len() != original_len
+}
+
+fn remove_from_wishlist(game_id: u64, wishlist: &mut Library) -> bool {
+    let original_len = wishlist.entries.len();
+    wishlist.entries.retain(|e| e.id != game_id);
+    wishlist.entries.len() != original_len
+}
+
+fn remove_from_failed(store_entry: &StoreEntry, failed: &mut FailedEntries) -> bool {
+    let original_len = failed.entries.len();
+    failed
+        .entries
+        .retain(|e| e.id != store_entry.id && e.storefront_name != store_entry.storefront_name);
+
+    failed.entries.len() != original_len
 }
