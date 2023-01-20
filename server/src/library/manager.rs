@@ -2,8 +2,8 @@ use crate::{
     api::{FirestoreApi, GogApi, IgdbApi, SteamApi},
     documents::{GameEntry, LibraryEntry, StoreEntry},
     library::{
-        library_ops::LibraryOps, library_transactions::LibraryTransactions, reconciler::Match,
-        steam_data::SteamDataApi, ReconReport, Reconciler,
+        library_transactions::LibraryTransactions, reconciler::Match, steam_data::SteamDataApi,
+        ReconReport, Reconciler,
     },
     traits,
     util::rate_limiter::RateLimiter,
@@ -15,6 +15,8 @@ use std::{
 };
 use tokio::sync::mpsc;
 use tracing::{error, instrument, trace_span, Instrument};
+
+use super::firestore;
 
 pub struct LibraryManager {
     user_id: String,
@@ -52,7 +54,7 @@ impl LibraryManager {
         }
 
         let unmatched_entries =
-            LibraryOps::list_unmatched(&self.firestore.lock().unwrap(), &self.user_id)?;
+            firestore::unmatched::list(&self.firestore.lock().unwrap(), &self.user_id)?;
         self.recon_store_entries(unmatched_entries, igdb, steam)
             .await
     }
@@ -104,9 +106,10 @@ impl LibraryManager {
 
         let game_entry = self.retrieve_game_entry(game_id, igdb, steam).await?;
 
-        let firestore = self.firestore.lock().unwrap();
-        LibraryTransactions::remove_failed_entry(&firestore, &self.user_id, &store_entry)?;
-        LibraryTransactions::add_library_entry(
+        let firestore = &self.firestore.lock().unwrap();
+        firestore::failed::remove_entry(firestore, &self.user_id, &store_entry)?;
+        firestore::wishlist::remove_entry(firestore, &self.user_id, game_entry.id)?;
+        firestore::library::add_entry(
             &firestore,
             &self.user_id,
             store_entry,
@@ -124,13 +127,8 @@ impl LibraryManager {
         library_entry: &LibraryEntry,
     ) -> Result<(), Status> {
         let firestore = &self.firestore.lock().unwrap();
-        LibraryTransactions::remove_library_entry(
-            firestore,
-            &self.user_id,
-            &store_entry,
-            library_entry,
-        )?;
-        LibraryTransactions::add_failed_entry(firestore, &self.user_id, store_entry)
+        firestore::library::remove_entry(firestore, &self.user_id, &store_entry, library_entry)?;
+        firestore::failed::add_entry(firestore, &self.user_id, store_entry)
     }
 
     /// Deletes a `StoreEntry` from user's library. The StoreEntry is completely
@@ -142,13 +140,8 @@ impl LibraryManager {
         library_entry: &LibraryEntry,
     ) -> Result<(), Status> {
         let firestore = &self.firestore.lock().unwrap();
-        LibraryTransactions::remove_library_entry(
-            firestore,
-            &self.user_id,
-            store_entry,
-            library_entry,
-        )?;
-        LibraryOps::remove_from_storefront_ids(firestore, &self.user_id, &store_entry)
+        firestore::library::remove_entry(firestore, &self.user_id, store_entry, library_entry)?;
+        firestore::storefront::remove(firestore, &self.user_id, store_entry)
     }
 
     #[instrument(level = "trace", skip(self, igdb, steam))]
@@ -163,13 +156,13 @@ impl LibraryManager {
         let game_entry = self.retrieve_game_entry(game_entry.id, igdb, steam).await?;
 
         let firestore = &self.firestore.lock().unwrap();
-        LibraryTransactions::remove_library_entry(
+        firestore::library::remove_entry(
             firestore,
             &self.user_id,
             &store_entry,
             existing_library_entry,
         )?;
-        LibraryTransactions::add_library_entry(
+        firestore::library::add_entry(
             firestore,
             &self.user_id,
             store_entry,
@@ -198,7 +191,7 @@ impl LibraryManager {
             game_entry.merge(fragment);
             if rate_limiter.try_wait() == Duration::from_micros(0) {
                 let firestore = &firestore.lock().unwrap();
-                LibraryOps::write_game_entry(firestore, &game_entry)?;
+                firestore::games::write(firestore, &game_entry)?;
             }
         }
 
@@ -218,7 +211,7 @@ impl LibraryManager {
     ) -> Result<(), Status> {
         rate_limiter.wait();
         let firestore = &firestore.lock().unwrap();
-        LibraryOps::write_game_entry(firestore, &game_entry)?;
+        firestore::games::write(firestore, &game_entry)?;
         Ok(())
     }
 
@@ -244,29 +237,29 @@ impl LibraryManager {
             tokio::spawn(
                 async move {
                     let firestore = &firestore.lock().unwrap();
-                    LibraryOps::delete_unmatched(firestore, &user_id, &entry_match.store_entry)
-                        .expect("Firestore delete_unmatched()");
+                    firestore::unmatched::delete(firestore, &user_id, &entry_match.store_entry)
+                        .expect("firestore::unmatched::delete()");
 
                     match entry_match.game_entry {
                         Some(game_entry) => {
-                            LibraryOps::write_game_entry(firestore, &game_entry)
-                                .expect("Firestore write_game_entry()");
-                            LibraryTransactions::add_library_entry(
+                            firestore::games::write(firestore, &game_entry)
+                                .expect("firestore::games::write()");
+                            firestore::library::add_entry(
                                 firestore,
                                 &user_id,
                                 entry_match.store_entry,
                                 game_entry.id,
                                 game_entry,
                             )
-                            .expect("Firestore match_game_transaction()")
+                            .expect("firestore::library::add_entry()")
                         }
                         None => {
-                            LibraryTransactions::add_failed_entry(
+                            firestore::failed::add_entry(
                                 firestore,
                                 &user_id,
                                 entry_match.store_entry,
                             )
-                            .expect("Firestore match_failed_transaction()");
+                            .expect("firestore::failed::add_entry()");
                         }
                     }
                 }
@@ -308,12 +301,12 @@ impl LibraryManager {
     /// NOTE: This function is needed to contain the lock scope.
     #[instrument(level = "trace", skip(self))]
     fn read_from_firestore(&self, id: u64) -> Result<GameEntry, Status> {
-        LibraryOps::read_game_entry(&self.firestore.lock().unwrap(), id)
+        firestore::games::read(&self.firestore.lock().unwrap(), id)
     }
 
     #[instrument(level = "trace", skip(self))]
     pub async fn add_to_wishlist(&self, library_entry: LibraryEntry) -> Result<(), Status> {
-        LibraryTransactions::add_wishlist_entry(
+        firestore::wishlist::add_entry(
             &self.firestore.lock().unwrap(),
             &self.user_id,
             library_entry,
@@ -322,11 +315,7 @@ impl LibraryManager {
 
     #[instrument(level = "trace", skip(self))]
     pub async fn remove_from_wishlist(&self, game_id: u64) -> Result<(), Status> {
-        LibraryTransactions::remove_wishlist_entry(
-            &self.firestore.lock().unwrap(),
-            &self.user_id,
-            game_id,
-        )
+        firestore::wishlist::remove_entry(&self.firestore.lock().unwrap(), &self.user_id, game_id)
     }
 
     /// Retieves new game entries from the provided remote storefront and

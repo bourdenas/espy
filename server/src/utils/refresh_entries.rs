@@ -2,7 +2,7 @@ use clap::Parser;
 use espy_server::{
     api::{FirestoreApi, IgdbApi},
     documents::GameEntry,
-    library::{LibraryOps, Reconciler, SteamDataApi},
+    library::{firestore, Reconciler, SteamDataApi},
     *,
 };
 use futures::stream::{self, StreamExt};
@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     if let Some(id) = opts.id {
         match opts.delete {
             false => refresh_game(id, &firestore, igdb, steam).await?,
-            true => LibraryOps::delete_game_entry(&firestore, id)?,
+            true => firestore::games::delete(&firestore, id)?,
         }
     } else {
         refresh_entries(&firestore, igdb, steam).await?;
@@ -64,7 +64,7 @@ async fn refresh_game(
     igdb: IgdbApi,
     steam: SteamDataApi,
 ) -> Result<(), Status> {
-    let game = LibraryOps::read_game_entry(firestore, id)?;
+    let game = firestore::games::read(firestore, id)?;
     refresh(vec![game], firestore, igdb, steam).await
 }
 
@@ -74,7 +74,7 @@ async fn refresh_entries(
     igdb: IgdbApi,
     steam: SteamDataApi,
 ) -> Result<(), Status> {
-    let game_entries = LibraryOps::list_games(firestore)?;
+    let game_entries = firestore::games::list(firestore)?;
     refresh(game_entries, firestore, igdb, steam).await
 }
 
@@ -139,7 +139,7 @@ async fn refresh_task(task: RefreshTask) {
 async fn receive_games(firestore: &FirestoreApi, mut rx: mpsc::Receiver<GameEntry>) {
     while let Some(game_entry) = rx.recv().await {
         info!("Updating '{}'", game_entry.name);
-        LibraryOps::write_game_entry(firestore, &game_entry).expect(&format!(
+        firestore::games::write(firestore, &game_entry).expect(&format!(
             "Firestore write_game_entry('{}'):",
             game_entry.name
         ));
