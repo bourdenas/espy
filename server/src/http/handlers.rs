@@ -1,7 +1,8 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
+    games::SteamDataApi,
     http::models,
-    library::{self, LibraryManager, SteamDataApi, User},
+    library::{LibraryManager, User},
     util, Status,
 };
 use std::{
@@ -51,7 +52,7 @@ pub async fn post_upload(
     debug!("POST /library/{user_id}/upload");
     let started = SystemTime::now();
 
-    let mut user = match library::User::new(Arc::clone(&firestore), &user_id) {
+    let mut user = match User::new(Arc::clone(&firestore), &user_id) {
         Ok(user) => user,
         Err(err) => return Ok(log_err(err)),
     };

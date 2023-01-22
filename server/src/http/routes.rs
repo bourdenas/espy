@@ -1,9 +1,13 @@
-use crate::api::{FirestoreApi, IgdbApi};
-use crate::http::{handlers, models};
-use crate::library::SteamDataApi;
-use crate::util;
-use std::convert::Infallible;
-use std::sync::{Arc, Mutex};
+use crate::{
+    api::{FirestoreApi, IgdbApi},
+    games::SteamDataApi,
+    http::{handlers, models},
+    util,
+};
+use std::{
+    convert::Infallible,
+    sync::{Arc, Mutex},
+};
 use tracing::warn;
 use warp::{self, Filter};
 
@@ -89,7 +93,7 @@ fn post_search(
         .and_then(handlers::post_search)
 }
 
-/// POST /library/{user_id}/retrieve
+/// POST /library/retrieve
 fn post_retrieve(
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,

@@ -1,13 +1,14 @@
 use crate::{
     api::IgdbApi,
     documents::{GameEntry, StoreEntry},
-    library::SteamDataApi,
     Status,
 };
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tracing::{debug, error, instrument, trace_span, Instrument};
+
+use super::SteamDataApi;
 
 pub struct Reconciler {
     igdb: Arc<IgdbApi>,
@@ -17,7 +18,7 @@ pub struct Reconciler {
 // The result of a reconcile operation on a `store_entry` with a `game_entry`
 // from IGDB.
 #[derive(Default)]
-pub struct Match {
+pub struct ReconMatch {
     pub store_entry: StoreEntry,
     pub game_entry: Option<GameEntry>,
 }
@@ -71,14 +72,14 @@ impl Reconciler {
 
     /// Matches input `store_entries` with IGDB GameEntries.
     ///
-    /// Uses Sender endpoint to emit `Match`es. A `Match` is emitted both on
+    /// Uses Sender endpoint to emit `ReconMatch`es. A `ReconMatch` is emitted both on
     /// successful or failed matches.
     #[instrument(
         level = "trace",
         skip(self, tx, store_entries),
         fields(entries_len = %store_entries.len()),
     )]
-    pub async fn reconcile(&self, tx: mpsc::Sender<Match>, store_entries: Vec<StoreEntry>) {
+    pub async fn reconcile(&self, tx: mpsc::Sender<ReconMatch>, store_entries: Vec<StoreEntry>) {
         let fut = stream::iter(store_entries.into_iter().map(|store_entry| MatchingTask {
             store_entry,
             igdb: Arc::clone(&self.igdb),
@@ -93,7 +94,7 @@ impl Reconciler {
     }
 }
 
-impl Match {
+impl ReconMatch {
     async fn success(
         store_entry: StoreEntry,
         game_entry: GameEntry,
@@ -110,7 +111,7 @@ impl Match {
         )
         .await;
 
-        Match {
+        ReconMatch {
             store_entry,
             game_entry: match resolved {
                 Ok(game_entry) => Some(game_entry),
@@ -126,7 +127,7 @@ impl Match {
     }
 
     fn fail(store_entry: StoreEntry) -> Self {
-        Match {
+        ReconMatch {
             store_entry,
             ..Default::default()
         }
@@ -166,18 +167,19 @@ async fn match_task(task: MatchingTask) {
     let entry_match = match match_by_external_id(&task.igdb, &task.store_entry).await {
         Ok(game_entry) => match game_entry {
             Some(game_entry) => {
-                Match::success(task.store_entry, game_entry, &task.igdb, &task.steam).await
+                ReconMatch::success(task.store_entry, game_entry, &task.igdb, &task.steam).await
             }
             None => match match_by_title(&task.igdb, &task.store_entry.title).await {
                 Ok(game_entry) => match game_entry {
                     Some(game_entry) => {
-                        Match::success(task.store_entry, game_entry, &task.igdb, &task.steam).await
+                        ReconMatch::success(task.store_entry, game_entry, &task.igdb, &task.steam)
+                            .await
                     }
-                    None => Match::fail(task.store_entry),
+                    None => ReconMatch::fail(task.store_entry),
                 },
                 Err(e) => {
                     error!("match_by_title '{}' failed: {e}", task.store_entry.title);
-                    Match::fail(task.store_entry)
+                    ReconMatch::fail(task.store_entry)
                 }
             },
         },
@@ -186,7 +188,7 @@ async fn match_task(task: MatchingTask) {
                 "match_by_external_id '{}' failed: {e}",
                 task.store_entry.title
             );
-            Match::fail(task.store_entry)
+            ReconMatch::fail(task.store_entry)
         }
     };
 
@@ -225,5 +227,5 @@ struct MatchingTask {
     store_entry: StoreEntry,
     igdb: Arc<IgdbApi>,
     steam: Arc<SteamDataApi>,
-    tx: mpsc::Sender<Match>,
+    tx: mpsc::Sender<ReconMatch>,
 }

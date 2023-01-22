@@ -1,7 +1,7 @@
 use crate::{
     api::{FirestoreApi, GogApi, IgdbApi, SteamApi},
     documents::{GameEntry, LibraryEntry, StoreEntry},
-    library::{reconciler::Match, steam_data::SteamDataApi, ReconReport, Reconciler},
+    games::{ReconMatch, ReconReport, Reconciler, SteamDataApi},
     traits,
     util::rate_limiter::RateLimiter,
     Status,
@@ -213,20 +213,20 @@ impl LibraryManager {
         Ok(())
     }
 
-    async fn receive_matches(&self, mut rx: mpsc::Receiver<Match>) -> ReconReport {
+    async fn receive_matches(&self, mut rx: mpsc::Receiver<ReconMatch>) -> ReconReport {
         let mut report = ReconReport { lines: vec![] };
 
-        while let Some(entry_match) = rx.recv().await {
-            match &entry_match.game_entry {
+        while let Some(recon_match) = rx.recv().await {
+            match &recon_match.game_entry {
                 Some(entry) => report.lines.push(format!(
                     "matched '{}' ({}) with {}",
-                    &entry_match.store_entry.title,
-                    &entry_match.store_entry.storefront_name,
+                    &recon_match.store_entry.title,
+                    &recon_match.store_entry.storefront_name,
                     &entry.name,
                 )),
                 None => report.lines.push(format!(
                     "failed to match {} ({})",
-                    &entry_match.store_entry.title, &entry_match.store_entry.storefront_name,
+                    &recon_match.store_entry.title, &recon_match.store_entry.storefront_name,
                 )),
             };
 
@@ -235,17 +235,17 @@ impl LibraryManager {
             tokio::spawn(
                 async move {
                     let firestore = &firestore.lock().unwrap();
-                    firestore::unmatched::delete(firestore, &user_id, &entry_match.store_entry)
+                    firestore::unmatched::delete(firestore, &user_id, &recon_match.store_entry)
                         .expect("firestore::unmatched::delete()");
 
-                    match entry_match.game_entry {
+                    match recon_match.game_entry {
                         Some(game_entry) => {
                             firestore::games::write(firestore, &game_entry)
                                 .expect("firestore::games::write()");
                             firestore::library::add_entry(
                                 firestore,
                                 &user_id,
-                                entry_match.store_entry,
+                                recon_match.store_entry,
                                 game_entry.id,
                                 game_entry,
                             )
@@ -255,7 +255,7 @@ impl LibraryManager {
                             firestore::failed::add_entry(
                                 firestore,
                                 &user_id,
-                                entry_match.store_entry,
+                                recon_match.store_entry,
                             )
                             .expect("firestore::failed::add_entry()");
                         }

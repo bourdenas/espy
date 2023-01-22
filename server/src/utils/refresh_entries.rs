@@ -1,10 +1,5 @@
 use clap::Parser;
-use espy_server::{
-    api::{FirestoreApi, IgdbApi},
-    documents::GameEntry,
-    library::{firestore, Reconciler, SteamDataApi},
-    *,
-};
+use espy_server::*;
 use futures::stream::{self, StreamExt};
 use std::sync::Arc;
 use tokio::sync::mpsc;
@@ -38,18 +33,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Tracing::setup("utils/refresh_entries")?;
 
     let opts: Opts = Opts::parse();
-    let firestore = FirestoreApi::from_credentials(&opts.firestore_credentials)
+    let firestore = api::FirestoreApi::from_credentials(&opts.firestore_credentials)
         .expect("FirestoreApi.from_credentials()");
 
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
-    let mut igdb = IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
+    let mut igdb = api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
-    let steam = SteamDataApi::new();
+    let steam = games::SteamDataApi::new();
 
     if let Some(id) = opts.id {
         match opts.delete {
             false => refresh_game(id, &firestore, igdb, steam).await?,
-            true => firestore::games::delete(&firestore, id)?,
+            true => library::firestore::games::delete(&firestore, id)?,
         }
     } else {
         refresh_entries(&firestore, igdb, steam).await?;
@@ -60,29 +55,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
 async fn refresh_game(
     id: u64,
-    firestore: &FirestoreApi,
-    igdb: IgdbApi,
-    steam: SteamDataApi,
+    firestore: &api::FirestoreApi,
+    igdb: api::IgdbApi,
+    steam: games::SteamDataApi,
 ) -> Result<(), Status> {
-    let game = firestore::games::read(firestore, id)?;
+    let game = library::firestore::games::read(firestore, id)?;
     refresh(vec![game], firestore, igdb, steam).await
 }
 
 #[instrument(level = "trace", skip(firestore, igdb, steam))]
 async fn refresh_entries(
-    firestore: &FirestoreApi,
-    igdb: IgdbApi,
-    steam: SteamDataApi,
+    firestore: &api::FirestoreApi,
+    igdb: api::IgdbApi,
+    steam: games::SteamDataApi,
 ) -> Result<(), Status> {
-    let game_entries = firestore::games::list(firestore)?;
+    let game_entries = library::firestore::games::list(firestore)?;
     refresh(game_entries, firestore, igdb, steam).await
 }
 
 async fn refresh(
-    game_entries: Vec<GameEntry>,
-    firestore: &FirestoreApi,
-    igdb: IgdbApi,
-    steam: SteamDataApi,
+    game_entries: Vec<documents::GameEntry>,
+    firestore: &api::FirestoreApi,
+    igdb: api::IgdbApi,
+    steam: games::SteamDataApi,
 ) -> Result<(), Status> {
     let igdb = Arc::new(igdb);
     let steam = Arc::new(steam);
@@ -110,16 +105,16 @@ async fn refresh(
 }
 
 struct RefreshTask {
-    game_entry: GameEntry,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-    tx: mpsc::Sender<GameEntry>,
+    game_entry: documents::GameEntry,
+    igdb: Arc<api::IgdbApi>,
+    steam: Arc<games::SteamDataApi>,
+    tx: mpsc::Sender<documents::GameEntry>,
 }
 
 async fn refresh_task(task: RefreshTask) {
     info!("Refreshing '{}'", &task.game_entry.name);
 
-    let recon_service = Reconciler::new(task.igdb, task.steam);
+    let recon_service = games::Reconciler::new(task.igdb, task.steam);
 
     let game_entry = match recon_service.resolve(task.game_entry.id).await {
         Ok(game_entry) => Some(game_entry),
@@ -136,10 +131,13 @@ async fn refresh_task(task: RefreshTask) {
     }
 }
 
-async fn receive_games(firestore: &FirestoreApi, mut rx: mpsc::Receiver<GameEntry>) {
+async fn receive_games(
+    firestore: &api::FirestoreApi,
+    mut rx: mpsc::Receiver<documents::GameEntry>,
+) {
     while let Some(game_entry) = rx.recv().await {
         info!("Updating '{}'", game_entry.name);
-        firestore::games::write(firestore, &game_entry).expect(&format!(
+        library::firestore::games::write(firestore, &game_entry).expect(&format!(
             "Firestore write_game_entry('{}'):",
             game_entry.name
         ));

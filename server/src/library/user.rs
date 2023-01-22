@@ -1,7 +1,7 @@
-use super::{steam_data::SteamDataApi, LibraryManager, ReconReport};
 use crate::{
     api::{self, FirestoreApi, GogApi, IgdbApi, SteamApi},
     documents::{GameEntry, Keys, LibraryEntry, StoreEntry, UserData},
+    games::{ReconReport, SteamDataApi},
     util, Status,
 };
 use std::{
@@ -9,6 +9,8 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 use tracing::{info, instrument, warn};
+
+use super::LibraryManager;
 
 pub struct User {
     data: UserData,
