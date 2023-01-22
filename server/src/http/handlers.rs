@@ -1,8 +1,8 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
-    games::SteamDataApi,
+    games::{Archiver, SteamDataApi},
     http::models,
-    library::{LibraryManager, User},
+    library::User,
     util, Status,
 };
 use std::{
@@ -101,7 +101,7 @@ pub async fn post_retrieve(
 ) -> Result<impl warp::Reply, Infallible> {
     info!("POST /library/retrieve");
 
-    match LibraryManager::resolve_incrementally(retrieve.game_id, igdb, steam, firestore).await {
+    match Archiver::resolve(retrieve.game_id, igdb, steam, firestore).await {
         Ok(_) => Ok(StatusCode::OK),
         Err(e) => {
             error!("POST retrieve: {e}");
