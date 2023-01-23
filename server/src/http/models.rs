@@ -21,7 +21,7 @@ impl std::fmt::Display for Search {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Retrieve {
+pub struct Resolve {
     pub game_id: u64,
 }
 

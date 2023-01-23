@@ -1,6 +1,6 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
-    games::{Archiver, SteamDataApi},
+    games::{Resolver, SteamDataApi},
     http::models,
     library::User,
     util, Status,
@@ -13,59 +13,9 @@ use std::{
 use tracing::{debug, error, info, instrument, warn};
 use warp::http::StatusCode;
 
-#[instrument(level = "trace", skip(api_keys, firestore, igdb, steam))]
-pub async fn post_sync(
-    user_id: String,
-    api_keys: Arc<util::keys::Keys>,
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-) -> Result<Box<dyn warp::Reply>, Infallible> {
-    debug!("POST /library/{user_id}/sync");
-    let started = SystemTime::now();
-
-    let mut user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
-        Err(err) => return Ok(log_err(err)),
-    };
-
-    let report = match user.sync(&api_keys, igdb, steam).await {
-        Ok(report) => report,
-        Err(err) => return Ok(log_err(err)),
-    };
-
-    let resp_time = SystemTime::now().duration_since(started).unwrap();
-    debug!("time: {:.2} msec", resp_time.as_millis());
-
-    let resp: Box<dyn warp::Reply> = Box::new(warp::reply::json(&report));
-    Ok(resp)
-}
-
-#[instrument(level = "trace", skip(upload, firestore, igdb, steam))]
-pub async fn post_upload(
-    user_id: String,
-    upload: models::Upload,
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-) -> Result<Box<dyn warp::Reply>, Infallible> {
-    debug!("POST /library/{user_id}/upload");
-    let started = SystemTime::now();
-
-    let mut user = match User::new(Arc::clone(&firestore), &user_id) {
-        Ok(user) => user,
-        Err(err) => return Ok(log_err(err)),
-    };
-    let report = match user.upload(upload.entries, igdb, steam).await {
-        Ok(report) => report,
-        Err(err) => return Ok(log_err(err)),
-    };
-
-    let resp_time = SystemTime::now().duration_since(started).unwrap();
-    debug!("time: {:.2} msec", resp_time.as_millis());
-
-    let resp: Box<dyn warp::Reply> = Box::new(warp::reply::json(&report));
-    Ok(resp)
+pub async fn welcome() -> Result<impl warp::Reply, Infallible> {
+    debug!("GET /");
+    Ok("welcome")
 }
 
 #[instrument(level = "trace", skip(igdb))]
@@ -93,15 +43,15 @@ pub async fn post_search(
 }
 
 #[instrument(level = "trace", skip(firestore, igdb, steam))]
-pub async fn post_retrieve(
-    retrieve: models::Retrieve,
+pub async fn post_resolve(
+    resolve: models::Resolve,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
     steam: Arc<SteamDataApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    info!("POST /library/retrieve");
+    info!("POST /library/resolve");
 
-    match Archiver::resolve(retrieve.game_id, igdb, steam, firestore).await {
+    match Resolver::resolve(resolve.game_id, igdb, steam, firestore).await {
         Ok(_) => Ok(StatusCode::OK),
         Err(e) => {
             error!("POST retrieve: {e}");
@@ -245,6 +195,61 @@ pub async fn post_wishlist(
     Ok(StatusCode::OK)
 }
 
+#[instrument(level = "trace", skip(api_keys, firestore, igdb, steam))]
+pub async fn post_sync(
+    user_id: String,
+    api_keys: Arc<util::keys::Keys>,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> Result<Box<dyn warp::Reply>, Infallible> {
+    debug!("POST /library/{user_id}/sync");
+    let started = SystemTime::now();
+
+    let mut user = match User::new(firestore, &user_id) {
+        Ok(user) => user,
+        Err(err) => return Ok(log_err(err)),
+    };
+
+    let report = match user.sync(&api_keys, igdb, steam).await {
+        Ok(report) => report,
+        Err(err) => return Ok(log_err(err)),
+    };
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    debug!("time: {:.2} msec", resp_time.as_millis());
+
+    let resp: Box<dyn warp::Reply> = Box::new(warp::reply::json(&report));
+    Ok(resp)
+}
+
+#[instrument(level = "trace", skip(upload, firestore, igdb, steam))]
+pub async fn post_upload(
+    user_id: String,
+    upload: models::Upload,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> Result<Box<dyn warp::Reply>, Infallible> {
+    debug!("POST /library/{user_id}/upload");
+    let started = SystemTime::now();
+
+    let mut user = match User::new(Arc::clone(&firestore), &user_id) {
+        Ok(user) => user,
+        Err(err) => return Ok(log_err(err)),
+    };
+    let report = match user.upload(upload.entries, igdb, steam).await {
+        Ok(report) => report,
+        Err(err) => return Ok(log_err(err)),
+    };
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    debug!("time: {:.2} msec", resp_time.as_millis());
+
+    let resp: Box<dyn warp::Reply> = Box::new(warp::reply::json(&report));
+    Ok(resp)
+}
+
 pub async fn get_images(
     resolution: String,
     image: String,
@@ -269,11 +274,6 @@ pub async fn get_images(
         Ok(bytes) => Ok(Box::new(bytes.to_vec())),
         Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
     }
-}
-
-pub async fn welcome() -> Result<impl warp::Reply, Infallible> {
-    debug!("GET /");
-    Ok("welcome")
 }
 
 const IGDB_IMAGES_URL: &str = "https://images.igdb.com/igdb/image/upload";

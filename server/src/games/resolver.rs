@@ -14,9 +14,9 @@ use tracing::{error, instrument};
 
 use super::{Reconciler, SteamDataApi};
 
-pub struct Archiver;
+pub struct Resolver;
 
-impl Archiver {
+impl Resolver {
     /// Returns a GameEntry based on its IGDB `game_id`.
     ///
     /// It first tries to lookup the GameEntry in Firestore and only attemps to

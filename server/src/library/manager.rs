@@ -1,7 +1,7 @@
 use crate::{
     api::{FirestoreApi, GogApi, IgdbApi, SteamApi},
     documents::{GameEntry, LibraryEntry, StoreEntry},
-    games::{Archiver, ReconMatch, ReconReport, Reconciler, SteamDataApi},
+    games::{ReconMatch, ReconReport, Reconciler, Resolver, SteamDataApi},
     traits, Status,
 };
 use std::{
@@ -100,7 +100,7 @@ impl LibraryManager {
         };
 
         let game_entry =
-            Archiver::retrieve(game_id, igdb, steam, Arc::clone(&self.firestore)).await?;
+            Resolver::retrieve(game_id, igdb, steam, Arc::clone(&self.firestore)).await?;
 
         let firestore = &self.firestore.lock().unwrap();
         firestore::failed::remove_entry(firestore, &self.user_id, &store_entry)?;
@@ -150,7 +150,7 @@ impl LibraryManager {
         steam: Arc<SteamDataApi>,
     ) -> Result<(), Status> {
         let game_entry =
-            Archiver::retrieve(game_entry.id, igdb, steam, Arc::clone(&self.firestore)).await?;
+            Resolver::retrieve(game_entry.id, igdb, steam, Arc::clone(&self.firestore)).await?;
 
         let firestore = &self.firestore.lock().unwrap();
         firestore::library::remove_entry(
