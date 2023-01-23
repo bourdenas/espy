@@ -60,6 +60,57 @@ pub async fn post_resolve(
     }
 }
 
+#[instrument(level = "trace", skip(firestore, igdb, steam))]
+pub async fn post_match_op(
+    user_id: String,
+    match_op: models::MatchOp,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    debug!("POST /library/{user_id}/match_op");
+
+    let mut user = match User::new(firestore, &user_id) {
+        Ok(user) => user,
+        Err(err) => {
+            error!("{err}");
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    if let Some(library_entry) = match_op.unmatch_entry {
+        if let Err(err) = user
+            .unmatch_entry(
+                match_op.store_entry.clone(),
+                &library_entry,
+                match_op.delete_unmatched,
+            )
+            .await
+        {
+            error!("{err}");
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    if let Some(game_entry) = match_op.game_entry {
+        if let Err(err) = user
+            .match_entry(
+                match_op.store_entry,
+                game_entry,
+                igdb,
+                steam,
+                match_op.exact_match,
+            )
+            .await
+        {
+            error!("{err}");
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    Ok(StatusCode::OK)
+}
+
 #[instrument(level = "trace", skip(_match, firestore, igdb, steam))]
 pub async fn post_match(
     user_id: String,
@@ -79,7 +130,7 @@ pub async fn post_match(
     };
 
     match user
-        .match_entry(_match.store_entry, _match.game_entry, igdb, steam)
+        .match_entry(_match.store_entry, _match.game_entry, igdb, steam, false)
         .await
     {
         Ok(()) => Ok(StatusCode::OK),

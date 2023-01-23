@@ -30,6 +30,11 @@ pub fn routes(
             Arc::clone(&igdb),
             Arc::clone(&steam),
         ))
+        .or(post_match_op(
+            Arc::clone(&firestore),
+            Arc::clone(&igdb),
+            Arc::clone(&steam),
+        ))
         .or(post_match(
             Arc::clone(&firestore),
             Arc::clone(&igdb),
@@ -104,6 +109,21 @@ fn post_retrieve(
         .and(with_igdb(igdb))
         .and(with_steam(steam))
         .and_then(handlers::post_resolve)
+}
+
+/// POST /library/{user_id}/match_op
+fn post_match_op(
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / String / "match_op")
+        .and(warp::post())
+        .and(match_op_body())
+        .and(with_firestore(firestore))
+        .and(with_igdb(igdb))
+        .and(with_steam(steam))
+        .and_then(handlers::post_match_op)
 }
 
 /// POST /library/{user_id}/match

@@ -109,9 +109,10 @@ impl User {
         game_entry: GameEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
+        exact_match: bool,
     ) -> Result<(), Status> {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.manual_match(store_entry, game_entry, igdb, steam)
+        mgr.manual_match(store_entry, game_entry, igdb, steam, exact_match)
             .await?;
 
         commit_version(&mut self.data, &self.firestore.lock().unwrap())

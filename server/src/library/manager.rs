@@ -92,11 +92,12 @@ impl LibraryManager {
         game_entry: GameEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
+        exact_match: bool,
     ) -> Result<(), Status> {
         let owned_game_id = game_entry.id;
-        let game_id = match game_entry.parent {
-            Some(parent_id) => parent_id,
-            None => game_entry.id,
+        let game_id = match (exact_match, game_entry.parent) {
+            (false, Some(parent_id)) => parent_id,
+            _ => game_entry.id,
         };
 
         let game_entry =
