@@ -52,20 +52,6 @@ pub fn match_op_body() -> impl Filter<Extract = (models::MatchOp,), Error = warp
     warp::body::content_length_limit(64 * 1024).and(warp::body::json())
 }
 
-pub fn match_body() -> impl Filter<Extract = (models::Match,), Error = warp::Rejection> + Clone {
-    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
-}
-
-pub fn unmatch_body() -> impl Filter<Extract = (models::Unmatch,), Error = warp::Rejection> + Clone
-{
-    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
-}
-
-pub fn rematch_body() -> impl Filter<Extract = (models::Rematch,), Error = warp::Rejection> + Clone
-{
-    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
-}
-
 pub fn wishlist_body(
 ) -> impl Filter<Extract = (models::WishlistOp,), Error = warp::Rejection> + Clone {
     warp::body::content_length_limit(64 * 1024).and(warp::body::json())

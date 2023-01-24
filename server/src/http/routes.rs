@@ -30,18 +30,7 @@ pub fn routes(
             Arc::clone(&igdb),
             Arc::clone(&steam),
         ))
-        .or(post_match_op(
-            Arc::clone(&firestore),
-            Arc::clone(&igdb),
-            Arc::clone(&steam),
-        ))
         .or(post_match(
-            Arc::clone(&firestore),
-            Arc::clone(&igdb),
-            Arc::clone(&steam),
-        ))
-        .or(post_unmatch(Arc::clone(&firestore)))
-        .or(post_rematch(
             Arc::clone(&firestore),
             Arc::clone(&igdb),
             Arc::clone(&steam),
@@ -111,21 +100,6 @@ fn post_retrieve(
         .and_then(handlers::post_resolve)
 }
 
-/// POST /library/{user_id}/match_op
-fn post_match_op(
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "match_op")
-        .and(warp::post())
-        .and(match_op_body())
-        .and(with_firestore(firestore))
-        .and(with_igdb(igdb))
-        .and(with_steam(steam))
-        .and_then(handlers::post_match_op)
-}
-
 /// POST /library/{user_id}/match
 fn post_match(
     firestore: Arc<Mutex<FirestoreApi>>,
@@ -134,37 +108,11 @@ fn post_match(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "match")
         .and(warp::post())
-        .and(match_body())
+        .and(match_op_body())
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
         .and(with_steam(steam))
         .and_then(handlers::post_match)
-}
-
-/// POST /library/{user_id}/unmatch
-fn post_unmatch(
-    firestore: Arc<Mutex<FirestoreApi>>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "unmatch")
-        .and(warp::post())
-        .and(unmatch_body())
-        .and(with_firestore(firestore))
-        .and_then(handlers::post_unmatch)
-}
-
-/// POST /library/{user_id}/rematch
-fn post_rematch(
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / String / "rematch")
-        .and(warp::post())
-        .and(rematch_body())
-        .and(with_firestore(firestore))
-        .and(with_igdb(igdb))
-        .and(with_steam(steam))
-        .and_then(handlers::post_rematch)
 }
 
 /// POST /library/{user_id}/wishlist

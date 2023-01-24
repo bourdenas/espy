@@ -144,6 +144,7 @@ impl User {
         existing_library_entry: &LibraryEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
+        exact_match: bool,
     ) -> Result<(), Status> {
         let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
         mgr.rematch_game(store_entry, game_entry, existing_library_entry, igdb, steam)

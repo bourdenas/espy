@@ -55,26 +55,6 @@ pub struct MatchOp {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Match {
-    pub store_entry: documents::StoreEntry,
-    pub game_entry: documents::GameEntry,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Unmatch {
-    pub store_entry: documents::StoreEntry,
-    pub library_entry: documents::LibraryEntry,
-    pub delete: bool,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Rematch {
-    pub store_entry: documents::StoreEntry,
-    pub library_entry: documents::LibraryEntry,
-    pub game_entry: documents::GameEntry,
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct WishlistOp {
     #[serde(default)]
     pub add_game: Option<documents::LibraryEntry>,
