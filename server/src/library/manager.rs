@@ -1,13 +1,10 @@
 use crate::{
-    api::{FirestoreApi, GogApi, IgdbApi, SteamApi},
+    api::{FirestoreApi, IgdbApi},
     documents::{GameEntry, LibraryEntry, StoreEntry},
     games::{ReconMatch, ReconReport, Reconciler, Resolver, SteamDataApi},
-    traits, Status,
+    Status,
 };
-use std::{
-    collections::HashSet,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
 use tracing::{instrument, trace_span, Instrument};
 
@@ -27,34 +24,24 @@ impl LibraryManager {
         }
     }
 
-    /// Retrieves new entries from remote storefronts the user has access to and
-    /// expands existing library entries.
+    /// Reconciles store entries from the unmatched collection in Firestore.
     #[instrument(
         level = "trace",
-        skip(self, steam_api, gog_api, igdb, steam),
+        skip(self, igdb, steam),
         fields(user_id = %self.user_id),
     )]
-    pub async fn sync_library(
+    pub async fn recon_unmatched_collection(
         &self,
-        steam_api: Option<SteamApi>,
-        gog_api: Option<GogApi>,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
     ) -> Result<ReconReport, Status> {
-        if let Some(api) = steam_api {
-            self.sync_storefront(&api).await?;
-        }
-        if let Some(api) = gog_api {
-            self.sync_storefront(&api).await?;
-        }
-
         let unmatched_entries =
             firestore::unmatched::list(&self.firestore.lock().unwrap(), &self.user_id)?;
         self.recon_store_entries(unmatched_entries, igdb, steam)
             .await
     }
 
-    /// Reconciles `store_entries` and adds them in the user's library.
+    /// Reconciles `store_entries` and adds them in the library.
     #[instrument(
         level = "trace",
         skip(self, store_entries, igdb, steam),
@@ -83,10 +70,10 @@ impl LibraryManager {
         Ok(self.receive_matches(rx).await)
     }
 
-    /// Match a `StoreEntry` to a specified `GameEntry` and saving it in the
-    /// user's library.
+    /// Match a `StoreEntry` with a specified `GameEntry` and saving it in the
+    /// library.
     #[instrument(level = "trace", skip(self, igdb, steam))]
-    pub async fn manual_match(
+    pub async fn match_game(
         &self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
@@ -122,23 +109,14 @@ impl LibraryManager {
         &self,
         store_entry: StoreEntry,
         library_entry: &LibraryEntry,
+        delete: bool,
     ) -> Result<(), Status> {
         let firestore = &self.firestore.lock().unwrap();
         firestore::library::remove_entry(firestore, &self.user_id, &store_entry, library_entry)?;
-        firestore::failed::add_entry(firestore, &self.user_id, store_entry)
-    }
-
-    /// Deletes a `StoreEntry` from user's library. The StoreEntry is completely
-    /// removed.
-    #[instrument(level = "trace", skip(self, library_entry))]
-    pub async fn delete_game(
-        &self,
-        store_entry: &StoreEntry,
-        library_entry: &LibraryEntry,
-    ) -> Result<(), Status> {
-        let firestore = &self.firestore.lock().unwrap();
-        firestore::library::remove_entry(firestore, &self.user_id, store_entry, library_entry)?;
-        firestore::storefront::remove(firestore, &self.user_id, store_entry)
+        match delete {
+            false => firestore::failed::add_entry(firestore, &self.user_id, store_entry),
+            true => firestore::storefront::remove(firestore, &self.user_id, &store_entry),
+        }
     }
 
     #[instrument(level = "trace", skip(self, igdb, steam))]
@@ -149,6 +127,7 @@ impl LibraryManager {
         existing_library_entry: &LibraryEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
+        exact_match: bool,
     ) -> Result<(), Status> {
         let game_entry =
             Resolver::retrieve(game_entry.id, igdb, steam, Arc::clone(&self.firestore)).await?;
@@ -235,33 +214,5 @@ impl LibraryManager {
     #[instrument(level = "trace", skip(self))]
     pub async fn remove_from_wishlist(&self, game_id: u64) -> Result<(), Status> {
         firestore::wishlist::remove_entry(&self.firestore.lock().unwrap(), &self.user_id, game_id)
-    }
-
-    /// Retieves new game entries from the provided remote storefront and
-    /// temporarily stores them in unmatched in Firestore.
-    #[instrument(level = "trace", skip(self, api))]
-    async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
-        let store_entries = api.get_owned_games().await?;
-
-        let firestore = &self.firestore.lock().unwrap();
-
-        let mut game_ids = HashSet::<String>::from_iter(
-            firestore::storefront::read(firestore, &self.user_id, &T::id()).into_iter(),
-        );
-
-        let mut store_entries = store_entries;
-        store_entries.retain(|entry| !game_ids.contains(&entry.id));
-
-        for entry in &store_entries {
-            firestore::unmatched::write(firestore, &self.user_id, entry)?;
-        }
-
-        game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
-        firestore::storefront::write(
-            firestore,
-            &self.user_id,
-            &T::id(),
-            game_ids.into_iter().collect::<Vec<_>>(),
-        )
     }
 }

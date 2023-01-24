@@ -2,7 +2,7 @@ use crate::{
     api::{FirestoreApi, IgdbApi},
     games::{Resolver, SteamDataApi},
     http::models,
-    library::User,
+    library::{LibraryManager, User},
     util, Status,
 };
 use std::{
@@ -70,37 +70,12 @@ pub async fn post_match(
 ) -> Result<impl warp::Reply, Infallible> {
     debug!("POST /library/{user_id}/match_op");
 
-    let mut user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
-        Err(err) => {
-            error!("{err}");
-            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
+    let manager = LibraryManager::new(&user_id, firestore);
 
     match (match_op.game_entry, match_op.unmatch_entry) {
-        (Some(game_entry), Some(library_entry)) => {
-            match user
-                .rematch_entry(
-                    match_op.store_entry,
-                    game_entry,
-                    &library_entry,
-                    igdb,
-                    steam,
-                    match_op.exact_match,
-                )
-                .await
-            {
-                Ok(()) => Ok(StatusCode::OK),
-                Err(err) => {
-                    error!("{err}");
-                    Ok(StatusCode::INTERNAL_SERVER_ERROR)
-                }
-            }
-        }
         (Some(game_entry), None) => {
-            match user
-                .match_entry(
+            match manager
+                .match_game(
                     match_op.store_entry,
                     game_entry,
                     igdb,
@@ -117,11 +92,30 @@ pub async fn post_match(
             }
         }
         (None, Some(library_entry)) => {
-            match user
-                .unmatch_entry(
+            match manager
+                .unmatch_game(
                     match_op.store_entry.clone(),
                     &library_entry,
                     match_op.delete_unmatched,
+                )
+                .await
+            {
+                Ok(()) => Ok(StatusCode::OK),
+                Err(err) => {
+                    error!("{err}");
+                    Ok(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
+        (Some(game_entry), Some(library_entry)) => {
+            match manager
+                .rematch_game(
+                    match_op.store_entry,
+                    game_entry,
+                    &library_entry,
+                    igdb,
+                    steam,
+                    match_op.exact_match,
                 )
                 .await
             {
@@ -144,16 +138,10 @@ pub async fn post_wishlist(
 ) -> Result<impl warp::Reply, Infallible> {
     debug!("POST /library/{user_id}/wishlist");
 
-    let user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
-        Err(err) => {
-            error!("{err}");
-            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
+    let manager = LibraryManager::new(&user_id, firestore);
 
     match wishlist.add_game {
-        Some(game) => match user.add_to_wishlist(game).await {
+        Some(game) => match manager.add_to_wishlist(game).await {
             Ok(()) => (),
             Err(err) => {
                 error!("{err}");
@@ -164,7 +152,7 @@ pub async fn post_wishlist(
     }
 
     match wishlist.remove_game {
-        Some(game_id) => match user.remove_from_wishlist(game_id).await {
+        Some(game_id) => match manager.remove_from_wishlist(game_id).await {
             Ok(()) => (),
             Err(err) => {
                 error!("{err}");
@@ -188,12 +176,17 @@ pub async fn post_sync(
     debug!("POST /library/{user_id}/sync");
     let started = SystemTime::now();
 
-    let mut user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
+    match User::new(Arc::clone(&firestore), &user_id) {
+        Ok(mut user) => {
+            if let Err(err) = user.sync(&api_keys).await {
+                return Ok(log_err(err));
+            }
+        }
         Err(err) => return Ok(log_err(err)),
     };
 
-    let report = match user.sync(&api_keys, igdb, steam).await {
+    let manager = LibraryManager::new(&user_id, firestore);
+    let report = match manager.recon_unmatched_collection(igdb, steam).await {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };
@@ -216,11 +209,11 @@ pub async fn post_upload(
     debug!("POST /library/{user_id}/upload");
     let started = SystemTime::now();
 
-    let mut user = match User::new(Arc::clone(&firestore), &user_id) {
-        Ok(user) => user,
-        Err(err) => return Ok(log_err(err)),
-    };
-    let report = match user.upload(upload.entries, igdb, steam).await {
+    let manager = LibraryManager::new(&user_id, firestore);
+    let report = match manager
+        .recon_store_entries(upload.entries, igdb, steam)
+        .await
+    {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };

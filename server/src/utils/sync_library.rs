@@ -45,8 +45,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let _guard = span.enter();
 
     let mut user = library::User::new(Arc::clone(&firestore), &opts.user)?;
-    user.sync(&keys, igdb, Arc::new(games::SteamDataApi::new()))
-        .await?;
+    user.sync(&keys).await?;
 
+    let manager = library::LibraryManager::new(&opts.user, firestore);
+    manager
+        .recon_unmatched_collection(igdb, Arc::new(games::SteamDataApi::new()))
+        .await?;
     Ok(())
 }
