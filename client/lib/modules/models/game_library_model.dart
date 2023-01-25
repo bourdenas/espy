@@ -112,7 +112,7 @@ class GameLibraryModel extends ChangeNotifier {
 
   Future<bool> retrieveGameEntry(int gameId) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/retrieve'),
+      Uri.parse('${Urls.espyBackend}/resolve'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -153,14 +153,14 @@ class GameLibraryModel extends ChangeNotifier {
     bool delete = false,
   }) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$userId/unmatch'),
+      Uri.parse('${Urls.espyBackend}/library/$userId/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
         'store_entry': storeEntry.toJson(),
-        'library_entry': libraryEntry.toJson(),
-        'delete': delete,
+        'unmatch_entry': libraryEntry.toJson(),
+        'delete_unmatched': delete,
       }),
     );
 
@@ -183,8 +183,9 @@ class GameLibraryModel extends ChangeNotifier {
       },
       body: jsonEncode({
         'store_entry': storeEntry.toJson(),
-        'library_entry': libraryEntry.toJson(),
         'game_entry': gameEntry.toJson(),
+        'unmatch_entry': libraryEntry.toJson(),
+        'exact_match': true,
       }),
     );
 
