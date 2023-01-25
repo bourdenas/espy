@@ -23,13 +23,6 @@ pub fn routes(
             Arc::clone(&igdb),
             Arc::clone(&steam),
         ))
-        // TODO: Remove post_retrieve. It is a duplicate of post_resolve for the
-        // transition period to maintain compatiblity with older clients.
-        .or(post_retrieve(
-            Arc::clone(&firestore),
-            Arc::clone(&igdb),
-            Arc::clone(&steam),
-        ))
         .or(post_match(
             Arc::clone(&firestore),
             Arc::clone(&igdb),
@@ -77,21 +70,6 @@ fn post_resolve(
     steam: Arc<SteamDataApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("resolve")
-        .and(warp::post())
-        .and(resolve_body())
-        .and(with_firestore(firestore))
-        .and(with_igdb(igdb))
-        .and(with_steam(steam))
-        .and_then(handlers::post_resolve)
-}
-
-/// POST /library/retrieve
-fn post_retrieve(
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    warp::path!("library" / "retrieve")
         .and(warp::post())
         .and(resolve_body())
         .and(with_firestore(firestore))

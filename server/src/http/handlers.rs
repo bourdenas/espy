@@ -49,12 +49,12 @@ pub async fn post_resolve(
     igdb: Arc<IgdbApi>,
     steam: Arc<SteamDataApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    info!("POST /library/resolve");
+    info!("POST /resolve");
 
     match Resolver::resolve(resolve.game_id, igdb, steam, firestore).await {
         Ok(_) => Ok(StatusCode::OK),
         Err(e) => {
-            error!("POST retrieve: {e}");
+            error!("POST resolve: {e}");
             Ok(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -68,7 +68,7 @@ pub async fn post_match(
     igdb: Arc<IgdbApi>,
     steam: Arc<SteamDataApi>,
 ) -> Result<impl warp::Reply, Infallible> {
-    debug!("POST /library/{user_id}/match_op");
+    debug!("POST /library/{user_id}/match");
 
     let manager = LibraryManager::new(&user_id, firestore);
 
