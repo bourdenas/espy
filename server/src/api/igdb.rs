@@ -127,83 +127,6 @@ impl IgdbApi {
         }
     }
 
-    /// Returns candidate GameEntries by searching IGDB based on game title.
-    ///
-    /// The returned GameEntries are shallow lookups. Reference ids are not
-    /// followed up and thus they are not fully resolved.
-    #[instrument(level = "trace", skip(self))]
-    pub async fn get_by_title(&self, title: &str) -> Result<Vec<GameEntry>, Status> {
-        Ok(igdb_ranking::sorted_by_relevance(
-            title,
-            self.search(title)
-                .await?
-                .into_iter()
-                .map(|igdb_game| GameEntry::from(igdb_game))
-                .collect(),
-        ))
-    }
-
-    /// Returns candidate GameEntries by searching IGDB based on game title.
-    ///
-    /// The returned GameEntries are shallow lookups similar to
-    /// `get_by_title()`, but have their cover image resolved.
-    #[instrument(level = "trace", skip(self))]
-    pub async fn get_by_title_with_cover(
-        &self,
-        title: &str,
-        base_games_only: bool,
-    ) -> Result<Vec<GameEntry>, Status> {
-        let mut igdb_games = self.search(title).await?;
-        if base_games_only {
-            igdb_games.retain(|game| game.parent_game.is_none());
-        }
-
-        let igdb_state = self.igdb_state()?;
-        let mut handles = vec![];
-        for game in igdb_games {
-            let igdb_state = Arc::clone(&igdb_state);
-            handles.push(tokio::spawn(
-                async move {
-                    let cover = match game.cover {
-                        Some(id) => match get_cover(igdb_state, id).await {
-                            Ok(cover) => cover,
-                            Err(e) => {
-                                error!("Failed to retrieve cover: {e}");
-                                None
-                            }
-                        },
-                        None => None,
-                    };
-
-                    let mut game_entry = GameEntry::from(game);
-                    game_entry.cover = cover;
-                    game_entry
-                }
-                .instrument(trace_span!("spawn_get_cover")),
-            ));
-        }
-
-        Ok(igdb_ranking::sorted_by_relevance_with_threshold(
-            title,
-            futures::future::join_all(handles)
-                .await
-                .into_iter()
-                .filter_map(|x| x.ok())
-                .collect::<Vec<_>>(),
-            0.5,
-        ))
-    }
-
-    async fn search(&self, title: &str) -> Result<Vec<igdb_docs::IgdbGame>, Status> {
-        let igdb_state = self.igdb_state()?;
-        post::<Vec<igdb_docs::IgdbGame>>(
-            &igdb_state,
-            GAMES_ENDPOINT,
-            &format!("search \"{title}\"; fields *;"),
-        )
-        .await
-    }
-
     /// Returns a GameEntry based on its IGDB `id`.
     ///
     /// The returned GameEntry is a shallow copy but it contains a game cover image.
@@ -304,6 +227,83 @@ impl IgdbApi {
             }
             None => Ok(None),
         }
+    }
+
+    /// Returns candidate GameEntries by searching IGDB based on game title.
+    ///
+    /// The returned GameEntries are shallow lookups. Reference ids are not
+    /// followed up and thus they are not fully resolved.
+    #[instrument(level = "trace", skip(self))]
+    pub async fn search_by_title(&self, title: &str) -> Result<Vec<GameEntry>, Status> {
+        Ok(igdb_ranking::sorted_by_relevance(
+            title,
+            self.search(title)
+                .await?
+                .into_iter()
+                .map(|igdb_game| GameEntry::from(igdb_game))
+                .collect(),
+        ))
+    }
+
+    /// Returns candidate GameEntries by searching IGDB based on game title.
+    ///
+    /// The returned GameEntries are shallow lookups similar to
+    /// `search_by_title()`, but have their cover image resolved.
+    #[instrument(level = "trace", skip(self))]
+    pub async fn search_by_title_with_cover(
+        &self,
+        title: &str,
+        base_games_only: bool,
+    ) -> Result<Vec<GameEntry>, Status> {
+        let mut igdb_games = self.search(title).await?;
+        if base_games_only {
+            igdb_games.retain(|game| game.parent_game.is_none());
+        }
+
+        let igdb_state = self.igdb_state()?;
+        let mut handles = vec![];
+        for game in igdb_games {
+            let igdb_state = Arc::clone(&igdb_state);
+            handles.push(tokio::spawn(
+                async move {
+                    let cover = match game.cover {
+                        Some(id) => match get_cover(igdb_state, id).await {
+                            Ok(cover) => cover,
+                            Err(e) => {
+                                error!("Failed to retrieve cover: {e}");
+                                None
+                            }
+                        },
+                        None => None,
+                    };
+
+                    let mut game_entry = GameEntry::from(game);
+                    game_entry.cover = cover;
+                    game_entry
+                }
+                .instrument(trace_span!("spawn_get_cover")),
+            ));
+        }
+
+        Ok(igdb_ranking::sorted_by_relevance_with_threshold(
+            title,
+            futures::future::join_all(handles)
+                .await
+                .into_iter()
+                .filter_map(|x| x.ok())
+                .collect::<Vec<_>>(),
+            0.5,
+        ))
+    }
+
+    async fn search(&self, title: &str) -> Result<Vec<igdb_docs::IgdbGame>, Status> {
+        let igdb_state = self.igdb_state()?;
+        post::<Vec<igdb_docs::IgdbGame>>(
+            &igdb_state,
+            GAMES_ENDPOINT,
+            &format!("search \"{title}\"; fields *;"),
+        )
+        .await
     }
 
     /// Returns a shallow GameEntry from IGDB matching `id` and sends GameEntry

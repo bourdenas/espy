@@ -69,7 +69,7 @@ async fn match_by_external_id(
 async fn match_by_title(igdb: &IgdbApi, title: &str) -> Result<Option<GameEntry>, Status> {
     debug!("Searching '{}'", title);
 
-    let candidates = igdb.get_by_title(title).await?;
+    let candidates = igdb.search_by_title(title).await?;
     match candidates.into_iter().next() {
         Some(game_entry) => Ok(Some(game_entry)),
         None => Ok(None),

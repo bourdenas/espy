@@ -27,7 +27,7 @@ pub async fn post_search(
     let started = SystemTime::now();
 
     let resp: Result<Box<dyn warp::Reply>, Infallible> = match igdb
-        .get_by_title_with_cover(&search.title, search.base_game_only)
+        .search_by_title_with_cover(&search.title, search.base_game_only)
         .await
     {
         Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
@@ -51,7 +51,7 @@ pub async fn post_resolve(
 ) -> Result<impl warp::Reply, Infallible> {
     info!("POST /resolve");
 
-    match Resolver::resolve(resolve.game_id, igdb, steam, firestore).await {
+    match Resolver::schedule_resolve(resolve.game_id, igdb, steam, firestore).await {
         Ok(_) => Ok(StatusCode::OK),
         Err(e) => {
             error!("POST resolve: {e}");
