@@ -1,7 +1,7 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
     documents::{GameEntry, LibraryEntry, StoreEntry},
-    games::{ReconMatch, ReconReport, Reconciler, Resolver, SteamDataApi},
+    games::{ReconReport, Reconciler, Resolver, SteamDataApi},
     Status,
 };
 use std::sync::{Arc, Mutex};
@@ -88,7 +88,14 @@ impl LibraryManager {
         };
 
         let game_entry =
-            Resolver::retrieve(game_id, igdb, steam, Arc::clone(&self.firestore)).await?;
+            match Resolver::retrieve(game_id, igdb, steam, Arc::clone(&self.firestore)).await? {
+                Some(game_entry) => game_entry,
+                None => {
+                    return Err(Status::not_found(format!(
+                        "Could not find game with id={game_id}"
+                    )))
+                }
+            };
 
         let firestore = &self.firestore.lock().unwrap();
         firestore::failed::remove_entry(firestore, &self.user_id, &store_entry)?;
@@ -130,7 +137,17 @@ impl LibraryManager {
         exact_match: bool,
     ) -> Result<(), Status> {
         let game_entry =
-            Resolver::retrieve(game_entry.id, igdb, steam, Arc::clone(&self.firestore)).await?;
+            match Resolver::retrieve(game_entry.id, igdb, steam, Arc::clone(&self.firestore))
+                .await?
+            {
+                Some(game_entry) => game_entry,
+                None => {
+                    return Err(Status::not_found(format!(
+                        "Could not find game with id={}",
+                        game_entry.id
+                    )))
+                }
+            };
 
         let firestore = &self.firestore.lock().unwrap();
         firestore::library::remove_entry(
