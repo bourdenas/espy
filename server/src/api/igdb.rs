@@ -147,6 +147,9 @@ impl IgdbApi {
                 let igdb_game = IgdbGame {
                     id: igdb_game.id,
                     name: igdb_game.name,
+                    url: igdb_game.url,
+                    summary: igdb_game.summary,
+                    storyline: igdb_game.storyline,
                     first_release_date: igdb_game.first_release_date,
                     total_rating: igdb_game.total_rating,
                     parent_game: igdb_game.parent_game,
@@ -197,6 +200,9 @@ impl IgdbApi {
                 let igdb_game = IgdbGame {
                     id: igdb_game.id,
                     name: igdb_game.name,
+                    url: igdb_game.url,
+                    summary: igdb_game.summary,
+                    storyline: igdb_game.storyline,
                     first_release_date: igdb_game.first_release_date,
                     total_rating: igdb_game.total_rating,
                     parent_game: igdb_game.parent_game,
