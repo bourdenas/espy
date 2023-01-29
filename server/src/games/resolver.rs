@@ -146,7 +146,11 @@ impl Resolver {
             async move {
                 // TODO: This could be optimised as it resolves many fields that
                 // are already resolved in the digest.
-                Self::resolve(game_entry_digest.id, &igdb, &steam, firestore).await;
+                if let Err(err) =
+                    Self::resolve(game_entry_digest.id, &igdb, &steam, firestore).await
+                {
+                    error!("{err}");
+                }
             }
             .instrument(trace_span!("spawn_schedule_resolve")),
         );

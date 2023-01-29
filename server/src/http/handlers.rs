@@ -2,7 +2,7 @@ use crate::{
     api::{FirestoreApi, IgdbApi},
     games::{Resolver, SteamDataApi},
     http::models,
-    library::{LibraryManager, User},
+    library::{LibraryManager, MatchType, User},
     util, Status,
 };
 use std::{
@@ -80,7 +80,10 @@ pub async fn post_match(
                     game_entry,
                     igdb,
                     steam,
-                    match_op.exact_match,
+                    match match_op.exact_match {
+                        true => MatchType::Exact,
+                        false => MatchType::BaseGame,
+                    },
                 )
                 .await
             {
@@ -115,7 +118,10 @@ pub async fn post_match(
                     &library_entry,
                     igdb,
                     steam,
-                    match_op.exact_match,
+                    match match_op.exact_match {
+                        true => MatchType::Exact,
+                        false => MatchType::BaseGame,
+                    },
                 )
                 .await
             {

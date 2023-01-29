@@ -5,8 +5,7 @@ use crate::{
     Status,
 };
 use std::sync::{Arc, Mutex};
-use tokio::sync::mpsc;
-use tracing::{instrument, trace_span, Instrument};
+use tracing::instrument;
 
 use super::firestore;
 
@@ -56,18 +55,42 @@ impl LibraryManager {
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
     ) -> Result<ReconReport, Status> {
-        let (tx, rx) = mpsc::channel(32);
+        let mut report = ReconReport {
+            lines: vec![format!(
+                "Attempted to match {} new entries.",
+                store_entries.len()
+            )],
+        };
 
-        tokio::spawn(
-            async move {
-                Reconciler::new(igdb, steam)
-                    .reconcile(tx, store_entries)
-                    .await;
+        for store_entry in store_entries {
+            let igdb = Arc::clone(&igdb);
+            let steam = Arc::clone(&steam);
+            let game_entry = Reconciler::recon(&igdb, &store_entry, false).await?;
+
+            match game_entry {
+                Some(game_entry) => {
+                    report.lines.push(format!(
+                        "  matched '{}' ({}) with {}",
+                        &store_entry.title, &store_entry.storefront_name, &game_entry.name,
+                    ));
+                    self.match_game(store_entry, game_entry, igdb, steam, MatchType::BaseGame)
+                        .await?
+                }
+                None => {
+                    report.lines.push(format!(
+                        "  failed to match {} ({})",
+                        &store_entry.title, &store_entry.storefront_name,
+                    ));
+                    firestore::failed::add_entry(
+                        &self.firestore.lock().unwrap(),
+                        &self.user_id,
+                        store_entry,
+                    )?
+                }
             }
-            .instrument(trace_span!("spawn recon job")),
-        );
+        }
 
-        Ok(self.receive_matches(rx).await)
+        Ok(report)
     }
 
     /// Match a `StoreEntry` with a specified `GameEntry` and saving it in the
@@ -79,11 +102,11 @@ impl LibraryManager {
         game_entry: GameEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
-        exact_match: bool,
+        match_type: MatchType,
     ) -> Result<(), Status> {
         let owned_game_id = game_entry.id;
-        let game_id = match (exact_match, game_entry.parent) {
-            (false, Some(parent_id)) => parent_id,
+        let game_id = match (match_type, game_entry.parent) {
+            (MatchType::BaseGame, Some(parent_id)) => parent_id,
             _ => game_entry.id,
         };
 
@@ -98,6 +121,7 @@ impl LibraryManager {
             };
 
         let firestore = &self.firestore.lock().unwrap();
+        firestore::unmatched::delete(firestore, &self.user_id, &store_entry)?;
         firestore::failed::remove_entry(firestore, &self.user_id, &store_entry)?;
         firestore::wishlist::remove_entry(firestore, &self.user_id, game_entry.id)?;
         firestore::library::add_entry(
@@ -134,7 +158,7 @@ impl LibraryManager {
         existing_library_entry: &LibraryEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
-        exact_match: bool,
+        match_type: MatchType,
     ) -> Result<(), Status> {
         let game_entry =
             match Resolver::retrieve(game_entry.id, igdb, steam, Arc::clone(&self.firestore))
@@ -160,63 +184,9 @@ impl LibraryManager {
             firestore,
             &self.user_id,
             store_entry,
-            game_entry.id,
+            game_entry.id, // TODO: This is probably incorrect.
             game_entry,
         )
-    }
-
-    async fn receive_matches(&self, mut rx: mpsc::Receiver<ReconMatch>) -> ReconReport {
-        let mut report = ReconReport { lines: vec![] };
-
-        while let Some(recon_match) = rx.recv().await {
-            match &recon_match.game_entry {
-                Some(entry) => report.lines.push(format!(
-                    "matched '{}' ({}) with {}",
-                    &recon_match.store_entry.title,
-                    &recon_match.store_entry.storefront_name,
-                    &entry.name,
-                )),
-                None => report.lines.push(format!(
-                    "failed to match {} ({})",
-                    &recon_match.store_entry.title, &recon_match.store_entry.storefront_name,
-                )),
-            };
-
-            let firestore = Arc::clone(&self.firestore);
-            let user_id = self.user_id.clone();
-            tokio::spawn(
-                async move {
-                    let firestore = &firestore.lock().unwrap();
-                    firestore::unmatched::delete(firestore, &user_id, &recon_match.store_entry)
-                        .expect("firestore::unmatched::delete()");
-
-                    match recon_match.game_entry {
-                        Some(game_entry) => {
-                            firestore::games::write(firestore, &game_entry)
-                                .expect("firestore::games::write()");
-                            firestore::library::add_entry(
-                                firestore,
-                                &user_id,
-                                recon_match.store_entry,
-                                game_entry.id,
-                                game_entry,
-                            )
-                            .expect("firestore::library::add_entry()")
-                        }
-                        None => {
-                            firestore::failed::add_entry(
-                                firestore,
-                                &user_id,
-                                recon_match.store_entry,
-                            )
-                            .expect("firestore::failed::add_entry()");
-                        }
-                    }
-                }
-                .instrument(trace_span!("spawn handle match")),
-            );
-        }
-        report
     }
 
     #[instrument(level = "trace", skip(self))]
@@ -232,4 +202,10 @@ impl LibraryManager {
     pub async fn remove_from_wishlist(&self, game_id: u64) -> Result<(), Status> {
         firestore::wishlist::remove_entry(&self.firestore.lock().unwrap(), &self.user_id, game_id)
     }
+}
+
+#[derive(Debug)]
+pub enum MatchType {
+    Exact,
+    BaseGame,
 }
