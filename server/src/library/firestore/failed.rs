@@ -58,6 +58,9 @@ pub fn remove_entry(
     Ok(())
 }
 
+/// Adds `StoreEntry` in the failed to match entries.
+///
+/// Returns false if the same `StoreEntry` was already found, true otherwise.
 fn add(store_entry: StoreEntry, failed: &mut FailedEntries) -> bool {
     match failed
         .entries
@@ -72,6 +75,9 @@ fn add(store_entry: StoreEntry, failed: &mut FailedEntries) -> bool {
     }
 }
 
+/// Remove `StoreEntry` from the failed to match entries.
+///
+/// Returns true if the `StoreEntry` was found and removed, false otherwise.
 fn remove(store_entry: &StoreEntry, failed: &mut FailedEntries) -> bool {
     let original_len = failed.entries.len();
     failed
