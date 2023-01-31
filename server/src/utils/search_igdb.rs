@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         return Ok(());
     }
 
-    let games = igdb.get_by_title(&opts.search).await?;
+    let games = igdb.search_by_title(&opts.search).await?;
     println!(
         "Found {} candidates.\n{}",
         games.len(),
@@ -58,8 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     );
 
     if opts.expand && !games.is_empty() {
-        let game = igdb.resolve(games[0].id).await?.unwrap();
-        println!("{:#?}", game);
+        todo!("implement game resolution")
     }
 
     Ok(())
