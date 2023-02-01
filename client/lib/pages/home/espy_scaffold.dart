@@ -116,26 +116,37 @@ class _EspyScaffoldState extends State<EspyScaffold>
         ),
       ),
       actions: [
-        IconButton(
-          key: Key('layoutButton'),
-          icon: Icon(_libraryViews[appConfig.libraryLayout.index].iconData),
-          splashRadius: 20.0,
-          onPressed: () {
-            setState(() {
-              appConfig.nextLibraryLayout();
-            });
-          },
-        ),
-        IconButton(
-          key: Key('cardInfoButton'),
-          icon: Icon(_cardViews[appConfig.cardDecoration.index].iconData),
-          splashRadius: 20.0,
-          onPressed: () {
-            setState(() {
-              appConfig.nextCardDecoration();
-            });
-          },
-        ),
+        if (AppConfigModel.isMobile(context)) ...[
+          IconButton(
+            key: Key('layoutButton'),
+            icon: Icon(_libraryViews[appConfig.libraryLayout.index].iconData),
+            splashRadius: 20.0,
+            onPressed: () => appConfig.nextLibraryLayout(),
+          ),
+          IconButton(
+            key: Key('cardInfoButton'),
+            icon: Icon(_cardViews[appConfig.cardDecoration.index].iconData),
+            splashRadius: 20.0,
+            onPressed: () => appConfig.nextCardDecoration(),
+          ),
+        ] else ...[
+          ToggleButtons(
+            renderBorder: false,
+            children: _libraryViews.map((e) => Icon(e.iconData)).toList(),
+            isSelected: List.generate(_libraryViews.length,
+                (i) => i == appConfig.libraryLayout.index),
+            onPressed: (index) => appConfig.libraryLayoutIndex = index,
+          ),
+          SizedBox(width: 24),
+          ToggleButtons(
+            renderBorder: false,
+            children: _cardViews.map((e) => Icon(e.iconData)).toList(),
+            isSelected: List.generate(
+                _cardViews.length, (i) => i == appConfig.cardDecoration.index),
+            onPressed: (index) => appConfig.cardDecorationIndex = index,
+          ),
+          SizedBox(width: 24),
+        ],
         IconButton(
           key: Key('searchButton'),
           icon: Icon(Icons.search),

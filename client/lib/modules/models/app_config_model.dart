@@ -4,11 +4,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// App configuration structure.
 class AppConfigModel extends ChangeNotifier {
   double windowWidth = 0;
-  CardDecoration _cardDecoration = CardDecoration.TAGS;
   LibraryLayout _libraryLayout = LibraryLayout.GRID;
+  CardDecoration _cardDecoration = CardDecoration.TAGS;
 
-  get cardDecoration => _cardDecoration;
-  get libraryLayout => _libraryLayout;
+  LibraryLayout get libraryLayout => _libraryLayout;
+  CardDecoration get cardDecoration => _cardDecoration;
 
   get theme => ThemeData.dark().copyWith(
         appBarTheme: AppBarTheme(backgroundColor: backgrounColor),
@@ -21,9 +21,8 @@ class AppConfigModel extends ChangeNotifier {
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width <= 800;
 
-  void nextCardDecoration() {
-    _cardDecoration = CardDecoration
-        .values[(_cardDecoration.index + 1) % CardDecoration.values.length];
+  set libraryLayoutIndex(int index) {
+    _libraryLayout = LibraryLayout.values[index % LibraryLayout.values.length];
     saveLocalPref();
     notifyListeners();
   }
@@ -31,6 +30,20 @@ class AppConfigModel extends ChangeNotifier {
   void nextLibraryLayout() {
     _libraryLayout = LibraryLayout
         .values[(_libraryLayout.index + 1) % LibraryLayout.values.length];
+    saveLocalPref();
+    notifyListeners();
+  }
+
+  set cardDecorationIndex(int index) {
+    _cardDecoration =
+        CardDecoration.values[index % CardDecoration.values.length];
+    saveLocalPref();
+    notifyListeners();
+  }
+
+  void nextCardDecoration() {
+    _cardDecoration = CardDecoration
+        .values[(_cardDecoration.index + 1) % CardDecoration.values.length];
     saveLocalPref();
     notifyListeners();
   }
