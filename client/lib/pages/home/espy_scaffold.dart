@@ -129,6 +129,12 @@ class _EspyScaffoldState extends State<EspyScaffold>
             splashRadius: 20.0,
             onPressed: () => appConfig.nextCardDecoration(),
           ),
+          IconButton(
+            key: Key('groupByButton'),
+            icon: Icon(_groupViews[appConfig.groupBy.index].iconData),
+            splashRadius: 20.0,
+            onPressed: () => appConfig.nextGroupBy(),
+          ),
         ] else ...[
           ToggleButtons(
             renderBorder: false,
@@ -144,6 +150,14 @@ class _EspyScaffoldState extends State<EspyScaffold>
             isSelected: List.generate(
                 _cardViews.length, (i) => i == appConfig.cardDecoration.index),
             onPressed: (index) => appConfig.cardDecorationIndex = index,
+          ),
+          SizedBox(width: 24),
+          ToggleButtons(
+            renderBorder: false,
+            children: _groupViews.map((e) => Icon(e.iconData)).toList(),
+            isSelected: List.generate(
+                _groupViews.length, (i) => i == appConfig.groupBy.index),
+            onPressed: (index) => appConfig.groupByIndex = index,
           ),
           SizedBox(width: 24),
         ],
@@ -169,6 +183,11 @@ class _EspyScaffoldState extends State<EspyScaffold>
     _CardsView(CardDecoration.INFO, Icons.info),
     _CardsView(CardDecoration.TAGS, Icons.collections_bookmark),
   ];
+
+  List<_GroupView> _groupViews = const [
+    _GroupView(GroupBy.NONE, Icons.block),
+    _GroupView(GroupBy.YEAR, Icons.calendar_month),
+  ];
 }
 
 class _LibraryView {
@@ -183,4 +202,11 @@ class _CardsView {
   final IconData iconData;
 
   const _CardsView(this.decoration, this.iconData);
+}
+
+class _GroupView {
+  final GroupBy group;
+  final IconData iconData;
+
+  const _GroupView(this.group, this.iconData);
 }
