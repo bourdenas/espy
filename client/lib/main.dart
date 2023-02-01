@@ -1,5 +1,6 @@
 import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
@@ -24,6 +25,11 @@ Future<void> main() async {
       ChangeNotifierProvider(create: (_) => UserDataModel()),
       ChangeNotifierProxyProvider<UserDataModel, GameLibraryModel>(
         create: (_) => GameLibraryModel(),
+        update: (_, userDataModel, model) =>
+            model!..update(userDataModel.userData),
+      ),
+      ChangeNotifierProxyProvider<UserDataModel, FailedModel>(
+        create: (_) => FailedModel(),
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),

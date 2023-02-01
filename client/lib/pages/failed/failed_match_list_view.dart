@@ -1,5 +1,5 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/pages/failed/failed_match_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
@@ -9,7 +9,7 @@ class FailedMatchListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unmatchedEntries = context.watch<GameLibraryModel>().failedEntries;
+    final unmatchedEntries = context.watch<FailedModel>().entries;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),

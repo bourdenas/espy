@@ -14,17 +14,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Model that handles interactions with remote library data store.
 class GameLibraryModel extends ChangeNotifier {
   Library _library = Library();
-  FailedEntries _failedEntries = FailedEntries();
   String userId = '';
 
   List<LibraryEntry> get entries => _library.entries;
-  List<StoreEntry> get failedEntries => _failedEntries.entries;
 
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
       _library = Library();
-      _failedEntries = FailedEntries();
+      notifyListeners();
       return;
     }
 
@@ -34,29 +32,27 @@ class GameLibraryModel extends ChangeNotifier {
     userId = userData.uid;
 
     await _loadLibrary();
-    notifyListeners();
   }
 
   Future<void> _loadLibrary() async {
-    // final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
-    // final encodedLibrary = prefs.getString('${userId}_library');
-    //   _library =
-    //       Library.fromJson(jsonDecode(encodedLibrary) as Map<String, dynamic>);
-    // final encodedFailed = prefs.getString('${userId}_failed');
-    //   _failedEntries = FailedEntries.fromJson(
-    //       jsonDecode(encodedFailed ?? '') as Map<String, dynamic>);
+    final encodedLibrary = prefs.getString('${userId}_library');
+    if (encodedLibrary != null) {
+      _library =
+          Library.fromJson(jsonDecode(encodedLibrary) as Map<String, dynamic>);
+      notifyListeners();
+    }
 
-    await _fetchLibrary();
+    _fetch();
   }
 
-  Future<void> _saveLibraryLocally() async {
+  Future<void> _saveLocally() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('${userId}_library', jsonEncode(_library));
-    await prefs.setString('${userId}_failed', jsonEncode(_failedEntries));
   }
 
-  Future<void> _fetchLibrary() async {
+  Future<void> _fetch() async {
     FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -67,22 +63,11 @@ class GameLibraryModel extends ChangeNotifier {
           toFirestore: (library, _) => library.toJson(),
         )
         .snapshots()
-        .listen((DocumentSnapshot<Library> snapshot) =>
-            _library = snapshot.data() ?? Library());
-
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('games')
-        .doc('failed')
-        .withConverter<FailedEntries>(
-          fromFirestore: (snapshot, _) =>
-              FailedEntries.fromJson(snapshot.data()!),
-          toFirestore: (entry, _) => entry.toJson(),
-        )
-        .snapshots()
-        .listen((DocumentSnapshot<FailedEntries> snapshot) =>
-            _failedEntries = snapshot.data() ?? FailedEntries());
+        .listen((DocumentSnapshot<Library> snapshot) {
+      _library = snapshot.data() ?? Library();
+      notifyListeners();
+      _saveLocally();
+    });
   }
 
   Future<List<GameEntry>> searchByTitle(
@@ -91,7 +76,7 @@ class GameLibraryModel extends ChangeNotifier {
   }) async {
     if (title.isEmpty) return [];
 
-    var response = await http.post(
+    final response = await http.post(
       Uri.parse('${Urls.espyBackend}/search'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
@@ -111,7 +96,7 @@ class GameLibraryModel extends ChangeNotifier {
   }
 
   Future<bool> retrieveGameEntry(int gameId) async {
-    var response = await http.post(
+    final response = await http.post(
       Uri.parse('${Urls.espyBackend}/resolve'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
@@ -129,7 +114,7 @@ class GameLibraryModel extends ChangeNotifier {
   }
 
   Future<bool> matchEntry(StoreEntry storeEntry, GameEntry gameEntry) async {
-    var response = await http.post(
+    final response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/$userId/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
@@ -152,7 +137,7 @@ class GameLibraryModel extends ChangeNotifier {
     LibraryEntry libraryEntry, {
     bool delete = false,
   }) async {
-    var response = await http.post(
+    final response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/$userId/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
@@ -176,7 +161,7 @@ class GameLibraryModel extends ChangeNotifier {
     LibraryEntry libraryEntry,
     GameEntry gameEntry,
   ) async {
-    var response = await http.post(
+    final response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/$userId/rematch'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
