@@ -1,17 +1,16 @@
 import 'dart:async';
 
-import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
-import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
+import 'package:espy/widgets/library/library_group.dart';
+import 'package:espy/widgets/library/library_header.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
@@ -50,120 +49,46 @@ class _SearchPageState extends State<SearchPage> {
           tagsModel.filterCollections(ngrams),
         ),
         for (final company in tagsModel.filterCompaniesExact(ngrams)) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, company, Colors.redAccent,
-                LibraryFilter(companies: {company})),
-          ),
-          GameSearchResults(
-            entries: gameEntriesModel.getEntries(
-              filter: LibraryFilter(companies: {company}),
-            ),
+          LibraryGroup(
+            title: company,
+            color: Colors.redAccent,
+            filter: LibraryFilter(companies: {company}),
           ),
         ],
         for (final collection in tagsModel.filterCollectionsExact(ngrams)) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, collection, Colors.indigoAccent,
-                LibraryFilter(collections: {collection})),
-          ),
-          GameSearchResults(
-            entries: gameEntriesModel.getEntries(
-              filter: LibraryFilter(collections: {collection}),
-            ),
+          LibraryGroup(
+            title: collection,
+            color: Colors.indigoAccent,
+            filter: LibraryFilter(collections: {collection}),
           ),
         ],
         for (final tag in tagsModel.filterTagsExact(ngrams)) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, tag.name, Colors.blueGrey,
-                LibraryFilter(tags: {tag.name})),
-          ),
-          GameSearchResults(
-            entries: gameEntriesModel.getEntries(
-              filter: LibraryFilter(tags: {tag.name}),
-            ),
+          LibraryGroup(
+            title: tag.name,
+            color: Colors.blueGrey,
+            filter: LibraryFilter(tags: {tag.name}),
           ),
         ],
-        if (titleMatches.isNotEmpty) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, 'Title Matches', Colors.grey),
+        if (titleMatches.isNotEmpty)
+          LibraryGroup(
+            title: 'Title Matches',
+            color: Colors.grey,
+            entries: titleMatches,
           ),
-          GameSearchResults(entries: titleMatches),
-        ],
-        if (_fetchingRemoteGames || _remoteGames.isNotEmpty) ...[
-          SliverPersistentHeader(
-            pinned: true,
-            floating: true,
-            delegate: section(context, 'Not in Library', Colors.grey),
-          ),
-          if (_fetchingRemoteGames)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-            ),
-          GameSearchResults(
-            entries: _remoteGames
-                .where((gameEntry) =>
-                    gameEntriesModel.getEntryById(gameEntry.id) == null)
-                .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry)),
+        if (_remoteGames.isNotEmpty) ...[
+          LibraryGroup(
+            title: 'Not in Library',
+            color: Colors.grey,
+            entries: _remoteGames,
           ),
         ],
       ],
     );
   }
 
-  _SectionHeader section(BuildContext context, String title, Color color,
-      [LibraryFilter? filter]) {
-    return _SectionHeader(
-      minHeight: 50.0,
-      maxHeight: 50.0,
-      child: Material(
-        elevation: 10.0,
-        color: AppConfigModel.foregroundColor,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Icon(Icons.arrow_drop_down),
-              Text(
-                'Results for ',
-                style: TextStyle(
-                  fontSize: 16.0,
-                ),
-              ),
-              TextButton(
-                onPressed: filter != null
-                    ? () =>
-                        context.pushNamed('games', queryParams: filter.params())
-                    : null,
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    color: color,
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  _SectionHeader searchBox() {
+  LibraryHeaderDelegate searchBox() {
     final isMobile = AppConfigModel.isMobile(context);
-    return _SectionHeader(
+    return LibraryHeaderDelegate(
       minHeight: 80.0,
       maxHeight: isMobile ? 200 : 120,
       child: Padding(
@@ -187,7 +112,14 @@ class _SearchPageState extends State<SearchPage> {
                   await context.read<GameLibraryModel>().searchByTitle(text);
               setState(() {
                 _fetchingRemoteGames = false;
-                _remoteGames = remoteGames;
+                _remoteGames = remoteGames
+                    .where((gameEntry) =>
+                        context
+                            .read<GameEntriesModel>()
+                            .getEntryById(gameEntry.id) ==
+                        null)
+                    .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))
+                    .toList();
               });
             });
           },
@@ -199,36 +131,5 @@ class _SearchPageState extends State<SearchPage> {
   String _text = '';
   Timer _timer = Timer(const Duration(seconds: 0), () {});
   bool _fetchingRemoteGames = false;
-  List<GameEntry> _remoteGames = [];
-}
-
-class _SectionHeader extends SliverPersistentHeaderDelegate {
-  _SectionHeader({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  bool shouldRebuild(_SectionHeader oldSearchBar) {
-    return maxHeight != oldSearchBar.maxHeight ||
-        minHeight != oldSearchBar.minHeight ||
-        child != oldSearchBar.child;
-  }
+  List<LibraryEntry> _remoteGames = [];
 }

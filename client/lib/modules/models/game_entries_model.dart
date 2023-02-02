@@ -40,6 +40,11 @@ class GameEntriesModel extends ChangeNotifier {
     return sortedEntries.where((e) => filter.apply(e));
   }
 
+  Iterable<LibraryEntry> getRecentEntries() {
+    return _entries.values.toList()
+      ..sort((a, b) => -a.addedDate.compareTo(b.addedDate));
+  }
+
   LibraryEntry? getEntryByStringId(String id) {
     final gameId = int.tryParse(id);
     if (gameId == null) {

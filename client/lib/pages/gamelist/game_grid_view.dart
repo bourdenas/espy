@@ -1,6 +1,9 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/pages/gamelist/game_grid_card.dart';
+import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/pages/search/search_results.dart';
+import 'package:espy/widgets/library/library_group.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class GameGridView extends StatelessWidget {
   const GameGridView({
@@ -12,17 +15,47 @@ class GameGridView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scrollbar(
-      child: GridView.extent(
-        primary: true,
-        restorationId: 'grid_view_game_entries_grid_offset',
-        maxCrossAxisExtent: _maxCardWidth,
-        childAspectRatio: _cardAspectRation,
-        children: entries.map((entry) => GameGridCard(entry: entry)).toList(),
-      ),
+    final groups = context.watch<AppConfigModel>().groupBy == GroupBy.YEAR
+        ? groupBy(
+            entries,
+            (e) =>
+                '${DateTime.fromMillisecondsSinceEpoch(e.releaseDate * 1000).year}')
+        : {'': entries};
+    final keys = groups.keys.toList()..sort();
+
+    return CustomScrollView(
+      primary: true,
+      shrinkWrap: true,
+      slivers: [
+        if (groups.length == 1)
+          GameSearchResults(
+            entries: entries,
+            cardWidth: _maxCardWidth,
+            cardAspectRatio: _cardAspectRation,
+          )
+        else ...[
+          for (final key in keys.reversed)
+            LibraryGroup(
+              title: '$key',
+              color: Colors.grey,
+              entries: groups[key]!,
+              cardWidth: _maxCardWidth,
+              cardAspectRatio: _cardAspectRation,
+            ),
+        ],
+      ],
     );
   }
 
-  static const _maxCardWidth = 300.0;
+  static const _maxCardWidth = 250.0;
   static const _cardAspectRation = .75;
+}
+
+Map<String, List<LibraryEntry>> groupBy(
+    Iterable<LibraryEntry> entries, String Function(LibraryEntry) key) {
+  var groups = <String, List<LibraryEntry>>{};
+  for (final entry in entries) {
+    (groups[key(entry)] ??= []).add(entry);
+  }
+  return groups;
 }

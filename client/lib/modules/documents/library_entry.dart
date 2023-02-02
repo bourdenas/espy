@@ -6,6 +6,7 @@ class LibraryEntry {
   final int id;
   final GameDigest digest;
 
+  final int addedDate;
   final List<StoreEntry> storeEntries;
   final List<int> ownedVersions;
 
@@ -19,6 +20,7 @@ class LibraryEntry {
   LibraryEntry({
     required this.id,
     required this.digest,
+    this.addedDate = 0,
     this.storeEntries = const [],
     this.ownedVersions = const [],
   });
@@ -33,6 +35,7 @@ class LibraryEntry {
       : this(
           id: json['id']!,
           digest: GameDigest.fromJson(json['digest']!),
+          addedDate: json['added_date'] ?? 0,
           storeEntries: [
             for (final entry in json['store_entries'] ?? [])
               StoreEntry.fromJson(entry),
@@ -46,6 +49,7 @@ class LibraryEntry {
     return {
       'id': id,
       'digest': digest.toJson(),
+      if (addedDate > 0) 'added_date': addedDate,
       if (storeEntries.isNotEmpty)
         'store_entries': [
           for (final entry in storeEntries) entry.toJson(),

@@ -12,7 +12,7 @@ class HomeHeadline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entries = context.watch<GameEntriesModel>().getEntries();
+    final entries = context.watch<GameEntriesModel>().getRecentEntries();
 
     return FadeIn(
       duration: Duration(milliseconds: 500),

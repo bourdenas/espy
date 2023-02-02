@@ -2,6 +2,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
@@ -17,7 +18,7 @@ class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final entries = context.watch<GameEntriesModel>().getEntries();
-    final unmatchedEntries = context.watch<GameLibraryModel>().failedEntries;
+    final unmatchedEntries = context.watch<FailedModel>().entries;
 
     return entries.isNotEmpty || unmatchedEntries.isNotEmpty
         ? library(context)
@@ -26,7 +27,7 @@ class HomeContent extends StatelessWidget {
 
   Widget library(BuildContext context) {
     final slates = context.watch<HomeSlatesModel>().slates;
-    final unmatchedEntries = context.watch<GameLibraryModel>().failedEntries;
+    final unmatchedEntries = context.watch<FailedModel>().entries;
     final isMobile = AppConfigModel.isMobile(context);
 
     return ListView(

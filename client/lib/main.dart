@@ -1,10 +1,10 @@
 import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/recent_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -27,13 +27,13 @@ Future<void> main() async {
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
-      ChangeNotifierProxyProvider<UserDataModel, WishlistModel>(
-        create: (_) => WishlistModel(),
+      ChangeNotifierProxyProvider<UserDataModel, FailedModel>(
+        create: (_) => FailedModel(),
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
-      ChangeNotifierProxyProvider<UserDataModel, RecentModel>(
-        create: (_) => RecentModel(),
+      ChangeNotifierProxyProvider<UserDataModel, WishlistModel>(
+        create: (_) => WishlistModel(),
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
@@ -55,16 +55,14 @@ Future<void> main() async {
             );
         },
       ),
-      ChangeNotifierProxyProvider4<GameEntriesModel, WishlistModel, RecentModel,
+      ChangeNotifierProxyProvider3<GameEntriesModel, WishlistModel,
           GameTagsModel, HomeSlatesModel>(
         create: (_) => HomeSlatesModel(),
-        update: (_, gameEntriesModel, wishlistModel, recentModel, gameTagsModel,
-            model) {
+        update: (_, gameEntriesModel, wishlistModel, gameTagsModel, model) {
           return model!
             ..update(
               gameEntriesModel,
               wishlistModel,
-              recentModel,
               gameTagsModel,
             );
         },
