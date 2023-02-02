@@ -5,7 +5,6 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/recent_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -38,11 +37,6 @@ Future<void> main() async {
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
-      ChangeNotifierProxyProvider<UserDataModel, RecentModel>(
-        create: (_) => RecentModel(),
-        update: (_, userDataModel, model) =>
-            model!..update(userDataModel.userData),
-      ),
       ChangeNotifierProxyProvider<GameLibraryModel, GameTagsModel>(
         create: (_) => GameTagsModel(),
         update: (_, libraryModel, model) {
@@ -61,16 +55,14 @@ Future<void> main() async {
             );
         },
       ),
-      ChangeNotifierProxyProvider4<GameEntriesModel, WishlistModel, RecentModel,
+      ChangeNotifierProxyProvider3<GameEntriesModel, WishlistModel,
           GameTagsModel, HomeSlatesModel>(
         create: (_) => HomeSlatesModel(),
-        update: (_, gameEntriesModel, wishlistModel, recentModel, gameTagsModel,
-            model) {
+        update: (_, gameEntriesModel, wishlistModel, gameTagsModel, model) {
           return model!
             ..update(
               gameEntriesModel,
               wishlistModel,
-              recentModel,
               gameTagsModel,
             );
         },
