@@ -60,7 +60,13 @@ pub async fn post_resolve(
     }
 }
 
-#[instrument(level = "trace", skip(firestore, igdb, steam))]
+#[instrument(
+    level = "trace",
+    skip(match_op, firestore, igdb, steam),
+    fields(
+        title = %match_op.store_entry.title,
+    )
+)]
 pub async fn post_match(
     user_id: String,
     match_op: models::MatchOp,
