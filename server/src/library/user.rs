@@ -1,14 +1,15 @@
-use super::{steam_data::SteamDataApi, LibraryManager, ReconReport};
 use crate::{
-    api::{self, FirestoreApi, GogApi, IgdbApi, SteamApi},
-    documents::{GameEntry, Keys, LibraryEntry, StoreEntry, UserData},
-    util, Status,
+    api::{FirestoreApi, GogApi, GogToken, SteamApi},
+    documents::{Keys, UserData},
+    traits, util, Status,
 };
 use std::{
+    collections::HashSet,
     sync::{Arc, Mutex},
-    time::{SystemTime, UNIX_EPOCH},
 };
 use tracing::{info, instrument, warn};
+
+use super::firestore;
 
 pub struct User {
     data: UserData,
@@ -34,7 +35,7 @@ impl User {
     ) -> Result<(), Status> {
         self.data.keys = Some(Keys {
             // TODO: Need to avoid invalidating the existing credentials for no reason.
-            gog_token: match api::GogToken::from_oauth_code(gog_auth_code).await {
+            gog_token: match GogToken::from_oauth_code(gog_auth_code).await {
                 Ok(token) => Some(token),
                 Err(_) => None,
             },
@@ -51,13 +52,8 @@ impl User {
 
     /// Synchronises user library with connected storefronts to retrieve
     /// updates.
-    #[instrument(level = "trace", skip(self, keys, igdb, steam))]
-    pub async fn sync(
-        &mut self,
-        keys: &util::keys::Keys,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-    ) -> Result<ReconReport, Status> {
+    #[instrument(level = "trace", skip(self, keys))]
+    pub async fn sync(&mut self, keys: &util::keys::Keys) -> Result<(), Status> {
         let gog_api = match self.gog_token().await {
             Some(token) => {
                 let gog_api = Some(GogApi::new(token.clone()));
@@ -76,103 +72,56 @@ impl User {
             None => None,
         };
 
-        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        let report = mgr.sync_library(steam_api, gog_api, igdb, steam).await?;
-
-        commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
-        Ok(report)
-    }
-
-    /// Manually uploads a set of StoreEntries to the user library for
-    /// reconciling.
-    #[instrument(level = "trace", skip(self, entries, igdb, steam))]
-    pub async fn upload(
-        &mut self,
-        entries: Vec<StoreEntry>,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-    ) -> Result<ReconReport, Status> {
-        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        let report = mgr.recon_store_entries(entries, igdb, steam).await?;
-
-        commit_version(&mut self.data, &self.firestore.lock().unwrap())?;
-        Ok(report)
-    }
-
-    /// Manually matches a StoreEntry with a LibraryEntry.
-    #[instrument(level = "trace", skip(self, igdb, steam))]
-    pub async fn match_entry(
-        &mut self,
-        store_entry: StoreEntry,
-        game_entry: GameEntry,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-    ) -> Result<(), Status> {
-        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.manual_match(store_entry, game_entry, igdb, steam)
-            .await?;
-
-        commit_version(&mut self.data, &self.firestore.lock().unwrap())
-    }
-
-    /// Unmatches or deletes (based on `delete`) a StoreEntry with a LibraryEntry.
-    #[instrument(level = "trace", skip(self, library_entry))]
-    pub async fn unmatch_entry(
-        &mut self,
-        store_entry: &StoreEntry,
-        library_entry: &LibraryEntry,
-        delete: bool,
-    ) -> Result<(), Status> {
-        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        match delete {
-            false => mgr.unmatch_game(&store_entry, library_entry).await?,
-            true => mgr.delete_game(&store_entry, library_entry).await?,
+        if let Some(api) = steam_api {
+            self.sync_storefront(&api).await?;
+        }
+        if let Some(api) = gog_api {
+            self.sync_storefront(&api).await?;
         }
 
-        commit_version(&mut self.data, &self.firestore.lock().unwrap())
+        Ok(())
     }
 
-    /// Unmatches or deletes (based on `delete`) a StoreEntry with a LibraryEntry.
-    #[instrument(level = "trace", skip(self, igdb, steam))]
-    pub async fn rematch_entry(
-        &mut self,
-        store_entry: StoreEntry,
-        game_entry: GameEntry,
-        existing_library_entry: &LibraryEntry,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-    ) -> Result<(), Status> {
-        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.rematch_game(store_entry, game_entry, existing_library_entry, igdb, steam)
-            .await?;
+    /// Retieves new game entries from the provided remote storefront and
+    /// temporarily stores them in unmatched in Firestore.
+    #[instrument(level = "trace", skip(self, api))]
+    async fn sync_storefront<T: traits::Storefront>(&self, api: &T) -> Result<(), Status> {
+        let store_entries = api.get_owned_games().await?;
 
-        commit_version(&mut self.data, &self.firestore.lock().unwrap())
-    }
+        let firestore = &self.firestore.lock().unwrap();
 
-    #[instrument(level = "trace", skip(self))]
-    pub async fn add_to_wishlist(&self, library_entry: LibraryEntry) -> Result<(), Status> {
-        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.add_to_wishlist(library_entry).await
-    }
+        let mut game_ids = HashSet::<String>::from_iter(
+            firestore::storefront::read(firestore, &self.data.uid, &T::id()).into_iter(),
+        );
 
-    #[instrument(level = "trace", skip(self))]
-    pub async fn remove_from_wishlist(&self, game_id: u64) -> Result<(), Status> {
-        let mgr = LibraryManager::new(&self.data.uid, Arc::clone(&self.firestore));
-        mgr.remove_from_wishlist(game_id).await
+        let mut store_entries = store_entries;
+        store_entries.retain(|entry| !game_ids.contains(&entry.id));
+
+        for entry in &store_entries {
+            firestore::unmatched::write(firestore, &self.data.uid, entry)?;
+        }
+
+        game_ids.extend(store_entries.into_iter().map(|store_entry| store_entry.id));
+        firestore::storefront::write(
+            firestore,
+            &self.data.uid,
+            &T::id(),
+            game_ids.into_iter().collect::<Vec<_>>(),
+        )
     }
 
     /// Tries to validate user's GogToken and returns a reference to it only if
     /// it succeeds.
-    async fn gog_token<'a>(&'a mut self) -> Option<&'a mut api::GogToken> {
+    async fn gog_token<'a>(&'a mut self) -> Option<&'a mut GogToken> {
         match &mut self.data.keys {
             Some(keys) => match &mut keys.gog_token {
                 Some(token) => {
                     if token.access_token.is_empty() {
-                        *token = match api::GogToken::from_oauth_code(&token.oauth_code).await {
+                        *token = match GogToken::from_oauth_code(&token.oauth_code).await {
                             Ok(token) => token,
                             Err(e) => {
                                 warn!("Failed to validate GOG token. {e}");
-                                api::GogToken::new(&token.oauth_code)
+                                GogToken::new(&token.oauth_code)
                             }
                         }
                     }
@@ -234,17 +183,4 @@ fn load_user_data(user_id: &str, firestore: Arc<Mutex<FirestoreApi>>) -> Result<
 #[instrument(level = "trace", skip(user_data, firestore))]
 fn save_user_data(user_data: &UserData, firestore: &FirestoreApi) -> Result<String, Status> {
     firestore.write("users", Some(&user_data.uid), user_data)
-}
-
-#[instrument(level = "trace", skip(user_data, firestore))]
-fn commit_version(user_data: &mut UserData, firestore: &FirestoreApi) -> Result<(), Status> {
-    user_data.version = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("SystemTime set before UNIX EPOCH!")
-        .as_millis() as u64;
-    if let Err(e) = save_user_data(&user_data, firestore) {
-        return Err(Status::new("Failed to commit version:", e));
-    }
-
-    Ok(())
 }

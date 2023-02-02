@@ -2,7 +2,7 @@ use clap::Parser;
 use espy_server::{
     api::FirestoreApi,
     documents::{Library, LibraryEntry, StoreEntry},
-    library::LibraryOps,
+    library::firestore,
     Tracing,
 };
 
@@ -33,8 +33,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let firestore = FirestoreApi::from_credentials(&opts.firestore_credentials)
         .expect("FirestoreApi.from_credentials()");
 
-    let user_library = LibraryOps::read_library(&firestore, &opts.user)?;
-    let failed = LibraryOps::list_failed(&firestore, &opts.user)?;
+    let user_library = firestore::library::read(&firestore, &opts.user)?;
+    let failed = firestore::failed::read(&firestore, &opts.user)?.entries;
 
     storefront_cleanup(&firestore, &opts.user, &user_library, &failed, "gog");
     storefront_cleanup(&firestore, &opts.user, &user_library, &failed, "steam");
@@ -49,7 +49,7 @@ fn storefront_cleanup(
     user_failed: &[StoreEntry],
     storefront_name: &str,
 ) {
-    let mut owned_games = LibraryOps::read_storefront_ids(&firestore, user_id, storefront_name);
+    let mut owned_games = firestore::storefront::read(&firestore, user_id, storefront_name);
 
     let mut missing = vec![];
     for game_id in &owned_games {
@@ -73,8 +73,8 @@ fn storefront_cleanup(
         missing
     );
     owned_games.retain(|e| !missing.contains(&e));
-    LibraryOps::write_storefront_ids(firestore, user_id, storefront_name, owned_games)
-        .expect("Failed to write StorefrontIds for {storefront_name}");
+    firestore::storefront::write(firestore, user_id, storefront_name, owned_games)
+        .expect("Failed to write Storefront for {storefront_name}");
 }
 
 fn find_store_entry(library_entry: &LibraryEntry, id: &str, store_name: &str) -> bool {

@@ -1,3 +1,4 @@
-pub mod handlers;
-pub mod models;
+mod handlers;
+mod models;
+mod resources;
 pub mod routes;

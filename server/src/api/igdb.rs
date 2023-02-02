@@ -1,7 +1,3 @@
-use super::{
-    igdb_docs::{self, Annotation},
-    igdb_ranking,
-};
 use crate::{
     documents::{
         Collection, CollectionType, Company, CompanyRole, GameEntry, Image, StoreEntry, Website,
@@ -15,6 +11,11 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{sync::Arc, time::Duration};
 use tokio::{sync::mpsc, task::JoinHandle};
 use tracing::{error, instrument, trace_span, Instrument};
+
+use super::{
+    igdb_docs::{self, Annotation},
+    igdb_ranking, IgdbGame,
+};
 
 pub struct IgdbApi {
     secret: String,
@@ -75,8 +76,7 @@ impl IgdbApi {
     /// Returns a GameEntry based on its IGDB `id`.
     ///
     /// The returned GameEntry is a shallow lookup. Reference ids are not
-    /// followed up and thus it is not fully resolved. Use `resolve()` for fully
-    /// resolved lookups.
+    /// followed up and thus it is not fully resolved.
     #[instrument(level = "trace", skip(self))]
     pub async fn get(&self, id: u64) -> Result<Option<GameEntry>, Status> {
         let igdb_state = self.igdb_state()?;
@@ -96,8 +96,7 @@ impl IgdbApi {
     /// Returns a GameEntry based on external id info in IGDB.
     ///
     /// The returned GameEntry is a shallow lookup. Reference ids are not
-    /// followed up and thus it is not fully resolved. Use `resolve()` for fully
-    /// resolved lookups.
+    /// followed up and thus it is not fully resolved.
     #[instrument(level = "trace", skip(self))]
     pub async fn get_by_store_entry(
         &self,
@@ -128,13 +127,120 @@ impl IgdbApi {
         }
     }
 
+    /// Returns a GameEntry based on its IGDB `id`.
+    ///
+    /// The returned GameEntry is a shallow copy but it contains a game cover image.
+    #[instrument(level = "trace", skip(self))]
+    pub async fn get_with_cover(&self, id: u64) -> Result<Option<GameEntry>, Status> {
+        let igdb_state = self.igdb_state()?;
+
+        let result: Vec<igdb_docs::IgdbGame> = post(
+            &igdb_state,
+            GAMES_ENDPOINT,
+            &format!("fields *; where id={id};"),
+        )
+        .await?;
+
+        match result.into_iter().next() {
+            Some(igdb_game) => {
+                // Keep only fields few needed fields.
+                let igdb_game = IgdbGame {
+                    id: igdb_game.id,
+                    name: igdb_game.name,
+                    url: igdb_game.url,
+                    summary: igdb_game.summary,
+                    storyline: igdb_game.storyline,
+                    first_release_date: igdb_game.first_release_date,
+                    total_rating: igdb_game.total_rating,
+                    parent_game: igdb_game.parent_game,
+                    version_parent: igdb_game.version_parent,
+                    cover: igdb_game.cover,
+                    ..Default::default()
+                };
+                let mut game_entry = GameEntry::from(igdb_game.clone());
+
+                let (tx, mut rx) = mpsc::channel(32);
+                tokio::spawn(
+                    async move {
+                        if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
+                            error!("Failed to retrieve info: {e}");
+                        }
+                    }
+                    .instrument(trace_span!("spawn_retrieve_game_info")),
+                );
+
+                while let Some(fragment) = rx.recv().await {
+                    game_entry.merge(fragment);
+                }
+
+                Ok(Some(game_entry))
+            }
+            None => Ok(None),
+        }
+    }
+
+    /// Returns a GameEntry based on its IGDB `id`.
+    ///
+    /// The returned GameEntry contains enough data to build a `GameDigest`.
+    /// Only some reference ids are followed up.
+    #[instrument(level = "trace", skip(self))]
+    pub async fn get_with_digest(&self, id: u64) -> Result<Option<GameEntry>, Status> {
+        let igdb_state = self.igdb_state()?;
+
+        let result: Vec<igdb_docs::IgdbGame> = post(
+            &igdb_state,
+            GAMES_ENDPOINT,
+            &format!("fields *; where id={id};"),
+        )
+        .await?;
+
+        match result.into_iter().next() {
+            Some(igdb_game) => {
+                // Keep only fields needed for digest.
+                let igdb_game = IgdbGame {
+                    id: igdb_game.id,
+                    name: igdb_game.name,
+                    url: igdb_game.url,
+                    summary: igdb_game.summary,
+                    storyline: igdb_game.storyline,
+                    first_release_date: igdb_game.first_release_date,
+                    total_rating: igdb_game.total_rating,
+                    parent_game: igdb_game.parent_game,
+                    version_parent: igdb_game.version_parent,
+                    collection: igdb_game.collection,
+                    franchises: igdb_game.franchises,
+                    involved_companies: igdb_game.involved_companies,
+                    cover: igdb_game.cover,
+                    ..Default::default()
+                };
+                let mut game_entry = GameEntry::from(igdb_game.clone());
+
+                let (tx, mut rx) = mpsc::channel(32);
+                tokio::spawn(
+                    async move {
+                        if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
+                            error!("Failed to retrieve info: {e}");
+                        }
+                    }
+                    .instrument(trace_span!("spawn_retrieve_game_info")),
+                );
+
+                while let Some(fragment) = rx.recv().await {
+                    game_entry.merge(fragment);
+                }
+
+                Ok(Some(game_entry))
+            }
+            None => Ok(None),
+        }
+    }
+
     /// Returns candidate GameEntries by searching IGDB based on game title.
     ///
     /// The returned GameEntries are shallow lookups. Reference ids are not
-    /// followed up and thus they are not fully resolved. Use `resolve()` for
-    /// fully resolved lookups.
+    /// followed up and thus they are not fully resolved.
     #[instrument(level = "trace", skip(self))]
-    pub async fn get_by_title(&self, title: &str) -> Result<Vec<GameEntry>, Status> {
+    pub async fn search_by_title(&self, title: &str) -> Result<Vec<GameEntry>, Status> {
         Ok(igdb_ranking::sorted_by_relevance(
             title,
             self.search(title)
@@ -145,23 +251,12 @@ impl IgdbApi {
         ))
     }
 
-    /// Returns a fully resolved GameEntry based on its IGDB `id`.
-    #[instrument(level = "trace", skip(self, tx))]
-    pub async fn resolve(
-        &self,
-        id: u64,
-        tx: mpsc::Sender<GameEntry>,
-    ) -> Result<Option<GameEntry>, Status> {
-        let igdb_state = self.igdb_state()?;
-        resolve_game(igdb_state, id, tx).await
-    }
-
     /// Returns candidate GameEntries by searching IGDB based on game title.
     ///
     /// The returned GameEntries are shallow lookups similar to
-    /// `get_by_title()`, but have their cover image resolved.
+    /// `search_by_title()`, but have their cover image resolved.
     #[instrument(level = "trace", skip(self))]
-    pub async fn get_by_title_with_cover(
+    pub async fn search_by_title_with_cover(
         &self,
         title: &str,
         base_games_only: bool,
@@ -216,9 +311,25 @@ impl IgdbApi {
         )
         .await
     }
+
+    /// Returns a shallow GameEntry from IGDB matching `id` and sends GameEntry
+    /// fragment updates through `tx` as it incrementally resolves it.
+    ///
+    /// Spawns tasks internally that will continue operating after the function
+    /// returns.
+    #[instrument(level = "trace", skip(self, tx))]
+    pub async fn resolve(
+        &self,
+        id: u64,
+        tx: mpsc::Sender<GameEntry>,
+    ) -> Result<Option<GameEntry>, Status> {
+        let igdb_state = self.igdb_state()?;
+        resolve_game(igdb_state, id, tx).await
+    }
 }
 
-/// Returns a fully resolved IGDB Game matching the input IGDB Game id.
+/// Returns a shallow GameEntry from IGDB matching `id` and sends GameEntry
+/// fragment updates through `tx` as it incrementally resolves it.
 #[instrument(level = "trace", skip(igdb_state, tx))]
 async fn resolve_game(
     igdb_state: Arc<IgdbApiState>,
@@ -238,12 +349,29 @@ async fn resolve_game(
             tokio::spawn(
                 async move {
                     if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
-                        error!("Failed to resolve game: {e}");
+                        error!("Failed to retrieve info: {e}");
                     }
                 }
                 .instrument(trace_span!("spawn_retrieve_game_info")),
             );
             Ok(game)
+        }
+        None => Ok(None),
+    }
+}
+
+#[instrument(level = "trace", skip(igdb_state))]
+async fn resolve_child_game(
+    igdb_state: Arc<IgdbApiState>,
+    game_id: u64,
+) -> Result<Option<GameEntry>, Status> {
+    let (tx, mut rx) = mpsc::channel(32);
+    match resolve_game(igdb_state, game_id, tx).await? {
+        Some(mut expansion) => {
+            while let Some(fragment) = rx.recv().await {
+                expansion.merge(fragment);
+            }
+            Ok(Some(expansion))
         }
         None => Ok(None),
     }
@@ -524,23 +652,6 @@ async fn retrieve_game_info(
     }
 
     Ok(())
-}
-
-#[instrument(level = "trace", skip(igdb_state))]
-async fn resolve_child_game(
-    igdb_state: Arc<IgdbApiState>,
-    game_id: u64,
-) -> Result<Option<GameEntry>, Status> {
-    let (tx, mut rx) = mpsc::channel(32);
-    match resolve_game(igdb_state, game_id, tx).await? {
-        Some(mut expansion) => {
-            while let Some(fragment) = rx.recv().await {
-                expansion.merge(fragment);
-            }
-            Ok(Some(expansion))
-        }
-        None => Ok(None),
-    }
 }
 
 /// Returns game image cover based on id from the igdb/covers endpoint.

@@ -1,7 +1,8 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
+    games::{Resolver, SteamDataApi},
     http::models,
-    library::{self, LibraryManager, SteamDataApi, User},
+    library::{LibraryManager, MatchType, User},
     util, Status,
 };
 use std::{
@@ -11,6 +12,170 @@ use std::{
 };
 use tracing::{debug, error, info, instrument, warn};
 use warp::http::StatusCode;
+
+pub async fn welcome() -> Result<impl warp::Reply, Infallible> {
+    debug!("GET /");
+    Ok("welcome")
+}
+
+#[instrument(level = "trace", skip(igdb))]
+pub async fn post_search(
+    search: models::Search,
+    igdb: Arc<IgdbApi>,
+) -> Result<Box<dyn warp::Reply>, Infallible> {
+    debug!("POST /search");
+    let started = SystemTime::now();
+
+    let resp: Result<Box<dyn warp::Reply>, Infallible> = match igdb
+        .search_by_title_with_cover(&search.title, search.base_game_only)
+        .await
+    {
+        Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
+        Err(err) => {
+            error!("{err}");
+            Ok(Box::new(StatusCode::NOT_FOUND))
+        }
+    };
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    debug!("time: {:.2} msec", resp_time.as_millis());
+    resp
+}
+
+#[instrument(level = "trace", skip(firestore, igdb, steam))]
+pub async fn post_resolve(
+    resolve: models::Resolve,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    info!("POST /resolve");
+
+    match Resolver::schedule_resolve(resolve.game_id, igdb, steam, firestore).await {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(e) => {
+            error!("POST resolve: {e}");
+            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[instrument(
+    level = "trace",
+    skip(match_op, firestore, igdb, steam),
+    fields(
+        title = %match_op.store_entry.title,
+    )
+)]
+pub async fn post_match(
+    user_id: String,
+    match_op: models::MatchOp,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    debug!("POST /library/{user_id}/match");
+
+    let manager = LibraryManager::new(&user_id, firestore);
+
+    match (match_op.game_entry, match_op.unmatch_entry) {
+        (Some(game_entry), None) => {
+            match manager
+                .match_game(
+                    match_op.store_entry,
+                    game_entry,
+                    igdb,
+                    steam,
+                    match match_op.exact_match {
+                        true => MatchType::Exact,
+                        false => MatchType::BaseGame,
+                    },
+                )
+                .await
+            {
+                Ok(()) => Ok(StatusCode::OK),
+                Err(err) => {
+                    error!("{err}");
+                    Ok(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
+        (None, Some(library_entry)) => {
+            match manager
+                .unmatch_game(
+                    match_op.store_entry.clone(),
+                    &library_entry,
+                    match_op.delete_unmatched,
+                )
+                .await
+            {
+                Ok(()) => Ok(StatusCode::OK),
+                Err(err) => {
+                    error!("{err}");
+                    Ok(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
+        (Some(game_entry), Some(library_entry)) => {
+            match manager
+                .rematch_game(
+                    match_op.store_entry,
+                    game_entry,
+                    &library_entry,
+                    igdb,
+                    steam,
+                    match match_op.exact_match {
+                        true => MatchType::Exact,
+                        false => MatchType::BaseGame,
+                    },
+                )
+                .await
+            {
+                Ok(()) => Ok(StatusCode::OK),
+                Err(err) => {
+                    error!("{err}");
+                    Ok(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
+        (None, None) => Ok(StatusCode::BAD_REQUEST),
+    }
+}
+
+#[instrument(level = "trace", skip(firestore))]
+pub async fn post_wishlist(
+    user_id: String,
+    wishlist: models::WishlistOp,
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> Result<impl warp::Reply, Infallible> {
+    debug!("POST /library/{user_id}/wishlist");
+
+    let manager = LibraryManager::new(&user_id, firestore);
+
+    match wishlist.add_game {
+        Some(game) => match manager.add_to_wishlist(game).await {
+            Ok(()) => (),
+            Err(err) => {
+                error!("{err}");
+                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        },
+        None => (),
+    }
+
+    match wishlist.remove_game {
+        Some(game_id) => match manager.remove_from_wishlist(game_id).await {
+            Ok(()) => (),
+            Err(err) => {
+                error!("{err}");
+                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        },
+        None => (),
+    }
+
+    Ok(StatusCode::OK)
+}
 
 #[instrument(level = "trace", skip(api_keys, firestore, igdb, steam))]
 pub async fn post_sync(
@@ -23,12 +188,17 @@ pub async fn post_sync(
     debug!("POST /library/{user_id}/sync");
     let started = SystemTime::now();
 
-    let mut user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
+    match User::new(Arc::clone(&firestore), &user_id) {
+        Ok(mut user) => {
+            if let Err(err) = user.sync(&api_keys).await {
+                return Ok(log_err(err));
+            }
+        }
         Err(err) => return Ok(log_err(err)),
     };
 
-    let report = match user.sync(&api_keys, igdb, steam).await {
+    let manager = LibraryManager::new(&user_id, firestore);
+    let report = match manager.recon_unmatched_collection(igdb, steam).await {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };
@@ -51,11 +221,11 @@ pub async fn post_upload(
     debug!("POST /library/{user_id}/upload");
     let started = SystemTime::now();
 
-    let mut user = match library::User::new(Arc::clone(&firestore), &user_id) {
-        Ok(user) => user,
-        Err(err) => return Ok(log_err(err)),
-    };
-    let report = match user.upload(upload.entries, igdb, steam).await {
+    let manager = LibraryManager::new(&user_id, firestore);
+    let report = match manager
+        .recon_store_entries(upload.entries, igdb, steam)
+        .await
+    {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };
@@ -65,183 +235,6 @@ pub async fn post_upload(
 
     let resp: Box<dyn warp::Reply> = Box::new(warp::reply::json(&report));
     Ok(resp)
-}
-
-#[instrument(level = "trace", skip(igdb))]
-pub async fn post_search(
-    search: models::Search,
-    igdb: Arc<IgdbApi>,
-) -> Result<Box<dyn warp::Reply>, Infallible> {
-    debug!("POST /search");
-    let started = SystemTime::now();
-
-    let resp: Result<Box<dyn warp::Reply>, Infallible> = match igdb
-        .get_by_title_with_cover(&search.title, search.base_game_only)
-        .await
-    {
-        Ok(candidates) => Ok(Box::new(warp::reply::json(&candidates))),
-        Err(err) => {
-            error!("{err}");
-            Ok(Box::new(StatusCode::NOT_FOUND))
-        }
-    };
-
-    let resp_time = SystemTime::now().duration_since(started).unwrap();
-    debug!("time: {:.2} msec", resp_time.as_millis());
-    resp
-}
-
-#[instrument(level = "trace", skip(firestore, igdb, steam))]
-pub async fn post_retrieve(
-    retrieve: models::Retrieve,
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-) -> Result<impl warp::Reply, Infallible> {
-    info!("POST /library/retrieve");
-
-    match LibraryManager::resolve_incrementally(retrieve.game_id, igdb, steam, firestore).await {
-        Ok(_) => Ok(StatusCode::OK),
-        Err(e) => {
-            error!("POST retrieve: {e}");
-            Ok(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
-}
-
-#[instrument(level = "trace", skip(_match, firestore, igdb, steam))]
-pub async fn post_match(
-    user_id: String,
-    _match: models::Match,
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-) -> Result<impl warp::Reply, Infallible> {
-    debug!("POST /library/{user_id}/match");
-
-    let mut user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
-        Err(err) => {
-            error!("{err}");
-            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
-
-    match user
-        .match_entry(_match.store_entry, _match.game_entry, igdb, steam)
-        .await
-    {
-        Ok(()) => Ok(StatusCode::OK),
-        Err(err) => {
-            error!("{err}");
-            Ok(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
-}
-
-#[instrument(level = "trace", skip(firestore))]
-pub async fn post_unmatch(
-    user_id: String,
-    unmatch: models::Unmatch,
-    firestore: Arc<Mutex<FirestoreApi>>,
-) -> Result<impl warp::Reply, Infallible> {
-    debug!("POST /library/{user_id}/unmatch");
-
-    let mut user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
-        Err(err) => {
-            error!("{err}");
-            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
-
-    match user
-        .unmatch_entry(&unmatch.store_entry, &unmatch.library_entry, unmatch.delete)
-        .await
-    {
-        Ok(()) => Ok(StatusCode::OK),
-        Err(err) => {
-            error!("{err}");
-            Ok(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
-}
-
-#[instrument(level = "trace", skip(firestore, igdb, steam))]
-pub async fn post_rematch(
-    user_id: String,
-    rematch: models::Rematch,
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-) -> Result<impl warp::Reply, Infallible> {
-    debug!("POST /library/{user_id}/rematch");
-
-    let mut user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
-        Err(err) => {
-            error!("{err}");
-            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
-
-    match user
-        .rematch_entry(
-            rematch.store_entry,
-            rematch.game_entry,
-            &rematch.library_entry,
-            igdb,
-            steam,
-        )
-        .await
-    {
-        Ok(()) => Ok(StatusCode::OK),
-        Err(err) => {
-            error!("{err}");
-            Ok(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
-}
-
-#[instrument(level = "trace", skip(firestore))]
-pub async fn post_wishlist(
-    user_id: String,
-    wishlist: models::WishlistOp,
-    firestore: Arc<Mutex<FirestoreApi>>,
-) -> Result<impl warp::Reply, Infallible> {
-    debug!("POST /library/{user_id}/wishlist");
-
-    let user = match User::new(firestore, &user_id) {
-        Ok(user) => user,
-        Err(err) => {
-            error!("{err}");
-            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
-
-    match wishlist.add_game {
-        Some(game) => match user.add_to_wishlist(game).await {
-            Ok(()) => (),
-            Err(err) => {
-                error!("{err}");
-                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-            }
-        },
-        None => (),
-    }
-
-    match wishlist.remove_game {
-        Some(game_id) => match user.remove_from_wishlist(game_id).await {
-            Ok(()) => (),
-            Err(err) => {
-                error!("{err}");
-                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-            }
-        },
-        None => (),
-    }
-
-    Ok(StatusCode::OK)
 }
 
 pub async fn get_images(
@@ -268,11 +261,6 @@ pub async fn get_images(
         Ok(bytes) => Ok(Box::new(bytes.to_vec())),
         Err(_) => Ok(Box::new(StatusCode::NOT_FOUND)),
     }
-}
-
-pub async fn welcome() -> Result<impl warp::Reply, Infallible> {
-    debug!("GET /");
-    Ok("welcome")
 }
 
 const IGDB_IMAGES_URL: &str = "https://images.igdb.com/igdb/image/upload";

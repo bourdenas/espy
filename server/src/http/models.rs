@@ -21,28 +21,37 @@ impl std::fmt::Display for Search {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Retrieve {
+pub struct Resolve {
     pub game_id: u64,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Match {
+pub struct MatchOp {
+    /// The storefront entry that is {un}matched.
     pub store_entry: documents::StoreEntry,
-    pub game_entry: documents::GameEntry,
-}
 
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Unmatch {
-    pub store_entry: documents::StoreEntry,
-    pub library_entry: documents::LibraryEntry,
-    pub delete: bool,
-}
+    /// A game entry to match the storefront entry with, if one is provided.
+    /// Usually, the storefront entry will be matched with the base game of this
+    /// entry, unless `exact_match` is set to `true`.
+    #[serde(default)]
+    pub game_entry: Option<documents::GameEntry>,
 
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Rematch {
-    pub store_entry: documents::StoreEntry,
-    pub library_entry: documents::LibraryEntry,
-    pub game_entry: documents::GameEntry,
+    /// The library entry that the storefront entry will be unmatched from, if
+    /// one is provided. The library entry will be also be deleted from the
+    /// library if it contains no other storefront entry.
+    #[serde(default)]
+    pub unmatch_entry: Option<documents::LibraryEntry>,
+
+    /// If true, matches the exact `game_entry` provided. Otherwise, it matches
+    /// with the base game of provided `game_entry`.
+    #[serde(default)]
+    pub exact_match: bool,
+
+    /// If true, deletes the store_entry from the library. Otherwise, it moves
+    /// the store_entry to the failed-to-match collection, unless a rematch is
+    /// provided.
+    #[serde(default)]
+    pub delete_unmatched: bool,
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]

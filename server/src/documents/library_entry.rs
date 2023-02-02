@@ -16,7 +16,7 @@ pub struct Library {
     pub entries: Vec<LibraryEntry>,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct LibraryEntry {
     pub id: u64,
     pub digest: GameDigest,
