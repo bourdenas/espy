@@ -1,12 +1,11 @@
-mod egs;
 mod firestore;
 mod gog;
 mod gog_token;
 mod igdb;
 mod igdb_docs;
+mod igdb_ranking;
 mod steam;
 
-pub use egs::EgsApi;
 pub use firestore::FirestoreApi;
 pub use gog::GogApi;
 pub use gog_token::GogToken;

@@ -31,7 +31,10 @@ impl SteamApi {
         let text = resp.text().await?;
         let (_, resp) = serde_json::from_str::<HashMap<String, SteamAppDetailsResponse>>(&text)
             .map_err(|e| {
-                let msg = format!("Failed to parse response: {}", e);
+                let msg = format!(
+                    "({steam_appid}) Parse error: {}\n Steam response: {}",
+                    e, &text
+                );
                 Status::internal(msg)
             })?
             .into_iter()

@@ -1,9 +1,6 @@
-mod library_ops;
+pub mod firestore;
 mod manager;
-mod reconciler;
-pub mod search;
 mod user;
 
-pub use manager::LibraryManager;
-pub use reconciler::Reconciler;
+pub use manager::{LibraryManager, MatchType};
 pub use user::User;

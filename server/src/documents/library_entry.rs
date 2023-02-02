@@ -1,29 +1,29 @@
-use crate::documents::{Annotation, GameEntry, StoreEntry};
+use super::{CompanyRole, GameDigest};
+use crate::documents::{GameEntry, StoreEntry};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use std::fmt;
+use std::{
+    cmp::Ordering,
+    collections::HashSet,
+    fmt,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
-/// Document type under 'users/{user_id}/library_v2/{game_id}' that represents a
-/// game entry in user's library that has been matched with an IGDB entry.
+/// Document type under 'users/{user_id}/games/library' that includes user's
+/// library with games matched with an IGDB entry.
 #[derive(Serialize, Deserialize, Default, Debug)]
+pub struct Library {
+    pub entries: Vec<LibraryEntry>,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct LibraryEntry {
     pub id: u64,
-    pub name: String,
+    pub digest: GameDigest,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub cover: Option<String>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub release_date: Option<i64>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub collections: Vec<Annotation>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub companies: Vec<Annotation>,
+    pub added_date: Option<u64>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -32,45 +32,70 @@ pub struct LibraryEntry {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub owned_versions: Vec<u64>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub user_data: Option<GameUserData>,
 }
 
 impl LibraryEntry {
-    pub fn new(
-        game: GameEntry,
-        store_entries: Vec<StoreEntry>,
-        owned_versions: Vec<u64>,
-        user_data: Option<GameUserData>,
-    ) -> Self {
+    pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>, owned_versions: Vec<u64>) -> Self {
         LibraryEntry {
             id: game.id,
-            name: game.name,
-            cover: match game.cover {
-                Some(cover) => Some(cover.image_id),
-                None => None,
+            digest: GameDigest {
+                name: game.name,
+                cover: match game.cover {
+                    Some(cover) => Some(cover.image_id),
+                    None => None,
+                },
+                release_date: game.release_date,
+                rating: game.igdb_rating,
+
+                collections: game
+                    .collections
+                    .into_iter()
+                    .map(|collection| collection.name)
+                    .collect::<HashSet<_>>()
+                    .into_iter()
+                    .collect(),
+
+                companies: game
+                    .companies
+                    .into_iter()
+                    .filter(|company| match company.role {
+                        CompanyRole::Developer => true,
+                        CompanyRole::Publisher => true,
+                        _ => false,
+                    })
+                    .sorted_by(|l, r| match l.role {
+                        CompanyRole::Developer => match r.role {
+                            CompanyRole::Developer => Ordering::Equal,
+                            _ => Ordering::Greater,
+                        },
+                        CompanyRole::Publisher => match r.role {
+                            CompanyRole::Developer => Ordering::Less,
+                            CompanyRole::Publisher => Ordering::Equal,
+                            _ => Ordering::Greater,
+                        },
+                        _ => Ordering::Less,
+                    })
+                    .map(|company| company.name)
+                    .collect::<HashSet<_>>()
+                    .into_iter()
+                    .collect(),
             },
-            release_date: game.release_date,
-            collections: game.collections,
-            companies: game.companies,
+
+            added_date: Some(
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            ),
+
             store_entries,
             owned_versions,
-            user_data,
         }
     }
 }
 
 impl fmt::Display for LibraryEntry {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "LibraryEntry({}): '{}'", &self.id, &self.name)
+        write!(f, "LibraryEntry({}): '{}'", &self.id, &self.digest.name)
     }
-}
-
-#[derive(Serialize, Deserialize, Default, Debug)]
-pub struct GameUserData {
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    tags: Vec<String>,
 }

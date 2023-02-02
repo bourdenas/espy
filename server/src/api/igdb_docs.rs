@@ -17,6 +17,15 @@ pub struct IgdbGame {
     pub first_release_date: Option<i64>,
 
     #[serde(default)]
+    pub total_rating: Option<f64>,
+
+    #[serde(default)]
+    pub genres: Vec<u64>,
+
+    #[serde(default)]
+    pub keywords: Vec<u64>,
+
+    #[serde(default)]
     pub expansions: Vec<u64>,
 
     #[serde(default)]
@@ -77,6 +86,37 @@ pub struct InvolvedCompany {
 
     #[serde(default)]
     pub publisher: bool,
+
+    #[serde(default)]
+    pub porting: bool,
+
+    #[serde(default)]
+    pub supporting: bool,
+}
+
+#[derive(Deserialize, Default, Debug, Clone)]
+pub struct Company {
+    pub id: u64,
+
+    #[serde(default)]
+    pub name: String,
+
+    #[serde(default)]
+    pub slug: String,
+
+    #[serde(default)]
+    pub logo: Option<u64>,
+}
+
+#[derive(Deserialize, Default, Debug)]
+pub struct Collection {
+    pub id: u64,
+
+    #[serde(default)]
+    pub name: String,
+
+    #[serde(default)]
+    pub slug: String,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]
@@ -84,4 +124,15 @@ pub struct Website {
     pub id: u64,
     pub category: i32,
     pub url: String,
+}
+
+#[derive(Deserialize, Default, Debug, Clone)]
+pub struct Annotation {
+    pub id: u64,
+
+    #[serde(default)]
+    pub name: String,
+
+    #[serde(default)]
+    pub slug: String,
 }
