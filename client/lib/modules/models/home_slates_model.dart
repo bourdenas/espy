@@ -7,8 +7,10 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class HomeSlatesModel extends ChangeNotifier {
   List<_SlateInfo> _slates = [];
+  List<_SlateInfo> _stacks = [];
 
   List<_SlateInfo> get slates => _slates;
+  List<_SlateInfo> get stacks => _stacks;
 
   void update(
     GameEntriesModel gameEntries,
@@ -26,14 +28,14 @@ class HomeSlatesModel extends ChangeNotifier {
     }
 
     _slates = [
-      slate('GOG', filter: LibraryFilter(stores: {'gog'})),
-      slate('Steam', filter: LibraryFilter(stores: {'steam'})),
-      slate('EGS', filter: LibraryFilter(stores: {'egs'})),
-      slate('Battle.Net', filter: LibraryFilter(stores: {'battle.net'})),
+      slate('Library', filter: LibraryFilter()),
       slate('Wishlist', entries: wishlistModel.wishlist),
       slate('Recent', entries: gameEntries.getRecentEntries()),
-      for (final tag in tagsModel.tagsByPopulation)
-        slate(tag, filter: LibraryFilter(tags: {tag})),
+    ];
+
+    _stacks = [
+      for (final tag in tagsModel.tagClusterByPopulation('genre'))
+        slate(tag.name, filter: LibraryFilter(tags: {tag.name})),
     ];
 
     notifyListeners();
