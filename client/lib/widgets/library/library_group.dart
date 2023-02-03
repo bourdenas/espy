@@ -83,12 +83,6 @@ class _LibraryGroupState extends State<LibraryGroup> {
             child: Row(
               children: [
                 Icon(expanded ? Icons.arrow_drop_down : Icons.arrow_right),
-                Text(
-                  'Results for ',
-                  style: TextStyle(
-                    fontSize: 16.0,
-                  ),
-                ),
                 TextButton(
                   onPressed: filter != null
                       ? () => context.pushNamed('games',
