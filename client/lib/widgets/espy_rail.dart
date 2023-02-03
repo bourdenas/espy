@@ -44,16 +44,16 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       selectedIndex: _selectedIndex,
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: GestureDetector(
-          onTap: () => context.pushNamed('profile'),
-          child: CircleAvatar(
-            child: user != null
-                ? ClipOval(
-                    child: Image.network(user.photoURL!),
-                  )
-                : Icon(Icons.person),
-          ),
-        ),
+        child: FloatingActionButton(
+            child: CircleAvatar(
+              radius: 28,
+              child: user != null
+                  ? ClipOval(
+                      child: Image.network(user.photoURL!),
+                    )
+                  : Icon(Icons.person),
+            ),
+            onPressed: () => context.pushNamed('profile')),
       ),
       groupAlignment: 0,
       destinations: _menuItems
