@@ -108,11 +108,11 @@ class TagSearchResults extends StatelessWidget {
                 ),
               ),
             ),
-          if (userTags.isNotEmpty)
+          for (final group in groupTags(userTags).entries)
             _ChipResults(
               title: 'Tags',
-              color: Colors.blueGrey,
-              chips: userTags.map(
+              color: group.key,
+              chips: group.value.map(
                 (tag) => TagChip(
                   tag,
                   onPressed: () => context.pushNamed(
@@ -128,6 +128,14 @@ class TagSearchResults extends StatelessWidget {
       ),
     );
   }
+}
+
+Map<Color, List<UserTag>> groupTags(Iterable<UserTag> tags) {
+  var groups = <Color, List<UserTag>>{};
+  for (final tag in tags) {
+    (groups[tag.color] ??= []).add(tag);
+  }
+  return groups;
 }
 
 class _ChipResults extends StatelessWidget {
