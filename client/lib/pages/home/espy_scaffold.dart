@@ -135,6 +135,12 @@ class _EspyScaffoldState extends State<EspyScaffold>
             splashRadius: 20.0,
             onPressed: () => appConfig.nextGroupBy(),
           ),
+          IconButton(
+            key: Key('searchButton'),
+            icon: Icon(Icons.search),
+            splashRadius: 20.0,
+            onPressed: () => context.pushNamed('search'),
+          ),
         ] else ...[
           ToggleButtons(
             renderBorder: false,
@@ -159,14 +165,8 @@ class _EspyScaffoldState extends State<EspyScaffold>
                 _groupViews.length, (i) => i == appConfig.groupBy.index),
             onPressed: (index) => appConfig.groupByIndex = index,
           ),
-          SizedBox(width: 24),
+          SizedBox(width: 8),
         ],
-        IconButton(
-          key: Key('searchButton'),
-          icon: Icon(Icons.search),
-          splashRadius: 20.0,
-          onPressed: () => context.pushNamed('search'),
-        ),
       ],
       backgroundColor: _colorTween.value,
       elevation: 0.0,

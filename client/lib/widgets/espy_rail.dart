@@ -24,7 +24,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
     '/': 0,
     '/games': 1,
     '/unmatched': 3,
-    '/profile': 4,
+    '/search': 4,
   };
 
   @override
@@ -44,12 +44,15 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       selectedIndex: _selectedIndex,
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: CircleAvatar(
-          child: user != null
-              ? ClipOval(
-                  child: Image.network(user.photoURL!),
-                )
-              : Icon(Icons.person),
+        child: GestureDetector(
+          onTap: () => context.pushNamed('profile'),
+          child: CircleAvatar(
+            child: user != null
+                ? ClipOval(
+                    child: Image.network(user.photoURL!),
+                  )
+                : Icon(Icons.person),
+          ),
         ),
       ),
       groupAlignment: 0,
@@ -122,9 +125,9 @@ List<_MenuItem> _menuItems = [
         Text('${context.watch<FailedModel>().entries.length}'),
   ),
   _MenuItem(
-    label: 'Settings',
-    icon: Icons.settings,
-    selectedIcon: Icons.settings,
-    onTap: (context) => context.pushNamed('profile'),
+    label: 'Search',
+    icon: Icons.search_outlined,
+    selectedIcon: Icons.search,
+    onTap: (context) => context.pushNamed('search'),
   ),
 ];
