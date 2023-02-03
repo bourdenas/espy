@@ -89,37 +89,40 @@ class HomeContent extends StatelessWidget {
             ],
           ),
         ),
-        SliverGrid.extent(
-          maxCrossAxisExtent: 250,
-          mainAxisSpacing: 72,
-          crossAxisSpacing: 72,
-          childAspectRatio: .75,
-          children: [
-            for (final stack in stacks)
-              HomeStack(
-                title: stack.title,
-                onExpand: stack.filter != null
-                    ? () => context.pushNamed('games',
-                        queryParams: stack.filter!.params())
-                    : null,
-                tiles: stack.entries
-                    .map((libraryEntry) => SlateTileData(
-                          image:
-                              '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
-                          onTap: () => context.pushNamed('details',
-                              params: {'gid': '${libraryEntry.id}'}),
-                          onLongTap: () => isMobile
-                              ? context.pushNamed('edit',
-                                  params: {'gid': '${libraryEntry.id}'})
-                              : EditEntryDialog.show(
-                                  context,
-                                  libraryEntry,
-                                  gameId: libraryEntry.id,
-                                ),
-                        ))
-                    .toList(),
-              ),
-          ],
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 48),
+          sliver: SliverGrid.extent(
+            maxCrossAxisExtent: 260,
+            mainAxisSpacing: 64,
+            crossAxisSpacing: 128,
+            childAspectRatio: .7,
+            children: [
+              for (final stack in stacks)
+                HomeStack(
+                  title: stack.title,
+                  onExpand: stack.filter != null
+                      ? () => context.pushNamed('games',
+                          queryParams: stack.filter!.params())
+                      : null,
+                  tiles: stack.entries.map(
+                    (libraryEntry) => SlateTileData(
+                      image:
+                          '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
+                      onTap: () => context.pushNamed('details',
+                          params: {'gid': '${libraryEntry.id}'}),
+                      onLongTap: () => isMobile
+                          ? context.pushNamed('edit',
+                              params: {'gid': '${libraryEntry.id}'})
+                          : EditEntryDialog.show(
+                              context,
+                              libraryEntry,
+                              gameId: libraryEntry.id,
+                            ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
         SliverToBoxAdapter(
           child: SizedBox(height: 32.0),
