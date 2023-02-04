@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -60,10 +60,14 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
           .map((e) => NavigationRailDestination(
                 label: Text(e.label),
                 icon: e.badgeText != null
-                    ? Badge(
+                    ? badges.Badge(
                         badgeContent: e.badgeText!(context),
-                        position: BadgePosition.topEnd(top: -24, end: -16),
-                        borderRadius: BorderRadius.circular(1),
+                        position:
+                            badges.BadgePosition.topEnd(top: -24, end: -16),
+                        badgeStyle: badges.BadgeStyle(
+                          shape: badges.BadgeShape.square,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
                         child: Icon(e.icon),
                       )
                     : Icon(e.icon),

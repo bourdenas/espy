@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
@@ -27,11 +27,14 @@ class _GameListPageState extends State<GameListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: Badge(
+        leading: badges.Badge(
           badgeContent: Text('${entries.length}'),
-          badgeColor: Colors.deepPurple,
-          padding: EdgeInsets.all(8),
-          position: BadgePosition.center(),
+          badgeStyle: badges.BadgeStyle(
+            shape: badges.BadgeShape.instagram,
+            badgeColor: Colors.deepPurple,
+            padding: EdgeInsets.all(8),
+          ),
+          position: badges.BadgePosition.center(),
           child: Container(),
         ),
         title: GameChipsFilter(widget.filter),

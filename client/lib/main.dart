@@ -16,7 +16,10 @@ import 'package:espy/pages/espy_app.dart'
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    name: 'espy',
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(MultiProvider(
     providers: [
