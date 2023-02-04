@@ -48,6 +48,16 @@ class GameTagsModel extends ChangeNotifier {
 
   int getCollectionSize(String collection) => _collections[collection] ?? 0;
 
+  List<UserTag> tagClusterByPopulation(String cluster) {
+    final list = _tagToCluster.entries
+        .map((e) => UserTag(name: e.key, clusterId: e.value))
+        .where((tag) => tag.cluster == cluster)
+        .map((tag) => MapEntry(tag, _tagToEntries[tag.name]?.length ?? 0))
+        .toList()
+      ..sort((a, b) => -a.value.compareTo(b.value));
+    return UnmodifiableListView(list.map((e) => e.key));
+  }
+
   List<UserTag> tagsByEntry(int gameId) => _entryToTags[gameId] ?? [];
   List<int> entriesByTag(String tag) => _tagToEntries[tag] ?? [];
   UserTag tagByName(String name) =>
@@ -263,12 +273,13 @@ class UserTag {
   }) : _clusterId = clusterId;
 
   MaterialColor get color => _tagClusters[_clusterId].color;
+  String get cluster => _tagClusters[_clusterId].name;
 
   static List<_UserTagCluster> _tagClusters = [
-    _UserTagCluster(name: 'grey', color: Colors.blueGrey),
-    _UserTagCluster(name: 'orange', color: Colors.orange),
-    _UserTagCluster(name: 'green', color: Colors.green),
-    _UserTagCluster(name: 'lime', color: Colors.lime),
+    _UserTagCluster(name: 'genre', color: Colors.blueGrey),
+    _UserTagCluster(name: 'style', color: Colors.orange),
+    _UserTagCluster(name: 'theme', color: Colors.green),
+    _UserTagCluster(name: 'other', color: Colors.lime),
   ];
 }
 
