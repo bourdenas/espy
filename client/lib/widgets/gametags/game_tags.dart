@@ -43,7 +43,7 @@ class _GameChipsWrap extends StatelessWidget {
             ),
           ),
         for (final collection in entry.collections)
-          if (tagsModel.getCollectionSize(collection) > 1)
+          if (tagsModel.collections.size(collection) > 1)
             CollectionChip(
               collection,
               onPressed: () => context.pushNamed(
@@ -52,7 +52,7 @@ class _GameChipsWrap extends StatelessWidget {
               ),
             ),
         for (final tag
-            in context.watch<GameTagsModel>().userTags.byEntry(entry.id))
+            in context.watch<GameTagsModel>().userTags.byGameId(entry.id))
           TagChip(
             tag,
             onPressed: () => context.pushNamed(
@@ -103,7 +103,7 @@ class GameCardChips extends StatelessWidget {
               ),
           if (includeCollections)
             for (final collection in entry.collections)
-              if (tagsModel.getCollectionSize(collection) > 1)
+              if (tagsModel.collections.size(collection) > 1)
                 Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: CollectionChip(
@@ -116,7 +116,7 @@ class GameCardChips extends StatelessWidget {
                   ),
                 ),
           for (final tag
-              in context.watch<GameTagsModel>().userTags.byEntry(entry.id))
+              in context.watch<GameTagsModel>().userTags.byGameId(entry.id))
             Padding(
               padding: const EdgeInsets.all(4.0),
               child: TagChip(

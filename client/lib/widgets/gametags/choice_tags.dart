@@ -33,7 +33,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
     final tagsModel = context.watch<GameTagsModel>();
     final filteredTags = tagsModel.userTags.filter(filter.split(' '));
     selectedTags.clear();
-    selectedTags.addAll(tagsModel.userTags.byEntry(widget.entry.id));
+    selectedTags.addAll(tagsModel.userTags.byGameId(widget.entry.id));
 
     return Column(
       children: [

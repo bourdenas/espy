@@ -22,7 +22,7 @@ class GameEntriesModel extends ChangeNotifier {
 
   Iterable<LibraryEntry> getEntries(LibraryFilter filter) {
     final taggedEntries = filter.tags.isNotEmpty
-        ? _gameTags.userTags.entriesByTag(filter.tags.first)
+        ? _gameTags.userTags.gameIds(filter.tags.first)
         : null;
 
     final entries = taggedEntries != null

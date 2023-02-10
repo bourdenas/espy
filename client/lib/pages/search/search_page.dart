@@ -46,7 +46,7 @@ class _SearchPageState extends State<SearchPage> {
           tagsModel.filterStores(ngrams),
           tagsModel.userTags.filter(ngrams),
           tagsModel.filterCompanies(ngrams),
-          tagsModel.filterCollections(ngrams),
+          tagsModel.collections.filter(ngrams),
         ),
         for (final company in tagsModel.filterCompaniesExact(ngrams)) ...[
           LibraryGroup(
@@ -55,7 +55,7 @@ class _SearchPageState extends State<SearchPage> {
             filter: LibraryFilter(companies: {company}),
           ),
         ],
-        for (final collection in tagsModel.filterCollectionsExact(ngrams)) ...[
+        for (final collection in tagsModel.collections.filterExact(ngrams)) ...[
           LibraryGroup(
             title: collection,
             color: Colors.indigoAccent,

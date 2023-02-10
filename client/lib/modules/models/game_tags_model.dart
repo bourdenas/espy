@@ -15,8 +15,8 @@ class GameTagsModel extends ChangeNotifier {
   // System defined tags.
   Set<String> _stores = {};
   Set<String> _companies = {};
-  Map<String, int> _collections = {};
 
+  CollectionManager _collectionManager = CollectionManager([]);
   UserTagManager _tagsManager = UserTagManager();
 
   UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
@@ -24,15 +24,7 @@ class GameTagsModel extends ChangeNotifier {
   UnmodifiableListView<String> get companies =>
       UnmodifiableListView(_companies);
 
-  UnmodifiableListView<String> get collections =>
-      UnmodifiableListView(_collections.entries
-          .where((entry) => entry.value > 1)
-          .map((entry) => entry.key)
-          .toList()
-        ..sort());
-
-  int getCollectionSize(String collection) => _collections[collection] ?? 0;
-
+  CollectionManager get collections => _collectionManager;
   UserTagManager get userTags => _tagsManager;
 
   Iterable<String> filterStores(Iterable<String> terms) {
@@ -52,27 +44,12 @@ class GameTagsModel extends ChangeNotifier {
         company.toLowerCase().split(' ').any((word) => word == term)));
   }
 
-  Iterable<String> filterCollections(Iterable<String> terms) {
-    return collections.where((collection) => terms.every((term) => collection
-        .toLowerCase()
-        .split(' ')
-        .any((word) => word.startsWith(term))));
-  }
-
-  Iterable<String> filterCollectionsExact(Iterable<String> terms) {
-    return collections.where((collection) => terms.every((term) =>
-        collection.toLowerCase().split(' ').any((word) => word == term)));
-  }
-
   void update(String userId, List<LibraryEntry> entries) async {
-    _collections.clear();
+    _collectionManager = CollectionManager(entries);
 
     for (final entry in entries) {
       _stores.addAll(entry.storeEntries.map((e) => e.storefront));
       _companies.addAll(entry.companies.map((company) => company));
-      for (final collection in entry.collections) {
-        _collections[collection] = (_collections[collection] ?? 0) + 1;
-      }
     }
 
     if (userId.isNotEmpty && _userId != userId) {
@@ -100,13 +77,52 @@ class GameTagsModel extends ChangeNotifier {
   }
 }
 
+class CollectionManager {
+  CollectionManager(List<LibraryEntry> entries) {
+    for (final entry in entries) {
+      for (final collection in entry.collections) {
+        (_collectionToGameIds[collection] ??= []).add(entry.id);
+      }
+    }
+  }
+
+  UnmodifiableListView<String> get all =>
+      UnmodifiableListView(_collectionToGameIds.keys.toList()..sort());
+
+  UnmodifiableListView<String> get nonSingleton =>
+      UnmodifiableListView(_collectionToGameIds.entries
+          .where((entry) => entry.value.length > 1)
+          .map((entry) => entry.key)
+          .toList()
+        ..sort());
+
+  Iterable<int> gameIds(String collection) =>
+      _collectionToGameIds[collection] ?? [];
+
+  int size(String collection) => _collectionToGameIds[collection]?.length ?? 0;
+
+  Iterable<String> filter(Iterable<String> ngrams) {
+    return nonSingleton.where((collection) => ngrams.every((ngram) => collection
+        .toLowerCase()
+        .split(' ')
+        .any((word) => word.startsWith(ngram))));
+  }
+
+  Iterable<String> filterExact(Iterable<String> ngrams) {
+    return nonSingleton.where((collection) => ngrams.every((ngram) =>
+        collection.toLowerCase().split(' ').any((word) => word == ngram)));
+  }
+
+  Map<String, List<int>> _collectionToGameIds = {};
+}
+
 class UserTagManager {
   UserTagManager([this._userId = '', this._userTags = const UserTags()]);
 
   UserTag get(String name) =>
       UserTag(name: name, clusterId: _tagToCluster[name] ?? 0);
 
-  Iterable<UserTag> byEntry(int gameId) => _entryToTags[gameId] ?? [];
+  Iterable<UserTag> byGameId(int gameId) => _gameIdToTags[gameId] ?? [];
 
   UnmodifiableListView<UserTag> get tags =>
       UnmodifiableListView(_tagToCluster.entries
@@ -115,7 +131,7 @@ class UserTagManager {
         ..sort((a, b) => a.name.compareTo(b.name)));
 
   UnmodifiableListView<String> get tagsByPopulation {
-    final list = _tagToEntries.entries
+    final list = _tagToGameIds.entries
         .map((e) => MapEntry(e.key, e.value.length))
         .toList()
       ..sort((a, b) => -a.value.compareTo(b.value));
@@ -126,13 +142,13 @@ class UserTagManager {
     final list = _tagToCluster.entries
         .map((e) => UserTag(name: e.key, clusterId: e.value))
         .where((tag) => tag.cluster == cluster)
-        .map((tag) => MapEntry(tag, _tagToEntries[tag.name]?.length ?? 0))
+        .map((tag) => MapEntry(tag, _tagToGameIds[tag.name]?.length ?? 0))
         .toList()
       ..sort((a, b) => -a.value.compareTo(b.value));
     return UnmodifiableListView(list.map((e) => e.key));
   }
 
-  Iterable<int> entriesByTag(String tag) => _tagToEntries[tag] ?? [];
+  Iterable<int> gameIds(String tag) => _tagToGameIds[tag] ?? [];
 
   Iterable<UserTag> filter(Iterable<String> ngrams) {
     return tags.where(
@@ -235,8 +251,8 @@ class UserTagManager {
 
   String _userId = '';
   UserTags _userTags = UserTags();
-  Map<int, List<UserTag>> _entryToTags = {};
-  Map<String, List<int>> _tagToEntries = {};
+  Map<int, List<UserTag>> _gameIdToTags = {};
+  Map<String, List<int>> _tagToGameIds = {};
   Map<String, int> _tagToCluster = {};
 
   void build() {
@@ -247,8 +263,8 @@ class UserTagManager {
       _userTags.classes.add(TagClass(name: UserTag._tagClusters[i].name));
     }
 
-    _entryToTags.clear();
-    _tagToEntries.clear();
+    _gameIdToTags.clear();
+    _tagToGameIds.clear();
     _tagToCluster.clear();
 
     for (var i = 0; i < _userTags.classes.length; ++i) {
@@ -257,18 +273,18 @@ class UserTagManager {
         _tagToCluster[tag.name] = i;
 
         for (final id in tag.gameIds) {
-          var tags = _entryToTags[id];
+          var tags = _gameIdToTags[id];
           if (tags != null) {
             tags.add(UserTag(name: tag.name, clusterId: i));
           } else {
-            _entryToTags[id] = [UserTag(name: tag.name, clusterId: i)];
+            _gameIdToTags[id] = [UserTag(name: tag.name, clusterId: i)];
           }
 
-          var entries = _tagToEntries[tag.name];
+          var entries = _tagToGameIds[tag.name];
           if (entries != null) {
             entries.add(id);
           } else {
-            _tagToEntries[tag.name] = [id];
+            _tagToGameIds[tag.name] = [id];
           }
         }
       }
