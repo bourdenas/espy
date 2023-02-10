@@ -1,4 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
 
 enum LibraryView {
   ALL,
@@ -10,24 +12,59 @@ enum LibraryView {
 class LibraryFilter {
   LibraryFilter({
     this.view = LibraryView.IN_LIBRARY,
+    this.stores = const {},
     this.companies = const {},
     this.collections = const {},
     this.tags = const {},
-    this.stores = const {},
   });
 
   LibraryView view;
 
+  Set<String> stores;
   Set<String> companies;
   Set<String> collections;
   Set<String> tags;
-  Set<String> stores;
 
-  bool apply(LibraryEntry entry) =>
-      _filterView(entry) &&
-      _filterStore(entry) &&
-      _filterCompany(entry) &&
-      _filterCollection(entry);
+  Iterable<LibraryEntry> filter(
+      GameEntriesModel entriesModel, GameTagsModel tagsModel) {
+    List<Set<int>> gameIdSets = [];
+
+    for (final store in stores) {
+      gameIdSets.add(Set.from(tagsModel.stores.gameIds(store)));
+    }
+    for (final company in companies) {
+      gameIdSets.add(Set.from(tagsModel.companies.gameIds(company)));
+    }
+    for (final collection in collections) {
+      gameIdSets.add(Set.from(tagsModel.collections.gameIds(collection)));
+    }
+    for (final tag in tags) {
+      gameIdSets.add(Set.from(tagsModel.userTags.gameIds(tag)));
+    }
+
+    final gameIds = gameIdSets.isNotEmpty
+        ? gameIdSets.reduce((value, element) => value.intersection(element))
+        : entriesModel.all;
+
+    return gameIds
+        .map((id) => entriesModel.getEntryById(id))
+        .where((e) => e != null)
+        .map((e) => e!)
+        .where((libraryEntry) => _filterView(libraryEntry, tagsModel));
+  }
+
+  bool _filterView(LibraryEntry entry, GameTagsModel tagsModel) {
+    switch (view) {
+      case LibraryView.ALL:
+        return true;
+      case LibraryView.IN_LIBRARY:
+        return entry.storeEntries.isNotEmpty;
+      case LibraryView.WISHLIST:
+        return entry.storeEntries.isEmpty;
+      case LibraryView.UNTAGGED:
+        return tagsModel.userTags.byGameId(entry.id).isEmpty;
+    }
+  }
 
   Map<String, String> params() {
     return {
@@ -89,32 +126,4 @@ class LibraryFilter {
         break;
     }
   }
-
-  bool _filterView(LibraryEntry entry) {
-    switch (view) {
-      case LibraryView.ALL:
-        return true;
-      case LibraryView.IN_LIBRARY:
-        return entry.storeEntries.isNotEmpty;
-      case LibraryView.WISHLIST:
-        return entry.storeEntries.isEmpty;
-      case LibraryView.UNTAGGED:
-        return true;
-    }
-  }
-
-  bool _filterStore(LibraryEntry entry) =>
-      stores.isEmpty ||
-      stores.every((filter) =>
-          entry.storeEntries.any((store) => store.storefront == filter));
-
-  bool _filterCompany(LibraryEntry entry) =>
-      companies.isEmpty ||
-      companies.every(
-          (filter) => entry.companies.any((company) => company == filter));
-
-  bool _filterCollection(LibraryEntry entry) =>
-      collections.isEmpty ||
-      collections.every((filter) =>
-          entry.collections.any((collection) => collection == filter));
 }

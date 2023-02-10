@@ -22,7 +22,7 @@ class HomeSlatesModel extends ChangeNotifier {
       return _SlateInfo(
           title: title,
           filter: filter,
-          entries: entries ?? gameEntries.getEntries(filter));
+          entries: entries ?? gameEntries.filter(filter));
     }
 
     _slates = [

@@ -20,22 +20,11 @@ class GameEntriesModel extends ChangeNotifier {
 
   bool get isNotEmpty => _entries.isNotEmpty;
 
-  Iterable<LibraryEntry> getEntries(LibraryFilter filter) {
-    final taggedEntries = filter.tags.isNotEmpty
-        ? _gameTags.userTags.gameIds(filter.tags.first)
-        : null;
+  Iterable<int> get all => _entries.keys;
 
-    final entries = taggedEntries != null
-        ? taggedEntries
-            .map((id) => _entries[id])
-            .whereType<LibraryEntry>()
-            .toList()
-        : _entries.values;
-
-    final sortedEntries = entries.toList()
+  Iterable<LibraryEntry> filter(LibraryFilter filter) {
+    return filter.filter(this, _gameTags).toList()
       ..sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
-
-    return sortedEntries.where((e) => filter.apply(e));
   }
 
   Iterable<LibraryEntry> getRecentEntries() {
