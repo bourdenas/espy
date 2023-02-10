@@ -99,7 +99,7 @@ class LibraryFilter {
       case LibraryView.WISHLIST:
         return entry.storeEntries.isEmpty;
       case LibraryView.UNTAGGED:
-        return false;
+        return true;
     }
   }
 

@@ -12,45 +12,20 @@ import 'package:flutter/material.dart'
 class GameTagsModel extends ChangeNotifier {
   String _userId = '';
 
-  // System defined tags.
-  Set<String> _stores = {};
-  Set<String> _companies = {};
+  StoresManager _storesManager = StoresManager([]);
+  CompaniesManager _companiesManager = CompaniesManager([]);
+  CollectionManager _collectionsManager = CollectionManager([]);
+  UserTagManager _userTagsManager = UserTagManager();
 
-  CollectionManager _collectionManager = CollectionManager([]);
-  UserTagManager _tagsManager = UserTagManager();
-
-  UnmodifiableListView<String> get stores => UnmodifiableListView(_stores);
-
-  UnmodifiableListView<String> get companies =>
-      UnmodifiableListView(_companies);
-
-  CollectionManager get collections => _collectionManager;
-  UserTagManager get userTags => _tagsManager;
-
-  Iterable<String> filterStores(Iterable<String> terms) {
-    return stores.where(
-      (store) => terms.every((term) =>
-          store.toLowerCase().split(' ').any((word) => word.startsWith(term))),
-    );
-  }
-
-  Iterable<String> filterCompanies(Iterable<String> terms) {
-    return companies.where((company) => terms.every((term) =>
-        company.toLowerCase().split(' ').any((word) => word.startsWith(term))));
-  }
-
-  Iterable<String> filterCompaniesExact(Iterable<String> terms) {
-    return companies.where((company) => terms.every((term) =>
-        company.toLowerCase().split(' ').any((word) => word == term)));
-  }
+  StoresManager get stores => _storesManager;
+  CompaniesManager get companies => _companiesManager;
+  CollectionManager get collections => _collectionsManager;
+  UserTagManager get userTags => _userTagsManager;
 
   void update(String userId, List<LibraryEntry> entries) async {
-    _collectionManager = CollectionManager(entries);
-
-    for (final entry in entries) {
-      _stores.addAll(entry.storeEntries.map((e) => e.storefront));
-      _companies.addAll(entry.companies.map((company) => company));
-    }
+    _storesManager = StoresManager(entries);
+    _companiesManager = CompaniesManager(entries);
+    _collectionsManager = CollectionManager(entries);
 
     if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;
@@ -70,11 +45,73 @@ class GameTagsModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<UserTags> snapshot) {
-      _tagsManager = UserTagManager(_userId, snapshot.data() ?? UserTags())
+      _userTagsManager = UserTagManager(_userId, snapshot.data() ?? UserTags())
         ..build();
       notifyListeners();
     });
   }
+}
+
+class StoresManager {
+  StoresManager(List<LibraryEntry> entries) {
+    for (final entry in entries) {
+      for (final store in entry.storeEntries) {
+        (_storeToGameIds[store.storefront] ??= []).add(entry.id);
+      }
+    }
+  }
+
+  UnmodifiableListView<String> get all =>
+      UnmodifiableListView(_storeToGameIds.keys.toList()..sort());
+
+  Iterable<int> gameIds(String store) => _storeToGameIds[store] ?? [];
+
+  int size(String store) => _storeToGameIds[store]?.length ?? 0;
+
+  Iterable<String> filter(Iterable<String> ngrams) {
+    return all.where((store) => ngrams.every((ngram) =>
+        store.toLowerCase().split(' ').any((word) => word.startsWith(ngram))));
+  }
+
+  Map<String, List<int>> _storeToGameIds = {};
+}
+
+class CompaniesManager {
+  CompaniesManager(List<LibraryEntry> entries) {
+    for (final entry in entries) {
+      for (final company in entry.companies) {
+        (_companyToGameIds[company] ??= []).add(entry.id);
+      }
+    }
+  }
+
+  UnmodifiableListView<String> get all =>
+      UnmodifiableListView(_companyToGameIds.keys.toList()..sort());
+
+  UnmodifiableListView<String> get nonSingleton =>
+      UnmodifiableListView(_companyToGameIds.entries
+          .where((entry) => entry.value.length > 1)
+          .map((entry) => entry.key)
+          .toList()
+        ..sort());
+
+  Iterable<int> gameIds(String company) => _companyToGameIds[company] ?? [];
+
+  int size(String company) => _companyToGameIds[company]?.length ?? 0;
+
+  Iterable<String> filter(Iterable<String> ngrams) {
+    return all.where((company) => ngrams.every((ngram) => company
+        .toLowerCase()
+        .split(' ')
+        .any((word) => word.startsWith(ngram))));
+  }
+
+  Iterable<String> filterExact(Iterable<String> ngrams) {
+    return all.where((company) => ngrams.every((ngram) =>
+        company.toLowerCase().split(' ').any((word) => word == ngram)));
+  }
+
+  Map<String, List<int>> _companyToGameIds = {};
 }
 
 class CollectionManager {

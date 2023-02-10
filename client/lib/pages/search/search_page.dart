@@ -43,12 +43,12 @@ class _SearchPageState extends State<SearchPage> {
           delegate: searchBox(),
         ),
         TagSearchResults(
-          tagsModel.filterStores(ngrams),
+          tagsModel.stores.filter(ngrams),
           tagsModel.userTags.filter(ngrams),
-          tagsModel.filterCompanies(ngrams),
+          tagsModel.companies.filter(ngrams),
           tagsModel.collections.filter(ngrams),
         ),
-        for (final company in tagsModel.filterCompaniesExact(ngrams)) ...[
+        for (final company in tagsModel.companies.filterExact(ngrams)) ...[
           LibraryGroup(
             title: company,
             color: Colors.redAccent,
