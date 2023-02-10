@@ -1,7 +1,6 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/pages/home/home_slate.dart';
@@ -16,10 +15,7 @@ import 'package:provider/src/provider.dart';
 class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final entries = context.watch<GameEntriesModel>().getEntries();
-    final unmatchedEntries = context.watch<FailedModel>().entries;
-
-    return entries.isNotEmpty || unmatchedEntries.isNotEmpty
+    return context.watch<GameEntriesModel>().isNotEmpty
         ? library(context)
         : EmptyLibrary();
   }
