@@ -20,11 +20,7 @@ class GameEntriesModel extends ChangeNotifier {
 
   bool get isNotEmpty => _entries.isNotEmpty;
 
-  Iterable<LibraryEntry> getEntries({LibraryFilter? filter}) {
-    if (filter == null) {
-      return _entries.values;
-    }
-
+  Iterable<LibraryEntry> getEntries(LibraryFilter filter) {
     final taggedEntries = filter.tags.isNotEmpty
         ? _gameTags.entriesByTag(filter.tags.first)
         : null;

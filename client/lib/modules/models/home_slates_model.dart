@@ -17,25 +17,23 @@ class HomeSlatesModel extends ChangeNotifier {
     WishlistModel wishlistModel,
     GameTagsModel tagsModel,
   ) {
-    _SlateInfo slate(
-      String title, {
-      LibraryFilter? filter,
-      Iterable<LibraryEntry>? entries,
-    }) {
-      final filteredEntries = gameEntries.getEntries(filter: filter);
+    _SlateInfo slate(String title, LibraryFilter filter,
+        [Iterable<LibraryEntry>? entries]) {
       return _SlateInfo(
-          title: title, filter: filter, entries: entries ?? filteredEntries);
+          title: title,
+          filter: filter,
+          entries: entries ?? gameEntries.getEntries(filter));
     }
 
     _slates = [
-      slate('Library', filter: LibraryFilter()),
-      slate('Wishlist', filter: LibraryFilter(view: LibraryView.WISHLIST)),
-      slate('Recent', entries: gameEntries.getRecentEntries()),
+      slate('Library', LibraryFilter()),
+      slate('Wishlist', LibraryFilter(view: LibraryView.WISHLIST)),
+      slate('Recent', LibraryFilter(), gameEntries.getRecentEntries()),
     ];
 
     _stacks = [
       for (final tag in tagsModel.tagClusterByPopulation('genre'))
-        slate(tag.name, filter: LibraryFilter(tags: {tag.name})),
+        slate(tag.name, LibraryFilter(tags: {tag.name})),
     ];
 
     notifyListeners();
@@ -46,10 +44,10 @@ class _SlateInfo {
   _SlateInfo({
     required this.title,
     required this.entries,
-    this.filter,
+    required this.filter,
   });
 
   String title;
   Iterable<LibraryEntry> entries = [];
-  LibraryFilter? filter;
+  LibraryFilter filter;
 }

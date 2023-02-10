@@ -54,9 +54,7 @@ class _LibraryGroupState extends State<LibraryGroup> {
           GameSearchResults(
             entries: widget.entries != null
                 ? widget.entries!
-                : context
-                    .watch<GameEntriesModel>()
-                    .getEntries(filter: widget.filter),
+                : context.watch<GameEntriesModel>().getEntries(widget.filter!),
             cardWidth: widget.cardWidth,
             cardAspectRatio: widget.cardAspectRatio,
           ),
