@@ -23,14 +23,6 @@ class LibraryFilter {
   Set<String> tags;
   Set<String> stores;
 
-  bool get isEmpty => !isNotEmpty;
-
-  bool get isNotEmpty =>
-      companies.isNotEmpty ||
-      collections.isNotEmpty ||
-      tags.isNotEmpty ||
-      stores.isNotEmpty;
-
   bool apply(LibraryEntry entry) =>
       _filterView(entry) &&
       _filterStore(entry) &&
