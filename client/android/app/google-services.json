@@ -36,7 +36,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDv2v4XhewVMrHoq12MFKmllmaXQVe9Y9g"
+          "current_key": "AIzaSyBfktT0ku_sVGOC62V-t9dvMaeql3JzLt4"
         }
       ],
       "services": {
@@ -45,6 +45,13 @@
             {
               "client_id": "478783154654-76raalev7s759i6mqhcncln90ioj0ppd.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "478783154654-smue6eutb9k4hqojqiibto94hq0qk6lq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.bourdenas.espy"
+              }
             }
           ]
         }

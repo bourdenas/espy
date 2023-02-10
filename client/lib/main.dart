@@ -17,7 +17,8 @@ import 'package:espy/pages/espy_app.dart'
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    name: 'espy',
+    // NOTE: Bug in the Firebase library. Adding the name attibute fails to connect.
+    // name: 'espy',
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
