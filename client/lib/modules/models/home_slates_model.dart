@@ -32,7 +32,7 @@ class HomeSlatesModel extends ChangeNotifier {
     ];
 
     _stacks = [
-      for (final tag in tagsModel.tagClusterByPopulation('genre'))
+      for (final tag in tagsModel.userTags.tagByPopulationInCluster('genre'))
         slate(tag.name, LibraryFilter(tags: {tag.name})),
     ];
 

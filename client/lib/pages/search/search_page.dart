@@ -44,7 +44,7 @@ class _SearchPageState extends State<SearchPage> {
         ),
         TagSearchResults(
           tagsModel.filterStores(ngrams),
-          tagsModel.filterTags(ngrams),
+          tagsModel.userTags.filter(ngrams),
           tagsModel.filterCompanies(ngrams),
           tagsModel.filterCollections(ngrams),
         ),
@@ -62,7 +62,7 @@ class _SearchPageState extends State<SearchPage> {
             filter: LibraryFilter(collections: {collection}),
           ),
         ],
-        for (final tag in tagsModel.filterTagsExact(ngrams)) ...[
+        for (final tag in tagsModel.userTags.filterExact(ngrams)) ...[
           LibraryGroup(
             title: tag.name,
             color: Colors.blueGrey,

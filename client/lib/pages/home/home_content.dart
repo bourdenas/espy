@@ -41,10 +41,10 @@ class HomeContent extends StatelessWidget {
               final slate = slates[index];
               return HomeSlate(
                 title: slate.title,
-                onExpand: slate.filter != null
-                    ? () => context.pushNamed('games',
-                        queryParams: slate.filter!.params())
-                    : null,
+                onExpand: () => context.pushNamed(
+                  'games',
+                  queryParams: slate.filter.params(),
+                ),
                 tiles: slate.entries
                     .map((libraryEntry) => SlateTileData(
                           image:
@@ -96,10 +96,8 @@ class HomeContent extends StatelessWidget {
               for (final stack in stacks)
                 HomeStack(
                   title: stack.title,
-                  onExpand: stack.filter != null
-                      ? () => context.pushNamed('games',
-                          queryParams: stack.filter!.params())
-                      : null,
+                  onExpand: () => context.pushNamed('games',
+                      queryParams: stack.filter.params()),
                   tiles: stack.entries.map(
                     (libraryEntry) => SlateTileData(
                       image:

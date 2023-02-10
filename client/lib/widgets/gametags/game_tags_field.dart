@@ -20,7 +20,8 @@ class GameTagsField extends StatelessWidget {
         return [
           ...context
               .read<GameTagsModel>()
-              .filterTagsStartsWith(searchTerms)
+              .userTags
+              .filter(searchTerms)
               .take(3)
               .map(
                 (tag) => Suggestion(
@@ -41,7 +42,7 @@ class GameTagsField extends StatelessWidget {
 
   void _addTag(BuildContext context, UserTag tag) {
     if (tag.name.isNotEmpty) {
-      context.read<GameTagsModel>().addUserTag(tag, entry.id);
+      context.read<GameTagsModel>().userTags.add(tag, entry.id);
     }
   }
 }
