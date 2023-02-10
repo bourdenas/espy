@@ -118,7 +118,7 @@ List<_MenuItem> _menuItems = [
     icon: Icons.label_off_outlined,
     selectedIcon: Icons.label_off,
     onTap: (context) => context.pushNamed('games',
-        queryParams: LibraryFilter(untagged: true).params()),
+        queryParams: LibraryFilter(view: LibraryView.UNTAGGED).params()),
   ),
   _MenuItem(
     label: 'Failed',

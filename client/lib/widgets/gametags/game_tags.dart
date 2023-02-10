@@ -143,12 +143,6 @@ class GameChipsFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (filter.isEmpty) {
-      return Row(children: []);
-    }
-
-    final tagsModel = context.read<GameTagsModel>();
-
     return Row(children: [
       for (final store in filter.stores) ...[
         Padding(
@@ -171,7 +165,8 @@ class GameChipsFilter extends StatelessWidget {
       for (final tag in filter.tags) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: TagChip(tagsModel.tagByName(tag), onDeleted: () {}),
+          child: TagChip(context.read<GameTagsModel>().tagByName(tag),
+              onDeleted: () {}),
         ),
       ],
     ]);
