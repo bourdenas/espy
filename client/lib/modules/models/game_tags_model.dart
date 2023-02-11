@@ -22,10 +22,15 @@ class GameTagsModel extends ChangeNotifier {
   CollectionManager get collections => _collectionsManager;
   UserTagManager get userTags => _userTagsManager;
 
-  void update(String userId, List<LibraryEntry> entries) async {
-    _storesManager = StoresManager(entries);
-    _companiesManager = CompaniesManager(entries);
-    _collectionsManager = CollectionManager(entries);
+  void update(
+    String userId,
+    List<LibraryEntry> entries,
+    List<LibraryEntry> wishlist,
+  ) async {
+    final allEntries = entries + wishlist;
+    _storesManager = StoresManager(allEntries);
+    _companiesManager = CompaniesManager(allEntries);
+    _collectionsManager = CollectionManager(allEntries);
 
     if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;

@@ -11,7 +11,7 @@ enum LibraryView {
 
 class LibraryFilter {
   LibraryFilter({
-    this.view = LibraryView.IN_LIBRARY,
+    this.view = LibraryView.ALL,
     this.stores = const {},
     this.companies = const {},
     this.collections = const {},
