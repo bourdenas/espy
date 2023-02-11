@@ -45,6 +45,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
         child: FloatingActionButton(
+            heroTag: 'userPic',
             child: CircleAvatar(
               radius: 28,
               child: user != null

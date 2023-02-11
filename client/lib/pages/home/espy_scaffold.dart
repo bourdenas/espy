@@ -64,6 +64,7 @@ class _EspyScaffoldState extends State<EspyScaffold>
                 extendBodyBehindAppBar: AppConfigModel.isMobile(context),
                 appBar: appBar(context),
                 floatingActionButton: FloatingActionButton(
+                  heroTag: 'quickAdd',
                   child: Icon(Icons.add),
                   onPressed: () => MatchingDialog.show(
                     context,

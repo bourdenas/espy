@@ -64,6 +64,7 @@ class GameGridCard extends StatelessWidget {
               child: SizedBox(
                 height: 32,
                 child: FloatingActionButton(
+                  heroTag: 'add_${entry.id}',
                   mini: true,
                   tooltip: 'Add...',
                   child: Icon(
