@@ -76,21 +76,20 @@ class ReconReport {
 }
 
 class Keys {
-  final GogToken? gogToken;
+  final String? gogAuthCode;
   final String? steamUserId;
   final String? egsAuthCode;
 
   Keys({
-    required this.gogToken,
+    required this.gogAuthCode,
     required this.steamUserId,
     required this.egsAuthCode,
   });
 
   Keys.fromJson(Map<String, dynamic> json)
       : this(
-          gogToken: json.containsKey('gog_token')
-              ? GogToken.fromJson(json['gog_token'])
-              : null,
+          gogAuthCode:
+              json.containsKey('gog_auth_code') ? json['gog_auth_code'] : null,
           steamUserId:
               json.containsKey('steam_user_id') ? json['steam_user_id'] : null,
           egsAuthCode:
@@ -99,28 +98,9 @@ class Keys {
 
   Map<String, dynamic> toJson() {
     return {
-      if (gogToken != null) 'gog_token': gogToken!.toJson(),
+      if (gogAuthCode != null) 'gog_auth_code': gogAuthCode,
       if (steamUserId != null) 'steam_user_id': steamUserId,
       if (egsAuthCode != null) 'egs_auth_code': egsAuthCode,
-    };
-  }
-}
-
-class GogToken {
-  final String oauthCode;
-
-  GogToken({
-    required this.oauthCode,
-  });
-
-  GogToken.fromJson(Map<String, dynamic> json)
-      : this(
-          oauthCode: json['oauth_code'],
-        );
-
-  Map<String, dynamic> toJson() {
-    return {
-      'oauth_code': oauthCode,
     };
   }
 }

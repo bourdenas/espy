@@ -55,7 +55,7 @@ class _SettingsState extends State<Settings> {
           mainAxisSize: MainAxisSize.min,
           children: [
             storefrontTokenEditBox(
-              label: 'GOG auth token',
+              label: 'GOG auth code',
               token: user.gogAuthCode,
               logoAsset: 'assets/images/gog-128.png',
               textController: _gogTextController,
@@ -119,9 +119,7 @@ class _SettingsState extends State<Settings> {
                     });
 
                     final keys = Keys(
-                      gogToken: GogToken(
-                        oauthCode: _gogTextController.text,
-                      ),
+                      gogAuthCode: _gogTextController.text,
                       steamUserId: _steamTextController.text,
                       egsAuthCode: _egsTextController.text,
                     );
