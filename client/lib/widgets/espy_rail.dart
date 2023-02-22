@@ -45,6 +45,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
         child: FloatingActionButton(
+            heroTag: 'userPic',
             child: CircleAvatar(
               radius: 28,
               child: user != null
@@ -118,7 +119,7 @@ List<_MenuItem> _menuItems = [
     icon: Icons.label_off_outlined,
     selectedIcon: Icons.label_off,
     onTap: (context) => context.pushNamed('games',
-        queryParams: LibraryFilter(untagged: true).params()),
+        queryParams: LibraryFilter(view: LibraryView.UNTAGGED).params()),
   ),
   _MenuItem(
     label: 'Failed',

@@ -120,7 +120,7 @@ class TagSearchResults extends StatelessWidget {
                     queryParams: LibraryFilter(tags: {tag.name}).params(),
                   ),
                   onRightClick: () =>
-                      context.read<GameTagsModel>().moveUserTagCluster(tag),
+                      context.read<GameTagsModel>().userTags.moveCluster(tag),
                 ),
               ),
             ),

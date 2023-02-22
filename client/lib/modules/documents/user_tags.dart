@@ -1,7 +1,7 @@
 class UserTags {
   final List<TagClass> classes;
 
-  UserTags({
+  const UserTags({
     this.classes = const [],
   });
 

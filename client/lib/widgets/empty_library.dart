@@ -12,14 +12,12 @@ class EmptyLibrary extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Material(
-          child: Center(
-            child: SizedBox(
-              width: min(screenSize.width * .9, 800),
-              child: Image.asset(
-                'assets/images/espy-logo_800.png',
-                fit: BoxFit.fitWidth,
-              ),
+        Center(
+          child: SizedBox(
+            width: min(screenSize.width * .9, 800),
+            child: Image.asset(
+              'assets/images/espy-logo_800.png',
+              fit: BoxFit.fitWidth,
             ),
           ),
         ),

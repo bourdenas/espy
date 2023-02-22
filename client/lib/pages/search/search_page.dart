@@ -27,7 +27,7 @@ class _SearchPageState extends State<SearchPage> {
 
     final titleMatches = _text.isNotEmpty
         ? gameEntriesModel
-            .getEntries()
+            .filter(LibraryFilter(view: LibraryView.ALL))
             .where((entry) => ngrams.every((term) => entry.name
                 .toLowerCase()
                 .split(' ')
@@ -43,26 +43,26 @@ class _SearchPageState extends State<SearchPage> {
           delegate: searchBox(),
         ),
         TagSearchResults(
-          tagsModel.filterStores(ngrams),
-          tagsModel.filterTags(ngrams),
-          tagsModel.filterCompanies(ngrams),
-          tagsModel.filterCollections(ngrams),
+          tagsModel.stores.filter(ngrams),
+          tagsModel.userTags.filter(ngrams),
+          tagsModel.companies.filter(ngrams),
+          tagsModel.collections.filter(ngrams),
         ),
-        for (final company in tagsModel.filterCompaniesExact(ngrams)) ...[
+        for (final company in tagsModel.companies.filterExact(ngrams)) ...[
           LibraryGroup(
             title: company,
             color: Colors.redAccent,
             filter: LibraryFilter(companies: {company}),
           ),
         ],
-        for (final collection in tagsModel.filterCollectionsExact(ngrams)) ...[
+        for (final collection in tagsModel.collections.filterExact(ngrams)) ...[
           LibraryGroup(
             title: collection,
             color: Colors.indigoAccent,
             filter: LibraryFilter(collections: {collection}),
           ),
         ],
-        for (final tag in tagsModel.filterTagsExact(ngrams)) ...[
+        for (final tag in tagsModel.userTags.filterExact(ngrams)) ...[
           LibraryGroup(
             title: tag.name,
             color: Colors.blueGrey,

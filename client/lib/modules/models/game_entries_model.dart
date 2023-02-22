@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class GameEntriesModel extends ChangeNotifier {
   Map<int, LibraryEntry> _entries = {};
-  GameTagsModel _gameTags = GameTagsModel();
+  GameTagsModel _gameTagsModel = GameTagsModel();
 
   void update(
     List<LibraryEntry> library,
@@ -14,30 +14,17 @@ class GameEntriesModel extends ChangeNotifier {
   ) {
     _entries = Map.fromEntries(library.map((e) => MapEntry(e.id, e)));
     _entries.addAll(Map.fromEntries(wishlist.map((e) => MapEntry(e.id, e))));
-    _gameTags = gameTags;
+    _gameTagsModel = gameTags;
     notifyListeners();
   }
 
-  Iterable<LibraryEntry> getEntries({LibraryFilter? filter}) {
-    if (filter == null) {
-      return _entries.values;
-    }
+  bool get isNotEmpty => _entries.isNotEmpty;
 
-    final taggedEntries = filter.tags.isNotEmpty
-        ? _gameTags.entriesByTag(filter.tags.first)
-        : null;
+  Iterable<int> get all => _entries.keys;
 
-    final entries = taggedEntries != null
-        ? taggedEntries
-            .map((id) => _entries[id])
-            .whereType<LibraryEntry>()
-            .toList()
-        : _entries.values;
-
-    final sortedEntries = entries.toList()
+  Iterable<LibraryEntry> filter(LibraryFilter filter) {
+    return filter.filter(this, _gameTagsModel).toList()
       ..sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
-
-    return sortedEntries.where((e) => filter.apply(e));
   }
 
   Iterable<LibraryEntry> getRecentEntries() {
