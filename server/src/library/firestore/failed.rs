@@ -82,7 +82,101 @@ fn remove(store_entry: &StoreEntry, failed: &mut FailedEntries) -> bool {
     let original_len = failed.entries.len();
     failed
         .entries
-        .retain(|e| e.id != store_entry.id && e.storefront_name != store_entry.storefront_name);
+        .retain(|e| e.id != store_entry.id || e.storefront_name != store_entry.storefront_name);
 
     failed.entries.len() != original_len
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn new_store_entry(id: &str, storefront: &str) -> StoreEntry {
+        StoreEntry {
+            id: id.to_owned(),
+            title: "Game Title".to_owned(),
+            storefront_name: storefront.to_owned(),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn add_in_empty_library() {
+        let mut failed = FailedEntries { entries: vec![] };
+
+        assert_eq!(add(new_store_entry("123", "gog"), &mut failed), true);
+        assert_eq!(failed.entries.len(), 1);
+    }
+
+    #[test]
+    fn add_in_non_empty_library() {
+        let mut failed = FailedEntries {
+            entries: vec![new_store_entry("213", "gog")],
+        };
+
+        assert_eq!(add(new_store_entry("123", "gog"), &mut failed), true);
+        assert_eq!(failed.entries.len(), 2);
+    }
+
+    #[test]
+    fn add_same_entry_twice() {
+        let mut failed = FailedEntries {
+            entries: vec![new_store_entry("213", "gog")],
+        };
+
+        assert_eq!(add(new_store_entry("123", "gog"), &mut failed), true);
+        assert_eq!(failed.entries.len(), 2);
+        assert_eq!(add(new_store_entry("123", "gog"), &mut failed), false);
+        assert_eq!(failed.entries.len(), 2);
+    }
+
+    #[test]
+    fn add_same_id_different_store() {
+        let mut failed = FailedEntries {
+            entries: vec![new_store_entry("213", "gog")],
+        };
+
+        assert_eq!(add(new_store_entry("123", "gog"), &mut failed), true);
+        assert_eq!(failed.entries.len(), 2);
+        assert_eq!(add(new_store_entry("123", "steam"), &mut failed), true);
+        assert_eq!(failed.entries.len(), 3);
+    }
+
+    #[test]
+    fn remove_from_empty_library() {
+        let mut failed = FailedEntries { entries: vec![] };
+
+        assert_eq!(remove(&new_store_entry("123", "gog"), &mut failed), false);
+        assert_eq!(failed.entries.len(), 0);
+    }
+
+    #[test]
+    fn remove_from_non_empty_library_not_found() {
+        let mut failed = FailedEntries {
+            entries: vec![new_store_entry("213", "gog")],
+        };
+
+        assert_eq!(remove(&new_store_entry("123", "gog"), &mut failed), false);
+        assert_eq!(failed.entries.len(), 1);
+    }
+
+    #[test]
+    fn remove_from_library_found() {
+        let mut failed = FailedEntries {
+            entries: vec![new_store_entry("213", "gog"), new_store_entry("123", "gog")],
+        };
+
+        assert_eq!(remove(&new_store_entry("123", "gog"), &mut failed), true);
+        assert_eq!(failed.entries.len(), 1);
+    }
+
+    #[test]
+    fn remove_from_library_same_id_different_store_exists() {
+        let mut failed = FailedEntries {
+            entries: vec![new_store_entry("213", "gog"), new_store_entry("123", "gog")],
+        };
+
+        assert_eq!(remove(&new_store_entry("123", "steam"), &mut failed), false);
+        assert_eq!(failed.entries.len(), 2);
+    }
 }
