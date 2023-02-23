@@ -5,9 +5,6 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct GogToken {
     #[serde(default)]
-    pub oauth_code: String,
-
-    #[serde(default)]
     pub access_token: String,
 
     #[serde(default)]
@@ -24,13 +21,6 @@ pub struct GogToken {
 }
 
 impl GogToken {
-    pub fn new(oauth_code: &str) -> Self {
-        GogToken {
-            oauth_code: String::from(oauth_code),
-            ..Default::default()
-        }
-    }
-
     /// Creates a GogToken for authenticating a user to the service. The
     /// authentication code is used to retrieve an access token that is used when
     /// calling any GOG API for retrieving user information.
@@ -49,7 +39,7 @@ impl GogToken {
             }
         };
 
-        Ok(internal_token.to_token(oauth_code))
+        Ok(internal_token.to_token())
     }
 
     /// Validates that the access token contained in a user's GogToken is still
@@ -85,7 +75,7 @@ impl GogToken {
             }
         };
 
-        *self = internal_token.to_token(&self.oauth_code);
+        *self = internal_token.to_token();
 
         Ok(())
     }
@@ -141,9 +131,8 @@ struct GogTokenInternal {
 impl GogTokenInternal {
     /// Converts GogTokenInternal struct into a GogToken used for persistent
     /// storage.
-    fn to_token(self, oauth_code: &str) -> GogToken {
+    fn to_token(self) -> GogToken {
         GogToken {
-            oauth_code: String::from(oauth_code),
             access_token: self.access_token,
             refresh_token: self.refresh_token,
             expires_at: SystemTime::now()

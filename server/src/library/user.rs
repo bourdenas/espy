@@ -1,13 +1,13 @@
 use crate::{
     api::{FirestoreApi, GogApi, GogToken, SteamApi},
-    documents::{Keys, UserData},
+    documents::UserData,
     traits, util, Status,
 };
 use std::{
     collections::HashSet,
     sync::{Arc, Mutex},
 };
-use tracing::{info, instrument, warn};
+use tracing::{error, info, instrument, warn};
 
 use super::firestore;
 
@@ -25,57 +25,23 @@ impl User {
         load_user(user_id, firestore)
     }
 
-    /// Updates user's storefront credentials. This may cause refresh of
-    /// credentials. Updated user data are pushed to Firestore.
-    #[instrument(level = "trace", skip(self, steam_user_id, gog_auth_code))]
-    pub async fn update_storefronts(
-        &mut self,
-        steam_user_id: &str,
-        gog_auth_code: &str,
-    ) -> Result<(), Status> {
-        self.data.keys = Some(Keys {
-            // TODO: Need to avoid invalidating the existing credentials for no reason.
-            gog_token: match GogToken::from_oauth_code(gog_auth_code).await {
-                Ok(token) => Some(token),
-                Err(_) => None,
-            },
-            steam_user_id: String::from(steam_user_id),
-            egs_auth_code: String::default(),
-        });
-
-        if let Err(e) = save_user_data(&self.data, &self.firestore.lock().unwrap()) {
-            return Err(Status::new("User.update:", e));
-        }
-
-        Ok(())
-    }
-
     /// Synchronises user library with connected storefronts to retrieve
     /// updates.
     #[instrument(level = "trace", skip(self, keys))]
     pub async fn sync(&mut self, keys: &util::keys::Keys) -> Result<(), Status> {
         let gog_api = match self.gog_token().await {
-            Some(token) => {
-                let gog_api = Some(GogApi::new(token.clone()));
-
-                // Need to save User as it may got GogToken updated.
-                if let Err(e) = save_user_data(&self.data, &self.firestore.lock().unwrap()) {
-                    return Err(Status::new("User::sync(): failed to save user data.", e));
-                }
-                gog_api
-            }
+            Some(token) => Some(GogApi::new(token.clone())),
             None => None,
         };
+        if let Some(api) = gog_api {
+            self.sync_storefront(&api).await?;
+        }
 
         let steam_api = match self.steam_user_id() {
             Some(user_id) => Some(SteamApi::new(&keys.steam.client_key, user_id)),
             None => None,
         };
-
         if let Some(api) = steam_api {
-            self.sync_storefront(&api).await?;
-        }
-        if let Some(api) = gog_api {
             self.sync_storefront(&api).await?;
         }
 
@@ -110,34 +76,42 @@ impl User {
         )
     }
 
-    /// Tries to validate user's GogToken and returns a reference to it only if
-    /// it succeeds.
-    async fn gog_token<'a>(&'a mut self) -> Option<&'a mut GogToken> {
-        match &mut self.data.keys {
-            Some(keys) => match &mut keys.gog_token {
-                Some(token) => {
-                    if token.access_token.is_empty() {
-                        *token = match GogToken::from_oauth_code(&token.oauth_code).await {
-                            Ok(token) => token,
-                            Err(e) => {
-                                warn!("Failed to validate GOG token. {e}");
-                                GogToken::new(&token.oauth_code)
-                            }
-                        }
-                    }
+    /// Returns a valid GOG token if available.
+    async fn gog_token(&mut self) -> Option<GogToken> {
+        {
+            let keys = match &mut self.data.keys {
+                Some(keys) => keys,
+                None => return None,
+            };
 
-                    match token.validate().await {
-                        Ok(()) => Some(token),
+            keys.gog_token = match keys.gog_token.clone() {
+                Some(mut token) => match token.validate().await {
+                    Ok(()) => Some(token),
+                    Err(e) => {
+                        warn!("Failed to validate GOG token: {e}");
+                        None
+                    }
+                },
+                None => match keys.gog_auth_code.is_empty() {
+                    false => match GogToken::from_oauth_code(&keys.gog_auth_code).await {
+                        Ok(token) => Some(token),
                         Err(e) => {
-                            warn!("Failed to validate GOG token: {e}");
+                            warn!("Failed to create GOG token from oauth code. {e}");
                             None
                         }
-                    }
-                }
-                None => None,
-            },
-            None => None,
+                    },
+                    true => None,
+                },
+            };
         }
+
+        if self.data.keys.as_ref().unwrap().gog_token.is_some() {
+            if let Err(e) = save_user_data(&self.data, &self.firestore.lock().unwrap()) {
+                error!("Failed to save user data: {e}");
+            }
+        }
+
+        self.data.keys.as_ref().unwrap().gog_token.clone()
     }
 
     /// Returns user's Steam id.
