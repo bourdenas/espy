@@ -7,7 +7,11 @@ use tracing::instrument;
 
 #[instrument(level = "trace", skip(firestore, user_id))]
 pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> {
-    firestore.read(&format!("users/{user_id}/games"), "library")
+    match firestore.read(&format!("users/{user_id}/games"), "library") {
+        Ok(library) => Ok(library),
+        Err(Status::NotFound(_)) => Ok(Library::default()),
+        Err(e) => Err(e),
+    }
 }
 
 #[instrument(level = "trace", skip(firestore, user_id, library))]

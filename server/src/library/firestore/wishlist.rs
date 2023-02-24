@@ -7,7 +7,11 @@ use tracing::instrument;
 
 #[instrument(level = "trace", skip(firestore, user_id))]
 pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> {
-    firestore.read(&format!("users/{user_id}/games"), "wishlist")
+    match firestore.read(&format!("users/{user_id}/games"), "wishlist") {
+        Ok(wishlist) => Ok(wishlist),
+        Err(Status::NotFound(_)) => Ok(Library::default()),
+        Err(e) => Err(e),
+    }
 }
 
 #[instrument(level = "trace", skip(firestore, user_id, library))]
@@ -28,11 +32,7 @@ pub fn add_entry(
     user_id: &str,
     library_entry: LibraryEntry,
 ) -> Result<(), Status> {
-    let mut wishlist = match read(firestore, user_id) {
-        Ok(wishlist) => wishlist,
-        Err(_) => Library { entries: vec![] },
-    };
-
+    let mut wishlist = read(firestore, user_id)?;
     if add(library_entry, &mut wishlist) {
         write(firestore, user_id, &wishlist)?;
     }

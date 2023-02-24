@@ -7,7 +7,11 @@ use tracing::instrument;
 
 #[instrument(level = "trace", skip(firestore, user_id))]
 pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<FailedEntries, Status> {
-    firestore.read(&format!("users/{user_id}/games"), "failed")
+    match firestore.read(&format!("users/{user_id}/games"), "failed") {
+        Ok(failed) => Ok(failed),
+        Err(Status::NotFound(_)) => Ok(FailedEntries::default()),
+        Err(e) => Err(e),
+    }
 }
 
 #[instrument(level = "trace", skip(firestore, user_id, failed))]
@@ -30,11 +34,7 @@ pub fn add_entry(
     user_id: &str,
     store_entry: StoreEntry,
 ) -> Result<(), Status> {
-    let mut failed = match read(firestore, user_id) {
-        Ok(failed) => failed,
-        Err(_) => FailedEntries { entries: vec![] },
-    };
-
+    let mut failed = read(firestore, user_id)?;
     if add(store_entry, &mut failed) {
         write(firestore, user_id, &failed)?;
     }

@@ -1,4 +1,5 @@
 use crate::Status;
+use firestore::errors::FirebaseError;
 use firestore_db_and_auth as firestore;
 use firestore_db_and_auth::{documents, dto, Credentials, ServiceSession};
 use serde::{Deserialize, Serialize};
@@ -28,9 +29,10 @@ impl FirestoreApi {
     {
         match documents::read(&self.session, path, doc_id) {
             Ok(doc) => Ok(doc),
-            Err(_) => Err(Status::not_found(&format!(
+            Err(FirebaseError::APIError(404, _, _)) => Err(Status::not_found(format!(
                 "Firestore document {path}/{doc_id} not found."
             ))),
+            Err(e) => Err(Status::internal(e.to_string())),
         }
     }
 
