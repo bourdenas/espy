@@ -36,6 +36,14 @@ pub fn write(
     }
 }
 
+/// Deletes a storefront record from user's library.
+///
+/// Deletes `users/{user}/storefront/{storefront}` document in Firestore.
+#[instrument(level = "trace", skip(firestore, user_id))]
+pub fn delete(firestore: &FirestoreApi, user_id: &str, storefront: &str) -> Result<(), Status> {
+    firestore.delete(&format!("users/{user_id}/storefronts/{storefront}"))
+}
+
 /// Remove a StoreEntry from its Storefront.
 ///
 /// Reads/writes `users/{user}/storefront/{storefront_name}` document in

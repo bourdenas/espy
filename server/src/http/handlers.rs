@@ -186,6 +186,27 @@ pub async fn post_unlink(
     debug!("POST /library/{user_id}/unlink");
     let started = SystemTime::now();
 
+    // Remove storefront credentials from UserData.
+    match User::new(Arc::clone(&firestore), &user_id) {
+        Ok(mut user) => {
+            if let Err(err) = user.remove_storefront(&unlink.storefront_id) {
+                error!("{err}");
+                return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        }
+        Err(err) => {
+            error!("{err}");
+            return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    // Remove storefront library entries.
+    let manager = LibraryManager::new(&user_id, firestore);
+    if let Err(err) = manager.remove_storefront(&unlink.storefront_id).await {
+        error!("{err}");
+        return Ok(StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
     let resp_time = SystemTime::now().duration_since(started).unwrap();
     debug!("time: {:.2} msec", resp_time.as_millis());
 

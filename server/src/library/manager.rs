@@ -254,6 +254,16 @@ impl LibraryManager {
     pub async fn remove_from_wishlist(&self, game_id: u64) -> Result<(), Status> {
         firestore::wishlist::remove_entry(&self.firestore.lock().unwrap(), &self.user_id, game_id)
     }
+
+    /// Remove all entries in user library from specified storefront.
+    #[instrument(level = "trace", skip(self))]
+    pub async fn remove_storefront(&self, storefront_id: &str) -> Result<(), Status> {
+        let firestore = &self.firestore.lock().unwrap();
+
+        firestore::library::remove_storefront(firestore, &self.user_id, storefront_id)?;
+        firestore::failed::remove_storefront(firestore, &self.user_id, storefront_id)?;
+        firestore::storefront::delete(firestore, &self.user_id, storefront_id)
+    }
 }
 
 #[derive(Debug)]

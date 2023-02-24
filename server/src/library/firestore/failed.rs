@@ -58,6 +58,17 @@ pub fn remove_entry(
     Ok(())
 }
 
+#[instrument(level = "trace", skip(firestore, user_id))]
+pub fn remove_storefront(
+    firestore: &FirestoreApi,
+    user_id: &str,
+    storefront_id: &str,
+) -> Result<(), Status> {
+    let mut failed = read(firestore, user_id)?;
+    remove_store_entries(storefront_id, &mut failed);
+    write(firestore, user_id, &failed)
+}
+
 /// Adds `StoreEntry` in the failed to match entries.
 ///
 /// Returns false if the same `StoreEntry` was already found, true otherwise.
@@ -85,6 +96,13 @@ fn remove(store_entry: &StoreEntry, failed: &mut FailedEntries) -> bool {
         .retain(|e| e.id != store_entry.id || e.storefront_name != store_entry.storefront_name);
 
     failed.entries.len() != original_len
+}
+
+/// Remove all failed store entries from specified storefront.
+fn remove_store_entries(storefront_id: &str, failed: &mut FailedEntries) {
+    failed
+        .entries
+        .retain(|store_entry| store_entry.storefront_name != storefront_id);
 }
 
 #[cfg(test)]

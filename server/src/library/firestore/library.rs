@@ -58,6 +58,17 @@ pub fn remove_entry(
     Ok(())
 }
 
+#[instrument(level = "trace", skip(firestore, user_id))]
+pub fn remove_storefront(
+    firestore: &FirestoreApi,
+    user_id: &str,
+    storefront_id: &str,
+) -> Result<(), Status> {
+    let mut library = read(firestore, user_id)?;
+    remove_store_entries(storefront_id, &mut library);
+    write(firestore, user_id, &library)
+}
+
 /// Adds `LibraryEntry` in the library.
 ///
 /// If an entry exists for the same game, it merges its store entries.
@@ -109,11 +120,22 @@ fn remove(store_entry: &StoreEntry, game_id: u64, library: &mut Library) -> bool
     entry_found
 }
 
+/// Removes all entries in `Library` from a specified storefront.
+fn remove_store_entries(storefront_id: &str, library: &mut Library) {
+    library.entries.retain_mut(|library_entry| {
+        library_entry
+            .store_entries
+            .retain(|store_entry| store_entry.storefront_name != storefront_id);
+
+        return !library_entry.store_entries.is_empty();
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn new_library_entry(id: u64) -> LibraryEntry {
+    fn library_entry(id: u64) -> LibraryEntry {
         LibraryEntry {
             id,
             store_entries: vec![StoreEntry {
@@ -127,21 +149,38 @@ mod tests {
         }
     }
 
+    fn library_entry_with_stores(id: u64, stores: Vec<(&str, &str)>) -> LibraryEntry {
+        LibraryEntry {
+            id,
+            store_entries: stores
+                .iter()
+                .map(|(store_game_id, store)| StoreEntry {
+                    id: store_game_id.to_string(),
+                    title: "Game Title".to_owned(),
+                    storefront_name: store.to_string(),
+                    ..Default::default()
+                })
+                .collect(),
+            owned_versions: vec![id],
+            ..Default::default()
+        }
+    }
+
     #[test]
     fn add_in_empty_library() {
         let mut library = Library { entries: vec![] };
 
-        assert!(add(new_library_entry(7), &mut library));
+        assert!(add(library_entry(7), &mut library));
         assert_eq!(library.entries.len(), 1);
     }
 
     #[test]
     fn add_same_library_entry() {
         let mut library = Library {
-            entries: vec![new_library_entry(7)],
+            entries: vec![library_entry(7)],
         };
 
-        assert!(add(new_library_entry(7), &mut library));
+        assert!(add(library_entry(7), &mut library));
         assert_eq!(library.entries.len(), 1);
         assert_eq!(library.entries[0].store_entries.len(), 2);
         assert_eq!(library.entries[0].owned_versions.len(), 2);
@@ -151,7 +190,7 @@ mod tests {
     fn remove_non_existing_entry() {
         let mut library = Library { entries: vec![] };
 
-        let library_entry = new_library_entry(7);
+        let library_entry = library_entry(7);
         assert_eq!(
             remove(
                 &library_entry.store_entries[0],
@@ -166,10 +205,10 @@ mod tests {
     #[test]
     fn remove_entry_with_single_store() {
         let mut library = Library {
-            entries: vec![new_library_entry(7), new_library_entry(3)],
+            entries: vec![library_entry(7), library_entry(3)],
         };
 
-        let library_entry = new_library_entry(7);
+        let library_entry = library_entry(7);
         assert!(remove(
             &library_entry.store_entries[0],
             library_entry.id,
@@ -181,16 +220,13 @@ mod tests {
     #[test]
     fn remove_entry_with_multiple_stores() {
         let mut library = Library {
-            entries: vec![new_library_entry(7), new_library_entry(3)],
+            entries: vec![
+                library_entry_with_stores(7, vec![("store_id_0", "gog"), ("steam id", "steam")]),
+                library_entry(3),
+            ],
         };
-        library.entries[0].store_entries.push(StoreEntry {
-            id: "some id".to_owned(),
-            title: "Game Title".to_owned(),
-            storefront_name: "steam".to_owned(),
-            ..Default::default()
-        });
 
-        let library_entry = new_library_entry(7);
+        let library_entry = library_entry(7);
         assert!(remove(
             &library_entry.store_entries[0],
             library_entry.id,
@@ -203,7 +239,7 @@ mod tests {
     #[test]
     fn remove_found_library_entry_but_not_store_entry() {
         let mut library = Library {
-            entries: vec![new_library_entry(7), new_library_entry(3)],
+            entries: vec![library_entry(7), library_entry(3)],
         };
 
         assert_eq!(
@@ -221,5 +257,61 @@ mod tests {
         );
         assert_eq!(library.entries.len(), 2);
         assert_eq!(library.entries[0].store_entries.len(), 1);
+    }
+
+    #[test]
+    fn remove_all_storefront_entries() {
+        let mut library = Library {
+            entries: vec![
+                library_entry_with_stores(7, vec![("gog_123", "gog")]),
+                library_entry_with_stores(3, vec![("gog_213", "gog")]),
+            ],
+        };
+
+        remove_store_entries("gog", &mut library);
+        assert_eq!(library.entries.len(), 0);
+    }
+
+    #[test]
+    fn remove_all_storefront_entries_store_does_not_exist() {
+        let mut library = Library {
+            entries: vec![
+                library_entry_with_stores(7, vec![("gog_123", "gog")]),
+                library_entry_with_stores(3, vec![("gog_213", "gog")]),
+            ],
+        };
+
+        remove_store_entries("steam", &mut library);
+        assert_eq!(library.entries.len(), 2);
+    }
+
+    #[test]
+    fn remove_all_storefront_entries_does_not_affect_other_stores() {
+        let mut library = Library {
+            entries: vec![
+                library_entry_with_stores(7, vec![("gog_123", "gog")]),
+                library_entry_with_stores(2, vec![("steam_123", "steam")]),
+                library_entry_with_stores(3, vec![("gog_213", "gog")]),
+                library_entry_with_stores(5, vec![("steam_231", "steam")]),
+            ],
+        };
+
+        remove_store_entries("gog", &mut library);
+        assert_eq!(library.entries.len(), 2);
+    }
+
+    #[test]
+    fn remove_all_storefront_entries_maintain_entry_with_other_store() {
+        let mut library = Library {
+            entries: vec![
+                library_entry_with_stores(7, vec![("gog_123", "gog"), ("steam_321", "steam")]),
+                library_entry_with_stores(2, vec![("steam_123", "steam")]),
+                library_entry_with_stores(3, vec![("gog_213", "gog")]),
+                library_entry_with_stores(5, vec![("steam_231", "steam")]),
+            ],
+        };
+
+        remove_store_entries("gog", &mut library);
+        assert_eq!(library.entries.len(), 3);
     }
 }

@@ -25,8 +25,32 @@ impl User {
         load_user(user_id, firestore)
     }
 
-    /// Synchronises user library with connected storefronts to retrieve
-    /// updates.
+    /// Remove user credentials from a storefront.
+    #[instrument(level = "trace", skip(self))]
+    pub fn remove_storefront(&mut self, storefront_id: &str) -> Result<(), Status> {
+        match storefront_id {
+            "gog" => {
+                if let Some(keys) = &mut self.data.keys {
+                    keys.gog_auth_code.clear();
+                    keys.gog_token = None;
+                    self.save()?;
+                }
+                Ok(())
+            }
+            "steam" => {
+                if let Some(keys) = &mut self.data.keys {
+                    keys.steam_user_id.clear();
+                    self.save()?;
+                }
+                Ok(())
+            }
+            _ => Err(Status::invalid_argument(
+                format! {"Storefront '{storefront_id}' is not valid."},
+            )),
+        }
+    }
+
+    /// Sync user library with connected storefronts to retrieve updates.
     #[instrument(level = "trace", skip(self, keys))]
     pub async fn sync(&mut self, keys: &util::keys::Keys) -> Result<(), Status> {
         let gog_api = match self.gog_token().await {
@@ -106,7 +130,7 @@ impl User {
         }
 
         if self.data.keys.as_ref().unwrap().gog_token.is_some() {
-            if let Err(e) = save_user_data(&self.data, &self.firestore.lock().unwrap()) {
+            if let Err(e) = self.save() {
                 error!("Failed to save user data: {e}");
             }
         }
@@ -120,6 +144,11 @@ impl User {
             Some(keys) => Some(&keys.steam_user_id),
             None => None,
         }
+    }
+
+    fn save(&self) -> Result<(), Status> {
+        save_user_data(&self.data, &self.firestore.lock().unwrap())?;
+        Ok(())
     }
 }
 
