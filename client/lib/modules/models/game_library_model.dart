@@ -162,7 +162,7 @@ class GameLibraryModel extends ChangeNotifier {
     GameEntry gameEntry,
   ) async {
     final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$userId/rematch'),
+      Uri.parse('${Urls.espyBackend}/library/$userId/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
