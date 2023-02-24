@@ -86,7 +86,7 @@ fn post_match(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "match")
         .and(warp::post())
-        .and(match_op_body())
+        .and(json_body::<models::MatchOp>())
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
         .and(with_steam(steam))
@@ -99,7 +99,7 @@ fn post_wishlist(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "wishlist")
         .and(warp::post())
-        .and(wishlist_body())
+        .and(json_body::<models::WishlistOp>())
         .and(with_firestore(firestore))
         .and_then(handlers::post_wishlist)
 }
@@ -128,7 +128,7 @@ fn post_upload(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "upload")
         .and(warp::post())
-        .and(upload_body())
+        .and(json_body::<models::Upload>())
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
         .and(with_steam(steam))
@@ -140,4 +140,9 @@ fn get_images() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
     warp::path!("images" / String / String)
         .and(warp::get())
         .and_then(handlers::get_images)
+}
+
+fn json_body<T: serde::de::DeserializeOwned + Send>(
+) -> impl Filter<Extract = (T,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(16 * 1024).and(warp::body::json())
 }

@@ -1,7 +1,6 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
     games::SteamDataApi,
-    http::models,
     util,
 };
 use std::{
@@ -32,27 +31,4 @@ pub fn with_keys(
     keys: Arc<util::keys::Keys>,
 ) -> impl Filter<Extract = (Arc<util::keys::Keys>,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&keys))
-}
-
-pub fn upload_body() -> impl Filter<Extract = (models::Upload,), Error = warp::Rejection> + Clone {
-    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
-}
-
-pub fn search_body() -> impl Filter<Extract = (models::Search,), Error = warp::Rejection> + Clone {
-    warp::body::content_length_limit(16 * 1024).and(warp::body::json())
-}
-
-pub fn resolve_body() -> impl Filter<Extract = (models::Resolve,), Error = warp::Rejection> + Clone
-{
-    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
-}
-
-pub fn match_op_body() -> impl Filter<Extract = (models::MatchOp,), Error = warp::Rejection> + Clone
-{
-    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
-}
-
-pub fn wishlist_body(
-) -> impl Filter<Extract = (models::WishlistOp,), Error = warp::Rejection> + Clone {
-    warp::body::content_length_limit(64 * 1024).and(warp::body::json())
 }
