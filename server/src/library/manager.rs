@@ -103,11 +103,13 @@ impl LibraryManager {
                                     "  failed to match {} ({})",
                                     &store_entry.title, &store_entry.storefront_name,
                                 );
+                                let firestore = &firestore.lock().unwrap();
                                 firestore::failed::add_entry(
-                                    &firestore.lock().unwrap(),
+                                    firestore,
                                     &user_id,
-                                    store_entry,
+                                    store_entry.clone(),
                                 )?;
+                                firestore::unmatched::delete(firestore, &user_id, &store_entry)?;
                                 Ok(report_line)
                             }
                         }
