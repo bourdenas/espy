@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use tracing::warn;
 use warp::{self, Filter};
 
-use super::{handlers, resources::*};
+use super::{handlers, models, resources::*};
 
 /// Returns a Filter with all available routes.
 pub fn routes(
@@ -29,6 +29,7 @@ pub fn routes(
             Arc::clone(&steam),
         ))
         .or(post_wishlist(Arc::clone(&firestore)))
+        .or(post_unlink(Arc::clone(&firestore)))
         .or(post_sync(
             keys,
             Arc::clone(&firestore),
@@ -58,7 +59,7 @@ fn post_search(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("search")
         .and(warp::post())
-        .and(search_body())
+        .and(json_body::<models::Search>())
         .and(with_igdb(igdb))
         .and_then(handlers::post_search)
 }
@@ -71,7 +72,7 @@ fn post_resolve(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("resolve")
         .and(warp::post())
-        .and(resolve_body())
+        .and(json_body::<models::Resolve>())
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
         .and(with_steam(steam))
@@ -102,6 +103,17 @@ fn post_wishlist(
         .and(json_body::<models::WishlistOp>())
         .and(with_firestore(firestore))
         .and_then(handlers::post_wishlist)
+}
+
+/// POST /library/{user_id}/unlink
+fn post_unlink(
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("library" / String / "unlink")
+        .and(warp::post())
+        .and(json_body::<models::Unlink>())
+        .and(with_firestore(firestore))
+        .and_then(handlers::post_unlink)
 }
 
 /// POST /library/{user_id}/sync

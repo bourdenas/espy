@@ -1,11 +1,6 @@
 use crate::documents;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Deserialize, Serialize)]
-pub struct Upload {
-    pub entries: Vec<documents::StoreEntry>,
-}
-
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Search {
     pub title: String,
@@ -61,4 +56,14 @@ pub struct WishlistOp {
 
     #[serde(default)]
     pub remove_game: Option<u64>,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct Unlink {
+    pub storefront_id: String,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct Upload {
+    pub entries: Vec<documents::StoreEntry>,
 }

@@ -177,6 +177,21 @@ pub async fn post_wishlist(
     Ok(StatusCode::OK)
 }
 
+#[instrument(level = "trace", skip(firestore))]
+pub async fn post_unlink(
+    user_id: String,
+    unlink: models::Unlink,
+    firestore: Arc<Mutex<FirestoreApi>>,
+) -> Result<impl warp::Reply, Infallible> {
+    debug!("POST /library/{user_id}/unlink");
+    let started = SystemTime::now();
+
+    let resp_time = SystemTime::now().duration_since(started).unwrap();
+    debug!("time: {:.2} msec", resp_time.as_millis());
+
+    Ok(StatusCode::OK)
+}
+
 #[instrument(level = "trace", skip(api_keys, firestore, igdb, steam))]
 pub async fn post_sync(
     user_id: String,
