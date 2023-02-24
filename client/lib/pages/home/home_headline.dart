@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/library_filter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
@@ -12,7 +13,9 @@ class HomeHeadline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entries = context.watch<GameEntriesModel>().getRecentEntries();
+    final entries = context
+        .watch<GameEntriesModel>()
+        .filter(LibraryFilter(view: LibraryView.WISHLIST));
 
     return FadeIn(
       duration: Duration(milliseconds: 500),
@@ -59,12 +62,12 @@ class HomeHeadline extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.calendar_today,
+                  Icons.favorite_border,
                   size: 16.0,
                 ),
                 SizedBox(width: 4.0),
                 Text(
-                  'latest release'.toUpperCase(),
+                  'wishlisted'.toUpperCase(),
                   style: TextStyle(
                     fontSize: 16.0,
                   ),
