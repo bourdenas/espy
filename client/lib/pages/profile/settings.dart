@@ -55,12 +55,14 @@ class _SettingsState extends State<Settings> {
           mainAxisSize: MainAxisSize.min,
           children: [
             storefrontTokenEditBox(
+              storefrontId: 'gog',
               label: 'GOG auth code',
               token: user.gogAuthCode,
               logoAsset: 'assets/images/gog-128.png',
               textController: _gogTextController,
             ),
             storefrontTokenEditBox(
+              storefrontId: 'steam',
               label: 'Steam user id',
               token: user.steamUserId,
               logoAsset: 'assets/images/steam-128.png',
@@ -73,6 +75,7 @@ class _SettingsState extends State<Settings> {
   }
 
   Widget storefrontTokenEditBox({
+    required String storefrontId,
     required String logoAsset,
     required String label,
     required String token,
@@ -96,6 +99,18 @@ class _SettingsState extends State<Settings> {
                   floatingLabelBehavior: FloatingLabelBehavior.auto,
                 ),
               ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 0, 8),
+            child: IconButton(
+              icon: Icon(
+                Icons.link_off,
+                color: Colors.grey,
+              ),
+              splashRadius: 16,
+              onPressed: () async =>
+                  await context.read<UserDataModel>().unlink(storefrontId),
             ),
           ),
         ],

@@ -45,6 +45,21 @@ class UserDataModel extends ChangeNotifier {
     );
   }
 
+  /// Unlinks a storefront from the account.
+  Future<void> unlink(String storefrontId) async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/${_userId!}/unlink'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({'storefront_id': storefrontId}),
+    );
+
+    if (response.statusCode != 200) {
+      print('Failed to unlink storefront:\n${response.statusCode}');
+    }
+  }
+
   /// Initiates the library sync process to the espy backend for the user.
   Future<String> syncLibrary(Keys keys) async {
     var response = await http.post(
