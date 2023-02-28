@@ -52,7 +52,7 @@ impl User {
 
     /// Sync user library with connected storefronts to retrieve updates.
     #[instrument(level = "trace", skip(self, keys))]
-    pub async fn sync(&mut self, keys: &util::keys::Keys) -> Result<(), Status> {
+    pub async fn sync_accounts(&mut self, keys: &util::keys::Keys) -> Result<(), Status> {
         let gog_api = match self.gog_token().await {
             Some(token) => Some(GogApi::new(token.clone())),
             None => None,

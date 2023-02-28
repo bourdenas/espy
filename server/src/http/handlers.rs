@@ -226,7 +226,7 @@ pub async fn post_sync(
 
     match User::new(Arc::clone(&firestore), &user_id) {
         Ok(mut user) => {
-            if let Err(err) = user.sync(&api_keys).await {
+            if let Err(err) = user.sync_accounts(&api_keys).await {
                 return Ok(log_err(err));
             }
         }
