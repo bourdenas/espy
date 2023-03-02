@@ -386,7 +386,7 @@ async fn resolve_child_game(
 #[async_recursion]
 #[instrument(
     level = "trace",
-    skip(igdb_state, igdb_game),
+    skip(igdb_state, igdb_game, tx),
     fields(
         game_id = %igdb_game.id,
         game_name = %igdb_game.name,
@@ -571,75 +571,6 @@ async fn retrieve_game_info(
         ));
     }
 
-    for expansion in igdb_game.expansions.into_iter() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                if let Some(expansion) = resolve_child_game(igdb_state, expansion).await? {
-                    tx.send(GameEntry {
-                        expansions: vec![expansion],
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_expansions")),
-        ));
-    }
-    for dlc in igdb_game.dlcs.into_iter() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                if let Some(dlc) = resolve_child_game(igdb_state, dlc).await? {
-                    tx.send(GameEntry {
-                        dlcs: vec![dlc],
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_dlcs")),
-        ));
-    }
-    for remake in igdb_game.remakes.into_iter() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                if let Some(remake) = resolve_child_game(igdb_state, remake).await? {
-                    tx.send(GameEntry {
-                        remakes: vec![remake],
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_remakes")),
-        ));
-    }
-    for remaster in igdb_game.remasters.into_iter() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                if let Some(remaster) = resolve_child_game(igdb_state, remaster).await? {
-                    tx.send(GameEntry {
-                        remasters: vec![remaster],
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_remasters")),
-        ));
-    }
-
     for result in futures::future::join_all(handles).await {
         match result {
             Ok(result) => {
@@ -648,6 +579,43 @@ async fn retrieve_game_info(
                 }
             }
             Err(e) => return Err(Status::Internal(format!("{}", e))),
+        }
+    }
+
+    for expansion in igdb_game.expansions.into_iter() {
+        if let Some(expansion) = resolve_child_game(Arc::clone(&igdb_state), expansion).await? {
+            tx.send(GameEntry {
+                expansions: vec![expansion],
+                ..Default::default()
+            })
+            .await?;
+        }
+    }
+    for dlc in igdb_game.dlcs.into_iter() {
+        if let Some(dlc) = resolve_child_game(Arc::clone(&igdb_state), dlc).await? {
+            tx.send(GameEntry {
+                dlcs: vec![dlc],
+                ..Default::default()
+            })
+            .await?;
+        }
+    }
+    for remake in igdb_game.remakes.into_iter() {
+        if let Some(remake) = resolve_child_game(Arc::clone(&igdb_state), remake).await? {
+            tx.send(GameEntry {
+                remakes: vec![remake],
+                ..Default::default()
+            })
+            .await?;
+        }
+    }
+    for remaster in igdb_game.remasters.into_iter() {
+        if let Some(remaster) = resolve_child_game(Arc::clone(&igdb_state), remaster).await? {
+            tx.send(GameEntry {
+                remasters: vec![remaster],
+                ..Default::default()
+            })
+            .await?;
         }
     }
 
