@@ -79,12 +79,8 @@ impl LibraryManager {
                         &store_entry.title, &store_entry.storefront_name, &game_entry.name,
                     );
 
-                    // TODO: The single match operation is not
-                    // optimal for multiple matches. The read/write
-                    // library operation is slow. This can be
-                    // optimized by bundlings all updates in a
-                    // single write.
-                    self.match_game(store_entry, game_entry, igdb, steam, MatchType::BaseGame)
+                    // TODO: Retrieved GameEntry is not stored anywhere.
+                    self.retrieve_game_info(game_entry, igdb, steam, MatchType::BaseGame)
                         .await?;
                     report.lines.push(report_line);
                 }
@@ -104,24 +100,24 @@ impl LibraryManager {
         Ok(report)
     }
 
-    /// Match a `StoreEntry` with a specified `GameEntry` and saving it in the
-    /// library.
+    /// Retrieves full info for a partial GameEntry. Returns an tuple with the
+    /// updated GameEntry and game_id of the originally owned game. The
+    /// GameEntry might be different from owned_game_id based on the
+    /// `match_type` requested, e.g. match with base game.
     #[instrument(
         level = "trace",
-        skip(self, store_entry, game_entry, igdb, steam)
+        skip(self,  game_entry, igdb, steam)
         fields(
-            store_game = %store_entry.title,
-            matched_game = %game_entry.name
+            game = %game_entry.name
         ),
     )]
-    pub async fn match_game(
+    pub async fn retrieve_game_info(
         &self,
-        store_entry: StoreEntry,
         game_entry: GameEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
         match_type: MatchType,
-    ) -> Result<(), Status> {
+    ) -> Result<(u64, GameEntry), Status> {
         let owned_game_id = game_entry.id;
         let game_id = match (match_type, game_entry.parent) {
             (MatchType::BaseGame, Some(parent_id)) => parent_id,
@@ -138,7 +134,7 @@ impl LibraryManager {
                 }
             };
 
-        self.create_library_entry(store_entry, game_entry, owned_game_id)
+        Ok((owned_game_id, game_entry))
     }
 
     #[instrument(

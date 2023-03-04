@@ -81,8 +81,7 @@ pub async fn post_match(
     match (match_op.game_entry, match_op.unmatch_entry) {
         (Some(game_entry), None) => {
             match manager
-                .match_game(
-                    match_op.store_entry,
+                .retrieve_game_info(
                     game_entry,
                     igdb,
                     steam,
@@ -93,7 +92,19 @@ pub async fn post_match(
                 )
                 .await
             {
-                Ok(()) => Ok(StatusCode::OK),
+                Ok((owned_game_id, game_entry)) => {
+                    match manager.create_library_entry(
+                        match_op.store_entry,
+                        game_entry,
+                        owned_game_id,
+                    ) {
+                        Ok(()) => Ok(StatusCode::OK),
+                        Err(err) => {
+                            error!("{err}");
+                            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+                        }
+                    }
+                }
                 Err(err) => {
                     error!("{err}");
                     Ok(StatusCode::INTERNAL_SERVER_ERROR)
