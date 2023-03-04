@@ -58,7 +58,7 @@ impl IgdbApi {
         self.state = Some(Arc::new(IgdbApiState {
             client_id: self.client_id.clone(),
             oauth_token: resp.access_token,
-            qps: RateLimiter::new(4, Duration::from_secs(1), 4),
+            qps: RateLimiter::new(4, Duration::from_secs(1), 6),
         }));
 
         Ok(())

@@ -5,7 +5,7 @@ use crate::{
     Status,
 };
 use std::sync::{Arc, Mutex};
-use tracing::{instrument, trace_span, Instrument};
+use tracing::instrument;
 
 use super::firestore;
 
@@ -62,106 +62,64 @@ impl LibraryManager {
             )],
         };
 
-        let handles: Vec<_> = store_entries
-            .into_iter()
-            .map(|store_entry| {
-                let igdb = Arc::clone(&igdb);
-                let steam = Arc::clone(&steam);
-                let firestore = Arc::clone(&self.firestore);
-                let user_id = self.user_id.clone();
-                tokio::spawn(
-                    async move {
-                        let game_entry = Reconciler::recon(&igdb, &store_entry, false).await?;
+        // TODO: Errors will drop any reporting to be abandoned. Should either
+        // skip entries with errors and report them or stop the process and
+        // still provide the partial report.
+        for store_entry in store_entries {
+            let igdb = Arc::clone(&igdb);
+            let steam = Arc::clone(&steam);
+            let firestore = Arc::clone(&self.firestore);
 
-                        match game_entry {
-                            Some(game_entry) => {
-                                let report_line = format!(
-                                    "  matched '{}' ({}) with {}",
-                                    &store_entry.title,
-                                    &store_entry.storefront_name,
-                                    &game_entry.name,
-                                );
-                                // TODO: The single match operation is not
-                                // optimal for multiple matches. The read/write
-                                // library operation is slow. This can be
-                                // optimized by bundlings all updates in a
-                                // single write.
-                                Self::match_game_impl(
-                                    &user_id,
-                                    store_entry,
-                                    game_entry,
-                                    igdb,
-                                    steam,
-                                    firestore,
-                                    MatchType::BaseGame,
-                                )
-                                .await?;
-                                Ok::<String, Status>(report_line)
-                            }
-                            None => {
-                                let report_line = format!(
-                                    "  failed to match {} ({})",
-                                    &store_entry.title, &store_entry.storefront_name,
-                                );
-                                let firestore = &firestore.lock().unwrap();
-                                firestore::failed::add_entry(
-                                    firestore,
-                                    &user_id,
-                                    store_entry.clone(),
-                                )?;
-                                firestore::unmatched::delete(firestore, &user_id, &store_entry)?;
-                                Ok(report_line)
-                            }
-                        }
-                    }
-                    .instrument(trace_span!("spawn match entry")),
-                )
-            })
-            .collect();
+            let game_entry = Reconciler::recon(&igdb, &store_entry, false).await?;
 
-        futures::future::join_all(handles)
-            .await
-            .into_iter()
-            .filter_map(|x| x.ok())
-            .for_each(|report_line| match report_line {
-                Ok(line) => report.lines.push(line),
-                Err(e) => report.lines.push(format!("{e}")),
-            });
+            match game_entry {
+                Some(game_entry) => {
+                    let report_line = format!(
+                        "  matched '{}' ({}) with {}",
+                        &store_entry.title, &store_entry.storefront_name, &game_entry.name,
+                    );
+
+                    // TODO: The single match operation is not
+                    // optimal for multiple matches. The read/write
+                    // library operation is slow. This can be
+                    // optimized by bundlings all updates in a
+                    // single write.
+                    self.match_game(store_entry, game_entry, igdb, steam, MatchType::BaseGame)
+                        .await?;
+                    report.lines.push(report_line);
+                }
+                None => {
+                    let report_line = format!(
+                        "  failed to match {} ({})",
+                        &store_entry.title, &store_entry.storefront_name,
+                    );
+                    let firestore = &firestore.lock().unwrap();
+                    firestore::failed::add_entry(firestore, &self.user_id, store_entry.clone())?;
+                    firestore::unmatched::delete(firestore, &self.user_id, &store_entry)?;
+                    report.lines.push(report_line);
+                }
+            }
+        }
 
         Ok(report)
     }
 
     /// Match a `StoreEntry` with a specified `GameEntry` and saving it in the
     /// library.
-    #[instrument(level = "trace", skip(self, igdb, steam))]
+    #[instrument(
+        level = "trace",
+        skip(self, store_entry, game_entry, igdb, steam)
+        fields(
+            store_game = %store_entry.title,
+            matched_game = %game_entry.name
+        ),
+    )]
     pub async fn match_game(
         &self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
-        match_type: MatchType,
-    ) -> Result<(), Status> {
-        Self::match_game_impl(
-            &self.user_id,
-            store_entry,
-            game_entry,
-            igdb,
-            steam,
-            Arc::clone(&self.firestore),
-            match_type,
-        )
-        .await
-    }
-
-    /// Need to make this a static function so that it can be called inside tokio::spawn.
-    async fn match_game_impl(
-        user_id: &str,
-        store_entry: StoreEntry,
-        game_entry: GameEntry,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-        firestore: Arc<Mutex<FirestoreApi>>,
         match_type: MatchType,
     ) -> Result<(), Status> {
         let owned_game_id = game_entry.id;
@@ -171,7 +129,7 @@ impl LibraryManager {
         };
 
         let game_entry =
-            match Resolver::retrieve(game_id, igdb, steam, Arc::clone(&firestore)).await? {
+            match Resolver::retrieve(game_id, igdb, steam, Arc::clone(&self.firestore)).await? {
                 Some(game_entry) => game_entry,
                 None => {
                     return Err(Status::not_found(format!(
@@ -180,11 +138,34 @@ impl LibraryManager {
                 }
             };
 
-        let firestore = &firestore.lock().unwrap();
-        firestore::unmatched::delete(firestore, user_id, &store_entry)?;
-        firestore::failed::remove_entry(firestore, user_id, &store_entry)?;
-        firestore::wishlist::remove_entry(firestore, user_id, game_entry.id)?;
-        firestore::library::add_entry(&firestore, user_id, store_entry, owned_game_id, game_entry)
+        self.create_library_entry(store_entry, game_entry, owned_game_id)
+    }
+
+    #[instrument(
+        level = "trace",
+        skip(self, store_entry, game_entry)
+        fields(
+            store_game = %store_entry.title,
+            matched_game = %game_entry.name
+        ),
+    )]
+    pub fn create_library_entry(
+        &self,
+        store_entry: StoreEntry,
+        game_entry: GameEntry,
+        owned_game_id: u64,
+    ) -> Result<(), Status> {
+        let firestore = &self.firestore.lock().unwrap();
+        firestore::unmatched::delete(firestore, &self.user_id, &store_entry)?;
+        firestore::failed::remove_entry(firestore, &self.user_id, &store_entry)?;
+        firestore::wishlist::remove_entry(firestore, &self.user_id, game_entry.id)?;
+        firestore::library::add_entry(
+            firestore,
+            &self.user_id,
+            store_entry,
+            owned_game_id,
+            game_entry,
+        )
     }
 
     /// Unmatch a `StoreEntry` from user's library. The StoreEntry is not
