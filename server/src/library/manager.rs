@@ -55,6 +55,7 @@ impl LibraryManager {
         igdb: Arc<IgdbApi>,
         steam: Arc<SteamDataApi>,
     ) -> Result<ReconReport, Status> {
+        let mut resolved_entries = vec![];
         let mut report = ReconReport {
             lines: vec![format!(
                 "Attempted to match {} new entries.",
@@ -68,34 +69,42 @@ impl LibraryManager {
         for store_entry in store_entries {
             let igdb = Arc::clone(&igdb);
             let steam = Arc::clone(&steam);
-            let firestore = Arc::clone(&self.firestore);
 
             let game_entry = Reconciler::recon(&igdb, &store_entry, false).await?;
 
             match game_entry {
                 Some(game_entry) => {
-                    let report_line = format!(
+                    report.lines.push(format!(
                         "  matched '{}' ({}) with {}",
                         &store_entry.title, &store_entry.storefront_name, &game_entry.name,
-                    );
+                    ));
 
                     // TODO: Retrieved GameEntry is not stored anywhere.
-                    self.retrieve_game_info(game_entry, igdb, steam, MatchType::BaseGame)
+                    let (owned_game_id, game_entry) = self
+                        .retrieve_game_info(game_entry, igdb, steam, MatchType::BaseGame)
                         .await?;
-                    report.lines.push(report_line);
+                    resolved_entries.push((store_entry, owned_game_id, game_entry));
                 }
                 None => {
                     let report_line = format!(
                         "  failed to match {} ({})",
                         &store_entry.title, &store_entry.storefront_name,
                     );
-                    let firestore = &firestore.lock().unwrap();
+                    let firestore = &self.firestore.lock().unwrap();
                     firestore::failed::add_entry(firestore, &self.user_id, store_entry.clone())?;
                     firestore::unmatched::delete(firestore, &self.user_id, &store_entry)?;
                     report.lines.push(report_line);
                 }
             }
         }
+
+        // Adds all resolved entries in the library.
+        // TODO: Should also remove entries from wishlist.
+        firestore::library::add_entries(
+            &self.firestore.lock().unwrap(),
+            &self.user_id,
+            resolved_entries,
+        )?;
 
         Ok(report)
     }
