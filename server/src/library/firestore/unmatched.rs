@@ -5,7 +5,7 @@ use tracing::instrument;
 ///
 /// Reads `StoreEntry` documents under collection `users/{user}/unmatched`
 /// in Firestore.
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(name = "unmatched::list", level = "trace", skip(firestore, user_id))]
 pub fn list(firestore: &FirestoreApi, user_id: &str) -> Result<Vec<StoreEntry>, Status> {
     firestore.list::<StoreEntry>(&format!("users/{user_id}/unmatched"))
 }
@@ -14,7 +14,7 @@ pub fn list(firestore: &FirestoreApi, user_id: &str) -> Result<Vec<StoreEntry>, 
 ///
 /// Writes `StoreEntry` documents under collection `users/{user}/unmatched`
 /// in Firestore.
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(name = "unmatched::write", level = "trace", skip(firestore, user_id))]
 pub fn write(
     firestore: &FirestoreApi,
     user_id: &str,
@@ -45,7 +45,7 @@ pub fn write(
 ///
 /// Deletes `StoreEntry` documents under collection `users/{user}/unmatched`
 /// in Firestore.
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(name = "unmatched::delete", level = "trace", skip(firestore, user_id))]
 pub fn delete(
     firestore: &FirestoreApi,
     user_id: &str,

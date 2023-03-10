@@ -1,7 +1,7 @@
 use crate::{api::FirestoreApi, documents::UserTags, Status};
 use tracing::instrument;
 
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(name = "user_tags::read", level = "trace", skip(firestore, user_id))]
 pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<UserTags, Status> {
     match firestore.read(&format!("users/{user_id}/user_data"), "tags") {
         Ok(tags) => Ok(tags),
@@ -10,7 +10,11 @@ pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<UserTags, Status>
     }
 }
 
-#[instrument(level = "trace", skip(firestore, user_id, user_tags))]
+#[instrument(
+    name = "user_tags::write",
+    level = "trace",
+    skip(firestore, user_id, user_tags)
+)]
 pub fn write(firestore: &FirestoreApi, user_id: &str, user_tags: &UserTags) -> Result<(), Status> {
     firestore.write(
         &format!("users/{user_id}/user_data"),
@@ -21,7 +25,11 @@ pub fn write(firestore: &FirestoreApi, user_id: &str, user_tags: &UserTags) -> R
     Ok(())
 }
 
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(
+    name = "user_tags::add_user_tag",
+    level = "trace",
+    skip(firestore, user_id)
+)]
 pub fn add_user_tag(
     firestore: &FirestoreApi,
     user_id: &str,
@@ -36,7 +44,11 @@ pub fn add_user_tag(
     Ok(())
 }
 
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(
+    name = "user_tags::remove_user_tag",
+    level = "trace",
+    skip(firestore, user_id)
+)]
 pub fn remove_user_tag(
     firestore: &FirestoreApi,
     user_id: &str,

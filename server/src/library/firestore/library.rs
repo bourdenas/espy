@@ -5,7 +5,7 @@ use crate::{
 };
 use tracing::instrument;
 
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(name = "library::read", level = "trace", skip(firestore, user_id))]
 pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> {
     match firestore.read(&format!("users/{user_id}/games"), "library") {
         Ok(library) => Ok(library),
@@ -14,13 +14,18 @@ pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> 
     }
 }
 
-#[instrument(level = "trace", skip(firestore, user_id, library))]
+#[instrument(
+    name = "library::write",
+    level = "trace",
+    skip(firestore, user_id, library)
+)]
 pub fn write(firestore: &FirestoreApi, user_id: &str, library: &Library) -> Result<(), Status> {
     firestore.write(&format!("users/{user_id}/games"), Some(&"library"), library)?;
     Ok(())
 }
 
 #[instrument(
+    name = "library::add_entry", 
     level = "trace",
     skip(firestore, user_id, game_entry),
     fields(
@@ -43,6 +48,7 @@ pub fn add_entry(
 }
 
 #[instrument(
+    name = "library::add_entries", 
     level = "trace",
     skip(firestore, user_id),
     fields(
@@ -66,6 +72,7 @@ pub fn add_entries(
 }
 
 #[instrument(
+    name = "library::remove_entry", 
     level = "trace",
     skip(firestore, user_id, library_entry),
     fields(
@@ -85,7 +92,11 @@ pub fn remove_entry(
     Ok(())
 }
 
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(
+    name = "library::remove_storefront",
+    level = "trace",
+    skip(firestore, user_id)
+)]
 pub fn remove_storefront(
     firestore: &FirestoreApi,
     user_id: &str,

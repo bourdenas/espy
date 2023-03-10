@@ -5,7 +5,7 @@ use crate::{
 };
 use tracing::instrument;
 
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(name = "failed::read", level = "trace", skip(firestore, user_id))]
 pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<FailedEntries, Status> {
     match firestore.read(&format!("users/{user_id}/games"), "failed") {
         Ok(failed) => Ok(failed),
@@ -14,7 +14,11 @@ pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<FailedEntries, St
     }
 }
 
-#[instrument(level = "trace", skip(firestore, user_id, failed))]
+#[instrument(
+    name = "failed::write",
+    level = "trace",
+    skip(firestore, user_id, failed)
+)]
 pub fn write(
     firestore: &FirestoreApi,
     user_id: &str,
@@ -25,6 +29,7 @@ pub fn write(
 }
 
 #[instrument(
+    name = "failed::add_entry",
     level = "trace",
     skip(firestore, user_id, store_entry),
     fields(store_entry_id = %store_entry.id),
@@ -42,6 +47,7 @@ pub fn add_entry(
 }
 
 #[instrument(
+    name = "failed::remove_entry",
     level = "trace",
     skip(firestore, user_id, store_entry),
     fields(store_entry_id = %store_entry.id),
@@ -58,7 +64,11 @@ pub fn remove_entry(
     Ok(())
 }
 
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(
+    name = "failed::remove_storefront",
+    level = "trace",
+    skip(firestore, user_id)
+)]
 pub fn remove_storefront(
     firestore: &FirestoreApi,
     user_id: &str,
