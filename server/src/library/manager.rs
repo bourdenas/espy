@@ -46,37 +46,16 @@ impl LibraryManager {
             )],
         };
 
-        // TODO: Errors will drop any reporting to be abandoned. Should either
-        // skip entries with errors and report them or stop the process and
-        // still provide the partial report.
-        for store_entry in store_entries.clone() {
+        // TODO: Errors will considered failed entry as resolved. Need to filter
+        // entries with error (beyond failed to match, which is handled
+        // correctly) and retry them.
+        for store_entry in store_entries.clone().into_iter().take(20) {
             let igdb = Arc::clone(&igdb);
             let steam = Arc::clone(&steam);
 
-            let game_entry = Reconciler::recon(&igdb, &store_entry, false).await?;
-
-            match game_entry {
-                Some(game_entry) => {
-                    report.lines.push(format!(
-                        "  matched '{}' ({}) with {}",
-                        &store_entry.title, &store_entry.storefront_name, &game_entry.name,
-                    ));
-
-                    // TODO: Retrieved GameEntry is not stored anywhere.
-                    let (owned_game_id, game_entry) = self
-                        .retrieve_game_info(game_entry, igdb, steam, MatchType::BaseGame)
-                        .await?;
-                    resolved_entries.push((store_entry, owned_game_id, game_entry));
-                }
-                None => {
-                    let report_line = format!(
-                        "  failed to match {} ({})",
-                        &store_entry.title, &store_entry.storefront_name,
-                    );
-                    let firestore = &self.firestore.lock().unwrap();
-                    firestore::failed::add_entry(firestore, &self.user_id, store_entry.clone())?;
-                    report.lines.push(report_line);
-                }
+            match self.match_entry(igdb, steam, store_entry).await {
+                Ok(result) => resolved_entries.push(result),
+                Err(e) => report.lines.push(e.to_string()),
             }
         }
 
@@ -88,6 +67,33 @@ impl LibraryManager {
         firestore::storefront::add_entries(firestore, &self.user_id, store_entries)?;
 
         Ok(report)
+    }
+
+    #[instrument(level = "trace", skip(self, igdb, steam))]
+    async fn match_entry(
+        &self,
+        igdb: Arc<IgdbApi>,
+        steam: Arc<SteamDataApi>,
+        store_entry: StoreEntry,
+    ) -> Result<(StoreEntry, u64, GameEntry), Status> {
+        let game_entry = Reconciler::recon(&igdb, &store_entry, false).await?;
+
+        match game_entry {
+            Some(game_entry) => {
+                let (owned_game_id, game_entry) = self
+                    .retrieve_game_info(game_entry, igdb, steam, MatchType::BaseGame)
+                    .await?;
+                Ok((store_entry, owned_game_id, game_entry))
+            }
+            None => {
+                firestore::failed::add_entry(
+                    &self.firestore.lock().unwrap(),
+                    &self.user_id,
+                    store_entry.clone(),
+                )?;
+                Err(Status::not_found(store_entry.title))
+            }
+        }
     }
 
     /// Retrieves full info for a partial GameEntry. Returns an tuple with the
