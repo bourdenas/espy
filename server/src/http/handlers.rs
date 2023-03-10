@@ -235,17 +235,19 @@ pub async fn post_sync(
     debug!("POST /library/{user_id}/sync");
     let started = SystemTime::now();
 
-    match User::new(Arc::clone(&firestore), &user_id) {
-        Ok(mut user) => {
-            if let Err(err) = user.sync_accounts(&api_keys).await {
-                return Ok(log_err(err));
-            }
-        }
+    let store_entries = match User::new(Arc::clone(&firestore), &user_id) {
+        Ok(mut user) => match user.sync_accounts(&api_keys).await {
+            Ok(entries) => entries,
+            Err(err) => return Ok(log_err(err)),
+        },
         Err(err) => return Ok(log_err(err)),
     };
 
     let manager = LibraryManager::new(&user_id, firestore);
-    let report = match manager.recon_unmatched_collection(igdb, steam).await {
+    let report = match manager
+        .recon_store_entries(store_entries, igdb, steam)
+        .await
+    {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };

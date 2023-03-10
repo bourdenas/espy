@@ -66,7 +66,7 @@ impl LibraryManager {
         // TODO: Errors will drop any reporting to be abandoned. Should either
         // skip entries with errors and report them or stop the process and
         // still provide the partial report.
-        for store_entry in store_entries {
+        for store_entry in store_entries.clone() {
             let igdb = Arc::clone(&igdb);
             let steam = Arc::clone(&steam);
 
@@ -98,13 +98,12 @@ impl LibraryManager {
             }
         }
 
+        let firestore = &self.firestore.lock().unwrap();
+
         // Adds all resolved entries in the library.
         // TODO: Should also remove entries from wishlist.
-        firestore::library::add_entries(
-            &self.firestore.lock().unwrap(),
-            &self.user_id,
-            resolved_entries,
-        )?;
+        firestore::library::add_entries(firestore, &self.user_id, resolved_entries)?;
+        firestore::storefront::add_entries(firestore, &self.user_id, store_entries)?;
 
         Ok(report)
     }
