@@ -122,6 +122,30 @@ fn group_by(store_entries: Vec<StoreEntry>) -> HashMap<String, Vec<StoreEntry>> 
     groups
 }
 
+/// Add StoreEntry id to the user's Storefront document.
+///
+/// Reads/writes `users/{user}/storefronts/{storefront_name}` document in
+/// Firestore.
+#[instrument(
+    name = "storefront::add_entry",
+    level = "trace",
+    skip(firestore, user_id)
+)]
+pub fn add_entry(
+    firestore: &FirestoreApi,
+    user_id: &str,
+    store_entry: StoreEntry,
+) -> Result<(), Status> {
+    let mut owned_entries = read(firestore, user_id, &store_entry.storefront_name)?;
+    owned_entries.push(store_entry.id.to_owned());
+
+    write(
+        firestore,
+        user_id,
+        &store_entry.storefront_name,
+        owned_entries,
+    )
+}
 /// Remove a StoreEntry from its Storefront.
 ///
 /// Reads/writes `users/{user}/storefronts/{storefront_name}` document in

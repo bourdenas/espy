@@ -5,7 +5,7 @@ use crate::{
     Status,
 };
 use std::sync::{Arc, Mutex};
-use tracing::instrument;
+use tracing::{error, instrument, trace_span, Instrument};
 
 use super::firestore;
 
@@ -49,7 +49,7 @@ impl LibraryManager {
         // TODO: Errors will considered failed entry as resolved. Need to filter
         // entries with error (beyond failed to match, which is handled
         // correctly) and retry them.
-        for store_entry in store_entries.clone().into_iter().take(20) {
+        for store_entry in store_entries.into_iter() {
             let igdb = Arc::clone(&igdb);
             let steam = Arc::clone(&steam);
 
@@ -57,16 +57,44 @@ impl LibraryManager {
                 Ok(result) => resolved_entries.push(result),
                 Err(e) => report.lines.push(e.to_string()),
             }
+
+            if resolved_entries.len() == 2 {
+                let upload_entries = resolved_entries;
+                resolved_entries = vec![];
+                let firestore = Arc::clone(&self.firestore);
+                let user_id = self.user_id.clone();
+                tokio::spawn(
+                    async move {
+                        if let Err(e) = Self::upload_entries(firestore, &user_id, upload_entries) {
+                            error!("{e}");
+                        }
+                    }
+                    .instrument(trace_span!("spawn_library_update")),
+                );
+            }
         }
 
-        let firestore = &self.firestore.lock().unwrap();
+        Self::upload_entries(Arc::clone(&self.firestore), &self.user_id, resolved_entries)?;
+
+        Ok(report)
+    }
+
+    #[instrument(level = "trace", skip(firestore, user_id, entries))]
+    fn upload_entries(
+        firestore: Arc<Mutex<FirestoreApi>>,
+        user_id: &str,
+        entries: Vec<(StoreEntry, u64, GameEntry)>,
+    ) -> Result<(), Status> {
+        let store_entries = entries
+            .iter()
+            .map(|(store_entry, _, _)| store_entry.clone())
+            .collect();
 
         // Adds all resolved entries in the library.
         // TODO: Should also remove entries from wishlist.
-        firestore::library::add_entries(firestore, &self.user_id, resolved_entries)?;
-        firestore::storefront::add_entries(firestore, &self.user_id, store_entries)?;
-
-        Ok(report)
+        let firestore = &firestore.lock().unwrap();
+        firestore::library::add_entries(firestore, &user_id, entries)?;
+        firestore::storefront::add_entries(firestore, &user_id, store_entries)
     }
 
     #[instrument(level = "trace", skip(self, igdb, steam))]
@@ -86,11 +114,9 @@ impl LibraryManager {
                 Ok((store_entry, owned_game_id, game_entry))
             }
             None => {
-                firestore::failed::add_entry(
-                    &self.firestore.lock().unwrap(),
-                    &self.user_id,
-                    store_entry.clone(),
-                )?;
+                let firestore = &self.firestore.lock().unwrap();
+                firestore::failed::add_entry(firestore, &self.user_id, store_entry.clone())?;
+                firestore::storefront::add_entry(firestore, &self.user_id, store_entry.clone())?;
                 Err(Status::not_found(store_entry.title))
             }
         }
