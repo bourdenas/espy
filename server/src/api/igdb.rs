@@ -303,6 +303,7 @@ impl IgdbApi {
     }
 
     async fn search(&self, title: &str) -> Result<Vec<igdb_docs::IgdbGame>, Status> {
+        let title = title.replace("\"", "");
         let igdb_state = self.igdb_state()?;
         post::<Vec<igdb_docs::IgdbGame>>(
             &igdb_state,
@@ -887,7 +888,7 @@ async fn post<T: DeserializeOwned>(
 
     let text = resp.text().await?;
     let resp = serde_json::from_str::<T>(&text).map_err(|_| {
-        let msg = format!("Received unexpected response: {}", &text);
+        let msg = format!("Received unexpected response: {text}\nuri: {uri}\nquery: {body}");
         error!(msg);
         Status::internal(msg)
     });
