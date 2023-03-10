@@ -23,23 +23,6 @@ impl LibraryManager {
         }
     }
 
-    /// Reconciles store entries from the unmatched collection in Firestore.
-    #[instrument(
-        level = "trace",
-        skip(self, igdb, steam),
-        fields(user_id = %self.user_id),
-    )]
-    pub async fn recon_unmatched_collection(
-        &self,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-    ) -> Result<ReconReport, Status> {
-        let unmatched_entries =
-            firestore::unmatched::list(&self.firestore.lock().unwrap(), &self.user_id)?;
-        self.recon_store_entries(unmatched_entries, igdb, steam)
-            .await
-    }
-
     /// Reconciles `store_entries` and adds them in the library.
     #[instrument(
         level = "trace",
@@ -92,7 +75,6 @@ impl LibraryManager {
                     );
                     let firestore = &self.firestore.lock().unwrap();
                     firestore::failed::add_entry(firestore, &self.user_id, store_entry.clone())?;
-                    firestore::unmatched::delete(firestore, &self.user_id, &store_entry)?;
                     report.lines.push(report_line);
                 }
             }
@@ -160,7 +142,6 @@ impl LibraryManager {
         owned_game_id: u64,
     ) -> Result<(), Status> {
         let firestore = &self.firestore.lock().unwrap();
-        firestore::unmatched::delete(firestore, &self.user_id, &store_entry)?;
         firestore::failed::remove_entry(firestore, &self.user_id, &store_entry)?;
         firestore::wishlist::remove_entry(firestore, &self.user_id, game_entry.id)?;
         firestore::library::add_entry(
