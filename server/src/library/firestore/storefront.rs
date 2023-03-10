@@ -1,5 +1,5 @@
 use crate::{api::FirestoreApi, documents::StoreEntry, documents::Storefront, Status};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use tracing::instrument;
 
 /// Returns all store game ids owned by user from specified storefront.
@@ -92,19 +92,34 @@ pub fn diff_entries(
 pub fn add_entries(
     firestore: &FirestoreApi,
     user_id: &str,
-    store_entries: &[StoreEntry],
+    store_entries: Vec<StoreEntry>,
 ) -> Result<(), Status> {
-    let storefront_name = match store_entries.first() {
-        Some(entry) => &entry.storefront_name,
-        None => return Ok(()),
-    };
+    for (name, store_entries) in group_by(store_entries) {
+        let mut owned_entries = read(firestore, user_id, &name)?;
+        for entry in &store_entries {
+            owned_entries.push(entry.id.to_owned());
+        }
 
-    let mut owned_entries = read(firestore, user_id, storefront_name)?;
-    for entry in store_entries {
-        owned_entries.push(entry.id.to_owned());
+        write(firestore, user_id, &name, owned_entries)?
     }
 
-    write(firestore, user_id, storefront_name, owned_entries)
+    Ok(())
+}
+
+/// Groups StoreEntries by storefront name.
+fn group_by(store_entries: Vec<StoreEntry>) -> HashMap<String, Vec<StoreEntry>> {
+    let mut groups = HashMap::<String, Vec<StoreEntry>>::new();
+
+    for entry in store_entries {
+        match groups.get_mut(&entry.storefront_name) {
+            Some(entries) => entries.push(entry),
+            None => {
+                groups.insert(entry.storefront_name.to_owned(), vec![entry]);
+            }
+        }
+    }
+
+    groups
 }
 
 /// Remove a StoreEntry from its Storefront.
