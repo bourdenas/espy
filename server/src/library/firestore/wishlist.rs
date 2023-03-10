@@ -5,7 +5,7 @@ use crate::{
 };
 use tracing::instrument;
 
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(name = "wishlist::read", level = "trace", skip(firestore, user_id))]
 pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> {
     match firestore.read(&format!("users/{user_id}/games"), "wishlist") {
         Ok(wishlist) => Ok(wishlist),
@@ -14,13 +14,18 @@ pub fn read(firestore: &FirestoreApi, user_id: &str) -> Result<Library, Status> 
     }
 }
 
-#[instrument(level = "trace", skip(firestore, user_id, library))]
+#[instrument(
+    name = "wishlist::write",
+    level = "trace",
+    skip(firestore, user_id, library)
+)]
 pub fn write(firestore: &FirestoreApi, user_id: &str, library: &Library) -> Result<(), Status> {
     firestore.write(&format!("users/{user_id}/games"), Some("wishlist"), library)?;
     Ok(())
 }
 
 #[instrument(
+    name = "wishlist::add_entry",
     level = "trace",
     skip(firestore, user_id, library_entry),
     fields(
@@ -39,7 +44,11 @@ pub fn add_entry(
     Ok(())
 }
 
-#[instrument(level = "trace", skip(firestore, user_id))]
+#[instrument(
+    name = "wishlist::remove_entry",
+    level = "trace",
+    skip(firestore, user_id)
+)]
 pub fn remove_entry(firestore: &FirestoreApi, user_id: &str, game_id: u64) -> Result<(), Status> {
     let mut wishlist = read(firestore, user_id)?;
     if remove(game_id, &mut wishlist) {

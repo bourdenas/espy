@@ -81,8 +81,7 @@ pub async fn post_match(
     match (match_op.game_entry, match_op.unmatch_entry) {
         (Some(game_entry), None) => {
             match manager
-                .match_game(
-                    match_op.store_entry,
+                .retrieve_game_info(
                     game_entry,
                     igdb,
                     steam,
@@ -93,7 +92,19 @@ pub async fn post_match(
                 )
                 .await
             {
-                Ok(()) => Ok(StatusCode::OK),
+                Ok((owned_game_id, game_entry)) => {
+                    match manager.create_library_entry(
+                        match_op.store_entry,
+                        game_entry,
+                        owned_game_id,
+                    ) {
+                        Ok(()) => Ok(StatusCode::OK),
+                        Err(err) => {
+                            error!("{err}");
+                            Ok(StatusCode::INTERNAL_SERVER_ERROR)
+                        }
+                    }
+                }
                 Err(err) => {
                     error!("{err}");
                     Ok(StatusCode::INTERNAL_SERVER_ERROR)
@@ -224,17 +235,19 @@ pub async fn post_sync(
     debug!("POST /library/{user_id}/sync");
     let started = SystemTime::now();
 
-    match User::new(Arc::clone(&firestore), &user_id) {
-        Ok(mut user) => {
-            if let Err(err) = user.sync_accounts(&api_keys).await {
-                return Ok(log_err(err));
-            }
-        }
+    let store_entries = match User::new(Arc::clone(&firestore), &user_id) {
+        Ok(mut user) => match user.sync_accounts(&api_keys).await {
+            Ok(entries) => entries,
+            Err(err) => return Ok(log_err(err)),
+        },
         Err(err) => return Ok(log_err(err)),
     };
 
     let manager = LibraryManager::new(&user_id, firestore);
-    let report = match manager.recon_unmatched_collection(igdb, steam).await {
+    let report = match manager
+        .recon_store_entries(store_entries, igdb, steam)
+        .await
+    {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };
