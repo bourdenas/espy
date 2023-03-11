@@ -15,7 +15,7 @@ class GameTagsModel extends ChangeNotifier {
   StoresManager _storesManager = StoresManager([]);
   CompaniesManager _companiesManager = CompaniesManager([]);
   CollectionManager _collectionsManager = CollectionManager([]);
-  UserTagManager _userTagsManager = UserTagManager();
+  UserTagManager _userTagsManager = UserTagManager('', UserTags());
 
   StoresManager get stores => _storesManager;
   CompaniesManager get companies => _companiesManager;
@@ -159,7 +159,7 @@ class CollectionManager {
 }
 
 class UserTagManager {
-  UserTagManager([this._userId = '', this._userTags = const UserTags()]);
+  UserTagManager(this._userId, this._userTags);
 
   UserTag get(String name) =>
       UserTag(name: name, clusterId: _tagToCluster[name] ?? 0);
