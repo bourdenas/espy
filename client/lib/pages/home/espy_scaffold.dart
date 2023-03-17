@@ -120,21 +120,23 @@ class _EspyScaffoldState extends State<EspyScaffold>
         if (AppConfigModel.isMobile(context)) ...[
           IconButton(
             key: Key('layoutButton'),
-            icon: Icon(_libraryViews[appConfig.libraryLayout.index].iconData),
+            icon: Icon(
+                _libraryViews[appConfig.libraryLayout.value.index].iconData),
             splashRadius: 20.0,
-            onPressed: () => appConfig.nextLibraryLayout(),
+            onPressed: () => appConfig.libraryLayout.nextValue(),
           ),
           IconButton(
             key: Key('cardInfoButton'),
-            icon: Icon(_cardViews[appConfig.cardDecoration.index].iconData),
+            icon:
+                Icon(_cardViews[appConfig.cardDecoration.value.index].iconData),
             splashRadius: 20.0,
-            onPressed: () => appConfig.nextCardDecoration(),
+            onPressed: () => appConfig.cardDecoration.nextValue(),
           ),
           IconButton(
             key: Key('groupByButton'),
-            icon: Icon(_groupViews[appConfig.groupBy.index].iconData),
+            icon: Icon(_groupViews[appConfig.groupBy.value.index].iconData),
             splashRadius: 20.0,
-            onPressed: () => appConfig.nextGroupBy(),
+            onPressed: () => appConfig.groupBy.nextValue(),
           ),
           IconButton(
             key: Key('searchButton'),
@@ -147,24 +149,24 @@ class _EspyScaffoldState extends State<EspyScaffold>
             renderBorder: false,
             children: _libraryViews.map((e) => Icon(e.iconData)).toList(),
             isSelected: List.generate(_libraryViews.length,
-                (i) => i == appConfig.libraryLayout.index),
-            onPressed: (index) => appConfig.libraryLayoutIndex = index,
+                (i) => i == appConfig.libraryLayout.value.index),
+            onPressed: (index) => appConfig.libraryLayout.valueIndex = index,
           ),
           SizedBox(width: 24),
           ToggleButtons(
             renderBorder: false,
             children: _cardViews.map((e) => Icon(e.iconData)).toList(),
-            isSelected: List.generate(
-                _cardViews.length, (i) => i == appConfig.cardDecoration.index),
-            onPressed: (index) => appConfig.cardDecorationIndex = index,
+            isSelected: List.generate(_cardViews.length,
+                (i) => i == appConfig.cardDecoration.value.index),
+            onPressed: (index) => appConfig.cardDecoration.valueIndex = index,
           ),
           SizedBox(width: 24),
           ToggleButtons(
             renderBorder: false,
             children: _groupViews.map((e) => Icon(e.iconData)).toList(),
             isSelected: List.generate(
-                _groupViews.length, (i) => i == appConfig.groupBy.index),
-            onPressed: (index) => appConfig.groupByIndex = index,
+                _groupViews.length, (i) => i == appConfig.groupBy.value.index),
+            onPressed: (index) => appConfig.groupBy.valueIndex = index,
           ),
           SizedBox(width: 8),
         ],

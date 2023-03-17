@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
@@ -16,6 +17,7 @@ class HomeSlatesModel extends ChangeNotifier {
     GameEntriesModel gameEntries,
     WishlistModel wishlistModel,
     GameTagsModel tagsModel,
+    AppConfigModel appConfigModel,
   ) {
     _SlateInfo slate(String title, LibraryFilter filter,
         [Iterable<LibraryEntry>? entries]) {
@@ -32,8 +34,18 @@ class HomeSlatesModel extends ChangeNotifier {
     ];
 
     _stacks = [
-      for (final tag in tagsModel.userTags.tagByPopulationInCluster('genre'))
-        slate(tag.name, LibraryFilter(tags: {tag.name})),
+      if (appConfigModel.stacks.value == Stacks.COLLECTIONS)
+        for (final collection in tagsModel.collections.nonSingleton)
+          slate(collection, LibraryFilter(collections: {collection})),
+      if (appConfigModel.stacks.value == Stacks.GENRES)
+        for (final tag in tagsModel.userTags.tagByPopulationInCluster('genre'))
+          slate(tag.name, LibraryFilter(tags: {tag.name})),
+      if (appConfigModel.stacks.value == Stacks.STYLES)
+        for (final tag in tagsModel.userTags.tagByPopulationInCluster('style'))
+          slate(tag.name, LibraryFilter(tags: {tag.name})),
+      if (appConfigModel.stacks.value == Stacks.THEMES)
+        for (final tag in tagsModel.userTags.tagByPopulationInCluster('theme'))
+          slate(tag.name, LibraryFilter(tags: {tag.name})),
     ];
 
     notifyListeners();

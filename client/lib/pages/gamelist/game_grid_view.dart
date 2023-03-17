@@ -15,7 +15,7 @@ class GameGridView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groups = context.watch<AppConfigModel>().groupBy == GroupBy.YEAR
+    final groups = context.watch<AppConfigModel>().groupBy.value == GroupBy.YEAR
         ? groupBy(
             entries,
             (e) =>
