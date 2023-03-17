@@ -298,7 +298,7 @@ impl IgdbApi {
                 .into_iter()
                 .filter_map(|x| x.ok())
                 .collect::<Vec<_>>(),
-            0.5,
+            1.0,
         ))
     }
 
@@ -308,7 +308,7 @@ impl IgdbApi {
         post::<Vec<igdb_docs::IgdbGame>>(
             &igdb_state,
             GAMES_ENDPOINT,
-            &format!("search \"{title}\"; fields *;"),
+            &format!("search \"{title}\"; fields *; where platforms = (6);"),
         )
         .await
     }
