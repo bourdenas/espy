@@ -22,10 +22,8 @@ impl SteamApi {
 
     #[instrument(level = "trace")]
     pub async fn get_app_details(steam_appid: u64) -> Result<SteamData, Status> {
-        let uri = format!(
-            "https://store.steampowered.com/api/appdetails?appids={}&l=english",
-            steam_appid
-        );
+        let uri =
+            format!("https://store.steampowered.com/api/appdetails?appids={steam_appid}&l=english");
 
         let resp = reqwest::get(&uri).await?;
         let text = resp.text().await?;

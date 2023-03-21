@@ -23,4 +23,12 @@ pub struct GameDigest {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub companies: Vec<String>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub genres: Vec<String>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub keywords: Vec<String>,
 }

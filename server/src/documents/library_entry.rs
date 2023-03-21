@@ -79,6 +79,16 @@ impl LibraryEntry {
                     .collect::<HashSet<_>>()
                     .into_iter()
                     .collect(),
+
+                genres: match game.steam_data {
+                    Some(steam_data) => steam_data
+                        .genres
+                        .into_iter()
+                        .map(|genre| genre.description)
+                        .collect(),
+                    None => game.genres,
+                },
+                keywords: game.keywords,
             },
 
             added_date: Some(
