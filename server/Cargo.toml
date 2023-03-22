@@ -31,21 +31,21 @@ path = "src/utils/storefront_cleanup.rs"
 
 
 [dependencies]
-async-recursion = "1.0.0"
+async-recursion = "1.0"
 async-trait = "0.1"
 clap = { version="4.0", features = ["derive"] }
-console-subscriber = "0.1"
 firestore-db-and-auth = "0.6"
 futures = "0.3"
-itertools = "0.10.0"
+itertools = "0.10"
 reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.21", features = ["full", "tracing"] }
-tracing = "0.1"
-tracing-subscriber = "0.3"
 warp = "0.3"
 
-opentelemetry = "0.18"
+tracing = "0.1"
+tracing-subscriber =  "0.3"
 tracing-opentelemetry = "0.18" 
+tracing-stackdriver = { version = "0.6", features = ["opentelemetry"] }
+opentelemetry = "0.18"
 opentelemetry-jaeger = "0.17"

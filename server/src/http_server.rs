@@ -26,13 +26,19 @@ struct Opts {
     /// Port number to use for listening to gRPC requests.
     #[clap(short, long, default_value = "8080")]
     port: u16,
+
+    #[clap(long)]
+    prod_tracing: bool,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Status> {
-    Tracing::setup("espy-httpserver")?;
-
     let opts: Opts = Opts::parse();
+
+    match opts.prod_tracing {
+        false => Tracing::setup("espy-httpserver")?,
+        true => Tracing::setup_prod("espy-library")?,
+    }
 
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
 

@@ -16,4 +16,4 @@ COPY ./espy-library-firebase-adminsdk-sncpo-3da8ca7f57.json ./espy-library-fireb
 
 ENV PORT 8080
 
-CMD ["http_server"]
+CMD ["http_server", "--prod-tracing"]
