@@ -1,6 +1,10 @@
 use clap::Parser;
-use espy_server::{api::FirestoreApi, Status, Tracing};
-use tracing::instrument;
+use espy_server::{
+    api::FirestoreApi,
+    documents::{Library, LibraryEntry},
+    library, Status, Tracing,
+};
+use tracing::{error, info, instrument};
 
 /// Espy util for refreshing IGDB and Steam data for GameEntries.
 #[derive(Parser)]
@@ -29,7 +33,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
-#[instrument(level = "trace", skip(_firestore))]
-fn refresh_library_entries(_firestore: &FirestoreApi, user_id: &str) -> Result<(), Status> {
+#[instrument(level = "trace", skip(firestore))]
+fn refresh_library_entries(firestore: &FirestoreApi, user_id: &str) -> Result<(), Status> {
+    let library = library::firestore::library::read(firestore, user_id)?;
+    info!("updating {} titles...", library.entries.len());
+
+    let library = Library {
+        entries: library
+            .entries
+            .into_iter()
+            .map(
+                |entry| match library::firestore::games::read(firestore, entry.id) {
+                    Ok(game_entry) => {
+                        info!("updated '{title}'", title = game_entry.name);
+                        LibraryEntry::new(game_entry, entry.store_entries, entry.owned_versions)
+                    }
+                    Err(e) => {
+                        error!("{e}");
+                        entry
+                    }
+                },
+            )
+            .collect(),
+    };
+    library::firestore::library::write(firestore, user_id, &library)?;
+    let serialized = serde_json::to_string(&library)?;
+    info!("updated library size: {}KB", serialized.len() / 1024);
+
     Ok(())
 }
