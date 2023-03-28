@@ -50,6 +50,7 @@ class AppConfigModel extends ChangeNotifier {
     libraryLayout.valueIndex = prefs.getInt('libraryLayout') ?? 0;
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
     groupBy.valueIndex = prefs.getInt('groupBy') ?? 0;
+    stacks.valueIndex = prefs.getInt('stacks') ?? 0;
 
     notifyListeners();
   }
@@ -59,6 +60,7 @@ class AppConfigModel extends ChangeNotifier {
     prefs.setInt('libraryLayout', libraryLayout.value.index);
     prefs.setInt('cardDecoration', cardDecoration.value.index);
     prefs.setInt('groupBy', groupBy.value.index);
+    prefs.setInt('stacks', stacks.value.index);
   }
 }
 
