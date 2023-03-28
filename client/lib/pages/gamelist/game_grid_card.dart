@@ -91,9 +91,9 @@ class GameGridCard extends StatelessWidget {
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: appConfig.cardDecoration == CardDecoration.TAGS
+      child: appConfig.cardDecoration.value == CardDecoration.TAGS
           ? TagsTileBar(entry)
-          : appConfig.cardDecoration == CardDecoration.INFO
+          : appConfig.cardDecoration.value == CardDecoration.INFO
               ? InfoTileBar(entry)
               : null,
     );

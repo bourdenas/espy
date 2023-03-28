@@ -65,15 +65,17 @@ Future<void> main() async {
             );
         },
       ),
-      ChangeNotifierProxyProvider3<GameEntriesModel, WishlistModel,
-          GameTagsModel, HomeSlatesModel>(
+      ChangeNotifierProxyProvider4<GameEntriesModel, WishlistModel,
+          GameTagsModel, AppConfigModel, HomeSlatesModel>(
         create: (_) => HomeSlatesModel(),
-        update: (_, gameEntriesModel, wishlistModel, gameTagsModel, model) {
+        update: (_, gameEntriesModel, wishlistModel, gameTagsModel,
+            appConfigModel, model) {
           return model!
             ..update(
               gameEntriesModel,
               wishlistModel,
               gameTagsModel,
+              appConfigModel,
             );
         },
       ),

@@ -26,6 +26,7 @@ class HomeContent extends StatelessWidget {
         model.slates.where((slate) => slate.entries.isNotEmpty).toList();
     final stacks = model.stacks;
     final isMobile = AppConfigModel.isMobile(context);
+    final appConfig = context.watch<AppConfigModel>();
 
     return CustomScrollView(
       primary: true,
@@ -76,9 +77,12 @@ class HomeContent extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: Text(
-                  "Browse by genre",
-                  style: Theme.of(context).textTheme.headline6,
+                child: InkWell(
+                  onTap: () => appConfig.stacks.nextValue(),
+                  child: Text(
+                    "Browse by ${appConfig.stacks.value.name}",
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
                 ),
               ),
               SizedBox(height: 32),

@@ -39,7 +39,8 @@ class _GameListPageState extends State<GameListPage> {
         backgroundColor: Colors.black.withOpacity(0.6),
         elevation: 0.0,
       ),
-      body: context.watch<AppConfigModel>().libraryLayout == LibraryLayout.GRID
+      body: context.watch<AppConfigModel>().libraryLayout.value ==
+              LibraryLayout.GRID
           ? GameGridView(entries: entries)
           : GameListView(entries: entries),
     );

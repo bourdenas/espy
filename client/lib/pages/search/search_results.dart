@@ -23,7 +23,8 @@ class GameSearchResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return context.watch<AppConfigModel>().libraryLayout == LibraryLayout.GRID
+    return context.watch<AppConfigModel>().libraryLayout.value ==
+            LibraryLayout.GRID
         ? gridView(entries)
         : listView(entries);
   }
