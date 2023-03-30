@@ -132,7 +132,9 @@ class TagsTileBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridTileBar(
       backgroundColor: Colors.black45,
-      title: GameCardChips(libraryEntry: libraryEntry),
+      title: GameCardChips(
+        libraryEntry: libraryEntry,
+      ),
     );
   }
 }

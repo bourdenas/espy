@@ -99,7 +99,10 @@ class GameListCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 16.0),
-          GameCardChips(libraryEntry: libraryEntry),
+          GameCardChips(
+            libraryEntry: libraryEntry,
+            includeCompanies: true,
+          ),
         ],
       ),
     );
