@@ -1,9 +1,7 @@
 use super::{CompanyRole, GameDigest};
 use crate::documents::{GameEntry, StoreEntry};
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::{
-    cmp::Ordering,
     collections::HashSet,
     fmt,
     time::{SystemTime, UNIX_EPOCH},
@@ -60,20 +58,7 @@ impl LibraryEntry {
                     .into_iter()
                     .filter(|company| match company.role {
                         CompanyRole::Developer => true,
-                        CompanyRole::Publisher => true,
                         _ => false,
-                    })
-                    .sorted_by(|l, r| match l.role {
-                        CompanyRole::Developer => match r.role {
-                            CompanyRole::Developer => Ordering::Equal,
-                            _ => Ordering::Greater,
-                        },
-                        CompanyRole::Publisher => match r.role {
-                            CompanyRole::Developer => Ordering::Less,
-                            CompanyRole::Publisher => Ordering::Equal,
-                            _ => Ordering::Greater,
-                        },
-                        _ => Ordering::Less,
                     })
                     .map(|company| company.name)
                     .collect::<HashSet<_>>()
