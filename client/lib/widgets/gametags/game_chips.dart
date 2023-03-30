@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 class CompanyChip extends EspyChip {
   CompanyChip(String company,
-      {VoidCallback? onPressed, VoidCallback? onDeleted})
+      {VoidCallback? onPressed, VoidCallback? onDeleted, bool developer = true})
       : super(
           label: company,
-          color: Colors.redAccent,
+          color: developer ? Colors.redAccent : Colors.red[200]!,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );

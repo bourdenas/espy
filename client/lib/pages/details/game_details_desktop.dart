@@ -42,7 +42,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
         child: CustomScrollView(
           primary: true,
           slivers: [
-            header(context, libraryEntry, gameEntry),
+            header(context, gameEntry),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -56,7 +56,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
                     relatedGames(
                       context,
                       gameEntry,
-                      ['${libraryEntry.id}', ...childPath],
+                      ['${gameEntry.id}', ...childPath],
                     ),
                     SizedBox(height: 16.0),
                   ],
@@ -111,8 +111,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
     );
   }
 
-  static Widget header(
-      BuildContext context, LibraryEntry libraryEntry, GameEntry gameEntry) {
+  static Widget header(BuildContext context, GameEntry gameEntry) {
     final backgroundImage = gameEntry.steamData != null &&
             gameEntry.steamData!.backgroundImage != null
         ? gameEntry.steamData!.backgroundImage!
@@ -167,7 +166,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
                   ),
                   Padding(padding: EdgeInsets.all(8)),
                   Expanded(
-                    child: gameTitle(context, libraryEntry, gameEntry),
+                    child: gameTitle(context, gameEntry),
                   ),
                 ],
               ),
@@ -178,8 +177,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
     );
   }
 
-  static Widget gameTitle(
-      BuildContext context, LibraryEntry libraryEntry, GameEntry gameEntry) {
+  static Widget gameTitle(BuildContext context, GameEntry gameEntry) {
     return Column(
       children: [
         Row(children: [
@@ -200,7 +198,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
             ),
         ]),
         Padding(padding: EdgeInsets.all(16)),
-        GameTags(libraryEntry),
+        GameTags(gameEntry: gameEntry),
       ],
     );
   }

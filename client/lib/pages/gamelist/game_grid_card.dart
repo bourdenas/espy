@@ -124,15 +124,15 @@ class InfoTileBar extends StatelessWidget {
 }
 
 class TagsTileBar extends StatelessWidget {
-  const TagsTileBar(this.entry, {Key? key}) : super(key: key);
+  const TagsTileBar(this.libraryEntry, {Key? key}) : super(key: key);
 
-  final LibraryEntry entry;
+  final LibraryEntry libraryEntry;
 
   @override
   Widget build(BuildContext context) {
     return GridTileBar(
       backgroundColor: Colors.black45,
-      title: GameCardChips(entry),
+      title: GameCardChips(libraryEntry: libraryEntry),
     );
   }
 }

@@ -86,13 +86,13 @@ class GameDetailsContentMobile extends StatelessWidget {
                     gameEntry: gameEntry,
                   ),
                   SizedBox(height: 16.0),
-                  GameTags(libraryEntry),
+                  GameTags(gameEntry: gameEntry),
                   SizedBox(height: 16.0),
                   if (!AppConfigModel.isMobile(context))
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        GameTagsField(libraryEntry),
+                        GameTagsField(gameEntry.id),
                       ],
                     ),
                   SizedBox(height: 16.0),
@@ -133,7 +133,7 @@ class GameDetailsContentMobile extends StatelessWidget {
                       gameEntry.dlcs.isNotEmpty) ...[
                     GameEntryExpansions(
                       gameEntry,
-                      idPath: ['${libraryEntry.id}', ...childPath],
+                      idPath: ['${gameEntry.id}', ...childPath],
                     ),
                     SizedBox(height: 16.0),
                   ],
@@ -142,7 +142,7 @@ class GameDetailsContentMobile extends StatelessWidget {
                       gameEntry.remasters.isNotEmpty) ...[
                     GameEntryRemakes(
                       gameEntry,
-                      idPath: ['${libraryEntry.id}', ...childPath],
+                      idPath: ['${gameEntry.id}', ...childPath],
                     ),
                     SizedBox(height: 16.0),
                   ],

@@ -91,13 +91,13 @@ class GameEntryActionBar extends StatelessWidget {
   }
 
   Widget actionButtons(BuildContext context) {
-    final inWishlist = context.watch<WishlistModel>().contains(libraryEntry.id);
+    final inWishlist = context.watch<WishlistModel>().contains(gameEntry.id);
 
     return Row(
       children: [
         IconButton(
           onPressed: () => AppConfigModel.isMobile(context)
-              ? context.pushNamed('edit', params: {'gid': '${libraryEntry.id}'})
+              ? context.pushNamed('edit', params: {'gid': '${gameEntry.id}'})
               : EditEntryDialog.show(
                   context,
                   libraryEntry,
@@ -115,7 +115,7 @@ class GameEntryActionBar extends StatelessWidget {
               if (inWishlist) {
                 context
                     .read<WishlistModel>()
-                    .remove_from_wishlist(libraryEntry.id);
+                    .remove_from_wishlist(gameEntry.id);
               } else {
                 context.read<WishlistModel>().add_to_wishlist(libraryEntry);
               }
@@ -138,7 +138,7 @@ class GameEntryActionBar extends StatelessWidget {
           if (website.authority != "Null" && website.authority != "Youtube")
             IconButton(
               onPressed: () => context.pushNamed('web',
-                  params: {'gid': '${libraryEntry.id}'},
+                  params: {'gid': '${gameEntry.id}'},
                   queryParams: {'url': website.url}),
               icon: websiteIcon(website.authority),
               splashRadius: 20.0,

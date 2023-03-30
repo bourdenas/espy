@@ -1,13 +1,12 @@
-import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/widgets/autocomplete_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class GameTagsField extends StatelessWidget {
-  final LibraryEntry entry;
+  final int gameId;
 
-  const GameTagsField(this.entry, {Key? key}) : super(key: key);
+  const GameTagsField(this.gameId, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +41,7 @@ class GameTagsField extends StatelessWidget {
 
   void _addTag(BuildContext context, UserTag tag) {
     if (tag.name.isNotEmpty) {
-      context.read<GameTagsModel>().userTags.add(tag, entry.id);
+      context.read<GameTagsModel>().userTags.add(tag, gameId);
     }
   }
 }

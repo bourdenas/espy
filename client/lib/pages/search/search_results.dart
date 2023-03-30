@@ -41,7 +41,8 @@ class GameSearchResults extends StatelessWidget {
     return SliverGrid.extent(
       maxCrossAxisExtent: cardWidth ?? 600.0,
       childAspectRatio: cardAspectRatio ?? 2.5,
-      children: matchedEntries.map((e) => GameListCard(entry: e)).toList(),
+      children:
+          matchedEntries.map((e) => GameListCard(libraryEntry: e)).toList(),
     );
   }
 }
