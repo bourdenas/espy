@@ -1,3 +1,5 @@
+import 'dart:js' as js;
+
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
@@ -32,9 +34,9 @@ class GameEntryActionBar extends StatelessWidget {
             SizedBox(width: 16.0),
             actionButtons(context),
             SizedBox(width: 16.0),
-            storeIcons(context),
+            // storeIcons(context),
             // SizedBox(width: 16.0),
-            // linkButtons(context, gameEntry),
+            linkButtons(context, gameEntry, libraryEntry),
           ],
         ),
       ],
@@ -73,19 +75,6 @@ class GameEntryActionBar extends StatelessWidget {
         Text(gameEntry.igdbRating > 0
             ? (5 * gameEntry.igdbRating / 100.0).toStringAsFixed(1)
             : '--'),
-      ],
-    );
-  }
-
-  Widget storeIcons(BuildContext context) {
-    return Row(
-      children: [
-        for (final store in libraryEntry.storeEntries)
-          IconButton(
-            onPressed: () {},
-            icon: storeIcon(store.storefront),
-            splashRadius: 20.0,
-          ),
       ],
     );
   }
@@ -131,32 +120,32 @@ class GameEntryActionBar extends StatelessWidget {
     );
   }
 
-  Widget linkButtons(BuildContext context, GameEntry gameEntry) {
+  Widget linkButtons(
+      BuildContext context, GameEntry gameEntry, LibraryEntry libraryEntry) {
     return Row(
       children: [
-        for (final website in gameEntry.websites)
-          if (website.authority != "Null" && website.authority != "Youtube")
+        for (final label in const ['Gog', 'Steam', 'Egs'])
+          for (final website
+              in gameEntry.websites.where((site) => site.authority == label))
             IconButton(
-              onPressed: () => context.pushNamed('web',
-                  params: {'gid': '${gameEntry.id}'},
-                  queryParams: {'url': website.url}),
+              onPressed: () => js.context.callMethod('open', [website.url]),
               icon: websiteIcon(website.authority),
               splashRadius: 20.0,
-            )
+            ),
+        for (final label in const [
+          'Official',
+          'Igdb',
+          'Wikipedia',
+        ])
+          for (final website
+              in gameEntry.websites.where((site) => site.authority == label))
+            IconButton(
+              onPressed: () => js.context.callMethod('open', [website.url]),
+              icon: websiteIcon(website.authority),
+              splashRadius: 20.0,
+            ),
       ],
     );
-  }
-
-  Widget storeIcon(String storeName) {
-    switch (storeName) {
-      case "gog":
-        return Image.asset('assets/images/gog-128.png');
-      case "steam":
-        return Image.asset('assets/images/steam-128.png');
-      case "egs":
-        return Image.asset('assets/images/egs-128.png');
-    }
-    return Icon(Icons.error);
   }
 
   Widget websiteIcon(String website) {
