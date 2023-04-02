@@ -34,8 +34,6 @@ class GameEntryActionBar extends StatelessWidget {
             SizedBox(width: 16.0),
             actionButtons(context),
             SizedBox(width: 16.0),
-            // storeIcons(context),
-            // SizedBox(width: 16.0),
             linkButtons(context, gameEntry, libraryEntry),
           ],
         ),
@@ -124,14 +122,6 @@ class GameEntryActionBar extends StatelessWidget {
       BuildContext context, GameEntry gameEntry, LibraryEntry libraryEntry) {
     return Row(
       children: [
-        for (final label in const ['Gog', 'Steam', 'Egs'])
-          for (final website
-              in gameEntry.websites.where((site) => site.authority == label))
-            IconButton(
-              onPressed: () => js.context.callMethod('open', [website.url]),
-              icon: websiteIcon(website.authority),
-              splashRadius: 20.0,
-            ),
         for (final label in const [
           'Official',
           'Igdb',
@@ -144,11 +134,21 @@ class GameEntryActionBar extends StatelessWidget {
               icon: websiteIcon(website.authority),
               splashRadius: 20.0,
             ),
+        for (final label in const ['Gog', 'Steam', 'Egs'])
+          for (final website
+              in gameEntry.websites.where((site) => site.authority == label))
+            IconButton(
+              onPressed: () => js.context.callMethod('open', [website.url]),
+              icon: websiteIcon(website.authority,
+                  disabled: libraryEntry.storeEntries.every(
+                      (entry) => entry.storefront != label.toLowerCase())),
+              splashRadius: 20.0,
+            ),
       ],
     );
   }
 
-  Widget websiteIcon(String website) {
+  Widget websiteIcon(String website, {bool disabled = false}) {
     switch (website) {
       case "Official":
         return Icon(Icons.web);
@@ -157,11 +157,23 @@ class GameEntryActionBar extends StatelessWidget {
       case "Igdb":
         return Image.asset('assets/images/igdb-128.png');
       case "Gog":
-        return Image.asset('assets/images/gog-128.png');
+        return Image.asset(
+          'assets/images/gog-128.png',
+          color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
+          colorBlendMode: BlendMode.modulate,
+        );
       case "Steam":
-        return Image.asset('assets/images/steam-128.png');
+        return Image.asset(
+          'assets/images/steam-128.png',
+          color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
+          colorBlendMode: BlendMode.modulate,
+        );
       case "Egs":
-        return Image.asset('assets/images/egs-128.png');
+        return Image.asset(
+          'assets/images/egs-128.png',
+          color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
+          colorBlendMode: BlendMode.modulate,
+        );
       case "Youtube":
         return Image.asset('assets/images/youtube-128.png');
     }

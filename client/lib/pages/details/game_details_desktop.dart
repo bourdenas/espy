@@ -42,7 +42,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
         child: CustomScrollView(
           primary: true,
           slivers: [
-            header(context, gameEntry),
+            GameDetailsHeader(gameEntry),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -111,7 +111,63 @@ class GameDetailsContentDesktop extends StatelessWidget {
     );
   }
 
-  static Widget header(BuildContext context, GameEntry gameEntry) {
+  static Widget relatedGames(
+      BuildContext context, GameEntry gameEntry, List<String> idPath) {
+    final hasExpansions =
+        gameEntry.expansions.isNotEmpty || gameEntry.dlcs.isNotEmpty;
+    final hasRemakes =
+        gameEntry.remakes.isNotEmpty || gameEntry.remasters.isNotEmpty;
+
+    return Row(
+      children: [
+        if (hasExpansions)
+          Expanded(
+            child: GameEntryExpansions(gameEntry, idPath: idPath),
+          ),
+        if (hasExpansions && hasRemakes) SizedBox(width: 64.0),
+        if (hasRemakes)
+          Expanded(
+            child: GameEntryRemakes(gameEntry, idPath: idPath),
+          ),
+      ],
+    );
+  }
+
+  static Widget screenshot(BuildContext context, GameEntry gameEntry) {
+    return SliverGrid.count(
+      crossAxisCount: 2,
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      childAspectRatio: gameEntry.screenshots.isNotEmpty
+          ? gameEntry.screenshots[0].width / gameEntry.screenshots[0].height
+          : 1,
+      children: [
+        for (final screenshot in gameEntry.screenshots)
+          GridTile(
+            child: Material(
+              elevation: 10,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4)),
+              clipBehavior: Clip.antiAlias,
+              child: CachedNetworkImage(
+                imageUrl:
+                    '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
+                errorWidget: (context, url, error) => Icon(Icons.error),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class GameDetailsHeader extends StatelessWidget {
+  GameDetailsHeader(this.gameEntry, {Key? key}) : super(key: key);
+
+  final GameEntry gameEntry;
+
+  @override
+  Widget build(BuildContext context) {
     final backgroundImage = gameEntry.steamData != null &&
             gameEntry.steamData!.backgroundImage != null
         ? gameEntry.steamData!.backgroundImage!
@@ -166,7 +222,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
                   ),
                   Padding(padding: EdgeInsets.all(8)),
                   Expanded(
-                    child: gameTitle(context, gameEntry),
+                    child: gameTitle(context),
                   ),
                 ],
               ),
@@ -177,7 +233,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
     );
   }
 
-  static Widget gameTitle(BuildContext context, GameEntry gameEntry) {
+  Widget gameTitle(BuildContext context) {
     return Column(
       children: [
         Row(children: [
@@ -199,55 +255,6 @@ class GameDetailsContentDesktop extends StatelessWidget {
         ]),
         Padding(padding: EdgeInsets.all(16)),
         GameTags(gameEntry: gameEntry),
-      ],
-    );
-  }
-
-  static Widget relatedGames(
-      BuildContext context, GameEntry gameEntry, List<String> idPath) {
-    final hasExpansions =
-        gameEntry.expansions.isNotEmpty || gameEntry.dlcs.isNotEmpty;
-    final hasRemakes =
-        gameEntry.remakes.isNotEmpty || gameEntry.remasters.isNotEmpty;
-
-    return Row(
-      children: [
-        if (hasExpansions)
-          Expanded(
-            child: GameEntryExpansions(gameEntry, idPath: idPath),
-          ),
-        if (hasExpansions && hasRemakes) SizedBox(width: 64.0),
-        if (hasRemakes)
-          Expanded(
-            child: GameEntryRemakes(gameEntry, idPath: idPath),
-          ),
-      ],
-    );
-  }
-
-  static Widget screenshot(BuildContext context, GameEntry gameEntry) {
-    return SliverGrid.count(
-      crossAxisCount: 2,
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
-      childAspectRatio: gameEntry.screenshots.isNotEmpty
-          ? gameEntry.screenshots[0].width / gameEntry.screenshots[0].height
-          : 1,
-      children: [
-        for (final screenshot in gameEntry.screenshots)
-          GridTile(
-            child: Material(
-              elevation: 10,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4)),
-              clipBehavior: Clip.antiAlias,
-              child: CachedNetworkImage(
-                imageUrl:
-                    '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
-                errorWidget: (context, url, error) => Icon(Icons.error),
-              ),
-            ),
-          ),
       ],
     );
   }
