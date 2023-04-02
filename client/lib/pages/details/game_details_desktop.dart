@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
@@ -182,48 +184,15 @@ class GameDetailsHeader extends StatelessWidget {
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Image.network(
-                    backgroundImage,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                  ),
-                ),
-              ],
-            ),
+            headerImage(backgroundImage),
             Container(
               padding: const EdgeInsets.all(16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl:
-                            '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
-                        errorWidget: (context, url, error) => Icon(Icons.error),
-                      ),
-                      // Positioned(
-                      //   right: 0,
-                      //   child: FloatingActionButton(
-                      //     mini: true,
-                      //     tooltip: 'Edit',
-                      //     child: Icon(Icons.edit),
-                      //     backgroundColor: Color.fromARGB(64, 255, 255, 255),
-                      //     onPressed: () {
-                      //       // GameEntryEditDialog.show(context, libraryEntry);
-                      //     },
-                      //   ),
-                      // ),
-                    ],
-                  ),
+                  coverImage(),
                   Padding(padding: EdgeInsets.all(8)),
-                  Expanded(
-                    child: gameTitle(context),
-                  ),
+                  gameTitle(context),
                 ],
               ),
             )
@@ -233,29 +202,82 @@ class GameDetailsHeader extends StatelessWidget {
     );
   }
 
-  Widget gameTitle(BuildContext context) {
-    return Column(
+  Stack coverImage() {
+    return Stack(
+      clipBehavior: Clip.none,
       children: [
-        Row(children: [
-          Expanded(
-            child: Text(
-              gameEntry.name,
-              style: Theme.of(context).textTheme.headline3,
-              textAlign: TextAlign.center,
+        CachedNetworkImage(
+          imageUrl:
+              '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
+          errorWidget: (context, url, error) => Icon(Icons.error),
+        ),
+        // Positioned(
+        //   right: 0,
+        //   child: FloatingActionButton(
+        //     mini: true,
+        //     tooltip: 'Edit',
+        //     child: Icon(Icons.edit),
+        //     backgroundColor: Color.fromARGB(64, 255, 255, 255),
+        //     onPressed: () {
+        //       // GameEntryEditDialog.show(context, libraryEntry);
+        //     },
+        //   ),
+        // ),
+      ],
+    );
+  }
+
+  Row headerImage(String backgroundImage) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(
+                  backgroundImage,
+                ),
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+              ),
+            ),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+              ),
             ),
           ),
-          if (!kReleaseMode)
+        ),
+      ],
+    );
+  }
+
+  Widget gameTitle(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Row(children: [
             Expanded(
               child: Text(
-                '${gameEntry.id}',
-                style: Theme.of(context).textTheme.headline5,
+                gameEntry.name,
+                style: Theme.of(context).textTheme.headline3,
                 textAlign: TextAlign.center,
               ),
             ),
-        ]),
-        Padding(padding: EdgeInsets.all(16)),
-        GameTags(gameEntry: gameEntry),
-      ],
+            if (!kReleaseMode)
+              Expanded(
+                child: Text(
+                  '${gameEntry.id}',
+                  style: Theme.of(context).textTheme.headline5,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ]),
+          Padding(padding: EdgeInsets.all(16)),
+          GameTags(gameEntry: gameEntry),
+        ],
+      ),
     );
   }
 }
