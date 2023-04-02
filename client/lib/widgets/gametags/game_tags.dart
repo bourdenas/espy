@@ -40,7 +40,7 @@ extractTags(GameEntry? gameEntry, LibraryEntry? libraryEntry) {
             .map((e) => e.name)
         : <String>[],
     'collections': gameEntry != null
-        ? gameEntry.collections.map((e) => e.name)
+        ? gameEntry.collections.map((e) => e.name).toSet()
         : libraryEntry?.collections ?? [],
   };
 }
