@@ -7,6 +7,7 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
+import 'package:espy/pages/details/game_image_gallery.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -26,10 +27,6 @@ class GameDetailsContentDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final description = gameEntry.steamData != null
-        ? gameEntry.steamData!.aboutTheGame
-        : gameEntry.summary;
-
     return Actions(
       actions: {
         EditDialogIntent: CallbackAction<EditDialogIntent>(
@@ -45,68 +42,102 @@ class GameDetailsContentDesktop extends StatelessWidget {
           primary: true,
           slivers: [
             GameDetailsHeader(gameEntry),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    GameEntryActionBar(
-                      libraryEntry: libraryEntry,
-                      gameEntry: gameEntry,
-                    ),
-                    SizedBox(height: 16.0),
-                    relatedGames(
-                      context,
-                      gameEntry,
-                      ['${gameEntry.id}', ...childPath],
-                    ),
-                    SizedBox(height: 16.0),
-                  ],
+            GameDetailsActionBar(gameEntry, libraryEntry, childPath),
+            GameDetailsBody(gameEntry: gameEntry),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class GameDetailsBody extends StatelessWidget {
+  const GameDetailsBody({
+    Key? key,
+    required this.gameEntry,
+  }) : super(key: key);
+
+  final GameEntry gameEntry;
+
+  @override
+  Widget build(BuildContext context) {
+    final description = gameEntry.steamData != null
+        ? gameEntry.steamData!.aboutTheGame
+        : gameEntry.summary;
+
+    return SliverToBoxAdapter(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 600),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Html(
+                  data: description,
                 ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 600),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Html(
-                          data: description,
-                        ),
-                        SizedBox(height: 8.0),
-                        if (gameEntry.genres.isNotEmpty)
-                          Text(
-                            'Genres: ${gameEntry.genres.join(", ")}',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        SizedBox(height: 4.0),
-                        if (gameEntry.keywords.isNotEmpty)
-                          Text(
-                            'Keywords: ${gameEntry.keywords.join(", ")}',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        SizedBox(height: 16.0),
-                      ],
+                SizedBox(height: 8.0),
+                if (gameEntry.genres.isNotEmpty)
+                  Text(
+                    'Genres: ${gameEntry.genres.join(", ")}',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 1.2,
                     ),
                   ),
-                ],
-              ),
+                SizedBox(height: 4.0),
+                if (gameEntry.keywords.isNotEmpty)
+                  Text(
+                    'Keywords: ${gameEntry.keywords.join(", ")}',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                SizedBox(height: 16.0),
+              ],
             ),
-            screenshot(context, gameEntry),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class GameDetailsActionBar extends StatelessWidget {
+  GameDetailsActionBar(this.gameEntry, this.libraryEntry, this.childPath,
+      {Key? key})
+      : super(key: key);
+
+  final GameEntry gameEntry;
+  final LibraryEntry libraryEntry;
+  final List<String> childPath;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            GameEntryActionBar(
+              libraryEntry: libraryEntry,
+              gameEntry: gameEntry,
+            ),
+            SizedBox(height: 16.0),
+            relatedGames(
+              context,
+              gameEntry,
+              ['${gameEntry.id}', ...childPath],
+            ),
+            SizedBox(height: 16.0),
+            GameImageGallery(gameEntry: gameEntry),
+            SizedBox(height: 16.0),
           ],
         ),
       ),
@@ -130,33 +161,6 @@ class GameDetailsContentDesktop extends StatelessWidget {
         if (hasRemakes)
           Expanded(
             child: GameEntryRemakes(gameEntry, idPath: idPath),
-          ),
-      ],
-    );
-  }
-
-  static Widget screenshot(BuildContext context, GameEntry gameEntry) {
-    return SliverGrid.count(
-      crossAxisCount: 2,
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
-      childAspectRatio: gameEntry.screenshots.isNotEmpty
-          ? gameEntry.screenshots[0].width / gameEntry.screenshots[0].height
-          : 1,
-      children: [
-        for (final screenshot in gameEntry.screenshots)
-          GridTile(
-            child: Material(
-              elevation: 10,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4)),
-              clipBehavior: Clip.antiAlias,
-              child: CachedNetworkImage(
-                imageUrl:
-                    '${Urls.imageProvider}/t_720p/${screenshot.imageId}.jpg',
-                errorWidget: (context, url, error) => Icon(Icons.error),
-              ),
-            ),
           ),
       ],
     );
