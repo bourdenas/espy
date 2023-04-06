@@ -42,8 +42,8 @@ class GameDetailsContentDesktop extends StatelessWidget {
           primary: true,
           slivers: [
             GameDetailsHeader(gameEntry),
-            GameDetailsActionBar(gameEntry, libraryEntry, childPath),
-            GameDetailsBody(gameEntry: gameEntry),
+            GameDetailsActionBar(gameEntry, libraryEntry),
+            GameDetailsBody(gameEntry: gameEntry, childPath: childPath),
           ],
         ),
       ),
@@ -55,9 +55,11 @@ class GameDetailsBody extends StatelessWidget {
   const GameDetailsBody({
     Key? key,
     required this.gameEntry,
+    required this.childPath,
   }) : super(key: key);
 
   final GameEntry gameEntry;
+  final List<String> childPath;
 
   @override
   Widget build(BuildContext context) {
@@ -67,8 +69,10 @@ class GameDetailsBody extends StatelessWidget {
 
     return SliverToBoxAdapter(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(width: 64),
           ConstrainedBox(
             constraints: BoxConstraints(maxWidth: 600),
             child: Column(
@@ -103,20 +107,47 @@ class GameDetailsBody extends StatelessWidget {
               ],
             ),
           ),
+          SizedBox(width: 64),
+          relatedGames(
+            gameEntry,
+            ['${gameEntry.id}', ...childPath],
+          )
         ],
       ),
+    );
+  }
+
+  static Widget relatedGames(GameEntry gameEntry, List<String> idPath) {
+    final hasExpansions =
+        gameEntry.expansions.isNotEmpty || gameEntry.dlcs.isNotEmpty;
+    final hasRemakes =
+        gameEntry.remakes.isNotEmpty || gameEntry.remasters.isNotEmpty;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        if (hasExpansions)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 900),
+            child: GameEntryExpansions(gameEntry, idPath: idPath),
+          ),
+        if (hasExpansions && hasRemakes) SizedBox(height: 64.0),
+        if (hasRemakes)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 900),
+            child: GameEntryRemakes(gameEntry, idPath: idPath),
+          ),
+      ],
     );
   }
 }
 
 class GameDetailsActionBar extends StatelessWidget {
-  GameDetailsActionBar(this.gameEntry, this.libraryEntry, this.childPath,
-      {Key? key})
+  GameDetailsActionBar(this.gameEntry, this.libraryEntry, {Key? key})
       : super(key: key);
 
   final GameEntry gameEntry;
   final LibraryEntry libraryEntry;
-  final List<String> childPath;
 
   @override
   Widget build(BuildContext context) {
@@ -130,39 +161,11 @@ class GameDetailsActionBar extends StatelessWidget {
               gameEntry: gameEntry,
             ),
             SizedBox(height: 16.0),
-            relatedGames(
-              context,
-              gameEntry,
-              ['${gameEntry.id}', ...childPath],
-            ),
-            SizedBox(height: 16.0),
             GameImageGallery(gameEntry: gameEntry),
             SizedBox(height: 16.0),
           ],
         ),
       ),
-    );
-  }
-
-  static Widget relatedGames(
-      BuildContext context, GameEntry gameEntry, List<String> idPath) {
-    final hasExpansions =
-        gameEntry.expansions.isNotEmpty || gameEntry.dlcs.isNotEmpty;
-    final hasRemakes =
-        gameEntry.remakes.isNotEmpty || gameEntry.remasters.isNotEmpty;
-
-    return Row(
-      children: [
-        if (hasExpansions)
-          Expanded(
-            child: GameEntryExpansions(gameEntry, idPath: idPath),
-          ),
-        if (hasExpansions && hasRemakes) SizedBox(width: 64.0),
-        if (hasRemakes)
-          Expanded(
-            child: GameEntryRemakes(gameEntry, idPath: idPath),
-          ),
-      ],
     );
   }
 }
