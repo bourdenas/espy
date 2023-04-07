@@ -181,53 +181,27 @@ class GameEntryActionBar extends StatelessWidget {
   }
 }
 
-class GameEntryExpansions extends StatelessWidget {
-  const GameEntryExpansions(this.gameEntry, {Key? key, this.idPath = const []})
+class RelatedGamesGroup extends StatelessWidget {
+  const RelatedGamesGroup(this.title, this.gameEntries, this.gameEntryPath,
+      {Key? key})
       : super(key: key);
 
-  final GameEntry gameEntry;
-  final List<String> idPath;
+  final String title;
+  final List<GameEntry> gameEntries;
+  final List<String> gameEntryPath;
 
   @override
   Widget build(BuildContext context) {
     return HomeSlate(
-      title: 'Expansions & DLC',
-      tiles: [gameEntry.expansions, gameEntry.dlcs]
-          .expand((e) => e)
-          .map((dlc) => SlateTileData(
-                image: dlc.cover != null
-                    ? '${Urls.imageProvider}/t_cover_big/${dlc.cover!.imageId}.jpg'
+      title: title,
+      tiles: gameEntries
+          .map((gameEntry) => SlateTileData(
+                image: gameEntry.cover != null
+                    ? '${Urls.imageProvider}/t_cover_big/${gameEntry.cover!.imageId}.jpg'
                     : null,
-                title: dlc.cover == null ? dlc.name : null,
+                title: gameEntry.cover == null ? gameEntry.name : null,
                 onTap: () => context.pushNamed('details', params: {
-                  'gid': [...idPath, dlc.id].join(',')
-                }),
-              ))
-          .toList(),
-    );
-  }
-}
-
-class GameEntryRemakes extends StatelessWidget {
-  const GameEntryRemakes(this.gameEntry, {Key? key, this.idPath = const []})
-      : super(key: key);
-
-  final GameEntry gameEntry;
-  final List<String> idPath;
-
-  @override
-  Widget build(BuildContext context) {
-    return HomeSlate(
-      title: 'Remakes',
-      tiles: [gameEntry.remakes, gameEntry.remasters]
-          .expand((e) => e)
-          .map((remake) => SlateTileData(
-                image: remake.cover != null
-                    ? '${Urls.imageProvider}/t_cover_big/${remake.cover!.imageId}.jpg'
-                    : null,
-                title: remake.cover == null ? remake.name : null,
-                onTap: () => context.pushNamed('details', params: {
-                  'gid': [...idPath, remake.id].join(',')
+                  'gid': [...gameEntryPath, gameEntry.id].join(',')
                 }),
               ))
           .toList(),

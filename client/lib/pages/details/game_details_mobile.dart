@@ -129,20 +129,35 @@ class GameDetailsContentMobile extends StatelessWidget {
                       ),
                     ),
                   SizedBox(height: 16.0),
-                  if (gameEntry.expansions.isNotEmpty ||
-                      gameEntry.dlcs.isNotEmpty) ...[
-                    GameEntryExpansions(
-                      gameEntry,
-                      idPath: ['${gameEntry.id}', ...childPath],
+                  if (gameEntry.expansions.isNotEmpty) ...[
+                    RelatedGamesGroup(
+                      'Expansions',
+                      gameEntry.expansions,
+                      ['${gameEntry.id}', ...childPath],
                     ),
                     SizedBox(height: 16.0),
                   ],
-                  SizedBox(height: 16.0),
-                  if (gameEntry.remakes.isNotEmpty ||
-                      gameEntry.remasters.isNotEmpty) ...[
-                    GameEntryRemakes(
-                      gameEntry,
-                      idPath: ['${gameEntry.id}', ...childPath],
+                  if (gameEntry.dlcs.isNotEmpty) ...[
+                    RelatedGamesGroup(
+                      'DLCs',
+                      gameEntry.dlcs,
+                      ['${gameEntry.id}', ...childPath],
+                    ),
+                    SizedBox(height: 16.0),
+                  ],
+                  if (gameEntry.remasters.isNotEmpty) ...[
+                    RelatedGamesGroup(
+                      'Remasters',
+                      gameEntry.remasters,
+                      ['${gameEntry.id}', ...childPath],
+                    ),
+                    SizedBox(height: 16.0),
+                  ],
+                  if (gameEntry.remakes.isNotEmpty) ...[
+                    RelatedGamesGroup(
+                      'Remakes',
+                      gameEntry.remakes,
+                      ['${gameEntry.id}', ...childPath],
                     ),
                     SizedBox(height: 16.0),
                   ],

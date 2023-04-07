@@ -43,7 +43,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
           slivers: [
             GameDetailsHeader(gameEntry),
             GameDetailsActionBar(gameEntry, libraryEntry),
-            GameDetailsBody(gameEntry: gameEntry, childPath: childPath),
+            GameDetailsBody(gameEntry: gameEntry, gameEntryPath: childPath),
           ],
         ),
       ),
@@ -55,11 +55,70 @@ class GameDetailsBody extends StatelessWidget {
   const GameDetailsBody({
     Key? key,
     required this.gameEntry,
-    required this.childPath,
+    required this.gameEntryPath,
   }) : super(key: key);
 
   final GameEntry gameEntry;
-  final List<String> childPath;
+  final List<String> gameEntryPath;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 64),
+          GameDescription(gameEntry: gameEntry),
+          SizedBox(width: 64),
+          relatedGames(
+            gameEntry,
+            ['${gameEntry.id}', ...gameEntryPath],
+          )
+        ],
+      ),
+    );
+  }
+
+  static Widget relatedGames(GameEntry gameEntry, List<String> gameEntryPath) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        if (gameEntry.expansions.isNotEmpty)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 900),
+            child: RelatedGamesGroup(
+                'Expansions', gameEntry.expansions, gameEntryPath),
+          ),
+        if (gameEntry.dlcs.isNotEmpty)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 900),
+            child: RelatedGamesGroup('DLCs', gameEntry.dlcs, gameEntryPath),
+          ),
+        if (gameEntry.remasters.isNotEmpty)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 900),
+            child: RelatedGamesGroup(
+                'Remasters', gameEntry.remasters, gameEntryPath),
+          ),
+        if (gameEntry.remakes.isNotEmpty)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 900),
+            child:
+                RelatedGamesGroup('Remakes', gameEntry.remakes, gameEntryPath),
+          ),
+      ],
+    );
+  }
+}
+
+class GameDescription extends StatelessWidget {
+  const GameDescription({
+    Key? key,
+    required this.gameEntry,
+  }) : super(key: key);
+
+  final GameEntry gameEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -67,77 +126,39 @@ class GameDetailsBody extends StatelessWidget {
         ? gameEntry.steamData!.aboutTheGame
         : gameEntry.summary;
 
-    return SliverToBoxAdapter(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 600),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 64),
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 600),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Html(
-                  data: description,
-                ),
-                SizedBox(height: 8.0),
-                if (gameEntry.genres.isNotEmpty)
-                  Text(
-                    'Genres: ${gameEntry.genres.join(", ")}',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                SizedBox(height: 4.0),
-                if (gameEntry.keywords.isNotEmpty)
-                  Text(
-                    'Keywords: ${gameEntry.keywords.join(", ")}',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                SizedBox(height: 16.0),
-              ],
-            ),
+          Html(
+            data: description,
           ),
-          SizedBox(width: 64),
-          relatedGames(
-            gameEntry,
-            ['${gameEntry.id}', ...childPath],
-          )
+          SizedBox(height: 8.0),
+          if (gameEntry.genres.isNotEmpty)
+            Text(
+              'Genres: ${gameEntry.genres.join(", ")}',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 12.0,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 1.2,
+              ),
+            ),
+          SizedBox(height: 4.0),
+          if (gameEntry.keywords.isNotEmpty)
+            Text(
+              'Keywords: ${gameEntry.keywords.join(", ")}',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 12.0,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 1.2,
+              ),
+            ),
+          SizedBox(height: 16.0),
         ],
       ),
-    );
-  }
-
-  static Widget relatedGames(GameEntry gameEntry, List<String> idPath) {
-    final hasExpansions =
-        gameEntry.expansions.isNotEmpty || gameEntry.dlcs.isNotEmpty;
-    final hasRemakes =
-        gameEntry.remakes.isNotEmpty || gameEntry.remasters.isNotEmpty;
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        if (hasExpansions)
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 900),
-            child: GameEntryExpansions(gameEntry, idPath: idPath),
-          ),
-        if (hasExpansions && hasRemakes) SizedBox(height: 64.0),
-        if (hasRemakes)
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 900),
-            child: GameEntryRemakes(gameEntry, idPath: idPath),
-          ),
-      ],
     );
   }
 }
