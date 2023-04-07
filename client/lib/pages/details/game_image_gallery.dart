@@ -33,7 +33,7 @@ class GameImageGallery extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 16.0),
-            itemCount: gameEntry.screenshots.length,
+            itemCount: screenshots.length,
             itemBuilder: (context, index) {
               return ImageTile(
                 imageUrl: screenshots[index],
