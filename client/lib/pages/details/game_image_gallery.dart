@@ -15,12 +15,15 @@ class GameImageGallery extends StatelessWidget {
     final screenshots = gameEntry.steamData != null
         ? gameEntry.steamData!.screenshots
             .map(
-              (e) => e.pathThumbnail,
+              (e) => ImageData(e.pathThumbnail, e.pathFull),
             )
             .toList()
         : gameEntry.screenshots
             .map(
-              (e) => '${Urls.imageProvider}/t_720p/${e.imageId}.jpg',
+              (e) => ImageData(
+                '${Urls.imageProvider}/t_720p/${e.imageId}.jpg',
+                '${Urls.imageProvider}/t_1080p/${e.imageId}.jpg',
+              ),
             )
             .toList();
 
@@ -35,15 +38,20 @@ class GameImageGallery extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             itemCount: screenshots.length,
             itemBuilder: (context, index) {
-              return ImageTile(
-                imageUrl: screenshots[index],
-              );
+              return ImageTile(screenshots[index]);
             },
           ),
         ),
       ),
     );
   }
+}
+
+class ImageData {
+  ImageData(this.thumbnail, this.full);
+
+  String thumbnail;
+  String full;
 }
 
 class ImageTileSize {
@@ -63,26 +71,47 @@ class ImageTileSize {
 }
 
 class ImageTile extends StatelessWidget {
-  const ImageTile({
+  const ImageTile(
+    this.imageData, {
     Key? key,
-    required this.imageUrl,
   }) : super(key: key);
 
-  final String imageUrl;
+  final ImageData imageData;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(right: 8.0),
       child: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: EdgeInsets.all(2),
+              title: Container(
+                decoration: BoxDecoration(),
+                width: MediaQuery.of(context).size.width,
+                child: Expanded(
+                  child: CachedNetworkImage(
+                    fit: BoxFit.cover,
+                    imageUrl: imageData.full,
+                    placeholder: (context, url) => Container(),
+                    errorWidget: (context, url, error) =>
+                        Center(child: Icon(Icons.error_outline)),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
         child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
           child: Stack(
             children: [
               CachedNetworkImage(
                 fit: BoxFit.cover,
-                imageUrl: imageUrl,
+                imageUrl: imageData.thumbnail,
                 placeholder: (context, url) => Container(),
                 errorWidget: (context, url, error) =>
                     Center(child: Icon(Icons.error_outline)),
