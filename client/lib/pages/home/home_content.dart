@@ -3,10 +3,10 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/pages/home/home_stack.dart';
 import 'package:espy/widgets/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
 import 'package:espy/widgets/image_carousel.dart';
+import 'package:espy/widgets/image_stack.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
@@ -100,7 +100,7 @@ class HomeContent extends StatelessWidget {
             childAspectRatio: .7,
             children: [
               for (final stack in stacks)
-                HomeStack(
+                ImageStack(
                   title: stack.title,
                   tileImages: stack.entries.map((libraryEntry) =>
                       '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg'),
