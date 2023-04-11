@@ -4,7 +4,6 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/pages/home/home_stack.dart';
-import 'package:espy/pages/home/slate_tile.dart';
 import 'package:espy/widgets/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
 import 'package:espy/widgets/image_carousel.dart';
@@ -114,8 +113,6 @@ class HomeContent extends StatelessWidget {
         SliverToBoxAdapter(
           child: SizedBox(height: 32.0),
         ),
-
-        // ,
       ],
     );
   }
