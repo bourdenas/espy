@@ -5,8 +5,8 @@ import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/widgets/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
-import 'package:espy/widgets/image_carousel.dart';
-import 'package:espy/widgets/image_stack.dart';
+import 'package:espy/widgets/tiles/tile_carousel.dart';
+import 'package:espy/widgets/tiles/tile_stack.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
@@ -39,7 +39,7 @@ class HomeContent extends StatelessWidget {
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               final slate = slates[index];
-              return ImageCarousel(
+              return TileCarousel(
                 title: slate.title,
                 onTitleTap: () => context.pushNamed(
                   'games',
@@ -49,7 +49,7 @@ class HomeContent extends StatelessWidget {
                     ? TileSize(width: 133, height: 190)
                     : TileSize(width: 227, height: 320),
                 tiles: slate.entries
-                    .map((libraryEntry) => CarouselTileData(
+                    .map((libraryEntry) => TileData(
                           image:
                               '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
                           onTap: () => context.pushNamed('details',
@@ -100,7 +100,7 @@ class HomeContent extends StatelessWidget {
             childAspectRatio: .7,
             children: [
               for (final stack in stacks)
-                ImageStack(
+                TileStack(
                   title: stack.title,
                   tileImages: stack.entries.map((libraryEntry) =>
                       '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg'),

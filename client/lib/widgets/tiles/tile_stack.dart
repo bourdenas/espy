@@ -3,12 +3,12 @@ import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-class ImageStack extends StatefulWidget {
+class TileStack extends StatefulWidget {
   final String title;
   final VoidCallback? onExpand;
   final Iterable<String> tileImages;
 
-  const ImageStack({
+  const TileStack({
     Key? key,
     required this.title,
     required this.tileImages,
@@ -16,10 +16,10 @@ class ImageStack extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ImageStack> createState() => _ImageStackState();
+  State<TileStack> createState() => _TileStackState();
 }
 
-class _ImageStackState extends State<ImageStack> {
+class _TileStackState extends State<TileStack> {
   List<double> deckAngles = narrowDeckAngles;
   List<Offset> deckOffsets = narrowDeckOffsets;
 

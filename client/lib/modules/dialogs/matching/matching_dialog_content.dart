@@ -3,7 +3,7 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
-import 'package:espy/widgets/image_carousel.dart';
+import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
@@ -85,10 +85,10 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
           FutureBuilder(
               future: matches,
               builder: (context, snapshot) {
-                Widget result = ImageCarousel(
+                Widget result = TileCarousel(
                   title: 'Matches',
                   tiles: [
-                    for (var i = 0; i < 5; ++i) CarouselTileData(),
+                    for (var i = 0; i < 5; ++i) TileData(),
                   ],
                   tileSize: AppConfigModel.isMobile(context)
                       ? TileSize(width: 133, height: 190)
@@ -116,7 +116,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
 
                   final gameEntries = snapshot.data! as List<GameEntry>;
                   final tiles = gameEntries
-                      .map((gameEntry) => CarouselTileData(
+                      .map((gameEntry) => TileData(
                           title: gameEntry.name,
                           image: gameEntry.cover != null
                               ? '${Urls.imageProvider}/t_cover_big/${gameEntry.cover!.imageId}.jpg'
@@ -130,7 +130,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                       .toList();
 
                   result = tiles.isNotEmpty
-                      ? ImageCarousel(
+                      ? TileCarousel(
                           title: 'Matches',
                           tiles: tiles,
                           tileSize: AppConfigModel.isMobile(context)

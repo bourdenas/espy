@@ -1,7 +1,7 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/image_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
-import 'package:espy/widgets/image_carousel.dart';
+import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 
 class GameImageGallery extends StatelessWidget {
@@ -26,10 +26,10 @@ class GameImageGallery extends StatelessWidget {
             )
             .toList();
 
-    return ImageCarousel(
+    return TileCarousel(
       tiles: screenshots
           .map(
-            (e) => CarouselTileData(
+            (e) => TileData(
               image: e.thumbnail,
               onTap: () => showDialog(
                   context: context,

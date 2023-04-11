@@ -3,8 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-class CarouselTileData {
-  const CarouselTileData({this.title, this.image, this.onTap, this.onLongTap});
+class TileData {
+  const TileData({this.title, this.image, this.onTap, this.onLongTap});
 
   final String? title;
   final String? image;
@@ -22,13 +22,13 @@ class TileSize {
   final double height;
 }
 
-class ImageCarousel extends StatefulWidget {
+class TileCarousel extends StatefulWidget {
   final String? title;
   final VoidCallback? onTitleTap;
-  final List<CarouselTileData> tiles;
+  final List<TileData> tiles;
   final TileSize tileSize;
 
-  const ImageCarousel({
+  const TileCarousel({
     Key? key,
     this.title,
     this.onTitleTap,
@@ -37,16 +37,16 @@ class ImageCarousel extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ImageCarousel> createState() => _ImageCarouselState();
+  State<TileCarousel> createState() => _TileCarouselState();
 }
 
-class _ImageCarouselState extends State<ImageCarousel> {
+class _TileCarouselState extends State<TileCarousel> {
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         if (widget.title != null)
-          _ImageCarouselHeader(
+          _CarouselHeader(
             titleText: widget.title!,
             onTitleTap: widget.onTitleTap,
             scrollController: _scrollController,
@@ -67,7 +67,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
           padding: EdgeInsets.symmetric(horizontal: 16.0),
           itemCount: widget.tiles.length,
           itemBuilder: (context, index) {
-            return _CarouselTile(
+            return _Tile(
               data: widget.tiles[index],
               tileSize: widget.tileSize,
             );
@@ -80,8 +80,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
   ScrollController _scrollController = new ScrollController();
 }
 
-class _ImageCarouselHeader extends StatelessWidget {
-  const _ImageCarouselHeader({
+class _CarouselHeader extends StatelessWidget {
+  const _CarouselHeader({
     Key? key,
     required this.titleText,
     this.onTitleTap,
@@ -160,30 +160,14 @@ class _ImageCarouselHeader extends StatelessWidget {
   }
 }
 
-// class CarouselTileSize {
-//   static const mobileWidth = 120.0;
-//   static const mobileHeight = 170.0;
-
-//   static const desktopWidth = 227.0;
-//   static const desktopHeight = 320.0;
-
-//   static double width(bool isMobile) {
-//     return isMobile ? mobileWidth : desktopWidth;
-//   }
-
-//   static double height(bool isMobile) {
-//     return isMobile ? mobileHeight : desktopHeight;
-//   }
-// }
-
-class _CarouselTile extends StatelessWidget {
-  const _CarouselTile({
+class _Tile extends StatelessWidget {
+  const _Tile({
     Key? key,
     required this.data,
     required this.tileSize,
   }) : super(key: key);
 
-  final CarouselTileData data;
+  final TileData data;
   final TileSize tileSize;
 
   @override
