@@ -3,11 +3,11 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/pages/home/home_slate.dart';
 import 'package:espy/pages/home/home_stack.dart';
 import 'package:espy/pages/home/slate_tile.dart';
 import 'package:espy/widgets/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
+import 'package:espy/widgets/image_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
@@ -40,14 +40,17 @@ class HomeContent extends StatelessWidget {
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               final slate = slates[index];
-              return HomeSlate(
+              return ImageCarousel(
                 title: slate.title,
-                onExpand: () => context.pushNamed(
+                onTitleTap: () => context.pushNamed(
                   'games',
                   queryParams: slate.filter.params(),
                 ),
+                tileSize: AppConfigModel.isMobile(context)
+                    ? TileSize(width: 133, height: 190)
+                    : TileSize(width: 227, height: 320),
                 tiles: slate.entries
-                    .map((libraryEntry) => SlateTileData(
+                    .map((libraryEntry) => CarouselTileData(
                           image:
                               '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
                           onTap: () => context.pushNamed('details',

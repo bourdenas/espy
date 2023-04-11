@@ -6,8 +6,7 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
-import 'package:espy/pages/home/home_slate.dart';
-import 'package:espy/pages/home/slate_tile.dart';
+import 'package:espy/widgets/image_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -192,10 +191,10 @@ class RelatedGamesGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HomeSlate(
+    return ImageCarousel(
       title: title,
       tiles: gameEntries
-          .map((gameEntry) => SlateTileData(
+          .map((gameEntry) => CarouselTileData(
                 image: gameEntry.cover != null
                     ? '${Urls.imageProvider}/t_cover_big/${gameEntry.cover!.imageId}.jpg'
                     : null,
@@ -205,6 +204,9 @@ class RelatedGamesGroup extends StatelessWidget {
                 }),
               ))
           .toList(),
+      tileSize: AppConfigModel.isMobile(context)
+          ? TileSize(width: 133, height: 190)
+          : TileSize(width: 227, height: 320),
     );
   }
 }
