@@ -103,24 +103,10 @@ class HomeContent extends StatelessWidget {
               for (final stack in stacks)
                 HomeStack(
                   title: stack.title,
+                  tileImages: stack.entries.map((libraryEntry) =>
+                      '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg'),
                   onExpand: () => context.pushNamed('games',
                       queryParams: stack.filter.params()),
-                  tiles: stack.entries.map(
-                    (libraryEntry) => SlateTileData(
-                      image:
-                          '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
-                      onTap: () => context.pushNamed('details',
-                          params: {'gid': '${libraryEntry.id}'}),
-                      onLongTap: () => isMobile
-                          ? context.pushNamed('edit',
-                              params: {'gid': '${libraryEntry.id}'})
-                          : EditEntryDialog.show(
-                              context,
-                              libraryEntry,
-                              gameId: libraryEntry.id,
-                            ),
-                    ),
-                  ),
                 ),
             ],
           ),
