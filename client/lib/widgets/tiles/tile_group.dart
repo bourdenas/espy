@@ -3,21 +3,21 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/search/search_results.dart';
-import 'package:espy/widgets/library/library_header.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
-class LibraryGroup extends StatefulWidget {
-  const LibraryGroup({
+class TileGroup extends StatefulWidget {
+  const TileGroup({
     Key? key,
     required this.title,
     this.color,
     this.filter,
     this.entries,
-    this.cardWidth,
-    this.cardAspectRatio,
+    this.cardWidth = 250,
+    this.cardAspectRatio = .75,
+    this.expanded = true,
   }) : super(key: key);
 
   final String title;
@@ -25,15 +25,18 @@ class LibraryGroup extends StatefulWidget {
   final LibraryFilter? filter;
   final Iterable<LibraryEntry>? entries;
 
-  final double? cardWidth;
-  final double? cardAspectRatio;
+  final double cardWidth;
+  final double cardAspectRatio;
+  final bool expanded;
 
   @override
-  State<LibraryGroup> createState() => _LibraryGroupState();
+  State<TileGroup> createState() => _TileGroupState(expanded);
 }
 
-class _LibraryGroupState extends State<LibraryGroup> {
-  bool expanded = true;
+class _TileGroupState extends State<TileGroup> {
+  _TileGroupState(this.expanded);
+
+  bool expanded;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +50,7 @@ class _LibraryGroupState extends State<LibraryGroup> {
             context,
             widget.title,
             widget.color,
-            filter: widget.filter,
+            widget.filter,
           ),
         ),
         if (expanded)
@@ -62,17 +65,13 @@ class _LibraryGroupState extends State<LibraryGroup> {
     );
   }
 
-  LibraryHeaderDelegate header(BuildContext context, String title, Color? color,
-      {LibraryFilter? filter}) {
-    return LibraryHeaderDelegate(
+  HeaderDelegate header(
+      BuildContext context, String title, Color? color, LibraryFilter? filter) {
+    return HeaderDelegate(
       minHeight: 50.0,
       maxHeight: 50.0,
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            expanded = !expanded;
-          });
-        },
+        onTap: () => setState(() => expanded = !expanded),
         child: Material(
           elevation: 10.0,
           color: AppConfigModel.foregroundColor,
@@ -100,5 +99,36 @@ class _LibraryGroupState extends State<LibraryGroup> {
         ),
       ),
     );
+  }
+}
+
+class HeaderDelegate extends SliverPersistentHeaderDelegate {
+  HeaderDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  bool shouldRebuild(HeaderDelegate oldHeader) {
+    return maxHeight != oldHeader.maxHeight ||
+        minHeight != oldHeader.minHeight ||
+        child != oldHeader.child;
   }
 }
