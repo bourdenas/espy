@@ -9,7 +9,6 @@ import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
 import 'package:espy/widgets/library/library_group.dart';
-import 'package:espy/widgets/library/library_header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -39,9 +38,7 @@ class _SearchPageState extends State<SearchPage> {
       primary: true,
       shrinkWrap: true,
       slivers: [
-        SliverPersistentHeader(
-          delegate: searchBox(),
-        ),
+        searchBox(),
         TagSearchResults(
           tagsModel.stores.filter(ngrams),
           tagsModel.userTags.filter(ngrams),
@@ -86,43 +83,44 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  LibraryHeaderDelegate searchBox() {
+  Widget searchBox() {
     final isMobile = AppConfigModel.isMobile(context);
-    return LibraryHeaderDelegate(
-      minHeight: 80.0,
-      maxHeight: isMobile ? 200 : 120,
-      child: Padding(
-        padding: isMobile
-            ? const EdgeInsets.only(top: 72, left: 16, right: 16)
-            : const EdgeInsets.all(16.0),
-        child: SearchTextField(
-          onChanged: (text) {
-            text.toLowerCase().split(' ');
-            setState(() {
-              _text = text;
-            });
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: isMobile ? 200 : 120,
+        child: Padding(
+          padding: isMobile
+              ? const EdgeInsets.only(top: 72, left: 16, right: 16)
+              : const EdgeInsets.all(16.0),
+          child: SearchTextField(
+            onChanged: (text) {
+              text.toLowerCase().split(' ');
+              setState(() {
+                _text = text;
+              });
 
-            _remoteGames.clear();
-            _timer.cancel();
-            _timer = Timer(const Duration(seconds: 1), () async {
-              setState(() {
-                _fetchingRemoteGames = true;
+              _remoteGames.clear();
+              _timer.cancel();
+              _timer = Timer(const Duration(seconds: 1), () async {
+                setState(() {
+                  _fetchingRemoteGames = true;
+                });
+                final remoteGames =
+                    await context.read<GameLibraryModel>().searchByTitle(text);
+                setState(() {
+                  _fetchingRemoteGames = false;
+                  _remoteGames = remoteGames
+                      .where((gameEntry) =>
+                          context
+                              .read<GameEntriesModel>()
+                              .getEntryById(gameEntry.id) ==
+                          null)
+                      .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))
+                      .toList();
+                });
               });
-              final remoteGames =
-                  await context.read<GameLibraryModel>().searchByTitle(text);
-              setState(() {
-                _fetchingRemoteGames = false;
-                _remoteGames = remoteGames
-                    .where((gameEntry) =>
-                        context
-                            .read<GameEntriesModel>()
-                            .getEntryById(gameEntry.id) ==
-                        null)
-                    .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))
-                    .toList();
-              });
-            });
-          },
+            },
+          ),
         ),
       ),
     );
