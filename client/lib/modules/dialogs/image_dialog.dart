@@ -15,16 +15,12 @@ class ImageDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.all(2),
       title: Container(
-        decoration: BoxDecoration(),
-        width: MediaQuery.of(context).size.width,
-        child: Expanded(
-          child: CachedNetworkImage(
-            fit: BoxFit.cover,
-            imageUrl: imageUrl,
-            placeholder: (context, url) => Container(),
-            errorWidget: (context, url, error) =>
-                Center(child: Icon(Icons.error_outline)),
-          ),
+        child: CachedNetworkImage(
+          fit: BoxFit.cover,
+          imageUrl: imageUrl,
+          placeholder: (context, url) => Container(),
+          errorWidget: (context, url, error) =>
+              Center(child: Icon(Icons.error_outline)),
         ),
       ),
     );
