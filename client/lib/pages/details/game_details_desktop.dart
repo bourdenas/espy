@@ -18,12 +18,10 @@ class GameDetailsContentDesktop extends StatelessWidget {
     Key? key,
     required this.libraryEntry,
     required this.gameEntry,
-    required this.childPath,
   }) : super(key: key);
 
   final LibraryEntry libraryEntry;
   final GameEntry gameEntry;
-  final List<String> childPath;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +41,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
           slivers: [
             GameDetailsHeader(gameEntry),
             GameDetailsActionBar(gameEntry, libraryEntry),
-            GameDetailsBody(gameEntry: gameEntry, gameEntryPath: childPath),
+            GameDetailsBody(gameEntry: gameEntry),
           ],
         ),
       ),
@@ -55,11 +53,9 @@ class GameDetailsBody extends StatelessWidget {
   const GameDetailsBody({
     Key? key,
     required this.gameEntry,
-    required this.gameEntryPath,
   }) : super(key: key);
 
   final GameEntry gameEntry;
-  final List<String> gameEntryPath;
 
   @override
   Widget build(BuildContext context) {
@@ -71,43 +67,31 @@ class GameDetailsBody extends StatelessWidget {
           SizedBox(width: 64),
           GameDescription(gameEntry: gameEntry),
           SizedBox(width: 64),
-          relatedGames(
-            gameEntry,
-            ['${gameEntry.id}', ...gameEntryPath],
-          )
+          relatedGames(),
         ],
       ),
     );
   }
 
-  static Widget relatedGames(GameEntry gameEntry, List<String> gameEntryPath) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        if (gameEntry.expansions.isNotEmpty)
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 900),
-            child: RelatedGamesGroup(
-                'Expansions', gameEntry.expansions, gameEntryPath),
-          ),
-        if (gameEntry.dlcs.isNotEmpty)
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 900),
-            child: RelatedGamesGroup('DLCs', gameEntry.dlcs, gameEntryPath),
-          ),
-        if (gameEntry.remasters.isNotEmpty)
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 900),
-            child: RelatedGamesGroup(
-                'Remasters', gameEntry.remasters, gameEntryPath),
-          ),
-        if (gameEntry.remakes.isNotEmpty)
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 900),
-            child:
-                RelatedGamesGroup('Remakes', gameEntry.remakes, gameEntryPath),
-          ),
-      ],
+  Widget relatedGames() {
+    return Expanded(
+      child: SizedBox(
+        height: 1200,
+        child: CustomScrollView(
+          primary: false,
+          shrinkWrap: true,
+          slivers: [
+            if (gameEntry.expansions.isNotEmpty)
+              RelatedGamesGroup('Expansions', gameEntry.expansions),
+            if (gameEntry.dlcs.isNotEmpty)
+              RelatedGamesGroup('DLCs', gameEntry.dlcs),
+            if (gameEntry.remasters.isNotEmpty)
+              RelatedGamesGroup('Remasters', gameEntry.remasters),
+            if (gameEntry.remakes.isNotEmpty)
+              RelatedGamesGroup('Remakes', gameEntry.remakes),
+          ],
+        ),
+      ),
     );
   }
 }

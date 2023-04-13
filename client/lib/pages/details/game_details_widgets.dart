@@ -7,6 +7,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
+import 'package:espy/widgets/tiles/tile_group.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -181,32 +182,18 @@ class GameEntryActionBar extends StatelessWidget {
 }
 
 class RelatedGamesGroup extends StatelessWidget {
-  const RelatedGamesGroup(this.title, this.gameEntries, this.gameEntryPath,
-      {Key? key})
+  const RelatedGamesGroup(this.title, this.gameEntries, {Key? key})
       : super(key: key);
 
   final String title;
   final List<GameEntry> gameEntries;
-  final List<String> gameEntryPath;
 
   @override
   Widget build(BuildContext context) {
-    return TileCarousel(
+    return TileGroup(
       title: title,
-      tiles: gameEntries
-          .map((gameEntry) => TileData(
-                image: gameEntry.cover != null
-                    ? '${Urls.imageProvider}/t_cover_big/${gameEntry.cover!.imageId}.jpg'
-                    : null,
-                title: gameEntry.cover == null ? gameEntry.name : null,
-                onTap: () => context.pushNamed('details', params: {
-                  'gid': [...gameEntryPath, gameEntry.id].join(',')
-                }),
-              ))
-          .toList(),
-      tileSize: AppConfigModel.isMobile(context)
-          ? TileSize(width: 133, height: 190)
-          : TileSize(width: 227, height: 320),
+      entries:
+          gameEntries.map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry)),
     );
   }
 }

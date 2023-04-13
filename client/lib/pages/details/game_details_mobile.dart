@@ -17,12 +17,10 @@ class GameDetailsContentMobile extends StatelessWidget {
     Key? key,
     required this.libraryEntry,
     required this.gameEntry,
-    required this.childPath,
   }) : super(key: key);
 
   final LibraryEntry libraryEntry;
   final GameEntry gameEntry;
-  final List<String> childPath;
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +107,7 @@ class GameDetailsContentMobile extends StatelessWidget {
                   SizedBox(height: 8.0),
                   if (gameEntry.genres.isNotEmpty)
                     Text(
-                      'Genres: ${gameEntry.genres.join(", ")}',
+                      'Genres: ${gameEntry.genres.join(', ')}',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 12.0,
@@ -120,7 +118,7 @@ class GameDetailsContentMobile extends StatelessWidget {
                   SizedBox(height: 4.0),
                   if (gameEntry.keywords.isNotEmpty)
                     Text(
-                      'Keywords: ${gameEntry.keywords.join(", ")}',
+                      'Keywords: ${gameEntry.keywords.join(', ')}',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 12.0,
@@ -133,7 +131,6 @@ class GameDetailsContentMobile extends StatelessWidget {
                     RelatedGamesGroup(
                       'Expansions',
                       gameEntry.expansions,
-                      ['${gameEntry.id}', ...childPath],
                     ),
                     SizedBox(height: 16.0),
                   ],
@@ -141,7 +138,6 @@ class GameDetailsContentMobile extends StatelessWidget {
                     RelatedGamesGroup(
                       'DLCs',
                       gameEntry.dlcs,
-                      ['${gameEntry.id}', ...childPath],
                     ),
                     SizedBox(height: 16.0),
                   ],
@@ -149,7 +145,6 @@ class GameDetailsContentMobile extends StatelessWidget {
                     RelatedGamesGroup(
                       'Remasters',
                       gameEntry.remasters,
-                      ['${gameEntry.id}', ...childPath],
                     ),
                     SizedBox(height: 16.0),
                   ],
@@ -157,11 +152,10 @@ class GameDetailsContentMobile extends StatelessWidget {
                     RelatedGamesGroup(
                       'Remakes',
                       gameEntry.remakes,
-                      ['${gameEntry.id}', ...childPath],
                     ),
                     SizedBox(height: 16.0),
                   ],
-                  screenshots(context, gameEntry),
+                  screenshots(context),
                   SizedBox(height: 8.0),
                 ],
               ),
@@ -172,7 +166,7 @@ class GameDetailsContentMobile extends StatelessWidget {
     );
   }
 
-  static Widget screenshots(BuildContext context, GameEntry gameEntry) {
+  Widget screenshots(BuildContext context) {
     return Column(
       children: [
         Container(
@@ -189,7 +183,7 @@ class GameDetailsContentMobile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Text(
-                  "Screenshots",
+                  'Screenshots',
                   style: Theme.of(context).textTheme.headline6,
                 ),
               ),
