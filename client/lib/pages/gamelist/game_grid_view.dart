@@ -1,7 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/search/search_results.dart';
-import 'package:espy/widgets/tiles/tile_group.dart';
+import 'package:espy/widgets/tiles/tile_shelf.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,7 +35,7 @@ class GameGridView extends StatelessWidget {
           )
         else ...[
           for (final key in keys.reversed)
-            TileGroup(
+            TileShelf(
               title: '$key',
               color: Colors.grey,
               entries: groups[key]!,

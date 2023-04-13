@@ -8,8 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
-class TileGroup extends StatefulWidget {
-  const TileGroup({
+class TileShelf extends StatefulWidget {
+  const TileShelf({
     Key? key,
     required this.title,
     this.color,
@@ -30,11 +30,11 @@ class TileGroup extends StatefulWidget {
   final bool expanded;
 
   @override
-  State<TileGroup> createState() => _TileGroupState(expanded);
+  State<TileShelf> createState() => _TileShelfState(expanded);
 }
 
-class _TileGroupState extends State<TileGroup> {
-  _TileGroupState(this.expanded);
+class _TileShelfState extends State<TileShelf> {
+  _TileShelfState(this.expanded);
 
   bool expanded;
 
