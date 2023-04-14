@@ -39,7 +39,7 @@ pub fn add_entry(
     owned_version: u64,
     game_entry: GameEntry,
 ) -> Result<(), Status> {
-    let library_entry = LibraryEntry::new(game_entry, vec![store_entry], vec![owned_version]);
+    let library_entry = LibraryEntry::new(game_entry, vec![store_entry]);
     let mut library = read(firestore, user_id)?;
     if add(library_entry, &mut library) {
         write(firestore, user_id, &library)?;
@@ -63,7 +63,7 @@ pub fn add_entries(
     let mut library = read(firestore, user_id)?;
 
     for (store_entry, owned_game_id, game_entry) in entries {
-        let library_entry = LibraryEntry::new(game_entry, vec![store_entry], vec![owned_game_id]);
+        let library_entry = LibraryEntry::new(game_entry, vec![store_entry]);
         add(library_entry, &mut library);
     }
     write(firestore, user_id, &library)?;
@@ -121,9 +121,6 @@ fn add(library_entry: LibraryEntry, library: &mut Library) -> bool {
             existing_entry
                 .store_entries
                 .extend(library_entry.store_entries.into_iter());
-            existing_entry
-                .owned_versions
-                .extend(library_entry.owned_versions.into_iter());
         }
         None => library.entries.push(library_entry),
     }
@@ -182,7 +179,6 @@ mod tests {
                 storefront_name: "gog".to_owned(),
                 ..Default::default()
             }],
-            owned_versions: vec![id],
             ..Default::default()
         }
     }
@@ -199,7 +195,6 @@ mod tests {
                     ..Default::default()
                 })
                 .collect(),
-            owned_versions: vec![id],
             ..Default::default()
         }
     }
@@ -221,7 +216,6 @@ mod tests {
         assert!(add(library_entry(7), &mut library));
         assert_eq!(library.entries.len(), 1);
         assert_eq!(library.entries[0].store_entries.len(), 2);
-        assert_eq!(library.entries[0].owned_versions.len(), 2);
     }
 
     #[test]

@@ -46,7 +46,7 @@ fn refresh_library_entries(firestore: &FirestoreApi, user_id: &str) -> Result<()
                 |entry| match library::firestore::games::read(firestore, entry.id) {
                     Ok(game_entry) => {
                         info!("updated '{title}'", title = game_entry.name);
-                        LibraryEntry::new(game_entry, entry.store_entries, entry.owned_versions)
+                        LibraryEntry::new(game_entry, entry.store_entries)
                     }
                     Err(e) => {
                         error!("{e}");
