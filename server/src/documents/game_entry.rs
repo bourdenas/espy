@@ -1,5 +1,6 @@
-use super::SteamData;
 use serde::{Deserialize, Serialize};
+
+use super::{GameDigest, SteamData};
 
 /// Document type under 'users/{user_id}/games' that represents a game entry in
 /// IGDB.
@@ -26,10 +27,6 @@ pub struct GameEntry {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub parent: Option<u64>,
-
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub cover: Option<Image>,
 
     #[serde(default)]
@@ -50,23 +47,31 @@ pub struct GameEntry {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub companies: Vec<Company>,
+    pub developers: Vec<Company>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub expansions: Vec<GameEntry>,
+    pub publishers: Vec<Company>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub dlcs: Vec<GameEntry>,
+    pub expansions: Vec<GameDigest>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<GameDigest>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub remakes: Vec<GameEntry>,
+    pub dlcs: Vec<GameDigest>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub remasters: Vec<GameEntry>,
+    pub remakes: Vec<GameDigest>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub remasters: Vec<GameDigest>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -181,8 +186,14 @@ impl GameEntry {
         if !other.collections.is_empty() {
             self.collections.extend(other.collections);
         }
-        if !other.companies.is_empty() {
-            self.companies.extend(other.companies);
+        if other.parent.is_some() {
+            self.parent = other.parent;
+        }
+        if !other.developers.is_empty() {
+            self.developers.extend(other.developers);
+        }
+        if !other.publishers.is_empty() {
+            self.publishers.extend(other.publishers);
         }
         if !other.expansions.is_empty() {
             self.expansions.extend(other.expansions);
