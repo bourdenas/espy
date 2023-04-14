@@ -21,33 +21,14 @@ impl Reconciler {
     pub async fn recon(
         igdb: &IgdbApi,
         store_entry: &StoreEntry,
-        use_base_game: bool,
     ) -> Result<Option<GameEntry>, Status> {
-        let game_entry = match match_by_external_id(igdb, store_entry).await? {
-            Some(game_entry) => Some(game_entry),
+        match match_by_external_id(igdb, store_entry).await? {
+            Some(game_entry) => Ok(Some(game_entry)),
             None => match match_by_title(igdb, &store_entry.title).await? {
-                Some(game_entry) => Some(game_entry),
-                None => None,
+                Some(game_entry) => Ok(Some(game_entry)),
+                None => Ok(None),
             },
-        };
-
-        match use_base_game {
-            true => base_game(igdb, game_entry).await,
-            false => Ok(game_entry),
         }
-    }
-}
-
-async fn base_game(
-    igdb: &IgdbApi,
-    game_entry: Option<GameEntry>,
-) -> Result<Option<GameEntry>, Status> {
-    match game_entry {
-        Some(game_entry) => match game_entry.parent {
-            Some(id) => igdb.get(id).await,
-            None => Ok(Some(game_entry)),
-        },
-        None => Ok(None),
     }
 }
 

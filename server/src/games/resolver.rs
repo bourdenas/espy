@@ -13,28 +13,6 @@ use super::SteamDataApi;
 pub struct Resolver;
 
 impl Resolver {
-    /// Returns a GameEntry based on its IGDB `game_id`.
-    ///
-    /// It first tries to lookup the GameEntry in Firestore and only attemps to
-    /// resolve it from IGDB if the lookup fails.
-    #[instrument(level = "trace", skip(igdb, steam, firestore))]
-    pub async fn retrieve(
-        game_id: u64,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-        firestore: Arc<Mutex<FirestoreApi>>,
-    ) -> Result<Option<GameEntry>, Status> {
-        match read_from_firestore(Arc::clone(&firestore), game_id) {
-            // NOTE: There is a corner case that if a read is captured on a
-            // GameEntry that is currently incrementally build (by another
-            // request) the LibraryEntry that will be build from the returned
-            // GameEntry can be incomplete. I just ignore the corner-case for
-            // now.
-            Ok(game_entry) => Ok(Some(game_entry)),
-            Err(_) => Self::digest_resolve(game_id, igdb, steam, firestore).await,
-        }
-    }
-
     /// Fully resolve game info using IGDB and Steam using its IGDB `id`.
     ///
     /// This is a blocking call that can take several seconds due to QPS

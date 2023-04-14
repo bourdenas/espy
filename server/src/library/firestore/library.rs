@@ -36,7 +36,6 @@ pub fn add_entry(
     firestore: &FirestoreApi,
     user_id: &str,
     store_entry: StoreEntry,
-    owned_version: u64,
     game_entry: GameEntry,
 ) -> Result<(), Status> {
     let library_entry = LibraryEntry::new(game_entry, vec![store_entry]);
@@ -58,11 +57,11 @@ pub fn add_entry(
 pub fn add_entries(
     firestore: &FirestoreApi,
     user_id: &str,
-    entries: Vec<(StoreEntry, u64, GameEntry)>,
+    entries: Vec<(StoreEntry, GameEntry)>,
 ) -> Result<(), Status> {
     let mut library = read(firestore, user_id)?;
 
-    for (store_entry, owned_game_id, game_entry) in entries {
+    for (store_entry, game_entry) in entries {
         let library_entry = LibraryEntry::new(game_entry, vec![store_entry]);
         add(library_entry, &mut library);
     }

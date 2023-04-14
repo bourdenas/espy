@@ -1,7 +1,7 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
     documents::{GameEntry, LibraryEntry, StoreEntry},
-    games::{ReconReport, Reconciler, Resolver, SteamDataApi},
+    games::{ReconReport, Reconciler},
     Status,
 };
 use std::sync::{Arc, Mutex};
@@ -26,7 +26,7 @@ impl LibraryManager {
     /// Reconciles `store_entries` and adds them in the library.
     #[instrument(
         level = "trace",
-        skip(self, store_entries, igdb, steam),
+        skip(self, store_entries, igdb),
         fields(
             user_id = %self.user_id,
             entries_num = %store_entries.len()
@@ -36,7 +36,6 @@ impl LibraryManager {
         &self,
         store_entries: Vec<StoreEntry>,
         igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
     ) -> Result<ReconReport, Status> {
         let mut resolved_entries = vec![];
         let mut report = ReconReport {
@@ -51,13 +50,13 @@ impl LibraryManager {
         // correctly) and retry them.
         for store_entry in store_entries {
             let igdb = Arc::clone(&igdb);
-            let steam = Arc::clone(&steam);
 
-            match self.match_entry(igdb, steam, store_entry).await {
+            match self.match_entry(igdb, store_entry).await {
                 Ok(result) => resolved_entries.push(result),
                 Err(e) => report.lines.push(e.to_string()),
             }
 
+            // Updates progressively the user Library with resolved entries.
             if resolved_entries.len() == 2 {
                 let upload_entries = resolved_entries;
                 resolved_entries = vec![];
@@ -83,11 +82,11 @@ impl LibraryManager {
     fn upload_entries(
         firestore: Arc<Mutex<FirestoreApi>>,
         user_id: &str,
-        entries: Vec<(StoreEntry, u64, GameEntry)>,
+        entries: Vec<(StoreEntry, GameEntry)>,
     ) -> Result<(), Status> {
         let store_entries = entries
             .iter()
-            .map(|(store_entry, _, _)| store_entry.clone())
+            .map(|(store_entry, _)| store_entry.clone())
             .collect();
 
         // Adds all resolved entries in the library.
@@ -97,21 +96,18 @@ impl LibraryManager {
         firestore::storefront::add_entries(firestore, &user_id, store_entries)
     }
 
-    #[instrument(level = "trace", skip(self, igdb, steam))]
+    #[instrument(level = "trace", skip(self, igdb))]
     async fn match_entry(
         &self,
         igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
         store_entry: StoreEntry,
-    ) -> Result<(StoreEntry, u64, GameEntry), Status> {
-        let game_entry = Reconciler::recon(&igdb, &store_entry, false).await?;
+    ) -> Result<(StoreEntry, GameEntry), Status> {
+        let game_entry = Reconciler::recon(&igdb, &store_entry).await?;
 
         match game_entry {
             Some(game_entry) => {
-                let (owned_game_id, game_entry) = self
-                    .retrieve_game_info(game_entry, igdb, steam, MatchType::BaseGame)
-                    .await?;
-                Ok((store_entry, owned_game_id, game_entry))
+                let game_entry = self.get_game_entry(game_entry.id).await?;
+                Ok((store_entry, game_entry))
             }
             None => {
                 let firestore = &self.firestore.lock().unwrap();
@@ -122,41 +118,9 @@ impl LibraryManager {
         }
     }
 
-    /// Retrieves full info for a partial GameEntry. Returns an tuple with the
-    /// updated GameEntry and game_id of the originally owned game. The
-    /// GameEntry might be different from owned_game_id based on the
-    /// `match_type` requested, e.g. match with base game.
-    #[instrument(
-        level = "trace",
-        skip(self,  game_entry, igdb, steam)
-        fields(
-            game = %game_entry.name
-        ),
-    )]
-    pub async fn retrieve_game_info(
-        &self,
-        game_entry: GameEntry,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-        match_type: MatchType,
-    ) -> Result<(u64, GameEntry), Status> {
-        let owned_game_id = game_entry.id;
-        let game_id = match (match_type, game_entry.parent) {
-            (MatchType::BaseGame, Some(parent_id)) => parent_id,
-            _ => game_entry.id,
-        };
-
-        let game_entry =
-            match Resolver::retrieve(game_id, igdb, steam, Arc::clone(&self.firestore)).await? {
-                Some(game_entry) => game_entry,
-                None => {
-                    return Err(Status::not_found(format!(
-                        "Could not find game with id={game_id}"
-                    )))
-                }
-            };
-
-        Ok((owned_game_id, game_entry))
+    #[instrument(level = "trace", skip(self))]
+    pub async fn get_game_entry(&self, game_id: u64) -> Result<GameEntry, Status> {
+        firestore::games::read(&self.firestore.lock().unwrap(), game_id)
     }
 
     #[instrument(
@@ -171,18 +135,11 @@ impl LibraryManager {
         &self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
-        owned_game_id: u64,
     ) -> Result<(), Status> {
         let firestore = &self.firestore.lock().unwrap();
         firestore::failed::remove_entry(firestore, &self.user_id, &store_entry)?;
         firestore::wishlist::remove_entry(firestore, &self.user_id, game_entry.id)?;
-        firestore::library::add_entry(
-            firestore,
-            &self.user_id,
-            store_entry,
-            owned_game_id,
-            game_entry,
-        )
+        firestore::library::add_entry(firestore, &self.user_id, store_entry, game_entry)
     }
 
     /// Unmatch a `StoreEntry` from user's library. The StoreEntry is not
@@ -202,43 +159,30 @@ impl LibraryManager {
         }
     }
 
-    #[instrument(level = "trace", skip(self, igdb, steam))]
+    #[instrument(
+        level = "trace",
+        skip(self, store_entry, game_entry)
+        fields(
+            store_game = %store_entry.title,
+            matched_game = %game_entry.name
+        ),
+    )]
     pub async fn rematch_game(
         &self,
         store_entry: StoreEntry,
         game_entry: GameEntry,
         existing_library_entry: &LibraryEntry,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-        match_type: MatchType,
     ) -> Result<(), Status> {
-        let game_entry =
-            match Resolver::retrieve(game_entry.id, igdb, steam, Arc::clone(&self.firestore))
-                .await?
-            {
-                Some(game_entry) => game_entry,
-                None => {
-                    return Err(Status::not_found(format!(
-                        "Could not find game with id={}",
-                        game_entry.id
-                    )))
-                }
-            };
-
         let firestore = &self.firestore.lock().unwrap();
+
+        let game_entry = firestore::games::read(firestore, game_entry.id)?;
         firestore::library::remove_entry(
             firestore,
             &self.user_id,
             &store_entry,
             existing_library_entry,
         )?;
-        firestore::library::add_entry(
-            firestore,
-            &self.user_id,
-            store_entry,
-            game_entry.id, // TODO: This is probably incorrect.
-            game_entry,
-        )
+        firestore::library::add_entry(firestore, &self.user_id, store_entry, game_entry)
     }
 
     #[instrument(level = "trace", skip(self))]
@@ -264,10 +208,4 @@ impl LibraryManager {
         firestore::failed::remove_storefront(firestore, &self.user_id, storefront_id)?;
         firestore::storefront::delete(firestore, &self.user_id, storefront_id)
     }
-}
-
-#[derive(Debug)]
-pub enum MatchType {
-    Exact,
-    BaseGame,
 }
