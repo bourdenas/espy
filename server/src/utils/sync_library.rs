@@ -48,8 +48,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let store_entries = user.sync_accounts(&keys).await?;
 
     let manager = library::LibraryManager::new(&opts.user, firestore);
-    manager
-        .recon_store_entries(store_entries, igdb, Arc::new(games::SteamDataApi::new()))
-        .await?;
+    manager.recon_store_entries(store_entries, igdb).await?;
     Ok(())
 }

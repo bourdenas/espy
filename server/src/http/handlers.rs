@@ -1,8 +1,7 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
-    games::{Resolver, SteamDataApi},
     http::models,
-    library::{LibraryManager, MatchType, User},
+    library::{LibraryManager, User},
     util, Status,
 };
 use std::{
@@ -10,7 +9,7 @@ use std::{
     sync::{Arc, Mutex},
     time::SystemTime,
 };
-use tracing::{debug, error, info, instrument, warn};
+use tracing::{debug, error, instrument, warn};
 use warp::http::StatusCode;
 
 pub async fn welcome() -> Result<impl warp::Reply, Infallible> {
@@ -42,27 +41,9 @@ pub async fn post_search(
     resp
 }
 
-#[instrument(level = "trace", skip(firestore, igdb, steam))]
-pub async fn post_resolve(
-    resolve: models::Resolve,
-    firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
-) -> Result<impl warp::Reply, Infallible> {
-    info!("POST /resolve");
-
-    match Resolver::schedule_resolve(resolve.game_id, igdb, steam, firestore).await {
-        Ok(_) => Ok(StatusCode::OK),
-        Err(e) => {
-            error!("POST resolve: {e}");
-            Ok(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
-}
-
 #[instrument(
     level = "trace",
-    skip(match_op, firestore, igdb, steam),
+    skip(match_op, firestore),
     fields(
         title = %match_op.store_entry.title,
     )
@@ -71,46 +52,29 @@ pub async fn post_match(
     user_id: String,
     match_op: models::MatchOp,
     firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
 ) -> Result<impl warp::Reply, Infallible> {
     debug!("POST /library/{user_id}/match");
 
     let manager = LibraryManager::new(&user_id, firestore);
 
     match (match_op.game_entry, match_op.unmatch_entry) {
-        (Some(game_entry), None) => {
-            match manager
-                .retrieve_game_info(
-                    game_entry,
-                    igdb,
-                    steam,
-                    match match_op.exact_match {
-                        true => MatchType::Exact,
-                        false => MatchType::BaseGame,
-                    },
-                )
-                .await
-            {
-                Ok((owned_game_id, game_entry)) => {
-                    match manager.create_library_entry(
-                        match_op.store_entry,
-                        game_entry,
-                        owned_game_id,
-                    ) {
-                        Ok(()) => Ok(StatusCode::OK),
-                        Err(err) => {
-                            error!("{err}");
-                            Ok(StatusCode::INTERNAL_SERVER_ERROR)
-                        }
+        // Match StoreEntry to GameEntry and add in Library.
+        (Some(game_entry), None) => match manager.get_game_entry(game_entry.id).await {
+            Ok(game_entry) => {
+                match manager.create_library_entry(match_op.store_entry, game_entry) {
+                    Ok(()) => Ok(StatusCode::OK),
+                    Err(err) => {
+                        error!("{err}");
+                        Ok(StatusCode::INTERNAL_SERVER_ERROR)
                     }
                 }
-                Err(err) => {
-                    error!("{err}");
-                    Ok(StatusCode::INTERNAL_SERVER_ERROR)
-                }
             }
-        }
+            Err(err) => {
+                error!("{err}");
+                Ok(StatusCode::NOT_FOUND)
+            }
+        },
+        // Remove StoreEntry from Library.
         (None, Some(library_entry)) => {
             match manager
                 .unmatch_game(
@@ -127,19 +91,10 @@ pub async fn post_match(
                 }
             }
         }
+        // Match StoreEntry with a different GameEntry.
         (Some(game_entry), Some(library_entry)) => {
             match manager
-                .rematch_game(
-                    match_op.store_entry,
-                    game_entry,
-                    &library_entry,
-                    igdb,
-                    steam,
-                    match match_op.exact_match {
-                        true => MatchType::Exact,
-                        false => MatchType::BaseGame,
-                    },
-                )
+                .rematch_game(match_op.store_entry, game_entry, &library_entry)
                 .await
             {
                 Ok(()) => Ok(StatusCode::OK),
@@ -149,6 +104,7 @@ pub async fn post_match(
                 }
             }
         }
+        // Unexpected request.
         (None, None) => Ok(StatusCode::BAD_REQUEST),
     }
 }
@@ -224,13 +180,12 @@ pub async fn post_unlink(
     Ok(StatusCode::OK)
 }
 
-#[instrument(level = "trace", skip(api_keys, firestore, igdb, steam))]
+#[instrument(level = "trace", skip(api_keys, firestore, igdb))]
 pub async fn post_sync(
     user_id: String,
     api_keys: Arc<util::keys::Keys>,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
     debug!("POST /library/{user_id}/sync");
     let started = SystemTime::now();
@@ -244,10 +199,7 @@ pub async fn post_sync(
     };
 
     let manager = LibraryManager::new(&user_id, firestore);
-    let report = match manager
-        .recon_store_entries(store_entries, igdb, steam)
-        .await
-    {
+    let report = match manager.recon_store_entries(store_entries, igdb).await {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };
@@ -259,22 +211,18 @@ pub async fn post_sync(
     Ok(resp)
 }
 
-#[instrument(level = "trace", skip(upload, firestore, igdb, steam))]
+#[instrument(level = "trace", skip(upload, firestore, igdb))]
 pub async fn post_upload(
     user_id: String,
     upload: models::Upload,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
 ) -> Result<Box<dyn warp::Reply>, Infallible> {
     debug!("POST /library/{user_id}/upload");
     let started = SystemTime::now();
 
     let manager = LibraryManager::new(&user_id, firestore);
-    let report = match manager
-        .recon_store_entries(upload.entries, igdb, steam)
-        .await
-    {
+    let report = match manager.recon_store_entries(upload.entries, igdb).await {
         Ok(report) => report,
         Err(err) => return Ok(log_err(err)),
     };

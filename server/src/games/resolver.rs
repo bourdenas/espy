@@ -125,8 +125,3 @@ impl Resolver {
         Ok(Some(game_entry_digest))
     }
 }
-
-/// NOTE: This function is needed to contain the lock scope.
-fn read_from_firestore(firestore: Arc<Mutex<FirestoreApi>>, id: u64) -> Result<GameEntry, Status> {
-    firestore::games::read(&firestore.lock().unwrap(), id)
-}
