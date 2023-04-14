@@ -32,8 +32,8 @@ impl LibraryEntry {
     pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>) -> Self {
         LibraryEntry {
             id: game.id,
+            parent_digest: game.parent.clone(),
             digest: GameDigest::new(game),
-            parent_digest: game.parent,
             store_entries,
 
             added_date: Some(
