@@ -1,7 +1,7 @@
 use crate::{
     documents::{
-        Collection, CollectionType, Company, CompanyRole, GameEntry, Image, StoreEntry, Website,
-        WebsiteAuthority,
+        Collection, CollectionType, Company, CompanyRole, GameDigest, GameEntry, Image, StoreEntry,
+        Website, WebsiteAuthority,
     },
     util::rate_limiter::RateLimiter,
     Status,
@@ -9,7 +9,7 @@ use crate::{
 use async_recursion::async_recursion;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{sync::Arc, time::Duration};
-use tokio::{sync::mpsc, task::JoinHandle};
+use tokio::sync::mpsc;
 use tracing::{error, instrument, trace_span, Instrument};
 
 use super::{
@@ -143,36 +143,13 @@ impl IgdbApi {
 
         match result.into_iter().next() {
             Some(igdb_game) => {
-                // Keep only fields few needed fields.
-                let igdb_game = IgdbGame {
-                    id: igdb_game.id,
-                    name: igdb_game.name,
-                    url: igdb_game.url,
-                    summary: igdb_game.summary,
-                    storyline: igdb_game.storyline,
-                    first_release_date: igdb_game.first_release_date,
-                    total_rating: igdb_game.total_rating,
-                    parent_game: igdb_game.parent_game,
-                    version_parent: igdb_game.version_parent,
-                    cover: igdb_game.cover,
-                    ..Default::default()
+                let cover = match igdb_game.cover {
+                    Some(cover_id) => get_cover(&igdb_state, cover_id).await?,
+                    None => None,
                 };
-                let mut game_entry = GameEntry::from(igdb_game.clone());
 
-                let (tx, mut rx) = mpsc::channel(32);
-                tokio::spawn(
-                    async move {
-                        if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
-                            error!("Failed to retrieve info: {e}");
-                        }
-                    }
-                    .instrument(trace_span!("spawn_retrieve_game_info")),
-                );
-
-                while let Some(fragment) = rx.recv().await {
-                    game_entry.merge(fragment);
-                }
-
+                let mut game_entry = GameEntry::from(igdb_game);
+                game_entry.cover = cover;
                 Ok(Some(game_entry))
             }
             None => Ok(None),
@@ -184,7 +161,7 @@ impl IgdbApi {
     /// The returned GameEntry contains enough data to build a `GameDigest`.
     /// Only some reference ids are followed up.
     #[instrument(level = "trace", skip(self))]
-    pub async fn get_with_digest(&self, id: u64) -> Result<Option<GameEntry>, Status> {
+    pub async fn get_digest(&self, id: u64) -> Result<Option<GameEntry>, Status> {
         let igdb_state = self.igdb_state()?;
 
         let result: Vec<igdb_docs::IgdbGame> = post(
@@ -273,7 +250,7 @@ impl IgdbApi {
             handles.push(tokio::spawn(
                 async move {
                     let cover = match game.cover {
-                        Some(id) => match get_cover(igdb_state, id).await {
+                        Some(id) => match get_cover(&igdb_state, id).await {
                             Ok(cover) => cover,
                             Err(e) => {
                                 error!("Failed to retrieve cover: {e}");
@@ -313,8 +290,9 @@ impl IgdbApi {
         .await
     }
 
-    /// Returns a shallow GameEntry from IGDB matching `id` and sends GameEntry
-    /// fragment updates through `tx` as it incrementally resolves it.
+    /// Returns a shallow GameEntry from IGDB matching `id` and sends full
+    /// GameEntries on `tx`. Multiple GameEntries might be sent over `tx` as it
+    /// resolves children GameEntries of the base, e.g. expansions, remakes, etc.
     ///
     /// Spawns tasks internally that will continue operating after the function
     /// returns.
@@ -325,14 +303,15 @@ impl IgdbApi {
         tx: mpsc::Sender<GameEntry>,
     ) -> Result<Option<GameEntry>, Status> {
         let igdb_state = self.igdb_state()?;
-        resolve_game(igdb_state, id, tx).await
+        resolve_incremental(igdb_state, id, tx).await
     }
 }
 
-/// Returns a shallow GameEntry from IGDB matching `id` and sends GameEntry
-/// fragment updates through `tx` as it incrementally resolves it.
+/// Returns a shallow GameEntry from IGDB matching `id` and sends full
+/// GameEntries on `tx`. Multiple GameEntries might be sent over `tx` as it
+/// resolves children GameEntries of the base, e.g. expansions, remakes, etc.
 #[instrument(level = "trace", skip(igdb_state, tx))]
-async fn resolve_game(
+async fn resolve_incremental(
     igdb_state: Arc<IgdbApiState>,
     id: u64,
     tx: mpsc::Sender<GameEntry>,
@@ -346,7 +325,14 @@ async fn resolve_game(
 
     match result.into_iter().next() {
         Some(igdb_game) => {
-            let game = Some(GameEntry::from(&igdb_game));
+            let cover = match igdb_game.cover {
+                Some(cover_id) => get_cover(&igdb_state, cover_id).await?,
+                None => None,
+            };
+
+            let mut game_entry = GameEntry::from(&igdb_game);
+            game_entry.cover = cover;
+
             tokio::spawn(
                 async move {
                     if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
@@ -355,24 +341,43 @@ async fn resolve_game(
                 }
                 .instrument(trace_span!("spawn_retrieve_game_info")),
             );
-            Ok(game)
+            Ok(Some(game_entry))
         }
         None => Ok(None),
     }
 }
 
+// #[async_recursion]
 #[instrument(level = "trace", skip(igdb_state))]
-async fn resolve_child_game(
+async fn resolve_blocking(
     igdb_state: Arc<IgdbApiState>,
     game_id: u64,
 ) -> Result<Option<GameEntry>, Status> {
-    let (tx, mut rx) = mpsc::channel(32);
-    match resolve_game(igdb_state, game_id, tx).await? {
-        Some(mut expansion) => {
-            while let Some(fragment) = rx.recv().await {
-                expansion.merge(fragment);
+    let result: Vec<igdb_docs::IgdbGame> = post(
+        &igdb_state,
+        GAMES_ENDPOINT,
+        &format!("fields *; where id={game_id};"),
+    )
+    .await?;
+
+    match result.into_iter().next() {
+        Some(igdb_game) => {
+            let (tx, mut rx) = mpsc::channel(32);
+
+            tokio::spawn(
+                async move {
+                    if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
+                        error!("Failed to retrieve info: {e}");
+                    }
+                }
+                .instrument(trace_span!("spawn_retrieve_game_info")),
+            );
+
+            while let Some(game_entry) = rx.recv().await {
+                return Ok(Some(game_entry));
             }
-            Ok(Some(expansion))
+
+            Ok(None)
         }
         None => Ok(None),
     }
@@ -398,236 +403,126 @@ async fn retrieve_game_info(
     igdb_game: igdb_docs::IgdbGame,
     tx: mpsc::Sender<GameEntry>,
 ) -> Result<(), Status> {
-    let mut handles: Vec<JoinHandle<Result<(), Status>>> = vec![];
+    let mut game_entry = GameEntry::from(&igdb_game);
+
     if let Some(cover) = igdb_game.cover {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                tx.send(GameEntry {
-                    cover: get_cover(igdb_state, cover).await?,
-                    ..Default::default()
-                })
-                .await?;
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_cover")),
-        ));
-    }
-    if !igdb_game.genres.is_empty() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                let genres = get_genres(&igdb_state, &igdb_game.genres).await?;
-                if !genres.is_empty() {
-                    tx.send(GameEntry {
-                        genres,
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_genres")),
-        ));
-    }
-    if !igdb_game.keywords.is_empty() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                let keywords = get_keywords(&igdb_state, &igdb_game.keywords).await?;
-                if !keywords.is_empty() {
-                    tx.send(GameEntry {
-                        keywords,
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_keywords")),
-        ));
-    }
-    if let Some(collection) = igdb_game.collection {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                if let Some(collection) = get_collection(&igdb_state, collection).await? {
-                    tx.send(GameEntry {
-                        collections: vec![collection],
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_collection")),
-        ));
-    }
-    if !igdb_game.franchises.is_empty() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                let collections = get_franchises(&igdb_state, &igdb_game.franchises).await?;
-                if !collections.is_empty() {
-                    tx.send(GameEntry {
-                        collections,
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_franchises")),
-        ));
-    }
-    if !igdb_game.involved_companies.is_empty() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                let companies = get_companies(&igdb_state, &igdb_game.involved_companies).await?;
-                if !companies.is_empty() {
-                    tx.send(GameEntry {
-                        companies,
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_companies")),
-        ));
-    }
-    if !igdb_game.screenshots.is_empty() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                let screenshots = get_screenshots(&igdb_state, &igdb_game.screenshots).await?;
-                if !screenshots.is_empty() {
-                    tx.send(GameEntry {
-                        screenshots,
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_screenshots")),
-        ));
-    }
-    if !igdb_game.artworks.is_empty() {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                let artwork = get_artwork(&igdb_state, &igdb_game.artworks).await?;
-                if !artwork.is_empty() {
-                    tx.send(GameEntry {
-                        artwork,
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_artwork")),
-        ));
-    }
-    if igdb_game.websites.len() > 0 {
-        let igdb_state = Arc::clone(&igdb_state);
-        let tx = tx.clone();
-        handles.push(tokio::spawn(
-            async move {
-                let websites = get_websites(&igdb_state, &igdb_game.websites).await?;
-                if !websites.is_empty() {
-                    tx.send(GameEntry {
-                        websites: websites
-                            .into_iter()
-                            .map(|website| Website {
-                                url: website.url,
-                                authority: match website.category {
-                                    1 => WebsiteAuthority::Official,
-                                    3 => WebsiteAuthority::Wikipedia,
-                                    9 => WebsiteAuthority::Youtube,
-                                    13 => WebsiteAuthority::Steam,
-                                    16 => WebsiteAuthority::Egs,
-                                    17 => WebsiteAuthority::Gog,
-                                    _ => WebsiteAuthority::Null,
-                                },
-                            })
-                            .collect(),
-                        ..Default::default()
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            .instrument(trace_span!("spawn_get_websites")),
-        ));
+        game_entry.cover = get_cover(&igdb_state, cover).await?;
     }
 
-    for result in futures::future::join_all(handles).await {
-        match result {
-            Ok(result) => {
-                if let Err(e) = result {
-                    return Err(e);
-                }
-            }
-            Err(e) => return Err(Status::Internal(format!("{}", e))),
+    if !igdb_game.genres.is_empty() {
+        game_entry.genres = get_genres(&igdb_state, &igdb_game.genres).await?;
+    }
+    if !igdb_game.keywords.is_empty() {
+        game_entry.keywords = get_keywords(&igdb_state, &igdb_game.keywords).await?;
+    }
+
+    if let Some(collection) = igdb_game.collection {
+        if let Some(collection) = get_collection(&igdb_state, collection).await? {
+            game_entry.collections = vec![collection];
+        }
+    }
+    if !igdb_game.franchises.is_empty() {
+        game_entry
+            .collections
+            .extend(get_franchises(&igdb_state, &igdb_game.franchises).await?);
+    }
+
+    if !igdb_game.involved_companies.is_empty() {
+        let companies = get_companies(&igdb_state, &igdb_game.involved_companies).await?;
+        game_entry.developers = companies
+            .iter()
+            .filter(|company| match company.role {
+                CompanyRole::Developer => true,
+                _ => false,
+            })
+            // NOTE: drain_filter() would prevent the cloning.
+            .map(|company| company.clone())
+            .collect();
+        game_entry.publishers = companies
+            .into_iter()
+            .filter(|company| match company.role {
+                CompanyRole::Publisher => true,
+                _ => false,
+            })
+            .collect();
+    }
+
+    if !igdb_game.screenshots.is_empty() {
+        game_entry.screenshots = get_screenshots(&igdb_state, &igdb_game.screenshots).await?;
+    }
+    if !igdb_game.artworks.is_empty() {
+        game_entry.artwork = get_artwork(&igdb_state, &igdb_game.artworks).await?;
+    }
+    if igdb_game.websites.len() > 0 {
+        game_entry.websites = get_websites(&igdb_state, &igdb_game.websites)
+            .await?
+            .into_iter()
+            .map(|website| Website {
+                url: website.url,
+                authority: match website.category {
+                    1 => WebsiteAuthority::Official,
+                    3 => WebsiteAuthority::Wikipedia,
+                    9 => WebsiteAuthority::Youtube,
+                    13 => WebsiteAuthority::Steam,
+                    16 => WebsiteAuthority::Egs,
+                    17 => WebsiteAuthority::Gog,
+                    _ => WebsiteAuthority::Null,
+                },
+            })
+            .collect();
+    }
+
+    let parent_id = match igdb_game.parent_game {
+        Some(parent) => Some(parent),
+        None => match igdb_game.version_parent {
+            Some(parent) => Some(parent),
+            None => None,
+        },
+    };
+
+    if let Some(parent_id) = parent_id {
+        if let Some(parent) = resolve_blocking(Arc::clone(&igdb_state), parent_id).await? {
+            game_entry.parent = Some(GameDigest::new(parent.clone()));
         }
     }
 
     for expansion in igdb_game.expansions.into_iter() {
-        if let Some(expansion) = resolve_child_game(Arc::clone(&igdb_state), expansion).await? {
-            tx.send(GameEntry {
-                expansions: vec![expansion],
-                ..Default::default()
-            })
-            .await?;
+        if let Some(expansion) = resolve_blocking(Arc::clone(&igdb_state), expansion).await? {
+            game_entry
+                .expansions
+                .push(GameDigest::new(expansion.clone()));
+            tx.send(expansion).await?;
         }
     }
     for dlc in igdb_game.dlcs.into_iter() {
-        if let Some(dlc) = resolve_child_game(Arc::clone(&igdb_state), dlc).await? {
-            tx.send(GameEntry {
-                dlcs: vec![dlc],
-                ..Default::default()
-            })
-            .await?;
+        if let Some(dlc) = resolve_blocking(Arc::clone(&igdb_state), dlc).await? {
+            game_entry.dlcs.push(GameDigest::new(dlc.clone()));
+            tx.send(dlc).await?;
         }
     }
     for remake in igdb_game.remakes.into_iter() {
-        if let Some(remake) = resolve_child_game(Arc::clone(&igdb_state), remake).await? {
-            tx.send(GameEntry {
-                remakes: vec![remake],
-                ..Default::default()
-            })
-            .await?;
+        if let Some(remake) = resolve_blocking(Arc::clone(&igdb_state), remake).await? {
+            game_entry.remakes.push(GameDigest::new(remake.clone()));
+            tx.send(remake).await?;
         }
     }
     for remaster in igdb_game.remasters.into_iter() {
-        if let Some(remaster) = resolve_child_game(Arc::clone(&igdb_state), remaster).await? {
-            tx.send(GameEntry {
-                remasters: vec![remaster],
-                ..Default::default()
-            })
-            .await?;
+        if let Some(remaster) = resolve_blocking(Arc::clone(&igdb_state), remaster).await? {
+            game_entry.remasters.push(GameDigest::new(remaster.clone()));
+            tx.send(remaster).await?;
         }
     }
+
+    tx.send(game_entry).await?;
 
     Ok(())
 }
 
 /// Returns game image cover based on id from the igdb/covers endpoint.
 #[instrument(level = "trace", skip(igdb_state))]
-async fn get_cover(igdb_state: Arc<IgdbApiState>, id: u64) -> Result<Option<Image>, Status> {
+async fn get_cover(igdb_state: &IgdbApiState, id: u64) -> Result<Option<Image>, Status> {
     let result: Vec<Image> = post(
-        &igdb_state,
+        igdb_state,
         COVERS_ENDPOINT,
         &format!("fields *; where id={id};"),
     )
@@ -905,14 +800,6 @@ impl From<igdb_docs::IgdbGame> for GameEntry {
             storyline: igdb_game.storyline,
             release_date: igdb_game.first_release_date,
 
-            parent: match igdb_game.parent_game {
-                Some(parent) => Some(parent),
-                None => match igdb_game.version_parent {
-                    Some(parent) => Some(parent),
-                    None => None,
-                },
-            },
-
             websites: vec![Website {
                 url: igdb_game.url,
                 authority: WebsiteAuthority::Igdb,
@@ -932,14 +819,6 @@ impl From<&igdb_docs::IgdbGame> for GameEntry {
             storyline: igdb_game.storyline.clone(),
             release_date: igdb_game.first_release_date,
             igdb_rating: igdb_game.total_rating,
-
-            parent: match igdb_game.parent_game {
-                Some(parent) => Some(parent),
-                None => match igdb_game.version_parent {
-                    Some(parent) => Some(parent),
-                    None => None,
-                },
-            },
 
             websites: vec![Website {
                 url: igdb_game.url.clone(),

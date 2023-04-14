@@ -2,13 +2,9 @@ use crate::{
     api::{FirestoreApi, IgdbApi},
     documents::GameEntry,
     library::firestore,
-    util::rate_limiter::RateLimiter,
     Status,
 };
-use std::{
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
 use tracing::{error, instrument, trace_span, Instrument};
 
@@ -54,17 +50,20 @@ impl Resolver {
         let (tx, mut rx) = mpsc::channel(32);
 
         match igdb.resolve(game_id, tx).await? {
-            Some(mut game_entry) => {
-                while let Some(fragment) = rx.recv().await {
-                    game_entry.merge(fragment);
+            Some(_shallow_game_entry) => {
+                let mut requested_game_entry = None;
+                while let Some(mut game_entry) = rx.recv().await {
+                    if let Err(e) = steam.retrieve_steam_data(&mut game_entry).await {
+                        error!("Failed to retrieve SteamData for '{}' {e}", game_entry.name);
+                    }
+
+                    firestore::games::write(&firestore.lock().unwrap(), &game_entry)?;
+                    requested_game_entry = Some(game_entry);
                 }
 
-                if let Err(e) = steam.retrieve_steam_data(&mut game_entry).await {
-                    error!("Failed to retrieve SteamData for '{}' {e}", game_entry.name);
-                }
-
-                firestore::games::write(&firestore.lock().unwrap(), &game_entry)?;
-                Ok(Some(game_entry))
+                // This is based on knowing that the last game_entry returned is
+                // the one requested by game_id.
+                Ok(requested_game_entry)
             }
             None => Ok(None),
         }
@@ -73,11 +72,9 @@ impl Resolver {
     /// Schedules resolving of game info and returns a shallow copy of
     /// `GameEntry`.
     ///
-    /// Returns immediately a shallow copy of `GameEntry` that consists of a
-    /// single IGDB lookup. It spawns an async task to fully resolve the
-    /// `GameEntry` and updates its Firestore entry. Updates to Firestore happen
-    /// incrementally as new data is retrieved. Firestore updates are restricted
-    /// to 1 per second, as the suggestion from the service.
+    /// Returns immediately a shallow copy of `GameEntry` that consists of two
+    /// IGDB lookup. It spawns an async task to fully resolve the `GameEntry`
+    /// and updates its Firestore entry.
     #[instrument(level = "trace", skip(igdb, steam, firestore))]
     pub async fn schedule_resolve(
         game_id: u64,
@@ -91,31 +88,23 @@ impl Resolver {
             None => return Ok(None),
         };
 
-        let mut game_entry = shallow_game_entry.clone();
+        let game_entry = shallow_game_entry.clone();
         tokio::spawn(
             async move {
-                // Limit Firestore firestore writes on the same document to 1 qps.
-                let rate_limiter = RateLimiter::new(1, Duration::from_secs(1), 1);
-                if let Err(e) = update_firestore(firestore.clone(), &game_entry, &rate_limiter) {
+                if let Err(e) = firestore::games::write(&firestore.lock().unwrap(), &game_entry) {
                     error!("{e}");
                 };
 
-                while let Some(fragment) = rx.recv().await {
-                    game_entry.merge(fragment);
-                    if rate_limiter.try_wait() == Duration::from_micros(0) {
-                        let firestore = &firestore.lock().unwrap();
-                        if let Err(e) = firestore::games::write(firestore, &game_entry) {
-                            error!("{e}");
-                        }
+                while let Some(mut game_entry) = rx.recv().await {
+                    if let Err(e) = steam.retrieve_steam_data(&mut game_entry).await {
+                        error!("Failed to retrieve SteamData for '{}' {e}", game_entry.name);
+                    }
+
+                    if let Err(e) = firestore::games::write(&firestore.lock().unwrap(), &game_entry)
+                    {
+                        error!("{e}");
                     }
                 }
-
-                if let Err(e) = steam.retrieve_steam_data(&mut game_entry).await {
-                    error!("Failed to retrieve SteamData for '{}' {e}", game_entry.name);
-                }
-                if let Err(e) = update_firestore(firestore.clone(), &game_entry, &rate_limiter) {
-                    error!("{e}");
-                };
             }
             .instrument(trace_span!("spawn_schedule_resolve")),
         );
@@ -136,7 +125,7 @@ impl Resolver {
         steam: Arc<SteamDataApi>,
         firestore: Arc<Mutex<FirestoreApi>>,
     ) -> Result<Option<GameEntry>, Status> {
-        let game_entry_digest = match igdb.get_with_digest(game_id).await? {
+        let game_entry_digest = match igdb.get_digest(game_id).await? {
             Some(game) => game,
             None => return Ok(None),
         };
@@ -157,17 +146,6 @@ impl Resolver {
 
         Ok(Some(game_entry_digest))
     }
-}
-
-#[instrument(level = "trace", skip(firestore, rate_limiter))]
-fn update_firestore(
-    firestore: Arc<Mutex<FirestoreApi>>,
-    game_entry: &GameEntry,
-    rate_limiter: &RateLimiter,
-) -> Result<(), Status> {
-    rate_limiter.wait();
-    firestore::games::write(&firestore.lock().unwrap(), &game_entry)?;
-    Ok(())
 }
 
 /// NOTE: This function is needed to contain the lock scope.
