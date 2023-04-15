@@ -1,7 +1,7 @@
 use crate::{
     documents::{
-        Collection, CollectionType, Company, CompanyRole, GameDigest, GameEntry, Image, StoreEntry,
-        Website, WebsiteAuthority,
+        Collection, CollectionType, Company, CompanyRole, GameCategory, GameDigest, GameEntry,
+        Image, StoreEntry, Website, WebsiteAuthority,
     },
     util::rate_limiter::RateLimiter,
     Status,
@@ -799,6 +799,18 @@ impl From<igdb_docs::IgdbGame> for GameEntry {
             summary: igdb_game.summary,
             storyline: igdb_game.storyline,
             release_date: igdb_game.first_release_date,
+            igdb_rating: igdb_game.total_rating,
+            category: match igdb_game.category {
+                0 => GameCategory::Main,
+                1 => GameCategory::Dlc,
+                2 => GameCategory::Expansion,
+                4 => GameCategory::StandaloneExpansion,
+                6 => GameCategory::Episode,
+                7 => GameCategory::Season,
+                8 => GameCategory::Remake,
+                9 => GameCategory::Remaster,
+                _ => GameCategory::Ignore,
+            },
 
             websites: vec![Website {
                 url: igdb_game.url,
@@ -819,6 +831,17 @@ impl From<&igdb_docs::IgdbGame> for GameEntry {
             storyline: igdb_game.storyline.clone(),
             release_date: igdb_game.first_release_date,
             igdb_rating: igdb_game.total_rating,
+            category: match igdb_game.category {
+                0 => GameCategory::Main,
+                1 => GameCategory::Dlc,
+                2 => GameCategory::Expansion,
+                4 => GameCategory::StandaloneExpansion,
+                6 => GameCategory::Episode,
+                7 => GameCategory::Season,
+                8 => GameCategory::Remake,
+                9 => GameCategory::Remaster,
+                _ => GameCategory::Ignore,
+            },
 
             websites: vec![Website {
                 url: igdb_game.url.clone(),

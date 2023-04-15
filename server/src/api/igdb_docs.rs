@@ -20,6 +20,9 @@ pub struct IgdbGame {
     pub total_rating: Option<f64>,
 
     #[serde(default)]
+    pub category: u64,
+
+    #[serde(default)]
     pub genres: Vec<u64>,
 
     #[serde(default)]

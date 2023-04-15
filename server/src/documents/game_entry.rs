@@ -26,6 +26,9 @@ pub struct GameEntry {
     pub igdb_rating: Option<f64>,
 
     #[serde(default)]
+    pub category: GameCategory,
+
+    #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cover: Option<Image>,
 
@@ -84,6 +87,26 @@ pub struct GameEntry {
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub websites: Vec<Website>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum GameCategory {
+    Main,
+    Dlc,
+    Expansion,
+    StandaloneExpansion,
+    Episode,
+    Season,
+    Remake,
+    Remaster,
+    ExpandedGame,
+    Ignore,
+}
+
+impl Default for GameCategory {
+    fn default() -> Self {
+        GameCategory::Main
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
