@@ -14,7 +14,7 @@ use tracing::{error, instrument, trace_span, Instrument};
 
 use super::{
     igdb_docs::{self, Annotation},
-    igdb_ranking, IgdbGame,
+    igdb_ranking,
 };
 
 pub struct IgdbApi {
@@ -150,62 +150,6 @@ impl IgdbApi {
 
                 let mut game_entry = GameEntry::from(igdb_game);
                 game_entry.cover = cover;
-                Ok(Some(game_entry))
-            }
-            None => Ok(None),
-        }
-    }
-
-    /// Returns a GameEntry based on its IGDB `id`.
-    ///
-    /// The returned GameEntry contains enough data to build a `GameDigest`.
-    /// Only some reference ids are followed up.
-    #[instrument(level = "trace", skip(self))]
-    pub async fn get_digest(&self, id: u64) -> Result<Option<GameEntry>, Status> {
-        let igdb_state = self.igdb_state()?;
-
-        let result: Vec<igdb_docs::IgdbGame> = post(
-            &igdb_state,
-            GAMES_ENDPOINT,
-            &format!("fields *; where id={id};"),
-        )
-        .await?;
-
-        match result.into_iter().next() {
-            Some(igdb_game) => {
-                // Keep only fields needed for digest.
-                let igdb_game = IgdbGame {
-                    id: igdb_game.id,
-                    name: igdb_game.name,
-                    url: igdb_game.url,
-                    summary: igdb_game.summary,
-                    storyline: igdb_game.storyline,
-                    first_release_date: igdb_game.first_release_date,
-                    total_rating: igdb_game.total_rating,
-                    parent_game: igdb_game.parent_game,
-                    version_parent: igdb_game.version_parent,
-                    collection: igdb_game.collection,
-                    franchises: igdb_game.franchises,
-                    involved_companies: igdb_game.involved_companies,
-                    cover: igdb_game.cover,
-                    ..Default::default()
-                };
-                let mut game_entry = GameEntry::from(igdb_game.clone());
-
-                let (tx, mut rx) = mpsc::channel(32);
-                tokio::spawn(
-                    async move {
-                        if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
-                            error!("Failed to retrieve info: {e}");
-                        }
-                    }
-                    .instrument(trace_span!("spawn_retrieve_game_info")),
-                );
-
-                while let Some(fragment) = rx.recv().await {
-                    game_entry.merge(fragment);
-                }
-
                 Ok(Some(game_entry))
             }
             None => Ok(None),

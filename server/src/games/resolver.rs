@@ -89,39 +89,4 @@ impl Resolver {
 
         Ok(Some(shallow_game_entry))
     }
-
-    /// Returns a `GameEntry` that has enough information to build a
-    /// `GameDigest` doc.
-    ///
-    /// Returns immediately a `GameEntry` that is partially resolved containing
-    /// enough data to build a `GameDigest. It spawns an async task to fully
-    /// resolve the `GameEntry` and updates its Firestore entry.
-    #[instrument(level = "trace", skip(igdb, steam, firestore))]
-    pub async fn digest_resolve(
-        game_id: u64,
-        igdb: Arc<IgdbApi>,
-        steam: Arc<SteamDataApi>,
-        firestore: Arc<Mutex<FirestoreApi>>,
-    ) -> Result<Option<GameEntry>, Status> {
-        let game_entry_digest = match igdb.get_digest(game_id).await? {
-            Some(game) => game,
-            None => return Ok(None),
-        };
-        firestore::games::write(&firestore.lock().unwrap(), &game_entry_digest)?;
-
-        tokio::spawn(
-            async move {
-                // TODO: This could be optimised as it resolves many fields that
-                // are already resolved in the digest.
-                if let Err(err) =
-                    Self::resolve(game_entry_digest.id, &igdb, &steam, firestore).await
-                {
-                    error!("{err}");
-                }
-            }
-            .instrument(trace_span!("spawn_schedule_resolve")),
-        );
-
-        Ok(Some(game_entry_digest))
-    }
 }
