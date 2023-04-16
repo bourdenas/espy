@@ -31,6 +31,10 @@ pub struct GameDigest {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub publishers: Vec<String>,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub genres: Vec<String>,
 
     #[serde(default)]
@@ -61,6 +65,14 @@ impl GameDigest {
 
             developers: game_entry
                 .developers
+                .into_iter()
+                .map(|company| company.name)
+                .collect::<HashSet<_>>()
+                .into_iter()
+                .collect(),
+
+            publishers: game_entry
+                .publishers
                 .into_iter()
                 .map(|company| company.name)
                 .collect::<HashSet<_>>()
