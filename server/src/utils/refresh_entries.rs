@@ -1,5 +1,5 @@
 use clap::Parser;
-use espy_server::{games::Resolver, *};
+use espy_server::*;
 use std::{
     sync::{Arc, Mutex},
     time::{Duration, SystemTime},
@@ -107,11 +107,11 @@ async fn refresh(
             ));
         }
 
-        if let Err(e) =
-            Resolver::resolve(game_entry.id, &igdb, &steam, Arc::clone(&firestore)).await
-        {
-            error!("Failed to refresh '{}': {e}", game_entry.name);
-        }
+        // if let Err(e) =
+        //     Resolver::resolve(game_entry.id, &igdb, &steam, Arc::clone(&firestore)).await
+        // {
+        //     error!("Failed to refresh '{}': {e}", game_entry.name);
+        // }
     }
 
     Ok(())
