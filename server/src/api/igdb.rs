@@ -14,7 +14,7 @@ use tracing::{error, instrument, trace_span, Instrument};
 
 use super::{
     igdb_docs::{self, Annotation},
-    igdb_ranking,
+    igdb_ranking, IgdbGame,
 };
 
 pub struct IgdbApi {
@@ -80,7 +80,7 @@ impl IgdbApi {
     #[instrument(level = "trace", skip(self))]
     pub async fn get(&self, id: u64) -> Result<Option<GameEntry>, Status> {
         let igdb_state = self.igdb_state()?;
-        let result: Vec<igdb_docs::IgdbGame> = post(
+        let result: Vec<IgdbGame> = post(
             &igdb_state,
             GAMES_ENDPOINT,
             &format!("fields *; where id={id};"),
@@ -134,7 +134,7 @@ impl IgdbApi {
     pub async fn get_with_cover(&self, id: u64) -> Result<Option<GameEntry>, Status> {
         let igdb_state = self.igdb_state()?;
 
-        let result: Vec<igdb_docs::IgdbGame> = post(
+        let result: Vec<IgdbGame> = post(
             &igdb_state,
             GAMES_ENDPOINT,
             &format!("fields *; where id={id};"),
@@ -223,10 +223,10 @@ impl IgdbApi {
         ))
     }
 
-    async fn search(&self, title: &str) -> Result<Vec<igdb_docs::IgdbGame>, Status> {
+    async fn search(&self, title: &str) -> Result<Vec<IgdbGame>, Status> {
         let title = title.replace("\"", "");
         let igdb_state = self.igdb_state()?;
-        post::<Vec<igdb_docs::IgdbGame>>(
+        post::<Vec<IgdbGame>>(
             &igdb_state,
             GAMES_ENDPOINT,
             &format!("search \"{title}\"; fields *; where platforms = (6);"),
@@ -234,120 +234,60 @@ impl IgdbApi {
         .await
     }
 
-    /// Returns a shallow GameEntry from IGDB matching `id` and sends full
-    /// GameEntries on `tx`. Multiple GameEntries might be sent over `tx` as it
-    /// resolves children GameEntries of the base, e.g. expansions, remakes, etc.
-    ///
-    /// Spawns tasks internally that will continue operating after the function
-    /// returns.
-    #[instrument(level = "trace", skip(self, tx))]
-    pub async fn resolve(
-        &self,
-        id: u64,
-        tx: mpsc::Sender<GameEntry>,
-    ) -> Result<Option<GameEntry>, Status> {
+    #[instrument(level = "trace", skip(self))]
+    pub async fn get_igdb_games(&self, page: u64) -> Result<Vec<IgdbGame>, Status> {
+        let offset = page * 500;
+
         let igdb_state = self.igdb_state()?;
-        resolve_incremental(igdb_state, id, tx).await
+        post::<Vec<IgdbGame>>(
+            &igdb_state,
+            GAMES_ENDPOINT,
+            &format!("fields *; where platforms = (6) & (category = 0 | category = 1 | category = 2 | category = 4 | category = 8 | category = 9); limit 500; offset {offset};"),
+        )
+        .await
+    }
+
+    #[instrument(level = "trace", skip(self))]
+    pub async fn resolve(&self, igdb_game: IgdbGame) -> Result<GameEntry, Status> {
+        let igdb_state = self.igdb_state()?;
+
+        let mut game_entry = retrieve_game_digest(Arc::clone(&igdb_state), &igdb_game).await?;
+        retrieve_game_info(igdb_state, igdb_game, &mut game_entry).await?;
+
+        Ok(game_entry)
     }
 }
 
-/// Returns a shallow GameEntry from IGDB matching `id` and sends full
-/// GameEntries on `tx`. Multiple GameEntries might be sent over `tx` as it
-/// resolves children GameEntries of the base, e.g. expansions, remakes, etc.
-#[instrument(level = "trace", skip(igdb_state, tx))]
-async fn resolve_incremental(
-    igdb_state: Arc<IgdbApiState>,
-    id: u64,
-    tx: mpsc::Sender<GameEntry>,
-) -> Result<Option<GameEntry>, Status> {
-    let result: Vec<igdb_docs::IgdbGame> = post(
-        &igdb_state,
+#[instrument(level = "trace", skip(igdb_state))]
+async fn get_game(igdb_state: &IgdbApiState, id: u64) -> Result<IgdbGame, Status> {
+    let result: Vec<IgdbGame> = post(
+        igdb_state,
         GAMES_ENDPOINT,
         &format!("fields *; where id={id};"),
     )
     .await?;
 
     match result.into_iter().next() {
-        Some(igdb_game) => {
-            let cover = match igdb_game.cover {
-                Some(cover_id) => get_cover(&igdb_state, cover_id).await?,
-                None => None,
-            };
-
-            let mut game_entry = GameEntry::from(&igdb_game);
-            game_entry.cover = cover;
-
-            tokio::spawn(
-                async move {
-                    if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
-                        error!("Failed to retrieve info: {e}");
-                    }
-                }
-                .instrument(trace_span!("spawn_retrieve_game_info")),
-            );
-            Ok(Some(game_entry))
-        }
-        None => Ok(None),
+        Some(igdb_game) => Ok(igdb_game),
+        None => Err(Status::not_found(format!(
+            "Failed to retrieve game with id={id}"
+        ))),
     }
 }
 
-// #[async_recursion]
-#[instrument(level = "trace", skip(igdb_state))]
-async fn resolve_blocking(
-    igdb_state: Arc<IgdbApiState>,
-    game_id: u64,
-) -> Result<Option<GameEntry>, Status> {
-    let result: Vec<igdb_docs::IgdbGame> = post(
-        &igdb_state,
-        GAMES_ENDPOINT,
-        &format!("fields *; where id={game_id};"),
-    )
-    .await?;
-
-    match result.into_iter().next() {
-        Some(igdb_game) => {
-            let (tx, mut rx) = mpsc::channel(32);
-
-            tokio::spawn(
-                async move {
-                    if let Err(e) = retrieve_game_info(igdb_state, igdb_game, tx).await {
-                        error!("Failed to retrieve info: {e}");
-                    }
-                }
-                .instrument(trace_span!("spawn_retrieve_game_info")),
-            );
-
-            while let Some(game_entry) = rx.recv().await {
-                return Ok(Some(game_entry));
-            }
-
-            Ok(None)
-        }
-        None => Ok(None),
-    }
-}
-
-/// Retrieves Game fields from IGDB that are relevant to espy. For instance,
-/// cover images, screenshots, expansions, etc.
-///
-/// IGDB returns shallow info for Game and uses reference ids as foreign keys to
-/// other tables. This call joins and attaches all information that is relevent
-/// to espy by issuing follow-up lookups.
-#[async_recursion]
 #[instrument(
     level = "trace",
-    skip(igdb_state, igdb_game, tx),
+    skip(igdb_state, igdb_game)
     fields(
         game_id = %igdb_game.id,
         game_name = %igdb_game.name,
     )
 )]
-async fn retrieve_game_info(
+async fn retrieve_game_digest(
     igdb_state: Arc<IgdbApiState>,
-    igdb_game: igdb_docs::IgdbGame,
-    tx: mpsc::Sender<GameEntry>,
-) -> Result<(), Status> {
-    let mut game_entry = GameEntry::from(&igdb_game);
+    igdb_game: &IgdbGame,
+) -> Result<GameEntry, Status> {
+    let mut game_entry = GameEntry::from(igdb_game);
 
     if let Some(cover) = igdb_game.cover {
         game_entry.cover = get_cover(&igdb_state, cover).await?;
@@ -391,6 +331,23 @@ async fn retrieve_game_info(
             .collect();
     }
 
+    Ok(game_entry)
+}
+
+#[async_recursion]
+#[instrument(
+    level = "trace",
+    skip(igdb_state, igdb_game, game_entry),
+    fields(
+        game_id = %igdb_game.id,
+        game_name = %igdb_game.name,
+    )
+)]
+async fn retrieve_game_info(
+    igdb_state: Arc<IgdbApiState>,
+    igdb_game: IgdbGame,
+    game_entry: &mut GameEntry,
+) -> Result<(), Status> {
     if !igdb_game.screenshots.is_empty() {
         game_entry.screenshots = get_screenshots(&igdb_state, &igdb_game.screenshots).await?;
     }
@@ -425,39 +382,46 @@ async fn retrieve_game_info(
     };
 
     if let Some(parent_id) = parent_id {
-        if let Some(parent) = resolve_blocking(Arc::clone(&igdb_state), parent_id).await? {
-            game_entry.parent = Some(GameDigest::new(parent.clone()));
-        }
+        let parent = retrieve_game_digest(
+            Arc::clone(&igdb_state),
+            &get_game(&igdb_state, parent_id).await?,
+        )
+        .await?;
+        game_entry.parent = Some(GameDigest::new(parent));
     }
 
-    for expansion in igdb_game.expansions.into_iter() {
-        if let Some(expansion) = resolve_blocking(Arc::clone(&igdb_state), expansion).await? {
-            game_entry
-                .expansions
-                .push(GameDigest::new(expansion.clone()));
-            tx.send(expansion).await?;
-        }
+    for expansion_id in igdb_game.expansions.into_iter() {
+        let expansion = retrieve_game_digest(
+            Arc::clone(&igdb_state),
+            &get_game(&igdb_state, expansion_id).await?,
+        )
+        .await?;
+        game_entry.expansions.push(GameDigest::new(expansion));
     }
-    for dlc in igdb_game.dlcs.into_iter() {
-        if let Some(dlc) = resolve_blocking(Arc::clone(&igdb_state), dlc).await? {
-            game_entry.dlcs.push(GameDigest::new(dlc.clone()));
-            tx.send(dlc).await?;
-        }
+    for dlc_id in igdb_game.dlcs.into_iter() {
+        let dlc = retrieve_game_digest(
+            Arc::clone(&igdb_state),
+            &get_game(&igdb_state, dlc_id).await?,
+        )
+        .await?;
+        game_entry.dlcs.push(GameDigest::new(dlc));
     }
-    for remake in igdb_game.remakes.into_iter() {
-        if let Some(remake) = resolve_blocking(Arc::clone(&igdb_state), remake).await? {
-            game_entry.remakes.push(GameDigest::new(remake.clone()));
-            tx.send(remake).await?;
-        }
+    for remake_id in igdb_game.remakes.into_iter() {
+        let remake = retrieve_game_digest(
+            Arc::clone(&igdb_state),
+            &get_game(&igdb_state, remake_id).await?,
+        )
+        .await?;
+        game_entry.remakes.push(GameDigest::new(remake));
     }
-    for remaster in igdb_game.remasters.into_iter() {
-        if let Some(remaster) = resolve_blocking(Arc::clone(&igdb_state), remaster).await? {
-            game_entry.remasters.push(GameDigest::new(remaster.clone()));
-            tx.send(remaster).await?;
-        }
+    for remaster_id in igdb_game.remasters.into_iter() {
+        let remaster = retrieve_game_digest(
+            Arc::clone(&igdb_state),
+            &get_game(&igdb_state, remaster_id).await?,
+        )
+        .await?;
+        game_entry.remasters.push(GameDigest::new(remaster));
     }
-
-    tx.send(game_entry).await?;
 
     Ok(())
 }
@@ -735,8 +699,8 @@ async fn post<T: DeserializeOwned>(
     resp
 }
 
-impl From<igdb_docs::IgdbGame> for GameEntry {
-    fn from(igdb_game: igdb_docs::IgdbGame) -> Self {
+impl From<IgdbGame> for GameEntry {
+    fn from(igdb_game: IgdbGame) -> Self {
         GameEntry {
             id: igdb_game.id,
             name: igdb_game.name,
@@ -766,8 +730,8 @@ impl From<igdb_docs::IgdbGame> for GameEntry {
     }
 }
 
-impl From<&igdb_docs::IgdbGame> for GameEntry {
-    fn from(igdb_game: &igdb_docs::IgdbGame) -> Self {
+impl From<&IgdbGame> for GameEntry {
+    fn from(igdb_game: &IgdbGame) -> Self {
         GameEntry {
             id: igdb_game.id,
             name: igdb_game.name.clone(),
