@@ -9,15 +9,15 @@ use async_recursion::async_recursion;
 use std::sync::Arc;
 use tracing::instrument;
 
-use super::{backend::post, docs, state::IgdbApiState, IgdbGame};
+use super::{backend::post, docs, IgdbConnection, IgdbGame};
 
 /// Returns an IgdbGame doc from IGDB for given game `id`.
 ///
 /// Does not perform any lookups on tables beyond Game.
-#[instrument(level = "trace", skip(igdb_state))]
-pub async fn get_game(igdb_state: &IgdbApiState, id: u64) -> Result<IgdbGame, Status> {
+#[instrument(level = "trace", skip(connection))]
+pub async fn get_game(connection: &IgdbConnection, id: u64) -> Result<IgdbGame, Status> {
     let result: Vec<IgdbGame> = post(
-        igdb_state,
+        connection,
         GAMES_ENDPOINT,
         &format!("fields *; where id={id};"),
     )
@@ -34,42 +34,42 @@ pub async fn get_game(igdb_state: &IgdbApiState, id: u64) -> Result<IgdbGame, St
 /// Returns a GameEntry from IGDB that can build the GameDigest doc.
 #[instrument(
     level = "trace",
-    skip(igdb_state, igdb_game)
+    skip(connection, igdb_game)
     fields(
         game_id = %igdb_game.id,
         game_name = %igdb_game.name,
     )
 )]
 pub async fn resolve_game_digest(
-    igdb_state: Arc<IgdbApiState>,
+    connection: Arc<IgdbConnection>,
     igdb_game: &IgdbGame,
 ) -> Result<GameEntry, Status> {
     let mut game_entry = GameEntry::from(igdb_game);
 
     if let Some(cover) = igdb_game.cover {
-        game_entry.cover = get_cover(&igdb_state, cover).await?;
+        game_entry.cover = get_cover(&connection, cover).await?;
     }
 
     if !igdb_game.genres.is_empty() {
-        game_entry.genres = get_genres(&igdb_state, &igdb_game.genres).await?;
+        game_entry.genres = get_genres(&connection, &igdb_game.genres).await?;
     }
     if !igdb_game.keywords.is_empty() {
-        game_entry.keywords = get_keywords(&igdb_state, &igdb_game.keywords).await?;
+        game_entry.keywords = get_keywords(&connection, &igdb_game.keywords).await?;
     }
 
     if let Some(collection) = igdb_game.collection {
-        if let Some(collection) = get_collection(&igdb_state, collection).await? {
+        if let Some(collection) = get_collection(&connection, collection).await? {
             game_entry.collections = vec![collection];
         }
     }
     if !igdb_game.franchises.is_empty() {
         game_entry
             .collections
-            .extend(get_franchises(&igdb_state, &igdb_game.franchises).await?);
+            .extend(get_franchises(&connection, &igdb_game.franchises).await?);
     }
 
     if !igdb_game.involved_companies.is_empty() {
-        let companies = get_companies(&igdb_state, &igdb_game.involved_companies).await?;
+        let companies = get_companies(&connection, &igdb_game.involved_companies).await?;
         game_entry.developers = companies
             .iter()
             .filter(|company| match company.role {
@@ -95,26 +95,26 @@ pub async fn resolve_game_digest(
 #[async_recursion]
 #[instrument(
     level = "trace",
-    skip(igdb_state, igdb_game, game_entry),
+    skip(connection, igdb_game, game_entry),
     fields(
         game_id = %igdb_game.id,
         game_name = %igdb_game.name,
     )
 )]
 pub async fn resolve_game_info(
-    igdb_state: Arc<IgdbApiState>,
+    connection: Arc<IgdbConnection>,
     igdb_game: IgdbGame,
     game_entry: &mut GameEntry,
 ) -> Result<(), Status> {
     if !igdb_game.screenshots.is_empty() {
-        game_entry.screenshots = get_screenshots(&igdb_state, &igdb_game.screenshots).await?;
+        game_entry.screenshots = get_screenshots(&connection, &igdb_game.screenshots).await?;
     }
     if !igdb_game.artworks.is_empty() {
-        game_entry.artwork = get_artwork(&igdb_state, &igdb_game.artworks).await?;
+        game_entry.artwork = get_artwork(&connection, &igdb_game.artworks).await?;
     }
     if igdb_game.websites.len() > 0 {
         game_entry.websites.extend(
-            get_websites(&igdb_state, &igdb_game.websites)
+            get_websites(&connection, &igdb_game.websites)
                 .await?
                 .into_iter()
                 .map(|website| Website {
@@ -142,8 +142,8 @@ pub async fn resolve_game_info(
 
     if let Some(parent_id) = parent_id {
         let parent = resolve_game_digest(
-            Arc::clone(&igdb_state),
-            &get_game(&igdb_state, parent_id).await?,
+            Arc::clone(&connection),
+            &get_game(&connection, parent_id).await?,
         )
         .await?;
         game_entry.parent = Some(GameDigest::new(parent));
@@ -151,32 +151,32 @@ pub async fn resolve_game_info(
 
     for expansion_id in igdb_game.expansions.into_iter() {
         let expansion = resolve_game_digest(
-            Arc::clone(&igdb_state),
-            &get_game(&igdb_state, expansion_id).await?,
+            Arc::clone(&connection),
+            &get_game(&connection, expansion_id).await?,
         )
         .await?;
         game_entry.expansions.push(GameDigest::new(expansion));
     }
     for dlc_id in igdb_game.dlcs.into_iter() {
         let dlc = resolve_game_digest(
-            Arc::clone(&igdb_state),
-            &get_game(&igdb_state, dlc_id).await?,
+            Arc::clone(&connection),
+            &get_game(&connection, dlc_id).await?,
         )
         .await?;
         game_entry.dlcs.push(GameDigest::new(dlc));
     }
     for remake_id in igdb_game.remakes.into_iter() {
         let remake = resolve_game_digest(
-            Arc::clone(&igdb_state),
-            &get_game(&igdb_state, remake_id).await?,
+            Arc::clone(&connection),
+            &get_game(&connection, remake_id).await?,
         )
         .await?;
         game_entry.remakes.push(GameDigest::new(remake));
     }
     for remaster_id in igdb_game.remasters.into_iter() {
         let remaster = resolve_game_digest(
-            Arc::clone(&igdb_state),
-            &get_game(&igdb_state, remaster_id).await?,
+            Arc::clone(&connection),
+            &get_game(&connection, remaster_id).await?,
         )
         .await?;
         game_entry.remasters.push(GameDigest::new(remaster));
@@ -186,10 +186,10 @@ pub async fn resolve_game_info(
 }
 
 /// Returns game image cover based on id from the igdb/covers endpoint.
-#[instrument(level = "trace", skip(igdb_state))]
-pub async fn get_cover(igdb_state: &IgdbApiState, id: u64) -> Result<Option<Image>, Status> {
+#[instrument(level = "trace", skip(connection))]
+pub async fn get_cover(connection: &IgdbConnection, id: u64) -> Result<Option<Image>, Status> {
     let result: Vec<Image> = post(
-        igdb_state,
+        connection,
         COVERS_ENDPOINT,
         &format!("fields *; where id={id};"),
     )
@@ -199,10 +199,10 @@ pub async fn get_cover(igdb_state: &IgdbApiState, id: u64) -> Result<Option<Imag
 }
 
 /// Returns game image cover based on id from the igdb/covers endpoint.
-#[instrument(level = "trace", skip(igdb_state))]
-async fn get_company_logo(igdb_state: &IgdbApiState, id: u64) -> Result<Option<Image>, Status> {
+#[instrument(level = "trace", skip(connection))]
+async fn get_company_logo(connection: &IgdbConnection, id: u64) -> Result<Option<Image>, Status> {
     let result: Vec<Image> = post(
-        igdb_state,
+        connection,
         COMPANY_LOGOS_ENDPOINT,
         &format!("fields *; where id={id};"),
     )
@@ -212,10 +212,10 @@ async fn get_company_logo(igdb_state: &IgdbApiState, id: u64) -> Result<Option<I
 }
 
 /// Returns game genres based on id from the igdb/genres endpoint.
-#[instrument(level = "trace", skip(igdb_state))]
-async fn get_genres(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<String>, Status> {
+#[instrument(level = "trace", skip(connection))]
+async fn get_genres(connection: &IgdbConnection, ids: &[u64]) -> Result<Vec<String>, Status> {
     Ok(post::<Vec<docs::Annotation>>(
-        igdb_state,
+        connection,
         GENRES_ENDPOINT,
         &format!(
             "fields *; where id = ({});",
@@ -232,10 +232,10 @@ async fn get_genres(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<String
 }
 
 /// Returns game keywords based on id from the igdb/keywords endpoint.
-#[instrument(level = "trace", skip(igdb_state))]
-async fn get_keywords(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<String>, Status> {
+#[instrument(level = "trace", skip(connection))]
+async fn get_keywords(connection: &IgdbConnection, ids: &[u64]) -> Result<Vec<String>, Status> {
     Ok(post::<Vec<docs::Annotation>>(
-        igdb_state,
+        connection,
         KEYWORDS_ENDPOINT,
         &format!(
             "fields *; where id = ({});",
@@ -252,10 +252,10 @@ async fn get_keywords(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Stri
 }
 
 /// Returns game screenshots based on id from the igdb/screenshots endpoint.
-#[instrument(level = "trace", skip(igdb_state))]
-async fn get_artwork(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Image>, Status> {
+#[instrument(level = "trace", skip(connection))]
+async fn get_artwork(connection: &IgdbConnection, ids: &[u64]) -> Result<Vec<Image>, Status> {
     Ok(post(
-        igdb_state,
+        connection,
         ARTWORKS_ENDPOINT,
         &format!(
             "fields *; where id = ({});",
@@ -269,10 +269,10 @@ async fn get_artwork(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Image
 }
 
 /// Returns game screenshots based on id from the igdb/screenshots endpoint.
-#[instrument(level = "trace", skip(igdb_state))]
-async fn get_screenshots(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Image>, Status> {
+#[instrument(level = "trace", skip(connection))]
+async fn get_screenshots(connection: &IgdbConnection, ids: &[u64]) -> Result<Vec<Image>, Status> {
     Ok(post(
-        &igdb_state,
+        &connection,
         SCREENSHOTS_ENDPOINT,
         &format!(
             "fields *; where id = ({});",
@@ -286,13 +286,13 @@ async fn get_screenshots(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<I
 }
 
 /// Returns game websites based on id from the igdb/websites endpoint.
-#[instrument(level = "trace", skip(igdb_state))]
+#[instrument(level = "trace", skip(connection))]
 async fn get_websites(
-    igdb_state: &IgdbApiState,
+    connection: &IgdbConnection,
     ids: &[u64],
 ) -> Result<Vec<docs::Website>, Status> {
     Ok(post(
-        &igdb_state,
+        &connection,
         WEBSITES_ENDPOINT,
         &format!(
             "fields *; where id = ({});",
@@ -306,10 +306,13 @@ async fn get_websites(
 }
 
 /// Returns game collection based on id from the igdb/collections endpoint.
-#[instrument(level = "trace", skip(igdb_state))]
-async fn get_collection(igdb_state: &IgdbApiState, id: u64) -> Result<Option<Collection>, Status> {
+#[instrument(level = "trace", skip(connection))]
+async fn get_collection(
+    connection: &IgdbConnection,
+    id: u64,
+) -> Result<Option<Collection>, Status> {
     let result: Vec<docs::Collection> = post(
-        &igdb_state,
+        &connection,
         COLLECTIONS_ENDPOINT,
         &format!("fields *; where id={id};"),
     )
@@ -327,10 +330,13 @@ async fn get_collection(igdb_state: &IgdbApiState, id: u64) -> Result<Option<Col
 }
 
 /// Returns game franchices based on id from the igdb/frachises endpoint.
-#[instrument(level = "trace", skip(igdb_state))]
-async fn get_franchises(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Collection>, Status> {
+#[instrument(level = "trace", skip(connection))]
+async fn get_franchises(
+    connection: &IgdbConnection,
+    ids: &[u64],
+) -> Result<Vec<Collection>, Status> {
     let result: Vec<docs::Collection> = post(
-        &igdb_state,
+        &connection,
         FRANCHISES_ENDPOINT,
         &format!(
             "fields *; where id = ({});",
@@ -354,11 +360,11 @@ async fn get_franchises(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Co
 }
 
 /// Returns game companies involved in the making of the game.
-#[instrument(level = "trace", skip(igdb_state))]
-async fn get_companies(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Company>, Status> {
+#[instrument(level = "trace", skip(connection))]
+async fn get_companies(connection: &IgdbConnection, ids: &[u64]) -> Result<Vec<Company>, Status> {
     // Collect all involved companies for a game entry.
     let involved_companies: Vec<docs::InvolvedCompany> = post(
-        &igdb_state,
+        &connection,
         INVOLVED_COMPANIES_ENDPOINT,
         &format!(
             "fields *; where id = ({});",
@@ -372,7 +378,7 @@ async fn get_companies(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Com
 
     // Collect company data for involved companies.
     let igdb_companies = post::<Vec<docs::Company>>(
-        &igdb_state,
+        &connection,
         COMPANIES_ENDPOINT,
         &format!(
             "fields *; where id = ({});",
@@ -418,7 +424,7 @@ async fn get_companies(igdb_state: &IgdbApiState, ids: &[u64]) -> Result<Vec<Com
                 },
             },
             logo: match company.logo {
-                Some(logo) => get_company_logo(&igdb_state, logo).await?,
+                Some(logo) => get_company_logo(&connection, logo).await?,
                 None => None,
             },
         });

@@ -2,24 +2,24 @@ use crate::Status;
 use serde::de::DeserializeOwned;
 use tracing::error;
 
-use super::state::IgdbApiState;
+use super::IgdbConnection;
 
 /// Sends a POST request to an IGDB service endpoint.
 pub async fn post<T: DeserializeOwned>(
-    igdb_state: &IgdbApiState,
+    connection: &IgdbConnection,
     endpoint: &str,
     body: &str,
 ) -> Result<T, Status> {
-    igdb_state.qps.wait();
+    connection.qps.wait();
 
-    let _permit = igdb_state.qps.connection().await;
+    let _permit = connection.qps.connection().await;
     let uri = format!("{IGDB_SERVICE_URL}/{endpoint}/");
     let resp = reqwest::Client::new()
         .post(&uri)
-        .header("Client-ID", &igdb_state.client_id)
+        .header("Client-ID", &connection.client_id)
         .header(
             "Authorization",
-            format!("Bearer {}", &igdb_state.oauth_token),
+            format!("Bearer {}", &connection.oauth_token),
         )
         .body(String::from(body))
         .send()

@@ -13,14 +13,13 @@ use super::{
     resolve::{
         get_cover, resolve_game_digest, resolve_game_info, EXTERNAL_GAMES_ENDPOINT, GAMES_ENDPOINT,
     },
-    state::IgdbApiState,
-    IgdbGame,
+    IgdbConnection, IgdbGame,
 };
 
 pub struct IgdbApi {
     secret: String,
     client_id: String,
-    state: Option<Arc<IgdbApiState>>,
+    connection: Option<Arc<IgdbConnection>>,
 }
 
 impl IgdbApi {
@@ -28,7 +27,7 @@ impl IgdbApi {
         IgdbApi {
             secret: String::from(secret),
             client_id: String::from(client_id),
-            state: None,
+            connection: None,
         }
     }
 
@@ -48,7 +47,7 @@ impl IgdbApi {
             .json::<TwitchOAuthResponse>()
             .await?;
 
-        self.state = Some(Arc::new(IgdbApiState {
+        self.connection = Some(Arc::new(IgdbConnection {
             client_id: self.client_id.clone(),
             oauth_token: resp.access_token,
             qps: RateLimiter::new(4, Duration::from_secs(1), 6),
@@ -57,9 +56,9 @@ impl IgdbApi {
         Ok(())
     }
 
-    fn igdb_state(&self) -> Result<Arc<IgdbApiState>, Status> {
-        match &self.state {
-            Some(state) => Ok(Arc::clone(state)),
+    fn connection(&self) -> Result<Arc<IgdbConnection>, Status> {
+        match &self.connection {
+            Some(connection) => Ok(Arc::clone(connection)),
             None => Err(Status::internal(
                 "Connection with IGDB was not established.",
             )),
@@ -72,9 +71,9 @@ impl IgdbApi {
     /// followed up and thus it is not fully resolved.
     #[instrument(level = "trace", skip(self))]
     pub async fn get(&self, id: u64) -> Result<IgdbGame, Status> {
-        let igdb_state = self.igdb_state()?;
+        let connection = self.connection()?;
         let result: Vec<IgdbGame> = post(
-            &igdb_state,
+            &connection,
             GAMES_ENDPOINT,
             &format!("fields *; where id={id};"),
         )
@@ -103,9 +102,9 @@ impl IgdbApi {
             _ => return Ok(None),
         };
 
-        let igdb_state = self.igdb_state()?;
+        let connection = self.connection()?;
         let result: Vec<docs::ExternalGame> = post(
-            &igdb_state,
+            &connection,
             EXTERNAL_GAMES_ENDPOINT,
             &format!(
                 "fields *; where uid = \"{}\" & category = {category};",
@@ -125,10 +124,10 @@ impl IgdbApi {
     /// The returned GameEntry is a shallow copy but it contains a game cover image.
     #[instrument(level = "trace", skip(self))]
     pub async fn get_with_cover(&self, id: u64) -> Result<Option<GameEntry>, Status> {
-        let igdb_state = self.igdb_state()?;
+        let connection = self.connection()?;
 
         let result: Vec<IgdbGame> = post(
-            &igdb_state,
+            &connection,
             GAMES_ENDPOINT,
             &format!("fields *; where id={id};"),
         )
@@ -137,7 +136,7 @@ impl IgdbApi {
         match result.into_iter().next() {
             Some(igdb_game) => {
                 let cover = match igdb_game.cover {
-                    Some(cover_id) => get_cover(&igdb_state, cover_id).await?,
+                    Some(cover_id) => get_cover(&connection, cover_id).await?,
                     None => None,
                 };
 
@@ -180,14 +179,14 @@ impl IgdbApi {
             igdb_games.retain(|game| game.parent_game.is_none());
         }
 
-        let igdb_state = self.igdb_state()?;
+        let connection = self.connection()?;
         let mut handles = vec![];
         for game in igdb_games {
-            let igdb_state = Arc::clone(&igdb_state);
+            let connection = Arc::clone(&connection);
             handles.push(tokio::spawn(
                 async move {
                     let cover = match game.cover {
-                        Some(id) => match get_cover(&igdb_state, id).await {
+                        Some(id) => match get_cover(&connection, id).await {
                             Ok(cover) => cover,
                             Err(e) => {
                                 error!("Failed to retrieve cover: {e}");
@@ -218,9 +217,9 @@ impl IgdbApi {
 
     async fn search(&self, title: &str) -> Result<Vec<IgdbGame>, Status> {
         let title = title.replace("\"", "");
-        let igdb_state = self.igdb_state()?;
+        let connection = self.connection()?;
         post::<Vec<IgdbGame>>(
-            &igdb_state,
+            &connection,
             GAMES_ENDPOINT,
             &format!("search \"{title}\"; fields *; where platforms = (6);"),
         )
@@ -229,9 +228,9 @@ impl IgdbApi {
 
     #[instrument(level = "trace", skip(self))]
     pub async fn get_igdb_games(&self, offset: u64) -> Result<Vec<IgdbGame>, Status> {
-        let igdb_state = self.igdb_state()?;
+        let connection = self.connection()?;
         post::<Vec<IgdbGame>>(
-            &igdb_state,
+            &connection,
             GAMES_ENDPOINT,
             &format!("fields *; sort first_release_date desc; where platforms = (6) & (follows > 3 | hypes > 3) & (category = 0 | category = 1 | category = 2 | category = 4 | category = 8 | category = 9); limit 500; offset {offset};"),
         )
@@ -240,10 +239,10 @@ impl IgdbApi {
 
     #[instrument(level = "trace", skip(self))]
     pub async fn resolve(&self, igdb_game: IgdbGame) -> Result<GameEntry, Status> {
-        let igdb_state = self.igdb_state()?;
+        let connection = self.connection()?;
 
-        let mut game_entry = resolve_game_digest(Arc::clone(&igdb_state), &igdb_game).await?;
-        resolve_game_info(igdb_state, igdb_game, &mut game_entry).await?;
+        let mut game_entry = resolve_game_digest(Arc::clone(&connection), &igdb_game).await?;
+        resolve_game_info(connection, igdb_game, &mut game_entry).await?;
 
         Ok(game_entry)
     }
