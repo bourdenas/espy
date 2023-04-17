@@ -15,7 +15,8 @@ class LibraryEntry {
   int get releaseDate => digest.releaseDate;
   double get rating => digest.rating;
   List<String> get collections => digest.collections;
-  List<String> get companies => digest.companies;
+  List<String> get developers => digest.developers;
+  List<String> get publishers => digest.publishers;
 
   LibraryEntry({
     required this.id,
@@ -24,6 +25,12 @@ class LibraryEntry {
     this.storeEntries = const [],
     this.ownedVersions = const [],
   });
+
+  LibraryEntry.fromGameDigest(GameDigest digest)
+      : this(
+          id: digest.id,
+          digest: digest,
+        );
 
   LibraryEntry.fromGameEntry(GameEntry gameEntry)
       : this(

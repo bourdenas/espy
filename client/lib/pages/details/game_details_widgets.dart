@@ -2,6 +2,7 @@ import 'dart:js' as js;
 
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
@@ -182,18 +183,18 @@ class GameEntryActionBar extends StatelessWidget {
 }
 
 class RelatedGamesGroup extends StatelessWidget {
-  const RelatedGamesGroup(this.title, this.gameEntries, {Key? key})
+  const RelatedGamesGroup(this.title, this.gameDigests, {Key? key})
       : super(key: key);
 
   final String title;
-  final List<GameEntry> gameEntries;
+  final List<GameDigest> gameDigests;
 
   @override
   Widget build(BuildContext context) {
     return TileShelf(
       title: title,
-      entries:
-          gameEntries.map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry)),
+      entries: gameDigests
+          .map((gameEntry) => LibraryEntry.fromGameDigest(gameEntry)),
     );
   }
 }

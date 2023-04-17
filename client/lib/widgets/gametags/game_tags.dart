@@ -30,15 +30,11 @@ extractTags(GameEntry? gameEntry, LibraryEntry? libraryEntry) {
   return {
     'gameId': gameEntry != null ? gameEntry.id : libraryEntry?.id ?? 0,
     'developers': gameEntry != null
-        ? gameEntry.companies
-            .where((e) => e.role == "Developer")
-            .map((e) => e.name)
-        : libraryEntry?.companies ?? [],
+        ? gameEntry.developers.map((e) => e.name)
+        : libraryEntry?.developers ?? [],
     'publishers': gameEntry != null
-        ? gameEntry.companies
-            .where((e) => e.role != "Developer")
-            .map((e) => e.name)
-        : <String>[],
+        ? gameEntry.publishers.map((e) => e.name)
+        : libraryEntry?.publishers ?? [],
     'collections': gameEntry != null
         ? gameEntry.collections.map((e) => e.name).toSet()
         : libraryEntry?.collections ?? [],
