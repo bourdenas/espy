@@ -26,6 +26,12 @@ pub struct GameEntry {
     pub igdb_rating: Option<f64>,
 
     #[serde(default)]
+    pub igdb_follows: i64,
+
+    #[serde(default)]
+    pub igdb_hypes: i64,
+
+    #[serde(default)]
     pub category: GameCategory,
 
     #[serde(default)]

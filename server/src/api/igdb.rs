@@ -355,22 +355,23 @@ async fn retrieve_game_info(
         game_entry.artwork = get_artwork(&igdb_state, &igdb_game.artworks).await?;
     }
     if igdb_game.websites.len() > 0 {
-        game_entry.websites = get_websites(&igdb_state, &igdb_game.websites)
-            .await?
-            .into_iter()
-            .map(|website| Website {
-                url: website.url,
-                authority: match website.category {
-                    1 => WebsiteAuthority::Official,
-                    3 => WebsiteAuthority::Wikipedia,
-                    9 => WebsiteAuthority::Youtube,
-                    13 => WebsiteAuthority::Steam,
-                    16 => WebsiteAuthority::Egs,
-                    17 => WebsiteAuthority::Gog,
-                    _ => WebsiteAuthority::Null,
-                },
-            })
-            .collect();
+        game_entry.websites.extend(
+            get_websites(&igdb_state, &igdb_game.websites)
+                .await?
+                .into_iter()
+                .map(|website| Website {
+                    url: website.url,
+                    authority: match website.category {
+                        1 => WebsiteAuthority::Official,
+                        3 => WebsiteAuthority::Wikipedia,
+                        9 => WebsiteAuthority::Youtube,
+                        13 => WebsiteAuthority::Steam,
+                        16 => WebsiteAuthority::Egs,
+                        17 => WebsiteAuthority::Gog,
+                        _ => WebsiteAuthority::Null,
+                    },
+                }),
+        );
     }
 
     let parent_id = match igdb_game.parent_game {
@@ -707,7 +708,9 @@ impl From<IgdbGame> for GameEntry {
             summary: igdb_game.summary,
             storyline: igdb_game.storyline,
             release_date: igdb_game.first_release_date,
-            igdb_rating: igdb_game.total_rating,
+            igdb_rating: igdb_game.aggregated_rating,
+            igdb_follows: igdb_game.follows,
+            igdb_hypes: igdb_game.hypes,
             category: match igdb_game.category {
                 0 => GameCategory::Main,
                 1 => GameCategory::Dlc,
@@ -738,7 +741,9 @@ impl From<&IgdbGame> for GameEntry {
             summary: igdb_game.summary.clone(),
             storyline: igdb_game.storyline.clone(),
             release_date: igdb_game.first_release_date,
-            igdb_rating: igdb_game.total_rating,
+            igdb_rating: igdb_game.aggregated_rating,
+            igdb_follows: igdb_game.follows,
+            igdb_hypes: igdb_game.hypes,
             category: match igdb_game.category {
                 0 => GameCategory::Main,
                 1 => GameCategory::Dlc,

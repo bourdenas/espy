@@ -17,7 +17,16 @@ pub struct IgdbGame {
     pub first_release_date: Option<i64>,
 
     #[serde(default)]
+    pub aggregated_rating: Option<f64>,
+
+    #[serde(default)]
     pub total_rating: Option<f64>,
+
+    #[serde(default)]
+    pub follows: i64,
+
+    #[serde(default)]
+    pub hypes: i64,
 
     #[serde(default)]
     pub category: u64,
