@@ -228,9 +228,7 @@ impl IgdbApi {
     }
 
     #[instrument(level = "trace", skip(self))]
-    pub async fn get_igdb_games(&self, page: u64) -> Result<Vec<IgdbGame>, Status> {
-        let offset = page * 500;
-
+    pub async fn get_igdb_games(&self, offset: u64) -> Result<Vec<IgdbGame>, Status> {
         let igdb_state = self.igdb_state()?;
         post::<Vec<IgdbGame>>(
             &igdb_state,

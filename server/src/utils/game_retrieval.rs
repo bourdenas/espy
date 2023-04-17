@@ -17,6 +17,9 @@ struct Opts {
         default_value = "espy-library-firebase-adminsdk-sncpo-3da8ca7f57.json"
     )]
     firestore_credentials: String,
+
+    #[clap(long)]
+    offset: u64,
 }
 
 #[tokio::main]
@@ -37,18 +40,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .checked_add(Duration::from_secs(30 * 60))
         .unwrap();
 
+    let mut k = opts.offset;
     for i in 0.. {
-        let games = igdb.get_igdb_games(i).await?;
+        let games = igdb.get_igdb_games(opts.offset + i * 500).await?;
         if games.len() == 0 {
             break;
         }
-        info!("{}:{}", i * 500, i * 500 + games.len() as u64);
+        info!(
+            "\nWorking on {}:{}",
+            opts.offset + i * 500,
+            opts.offset + i * 500 + games.len() as u64
+        );
 
         for igdb_game in games {
             let mut game_entry = match igdb.resolve(igdb_game).await {
                 Ok(game_entry) => game_entry,
                 Err(e) => {
                     error!("{e}");
+                    k += 1;
                     continue;
                 }
             };
@@ -58,6 +67,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             }
 
             if next_refresh < SystemTime::now() {
+                info!("Refreshing Firestore credentials...");
                 firestore = api::FirestoreApi::from_credentials(&opts.firestore_credentials)
                     .expect("FirestoreApi.from_credentials()");
             }
@@ -65,7 +75,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             if let Err(e) = firestore::games::write(&firestore, &game_entry) {
                 error!("Failed to save '{}' in Firestore: {e}", game_entry.name);
             }
-            info!("Resolved '{}' ({})", game_entry.name, game_entry.id);
+            info!("#{} Resolved '{}' ({})", k, game_entry.name, game_entry.id);
+            k += 1;
         }
     }
 
