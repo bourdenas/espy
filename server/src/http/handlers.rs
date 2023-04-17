@@ -1,7 +1,8 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
+    games::SteamDataApi,
     http::models,
-    library::{LibraryManager, User},
+    library::{firestore, LibraryManager, User},
     util, Status,
 };
 use std::{
@@ -9,7 +10,7 @@ use std::{
     sync::{Arc, Mutex},
     time::SystemTime,
 };
-use tracing::{debug, error, instrument, warn};
+use tracing::{debug, error, info, instrument, warn};
 use warp::http::StatusCode;
 
 pub async fn welcome() -> Result<impl warp::Reply, Infallible> {
@@ -39,6 +40,40 @@ pub async fn post_search(
     let resp_time = SystemTime::now().duration_since(started).unwrap();
     debug!("time: {:.2} msec", resp_time.as_millis());
     resp
+}
+
+#[instrument(level = "trace", skip(firestore, igdb, steam))]
+pub async fn post_resolve(
+    resolve: models::Resolve,
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> Result<impl warp::Reply, Infallible> {
+    info!("POST /resolve");
+
+    match igdb.get(resolve.game_id).await {
+        Ok(igdb_game) => match igdb.resolve(igdb_game).await {
+            Ok(mut game_entry) => {
+                if let Err(e) = steam.retrieve_steam_data(&mut game_entry).await {
+                    error!("Failed to retrieve SteamData for '{}' {e}", game_entry.name);
+                }
+
+                if let Err(e) = firestore::games::write(&firestore.lock().unwrap(), &game_entry) {
+                    error!("Failed to save '{}' in Firestore: {e}", game_entry.name);
+                }
+
+                Ok(StatusCode::OK)
+            }
+            Err(e) => {
+                error!("POST resolve: {e}");
+                Ok(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+        },
+        Err(e) => {
+            error!("POST resolve: {e}");
+            Ok(StatusCode::NOT_FOUND)
+        }
+    }
 }
 
 #[instrument(

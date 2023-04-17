@@ -16,6 +16,11 @@ impl std::fmt::Display for Search {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
+pub struct Resolve {
+    pub game_id: u64,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct MatchOp {
     /// The storefront entry that is {un}matched.
     pub store_entry: documents::StoreEntry,

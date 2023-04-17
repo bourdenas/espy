@@ -1,5 +1,6 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
+    games::SteamDataApi,
     util,
 };
 use std::sync::{Arc, Mutex};
@@ -12,10 +13,16 @@ use super::{handlers, models, resources::*};
 pub fn routes(
     keys: Arc<util::keys::Keys>,
     igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     home()
         .or(post_search(Arc::clone(&igdb)))
+        .or(post_resolve(
+            Arc::clone(&firestore),
+            Arc::clone(&igdb),
+            Arc::clone(&steam),
+        ))
         .or(post_match(Arc::clone(&firestore)))
         .or(post_wishlist(Arc::clone(&firestore)))
         .or(post_unlink(Arc::clone(&firestore)))
@@ -42,6 +49,21 @@ fn post_search(
         .and(json_body::<models::Search>())
         .and(with_igdb(igdb))
         .and_then(handlers::post_search)
+}
+
+/// POST /resolve
+fn post_resolve(
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: Arc<IgdbApi>,
+    steam: Arc<SteamDataApi>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    warp::path!("resolve")
+        .and(warp::post())
+        .and(json_body::<models::Resolve>())
+        .and(with_firestore(firestore))
+        .and(with_igdb(igdb))
+        .and(with_steam(steam))
+        .and_then(handlers::post_resolve)
 }
 
 /// POST /library/{user_id}/match

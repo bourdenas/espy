@@ -71,7 +71,7 @@ impl IgdbApi {
     /// The returned GameEntry is a shallow lookup. Reference ids are not
     /// followed up and thus it is not fully resolved.
     #[instrument(level = "trace", skip(self))]
-    pub async fn get(&self, id: u64) -> Result<Option<GameEntry>, Status> {
+    pub async fn get(&self, id: u64) -> Result<IgdbGame, Status> {
         let igdb_state = self.igdb_state()?;
         let result: Vec<IgdbGame> = post(
             &igdb_state,
@@ -81,8 +81,8 @@ impl IgdbApi {
         .await?;
 
         match result.into_iter().next() {
-            Some(igdb_game) => Ok(Some(GameEntry::from(igdb_game))),
-            None => Ok(None),
+            Some(igdb_game) => Ok(igdb_game),
+            None => Err(Status::not_found("IgdbGame with id={id} was not found.")),
         }
     }
 
@@ -115,7 +115,7 @@ impl IgdbApi {
         .await?;
 
         match result.into_iter().next() {
-            Some(external_game) => self.get(external_game.game).await,
+            Some(external_game) => Ok(Some(GameEntry::from(self.get(external_game.game).await?))),
             None => Ok(None),
         }
     }
