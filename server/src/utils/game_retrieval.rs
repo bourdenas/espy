@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let mut firestore = api::FirestoreApi::from_credentials(&opts.firestore_credentials)
         .expect("FirestoreApi.from_credentials()");
-    let next_refresh = SystemTime::now()
+    let mut next_refresh = SystemTime::now()
         .checked_add(Duration::from_secs(30 * 60))
         .unwrap();
 
@@ -70,6 +70,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 info!("Refreshing Firestore credentials...");
                 firestore = api::FirestoreApi::from_credentials(&opts.firestore_credentials)
                     .expect("FirestoreApi.from_credentials()");
+
+                next_refresh = SystemTime::now()
+                    .checked_add(Duration::from_secs(30 * 60))
+                    .unwrap();
             }
 
             if let Err(e) = firestore::games::write(&firestore, &game_entry) {
