@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::api::IgdbGame;
+
 use super::{GameDigest, SteamData};
 
 /// Document type under 'users/{user_id}/games' that represents a game entry in
@@ -201,49 +203,68 @@ impl Default for WebsiteAuthority {
     }
 }
 
-impl GameEntry {
-    pub fn merge(&mut self, other: GameEntry) {
-        if other.cover.is_some() {
-            self.cover = other.cover;
+impl From<IgdbGame> for GameEntry {
+    fn from(igdb_game: IgdbGame) -> Self {
+        GameEntry {
+            id: igdb_game.id,
+            name: igdb_game.name,
+            summary: igdb_game.summary,
+            storyline: igdb_game.storyline,
+            release_date: igdb_game.first_release_date,
+            igdb_rating: igdb_game.aggregated_rating,
+            igdb_follows: igdb_game.follows,
+            igdb_hypes: igdb_game.hypes,
+            category: match igdb_game.category {
+                0 => GameCategory::Main,
+                1 => GameCategory::Dlc,
+                2 => GameCategory::Expansion,
+                4 => GameCategory::StandaloneExpansion,
+                6 => GameCategory::Episode,
+                7 => GameCategory::Season,
+                8 => GameCategory::Remake,
+                9 => GameCategory::Remaster,
+                _ => GameCategory::Ignore,
+            },
+
+            websites: vec![Website {
+                url: igdb_game.url,
+                authority: WebsiteAuthority::Igdb,
+            }],
+
+            ..Default::default()
         }
-        if !other.genres.is_empty() {
-            self.genres.extend(other.genres);
-        }
-        if !other.keywords.is_empty() {
-            self.keywords.extend(other.keywords);
-        }
-        if !other.collections.is_empty() {
-            self.collections.extend(other.collections);
-        }
-        if other.parent.is_some() {
-            self.parent = other.parent;
-        }
-        if !other.developers.is_empty() {
-            self.developers.extend(other.developers);
-        }
-        if !other.publishers.is_empty() {
-            self.publishers.extend(other.publishers);
-        }
-        if !other.expansions.is_empty() {
-            self.expansions.extend(other.expansions);
-        }
-        if !other.dlcs.is_empty() {
-            self.dlcs.extend(other.dlcs);
-        }
-        if !other.remakes.is_empty() {
-            self.remakes.extend(other.remakes);
-        }
-        if !other.remasters.is_empty() {
-            self.remasters.extend(other.remasters);
-        }
-        if !other.screenshots.is_empty() {
-            self.screenshots.extend(other.screenshots);
-        }
-        if !other.artwork.is_empty() {
-            self.artwork.extend(other.artwork);
-        }
-        if !other.websites.is_empty() {
-            self.websites.extend(other.websites);
+    }
+}
+
+impl From<&IgdbGame> for GameEntry {
+    fn from(igdb_game: &IgdbGame) -> Self {
+        GameEntry {
+            id: igdb_game.id,
+            name: igdb_game.name.clone(),
+            summary: igdb_game.summary.clone(),
+            storyline: igdb_game.storyline.clone(),
+            release_date: igdb_game.first_release_date,
+            igdb_rating: igdb_game.aggregated_rating,
+            igdb_follows: igdb_game.follows,
+            igdb_hypes: igdb_game.hypes,
+            category: match igdb_game.category {
+                0 => GameCategory::Main,
+                1 => GameCategory::Dlc,
+                2 => GameCategory::Expansion,
+                4 => GameCategory::StandaloneExpansion,
+                6 => GameCategory::Episode,
+                7 => GameCategory::Season,
+                8 => GameCategory::Remake,
+                9 => GameCategory::Remaster,
+                _ => GameCategory::Ignore,
+            },
+
+            websites: vec![Website {
+                url: igdb_game.url.clone(),
+                authority: WebsiteAuthority::Igdb,
+            }],
+
+            ..Default::default()
         }
     }
 }
