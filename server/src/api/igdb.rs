@@ -242,7 +242,7 @@ impl IgdbApi {
         post::<Vec<IgdbGame>>(
             &igdb_state,
             GAMES_ENDPOINT,
-            &format!("fields *; where platforms = (6) & (category = 0 | category = 1 | category = 2 | category = 4 | category = 8 | category = 9); limit 500; offset {offset};"),
+            &format!("fields *; sort first_release_date desc; where platforms = (6) & (category = 0 | category = 1 | category = 2 | category = 4 | category = 8 | category = 9); limit 500; offset {offset};"),
         )
         .await
     }
