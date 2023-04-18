@@ -31,6 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let mut igdb = api::IgdbApi::new(&keys.igdb.client_id, &keys.igdb.secret);
     igdb.connect().await?;
+    let igdb_batch = api::IgdbBatchApi::new(igdb.clone());
 
     let steam = games::SteamDataApi::new();
 
@@ -42,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let mut k = opts.offset;
     for i in 0.. {
-        let games = igdb.get_igdb_games(opts.offset + i * 500).await?;
+        let games = igdb_batch.collect_igdb_games(opts.offset + i * 500).await?;
         if games.len() == 0 {
             break;
         }

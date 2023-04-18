@@ -84,6 +84,10 @@ pub struct IgdbGame {
 pub struct ExternalGame {
     pub id: u64,
     pub game: u64,
+    pub uid: String,
+
+    #[serde(default)]
+    pub url: Option<String>,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]

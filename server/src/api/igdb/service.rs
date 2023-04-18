@@ -16,6 +16,7 @@ use super::{
     IgdbConnection, IgdbGame,
 };
 
+#[derive(Clone)]
 pub struct IgdbApi {
     secret: String,
     client_id: String,
@@ -56,7 +57,7 @@ impl IgdbApi {
         Ok(())
     }
 
-    fn connection(&self) -> Result<Arc<IgdbConnection>, Status> {
+    pub fn connection(&self) -> Result<Arc<IgdbConnection>, Status> {
         match &self.connection {
             Some(connection) => Ok(Arc::clone(connection)),
             None => Err(Status::internal(
@@ -222,17 +223,6 @@ impl IgdbApi {
             &connection,
             GAMES_ENDPOINT,
             &format!("search \"{title}\"; fields *; where platforms = (6);"),
-        )
-        .await
-    }
-
-    #[instrument(level = "trace", skip(self))]
-    pub async fn get_igdb_games(&self, offset: u64) -> Result<Vec<IgdbGame>, Status> {
-        let connection = self.connection()?;
-        post::<Vec<IgdbGame>>(
-            &connection,
-            GAMES_ENDPOINT,
-            &format!("fields *; sort first_release_date desc; where platforms = (6) & (follows > 3 | hypes > 3) & (category = 0 | category = 1 | category = 2 | category = 4 | category = 8 | category = 9); limit 500; offset {offset};"),
         )
         .await
     }

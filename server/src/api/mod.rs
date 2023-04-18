@@ -8,5 +8,6 @@ pub use firestore::FirestoreApi;
 pub use gog::GogApi;
 pub use gog_token::GogToken;
 pub use igdb::IgdbApi;
+pub use igdb::IgdbBatchApi;
 pub use igdb::IgdbGame;
 pub use steam::SteamApi;
