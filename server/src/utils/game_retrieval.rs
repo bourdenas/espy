@@ -18,7 +18,7 @@ struct Opts {
     )]
     firestore_credentials: String,
 
-    #[clap(long)]
+    #[clap(long, default_value = "0")]
     offset: u64,
 }
 

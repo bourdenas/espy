@@ -10,6 +10,10 @@ path = "src/http_server.rs"
 
 # Command line utils
 [[bin]] 
+name = "external_game_retrieval"
+path = "src/utils/external_game_retrieval.rs"
+
+[[bin]] 
 name = "game_retrieval"
 path = "src/utils/game_retrieval.rs"
 

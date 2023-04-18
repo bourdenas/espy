@@ -49,7 +49,9 @@ impl IgdbBatchApi {
         post::<Vec<ExternalGame>>(
             &connection,
             EXTERNAL_GAMES_ENDPOINT,
-            &format!("fields *; sort uid; where category = {category} & platform.category = 6; limit 500; offset {offset};"),
+            &format!(
+                "fields *; sort uid; where category = {category}; limit 500; offset {offset};"
+            ),
         )
         .await
     }
