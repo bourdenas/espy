@@ -3,7 +3,7 @@ use tracing::instrument;
 
 /// Returns a ExternalGame doc based on `store` and `store_id` from Firestore.
 #[instrument(name = "external_games::read", level = "trace", skip(firestore))]
-pub fn read(firestore: &FirestoreApi, store: &str, store_id: u64) -> Result<ExternalGame, Status> {
+pub fn read(firestore: &FirestoreApi, store: &str, store_id: &str) -> Result<ExternalGame, Status> {
     firestore.read::<ExternalGame>("external_games", &format!("{}_{}", store, &store_id))
 }
 

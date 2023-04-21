@@ -57,7 +57,7 @@ impl LibraryManager {
             }
 
             // Updates progressively the user Library with resolved entries.
-            if resolved_entries.len() == 2 {
+            if resolved_entries.len() == 10 {
                 let upload_entries = resolved_entries;
                 resolved_entries = vec![];
                 let firestore = Arc::clone(&self.firestore);
@@ -102,13 +102,8 @@ impl LibraryManager {
         igdb: Arc<IgdbApi>,
         store_entry: StoreEntry,
     ) -> Result<(StoreEntry, GameEntry), Status> {
-        let game_entry = Reconciler::recon(&igdb, &store_entry).await?;
-
-        match game_entry {
-            Some(game_entry) => {
-                let game_entry = self.get_game_entry(game_entry.id).await?;
-                Ok((store_entry, game_entry))
-            }
+        match Reconciler::recon(Arc::clone(&self.firestore), &igdb, &store_entry).await? {
+            Some(game_entry) => Ok((store_entry, game_entry)),
             None => {
                 let firestore = &self.firestore.lock().unwrap();
                 firestore::failed::add_entry(firestore, &self.user_id, store_entry.clone())?;

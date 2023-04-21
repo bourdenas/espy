@@ -1,9 +1,12 @@
+use std::sync::{Arc, Mutex};
+
 use crate::{
-    api::IgdbApi,
+    api::{FirestoreApi, IgdbApi},
     documents::{GameEntry, StoreEntry},
+    library::firestore,
     Status,
 };
-use tracing::{debug, instrument};
+use tracing::{info, instrument};
 
 pub struct Reconciler;
 
@@ -17,14 +20,15 @@ impl Reconciler {
     /// The returned GameEntry is a shallow entry (single IGDB lookup). If
     /// `use_base_game` is `true`, the entry returned is the base game instead
     /// of the exact match, e.g. remastered version or expansion / DLC.
-    #[instrument(level = "trace", skip(igdb))]
+    #[instrument(level = "trace", skip(firestore, igdb))]
     pub async fn recon(
+        firestore: Arc<Mutex<FirestoreApi>>,
         igdb: &IgdbApi,
         store_entry: &StoreEntry,
     ) -> Result<Option<GameEntry>, Status> {
-        match match_by_external_id(igdb, store_entry).await? {
+        match match_by_external_id(Arc::clone(&firestore), igdb, store_entry).await? {
             Some(game_entry) => Ok(Some(game_entry)),
-            None => match match_by_title(igdb, &store_entry.title).await? {
+            None => match match_by_title(firestore, igdb, &store_entry.title).await? {
                 Some(game_entry) => Ok(Some(game_entry)),
                 None => Ok(None),
             },
@@ -34,25 +38,60 @@ impl Reconciler {
 
 /// Returns a `GameEntry` from IGDB matching the external storefront id in
 /// `store_entry`.
+#[instrument(level = "trace", skip(firestore, igdb))]
 async fn match_by_external_id(
+    firestore: Arc<Mutex<FirestoreApi>>,
     igdb: &IgdbApi,
     store_entry: &StoreEntry,
 ) -> Result<Option<GameEntry>, Status> {
-    debug!("Resolving '{}'", &store_entry.title);
+    info!("Matching external '{}'", &store_entry.title);
 
     match store_entry.id.is_empty() {
+        false => {
+            let external_game = {
+                let firestore = &firestore.lock().unwrap();
+                firestore::external_games::read(
+                    firestore,
+                    &store_entry.storefront_name,
+                    &store_entry.id,
+                )?
+            };
+            let game_entry = {
+                let firestore = &firestore.lock().unwrap();
+                firestore::games::read(firestore, external_game.igdb_id)
+            };
+            match game_entry {
+                Ok(game_entry) => Ok(Some(game_entry)),
+                Err(Status::NotFound(_)) => {
+                    let igdb_game = igdb.get(external_game.igdb_id).await?;
+                    Ok(Some(igdb.resolve(igdb_game).await?))
+                }
+                Err(e) => Err(e),
+            }
+        }
         true => Ok(None),
-        false => igdb.get_by_store_entry(store_entry).await,
     }
 }
 
 /// Returns a `GameEntry` from IGDB matching the `title`.
-async fn match_by_title(igdb: &IgdbApi, title: &str) -> Result<Option<GameEntry>, Status> {
-    debug!("Searching '{}'", title);
+#[instrument(level = "trace", skip(firestore, igdb))]
+async fn match_by_title(
+    firestore: Arc<Mutex<FirestoreApi>>,
+    igdb: &IgdbApi,
+    title: &str,
+) -> Result<Option<GameEntry>, Status> {
+    info!("Searching by title '{}'", title);
 
     let candidates = igdb.search_by_title(title).await?;
     match candidates.into_iter().next() {
-        Some(game_entry) => Ok(Some(game_entry)),
+        Some(igdb_game) => {
+            let game_entry = { firestore::games::read(&firestore.lock().unwrap(), igdb_game.id) };
+            match game_entry {
+                Ok(game_entry) => Ok(Some(game_entry)),
+                Err(Status::NotFound(_)) => Ok(Some(igdb.resolve(igdb_game).await?)),
+                Err(e) => Err(e),
+            }
+        }
         None => Ok(None),
     }
 }

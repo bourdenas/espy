@@ -1,32 +1,32 @@
-use crate::documents::GameEntry;
+use super::IgdbGame;
 
 /// Sorts GameEntries by title relevance in descending order.
-pub fn sorted_by_relevance(title: &str, igdb_games: Vec<GameEntry>) -> Vec<GameEntry> {
+pub fn sorted_by_relevance(title: &str, igdb_games: Vec<IgdbGame>) -> Vec<IgdbGame> {
     let mut candidates = igdb_games
         .into_iter()
-        .map(|game_entry| Candidate {
-            score: edit_distance(title, &game_entry.name),
-            game_entry,
+        .map(|game| Candidate {
+            score: edit_distance(title, &game.name),
+            game,
         })
         .collect::<Vec<_>>();
     candidates.sort_by(|a, b| a.score.total_cmp(&b.score));
 
     candidates
         .into_iter()
-        .map(|candidate| candidate.game_entry)
+        .map(|candidate| candidate.game)
         .collect()
 }
 
 pub fn sorted_by_relevance_with_threshold(
     title: &str,
-    igdb_games: Vec<GameEntry>,
+    igdb_games: Vec<IgdbGame>,
     threshold: f64,
-) -> Vec<GameEntry> {
+) -> Vec<IgdbGame> {
     let mut candidates = igdb_games
         .into_iter()
-        .map(|game_entry| Candidate {
-            score: edit_distance(title, &game_entry.name),
-            game_entry,
+        .map(|game| Candidate {
+            score: edit_distance(title, &game.name),
+            game,
         })
         .filter(|c| c.score <= threshold)
         .collect::<Vec<_>>();
@@ -34,7 +34,7 @@ pub fn sorted_by_relevance_with_threshold(
 
     candidates
         .into_iter()
-        .map(|candidate| candidate.game_entry)
+        .map(|candidate| candidate.game)
         .collect()
 }
 
@@ -42,13 +42,13 @@ pub fn sorted_by_relevance_with_threshold(
 // the command line tool.
 #[derive(Debug)]
 struct Candidate {
-    game_entry: GameEntry,
+    game: IgdbGame,
     score: f64,
 }
 
 impl std::fmt::Display for Candidate {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{} ({})", self.game_entry.name, self.score)
+        write!(f, "{} ({})", self.game.name, self.score)
     }
 }
 

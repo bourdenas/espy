@@ -5,7 +5,7 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 use std::{sync::Arc, time::Duration};
-use tracing::{error, instrument, trace_span, Instrument};
+use tracing::{error, info, instrument, trace_span, Instrument};
 
 use super::{
     backend::post,
@@ -154,14 +154,10 @@ impl IgdbApi {
     /// The returned GameEntries are shallow lookups. Reference ids are not
     /// followed up and thus they are not fully resolved.
     #[instrument(level = "trace", skip(self))]
-    pub async fn search_by_title(&self, title: &str) -> Result<Vec<GameEntry>, Status> {
+    pub async fn search_by_title(&self, title: &str) -> Result<Vec<IgdbGame>, Status> {
         Ok(ranking::sorted_by_relevance(
             title,
-            self.search(title)
-                .await?
-                .into_iter()
-                .map(|igdb_game| GameEntry::from(igdb_game))
-                .collect(),
+            self.search(title).await?,
         ))
     }
 
@@ -179,6 +175,8 @@ impl IgdbApi {
         if base_games_only {
             igdb_games.retain(|game| game.parent_game.is_none());
         }
+
+        let igdb_games = ranking::sorted_by_relevance_with_threshold(title, igdb_games, 1.0);
 
         let connection = self.connection()?;
         let mut handles = vec![];
@@ -205,15 +203,11 @@ impl IgdbApi {
             ));
         }
 
-        Ok(ranking::sorted_by_relevance_with_threshold(
-            title,
-            futures::future::join_all(handles)
-                .await
-                .into_iter()
-                .filter_map(|x| x.ok())
-                .collect::<Vec<_>>(),
-            1.0,
-        ))
+        Ok(futures::future::join_all(handles)
+            .await
+            .into_iter()
+            .filter_map(|x| x.ok())
+            .collect::<Vec<_>>())
     }
 
     async fn search(&self, title: &str) -> Result<Vec<IgdbGame>, Status> {
@@ -227,8 +221,20 @@ impl IgdbApi {
         .await
     }
 
-    #[instrument(level = "trace", skip(self))]
+    #[instrument(
+        level = "trace",
+        skip(self, igdb_game)
+        fields(
+            game_id = %igdb_game.id,
+            title = %igdb_game.name
+        )
+        )]
     pub async fn resolve(&self, igdb_game: IgdbGame) -> Result<GameEntry, Status> {
+        info!(
+            "Resolving in IGDB '{}' ({})",
+            &igdb_game.name, &igdb_game.id
+        );
+
         let connection = self.connection()?;
 
         let mut game_entry = resolve_game_digest(Arc::clone(&connection), &igdb_game).await?;
