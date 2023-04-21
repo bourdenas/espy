@@ -61,6 +61,7 @@ class GameDigest {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       if (cover != null) 'cover': cover,
       'release_date': releaseDate,
