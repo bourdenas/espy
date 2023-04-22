@@ -107,17 +107,20 @@ pub async fn resolve_game_info(
     game_entry: &mut GameEntry,
 ) -> Result<(), Status> {
     if !igdb_game.screenshots.is_empty() {
-        game_entry.screenshots = get_screenshots(&connection, &igdb_game.screenshots).await?;
+        if let Ok(screenshots) = get_screenshots(&connection, &igdb_game.screenshots).await {
+            game_entry.screenshots = screenshots;
+        }
     }
     if !igdb_game.artworks.is_empty() {
-        game_entry.artwork = get_artwork(&connection, &igdb_game.artworks).await?;
+        if let Ok(artwork) = get_artwork(&connection, &igdb_game.artworks).await {
+            game_entry.artwork = artwork;
+        }
     }
     if igdb_game.websites.len() > 0 {
-        game_entry.websites.extend(
-            get_websites(&connection, &igdb_game.websites)
-                .await?
-                .into_iter()
-                .map(|website| Website {
+        if let Ok(websites) = get_websites(&connection, &igdb_game.websites).await {
+            game_entry
+                .websites
+                .extend(websites.into_iter().map(|website| Website {
                     url: website.url,
                     authority: match website.category {
                         1 => WebsiteAuthority::Official,
@@ -128,8 +131,8 @@ pub async fn resolve_game_info(
                         17 => WebsiteAuthority::Gog,
                         _ => WebsiteAuthority::Null,
                     },
-                }),
-        );
+                }));
+        }
     }
 
     let parent_id = match igdb_game.parent_game {
@@ -141,45 +144,40 @@ pub async fn resolve_game_info(
     };
 
     if let Some(parent_id) = parent_id {
-        let parent = resolve_game_digest(
-            Arc::clone(&connection),
-            &get_game(&connection, parent_id).await?,
-        )
-        .await?;
-        game_entry.parent = Some(GameDigest::new(parent));
+        if let Ok(game) = get_game(&connection, parent_id).await {
+            if let Ok(game) = resolve_game_digest(Arc::clone(&connection), &game).await {
+                game_entry.parent = Some(GameDigest::new(game));
+            }
+        }
     }
 
     for expansion_id in igdb_game.expansions.into_iter() {
-        let expansion = resolve_game_digest(
-            Arc::clone(&connection),
-            &get_game(&connection, expansion_id).await?,
-        )
-        .await?;
-        game_entry.expansions.push(GameDigest::new(expansion));
+        if let Ok(game) = get_game(&connection, expansion_id).await {
+            if let Ok(game) = resolve_game_digest(Arc::clone(&connection), &game).await {
+                game_entry.expansions.push(GameDigest::new(game));
+            }
+        }
     }
     for dlc_id in igdb_game.dlcs.into_iter() {
-        let dlc = resolve_game_digest(
-            Arc::clone(&connection),
-            &get_game(&connection, dlc_id).await?,
-        )
-        .await?;
-        game_entry.dlcs.push(GameDigest::new(dlc));
+        if let Ok(game) = get_game(&connection, dlc_id).await {
+            if let Ok(game) = resolve_game_digest(Arc::clone(&connection), &game).await {
+                game_entry.dlcs.push(GameDigest::new(game));
+            }
+        }
     }
     for remake_id in igdb_game.remakes.into_iter() {
-        let remake = resolve_game_digest(
-            Arc::clone(&connection),
-            &get_game(&connection, remake_id).await?,
-        )
-        .await?;
-        game_entry.remakes.push(GameDigest::new(remake));
+        if let Ok(game) = get_game(&connection, remake_id).await {
+            if let Ok(game) = resolve_game_digest(Arc::clone(&connection), &game).await {
+                game_entry.remakes.push(GameDigest::new(game));
+            }
+        }
     }
     for remaster_id in igdb_game.remasters.into_iter() {
-        let remaster = resolve_game_digest(
-            Arc::clone(&connection),
-            &get_game(&connection, remaster_id).await?,
-        )
-        .await?;
-        game_entry.remasters.push(GameDigest::new(remaster));
+        if let Ok(game) = get_game(&connection, remaster_id).await {
+            if let Ok(game) = resolve_game_digest(Arc::clone(&connection), &game).await {
+                game_entry.remasters.push(GameDigest::new(game));
+            }
+        }
     }
 
     Ok(())
