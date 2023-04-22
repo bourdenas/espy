@@ -31,7 +31,7 @@ struct Opts {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    Tracing::setup("utils/refresh_entries")?;
+    Tracing::setup("utils/refresh_game_entries")?;
 
     let opts: Opts = Opts::parse();
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();

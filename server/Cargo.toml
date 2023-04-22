@@ -22,8 +22,8 @@ name = "sync_library"
 path = "src/utils/sync_library.rs"
 
 [[bin]] 
-name = "refresh_entries"
-path = "src/utils/refresh_entries.rs"
+name = "refresh_game_entries"
+path = "src/utils/refresh_game_entries.rs"
 
 [[bin]] 
 name = "refresh_library_entries"
