@@ -1,6 +1,5 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
-    games::SteamDataApi,
     http::models,
     library::{firestore, LibraryManager, User},
     util, Status,
@@ -42,22 +41,17 @@ pub async fn post_search(
     resp
 }
 
-#[instrument(level = "trace", skip(firestore, igdb, steam))]
+#[instrument(level = "trace", skip(firestore, igdb))]
 pub async fn post_resolve(
     resolve: models::Resolve,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
 ) -> Result<impl warp::Reply, Infallible> {
     info!("POST /resolve");
 
     match igdb.get(resolve.game_id).await {
         Ok(igdb_game) => match igdb.resolve(igdb_game).await {
-            Ok(mut game_entry) => {
-                if let Err(e) = steam.retrieve_steam_data(&mut game_entry).await {
-                    error!("Failed to retrieve SteamData for '{}' {e}", game_entry.name);
-                }
-
+            Ok(game_entry) => {
                 if let Err(e) = firestore::games::write(&firestore.lock().unwrap(), &game_entry) {
                     error!("Failed to save '{}' in Firestore: {e}", game_entry.name);
                 }

@@ -17,6 +17,9 @@ pub struct Library {
 pub struct LibraryEntry {
     pub id: u64,
     pub digest: GameDigest,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parent_digest: Option<GameDigest>,
 
     #[serde(default)]

@@ -20,7 +20,7 @@ impl Reconciler {
     /// The returned GameEntry is a shallow entry (single IGDB lookup). If
     /// `use_base_game` is `true`, the entry returned is the base game instead
     /// of the exact match, e.g. remastered version or expansion / DLC.
-    #[instrument(level = "trace", skip(firestore, igdb))]
+    #[instrument(level = "trace", skip(firestore, igdb, store_entry))]
     pub async fn recon(
         firestore: Arc<Mutex<FirestoreApi>>,
         igdb: &IgdbApi,
@@ -64,7 +64,11 @@ async fn match_by_external_id(
                 Ok(game_entry) => Ok(Some(game_entry)),
                 Err(Status::NotFound(_)) => {
                     let igdb_game = igdb.get(external_game.igdb_id).await?;
-                    Ok(Some(igdb.resolve(igdb_game).await?))
+                    let game_entry = igdb.resolve(igdb_game).await?;
+                    {
+                        firestore::games::write(&firestore.lock().unwrap(), &game_entry)?;
+                    }
+                    Ok(Some(game_entry))
                 }
                 Err(e) => Err(e),
             }
@@ -88,7 +92,13 @@ async fn match_by_title(
             let game_entry = { firestore::games::read(&firestore.lock().unwrap(), igdb_game.id) };
             match game_entry {
                 Ok(game_entry) => Ok(Some(game_entry)),
-                Err(Status::NotFound(_)) => Ok(Some(igdb.resolve(igdb_game).await?)),
+                Err(Status::NotFound(_)) => {
+                    let game_entry = igdb.resolve(igdb_game).await?;
+                    {
+                        firestore::games::write(&firestore.lock().unwrap(), &game_entry)?;
+                    }
+                    Ok(Some(game_entry))
+                }
                 Err(e) => Err(e),
             }
         }
