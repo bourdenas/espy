@@ -1,3 +1,4 @@
+
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
@@ -8,8 +9,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
-class TileShelf extends StatefulWidget {
-  const TileShelf({
+class TileShelve extends StatefulWidget {
+  const TileShelve({
     Key? key,
     required this.title,
     this.color,
@@ -30,11 +31,11 @@ class TileShelf extends StatefulWidget {
   final bool expanded;
 
   @override
-  State<TileShelf> createState() => _TileShelfState(expanded);
+  State<TileShelve> createState() => _TileShelveState(expanded);
 }
 
-class _TileShelfState extends State<TileShelf> {
-  _TileShelfState(this.expanded);
+class _TileShelveState extends State<TileShelve> {
+  _TileShelveState(this.expanded);
 
   bool expanded;
 
