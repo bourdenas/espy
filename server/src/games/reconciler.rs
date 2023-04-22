@@ -50,11 +50,15 @@ async fn match_by_external_id(
         false => {
             let external_game = {
                 let firestore = &firestore.lock().unwrap();
-                firestore::external_games::read(
+                match firestore::external_games::read(
                     firestore,
                     &store_entry.storefront_name,
                     &store_entry.id,
-                )?
+                ) {
+                    Ok(external_game) => external_game,
+                    Err(Status::NotFound(_)) => return Ok(None),
+                    Err(e) => return Err(e),
+                }
             };
             let game_entry = {
                 let firestore = &firestore.lock().unwrap();

@@ -83,7 +83,9 @@ impl IgdbApi {
 
         match result.into_iter().next() {
             Some(igdb_game) => Ok(igdb_game),
-            None => Err(Status::not_found("IgdbGame with id={id} was not found.")),
+            None => Err(Status::not_found(format!(
+                "IgdbGame with id={id} was not found."
+            ))),
         }
     }
 
