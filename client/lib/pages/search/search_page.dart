@@ -42,14 +42,22 @@ class _SearchPageState extends State<SearchPage> {
         TagSearchResults(
           tagsModel.stores.filter(ngrams),
           tagsModel.userTags.filter(ngrams),
-          tagsModel.companies.filter(ngrams),
+          tagsModel.developers.filter(ngrams),
+          tagsModel.publishers.filter(ngrams),
           tagsModel.collections.filter(ngrams),
         ),
-        for (final company in tagsModel.companies.filterExact(ngrams)) ...[
+        for (final company in tagsModel.developers.filterExact(ngrams)) ...[
           TileShelve(
             title: company,
             color: Colors.redAccent,
-            filter: LibraryFilter(companies: {company}),
+            filter: LibraryFilter(developers: {company}),
+          ),
+        ],
+        for (final company in tagsModel.publishers.filterExact(ngrams)) ...[
+          TileShelve(
+            title: company,
+            color: Colors.red[200]!,
+            filter: LibraryFilter(publishers: {company}),
           ),
         ],
         for (final collection in tagsModel.collections.filterExact(ngrams)) ...[

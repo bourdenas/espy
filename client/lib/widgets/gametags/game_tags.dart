@@ -57,20 +57,19 @@ class _GameChipsWrap extends StatelessWidget {
       runSpacing: 4.0,
       children: [
         for (final company in tags['developers'])
-          CompanyChip(
+          DeveloperChip(
             company,
             onPressed: () => context.pushNamed(
               'games',
-              queryParams: LibraryFilter(companies: {company}).params(),
+              queryParams: LibraryFilter(developers: {company}).params(),
             ),
           ),
         for (final company in tags['publishers'])
-          CompanyChip(
+          PublisherChip(
             company,
-            developer: false,
             onPressed: () => context.pushNamed(
               'games',
-              queryParams: LibraryFilter(companies: {company}).params(),
+              queryParams: LibraryFilter(publishers: {company}).params(),
             ),
           ),
         for (final collection in tags['collections'])
@@ -128,23 +127,22 @@ class GameCardChips extends StatelessWidget {
             for (final company in tags['developers'])
               Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: CompanyChip(
+                child: DeveloperChip(
                   company,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(companies: {company}).params(),
+                    queryParams: LibraryFilter(developers: {company}).params(),
                   ),
                 ),
               ),
             for (final company in tags['publishers'])
               Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: CompanyChip(
+                child: PublisherChip(
                   company,
-                  developer: false,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(companies: {company}).params(),
+                    queryParams: LibraryFilter(publishers: {company}).params(),
                   ),
                 ),
               ),
@@ -199,10 +197,16 @@ class GameChipsFilter extends StatelessWidget {
           child: StoreChip(store, onDeleted: () {}),
         ),
       ],
-      for (final company in filter.companies) ...[
+      for (final company in filter.developers) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: CompanyChip(company, onDeleted: () {}),
+          child: DeveloperChip(company, onDeleted: () {}),
+        ),
+      ],
+      for (final company in filter.publishers) ...[
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: PublisherChip(company, onDeleted: () {}),
         ),
       ],
       for (final collection in filter.collections) ...[

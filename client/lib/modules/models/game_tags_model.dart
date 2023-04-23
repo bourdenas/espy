@@ -13,12 +13,14 @@ class GameTagsModel extends ChangeNotifier {
   String _userId = '';
 
   StoresManager _storesManager = StoresManager([]);
-  DevelopersManager _companiesManager = DevelopersManager([]);
+  DevelopersManager _developersManager = DevelopersManager([]);
+  PublishersManager _publishersManager = PublishersManager([]);
   CollectionManager _collectionsManager = CollectionManager([]);
   UserTagManager _userTagsManager = UserTagManager('', UserTags());
 
   StoresManager get stores => _storesManager;
-  DevelopersManager get companies => _companiesManager;
+  DevelopersManager get developers => _developersManager;
+  PublishersManager get publishers => _publishersManager;
   CollectionManager get collections => _collectionsManager;
   UserTagManager get userTags => _userTagsManager;
 
@@ -29,7 +31,8 @@ class GameTagsModel extends ChangeNotifier {
   ) async {
     final allEntries = entries + wishlist;
     _storesManager = StoresManager(allEntries);
-    _companiesManager = DevelopersManager(allEntries);
+    _developersManager = DevelopersManager(allEntries);
+    _publishersManager = PublishersManager(allEntries);
     _collectionsManager = CollectionManager(allEntries);
 
     if (userId.isNotEmpty && _userId != userId) {

@@ -13,7 +13,8 @@ class LibraryFilter {
   LibraryFilter({
     this.view = LibraryView.ALL,
     this.stores = const {},
-    this.companies = const {},
+    this.developers = const {},
+    this.publishers = const {},
     this.collections = const {},
     this.tags = const {},
   });
@@ -21,7 +22,8 @@ class LibraryFilter {
   LibraryView view;
 
   Set<String> stores;
-  Set<String> companies;
+  Set<String> developers;
+  Set<String> publishers;
   Set<String> collections;
   Set<String> tags;
 
@@ -32,8 +34,11 @@ class LibraryFilter {
     for (final store in stores) {
       gameIdSets.add(Set.from(tagsModel.stores.gameIds(store)));
     }
-    for (final company in companies) {
-      gameIdSets.add(Set.from(tagsModel.companies.gameIds(company)));
+    for (final company in developers) {
+      gameIdSets.add(Set.from(tagsModel.developers.gameIds(company)));
+    }
+    for (final company in publishers) {
+      gameIdSets.add(Set.from(tagsModel.publishers.gameIds(company)));
     }
     for (final collection in collections) {
       gameIdSets.add(Set.from(tagsModel.collections.gameIds(collection)));
@@ -69,7 +74,8 @@ class LibraryFilter {
   Map<String, String> params() {
     return {
       'vw': _viewEncoding,
-      if (companies.isNotEmpty) 'cmp': companies.map((c) => c).join(','),
+      if (developers.isNotEmpty) 'dev': developers.map((c) => c).join(','),
+      if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(','),
       if (collections.isNotEmpty) 'col': collections.map((c) => c).join(','),
       if (tags.isNotEmpty) 'tag': tags.map((t) => t).join(','),
       if (stores.isNotEmpty) 'str': stores.map((s) => s).join(','),
@@ -82,8 +88,10 @@ class LibraryFilter {
     params.forEach((key, value) {
       if (key == 'vw') {
         filter._view = value;
-      } else if (key == 'cmp') {
-        filter.companies = value.split(',').toSet();
+      } else if (key == 'dev') {
+        filter.developers = value.split(',').toSet();
+      } else if (key == 'pub') {
+        filter.publishers = value.split(',').toSet();
       } else if (key == 'col') {
         filter.collections = value.split(',').toSet();
       } else if (key == 'tag') {
