@@ -28,7 +28,6 @@ impl LibraryManager {
         level = "trace",
         skip(self, store_entries, igdb),
         fields(
-            user_id = %self.user_id,
             entries_num = %store_entries.len()
         ),
     )]
@@ -96,7 +95,13 @@ impl LibraryManager {
         firestore::storefront::add_entries(firestore, &user_id, store_entries)
     }
 
-    #[instrument(level = "trace", skip(self, igdb))]
+    #[instrument(
+        level = "trace",
+        skip(self, igdb, store_entry),
+        fields(
+            title = %store_entry.title,
+        )
+    )]
     async fn match_entry(
         &self,
         igdb: Arc<IgdbApi>,
