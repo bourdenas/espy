@@ -74,14 +74,13 @@ class _GameChipsWrap extends StatelessWidget {
             ),
           ),
         for (final collection in tags['collections'])
-          if (tagsModel.collections.size(collection) > 1)
-            CollectionChip(
-              collection,
-              onPressed: () => context.pushNamed(
-                'games',
-                queryParams: LibraryFilter(collections: {collection}).params(),
-              ),
+          CollectionChip(
+            collection,
+            onPressed: () => context.pushNamed(
+              'games',
+              queryParams: LibraryFilter(collections: {collection}).params(),
             ),
+          ),
         for (final tag
             in context.watch<GameTagsModel>().userTags.byGameId(tags['gameId']))
           TagChip(
@@ -152,18 +151,17 @@ class GameCardChips extends StatelessWidget {
           ],
           if (includeCollections)
             for (final collection in tags['collections'])
-              if (tagsModel.collections.size(collection) > 1)
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: CollectionChip(
-                    collection,
-                    onPressed: () => context.pushNamed(
-                      'games',
-                      queryParams:
-                          LibraryFilter(collections: {collection}).params(),
-                    ),
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: CollectionChip(
+                  collection,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParams:
+                        LibraryFilter(collections: {collection}).params(),
                   ),
                 ),
+              ),
           for (final tag in tagsModel.userTags.byGameId(tags['gameId']))
             Padding(
               padding: const EdgeInsets.all(4.0),
