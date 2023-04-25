@@ -51,14 +51,16 @@ class TagSearchResults extends StatelessWidget {
   const TagSearchResults(
     this.stores,
     this.userTags,
-    this.companies,
+    this.developers,
+    this.publishers,
     this.collections, {
     Key? key,
   }) : super(key: key);
 
   final Iterable<String> stores;
   final Iterable<UserTag> userTags;
-  final Iterable<String> companies;
+  final Iterable<String> developers;
+  final Iterable<String> publishers;
   final Iterable<String> collections;
 
   @override
@@ -81,16 +83,30 @@ class TagSearchResults extends StatelessWidget {
                 ),
               ),
             ),
-          if (companies.isNotEmpty)
+          if (developers.isNotEmpty)
             _ChipResults(
-              title: 'Companies',
+              title: 'Developers',
               color: Colors.redAccent,
-              chips: companies.map(
-                (company) => CompanyChip(
+              chips: developers.map(
+                (company) => DeveloperChip(
                   company,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(companies: {company}).params(),
+                    queryParams: LibraryFilter(developers: {company}).params(),
+                  ),
+                ),
+              ),
+            ),
+          if (publishers.isNotEmpty)
+            _ChipResults(
+              title: 'Publishers',
+              color: Colors.red[200]!,
+              chips: publishers.map(
+                (company) => PublisherChip(
+                  company,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParams: LibraryFilter(publishers: {company}).params(),
                   ),
                 ),
               ),

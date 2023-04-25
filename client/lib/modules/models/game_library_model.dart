@@ -39,9 +39,11 @@ class GameLibraryModel extends ChangeNotifier {
 
     final encodedLibrary = prefs.getString('${userId}_library');
     if (encodedLibrary != null) {
-      _library =
-          Library.fromJson(jsonDecode(encodedLibrary) as Map<String, dynamic>);
-      notifyListeners();
+      try {
+        _library = Library.fromJson(
+            jsonDecode(encodedLibrary) as Map<String, dynamic>);
+        notifyListeners();
+      } catch (_) {}
     }
 
     _fetch();

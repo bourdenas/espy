@@ -48,7 +48,14 @@ class GameDetailsPage extends StatelessWidget {
         }
 
         final jsonObj = snapshot.data!.data();
-        final gameEntry = GameEntry.fromJson(jsonObj!);
+        var gameEntry = GameEntry(id: 0, name: '');
+        try {
+          gameEntry = GameEntry.fromJson(jsonObj!);
+        } catch (_) {
+          context
+              .read<GameLibraryModel>()
+              .retrieveGameEntry(int.tryParse(id) ?? 0);
+        }
 
         return GameDetailsContent(
           libraryEntry: libraryEntry ?? LibraryEntry.fromGameEntry(gameEntry),

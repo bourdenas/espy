@@ -30,15 +30,11 @@ extractTags(GameEntry? gameEntry, LibraryEntry? libraryEntry) {
   return {
     'gameId': gameEntry != null ? gameEntry.id : libraryEntry?.id ?? 0,
     'developers': gameEntry != null
-        ? gameEntry.companies
-            .where((e) => e.role == "Developer")
-            .map((e) => e.name)
-        : libraryEntry?.companies ?? [],
+        ? gameEntry.developers.map((e) => e.name)
+        : libraryEntry?.developers ?? [],
     'publishers': gameEntry != null
-        ? gameEntry.companies
-            .where((e) => e.role != "Developer")
-            .map((e) => e.name)
-        : <String>[],
+        ? gameEntry.publishers.map((e) => e.name)
+        : libraryEntry?.publishers ?? [],
     'collections': gameEntry != null
         ? gameEntry.collections.map((e) => e.name).toSet()
         : libraryEntry?.collections ?? [],
@@ -61,31 +57,29 @@ class _GameChipsWrap extends StatelessWidget {
       runSpacing: 4.0,
       children: [
         for (final company in tags['developers'])
-          CompanyChip(
+          DeveloperChip(
             company,
             onPressed: () => context.pushNamed(
               'games',
-              queryParams: LibraryFilter(companies: {company}).params(),
+              queryParams: LibraryFilter(developers: {company}).params(),
             ),
           ),
         for (final company in tags['publishers'])
-          CompanyChip(
+          PublisherChip(
             company,
-            developer: false,
             onPressed: () => context.pushNamed(
               'games',
-              queryParams: LibraryFilter(companies: {company}).params(),
+              queryParams: LibraryFilter(publishers: {company}).params(),
             ),
           ),
         for (final collection in tags['collections'])
-          if (tagsModel.collections.size(collection) > 1)
-            CollectionChip(
-              collection,
-              onPressed: () => context.pushNamed(
-                'games',
-                queryParams: LibraryFilter(collections: {collection}).params(),
-              ),
+          CollectionChip(
+            collection,
+            onPressed: () => context.pushNamed(
+              'games',
+              queryParams: LibraryFilter(collections: {collection}).params(),
             ),
+          ),
         for (final tag
             in context.watch<GameTagsModel>().userTags.byGameId(tags['gameId']))
           TagChip(
@@ -133,41 +127,39 @@ class GameCardChips extends StatelessWidget {
             for (final company in tags['developers'])
               Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: CompanyChip(
+                child: DeveloperChip(
                   company,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(companies: {company}).params(),
+                    queryParams: LibraryFilter(developers: {company}).params(),
                   ),
                 ),
               ),
             for (final company in tags['publishers'])
               Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: CompanyChip(
+                child: PublisherChip(
                   company,
-                  developer: false,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(companies: {company}).params(),
+                    queryParams: LibraryFilter(publishers: {company}).params(),
                   ),
                 ),
               ),
           ],
           if (includeCollections)
             for (final collection in tags['collections'])
-              if (tagsModel.collections.size(collection) > 1)
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: CollectionChip(
-                    collection,
-                    onPressed: () => context.pushNamed(
-                      'games',
-                      queryParams:
-                          LibraryFilter(collections: {collection}).params(),
-                    ),
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: CollectionChip(
+                  collection,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParams:
+                        LibraryFilter(collections: {collection}).params(),
                   ),
                 ),
+              ),
           for (final tag in tagsModel.userTags.byGameId(tags['gameId']))
             Padding(
               padding: const EdgeInsets.all(4.0),
@@ -205,10 +197,16 @@ class GameChipsFilter extends StatelessWidget {
           child: StoreChip(store, onDeleted: () {}),
         ),
       ],
-      for (final company in filter.companies) ...[
+      for (final company in filter.developers) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: CompanyChip(company, onDeleted: () {}),
+          child: DeveloperChip(company, onDeleted: () {}),
+        ),
+      ],
+      for (final company in filter.publishers) ...[
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: PublisherChip(company, onDeleted: () {}),
         ),
       ],
       for (final collection in filter.collections) ...[

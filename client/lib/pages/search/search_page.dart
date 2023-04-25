@@ -8,7 +8,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
-import 'package:espy/widgets/tiles/tile_shelf.dart';
+import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -42,38 +42,46 @@ class _SearchPageState extends State<SearchPage> {
         TagSearchResults(
           tagsModel.stores.filter(ngrams),
           tagsModel.userTags.filter(ngrams),
-          tagsModel.companies.filter(ngrams),
+          tagsModel.developers.filter(ngrams),
+          tagsModel.publishers.filter(ngrams),
           tagsModel.collections.filter(ngrams),
         ),
-        for (final company in tagsModel.companies.filterExact(ngrams)) ...[
-          TileShelf(
+        for (final company in tagsModel.developers.filterExact(ngrams)) ...[
+          TileShelve(
             title: company,
             color: Colors.redAccent,
-            filter: LibraryFilter(companies: {company}),
+            filter: LibraryFilter(developers: {company}),
+          ),
+        ],
+        for (final company in tagsModel.publishers.filterExact(ngrams)) ...[
+          TileShelve(
+            title: company,
+            color: Colors.red[200]!,
+            filter: LibraryFilter(publishers: {company}),
           ),
         ],
         for (final collection in tagsModel.collections.filterExact(ngrams)) ...[
-          TileShelf(
+          TileShelve(
             title: collection,
             color: Colors.indigoAccent,
             filter: LibraryFilter(collections: {collection}),
           ),
         ],
         for (final tag in tagsModel.userTags.filterExact(ngrams)) ...[
-          TileShelf(
+          TileShelve(
             title: tag.name,
             color: Colors.blueGrey,
             filter: LibraryFilter(tags: {tag.name}),
           ),
         ],
         if (titleMatches.isNotEmpty)
-          TileShelf(
+          TileShelve(
             title: 'Title Matches',
             color: Colors.grey,
             entries: titleMatches,
           ),
         if (_remoteGames.isNotEmpty) ...[
-          TileShelf(
+          TileShelve(
             title: 'Not in Library',
             color: Colors.grey,
             entries: _remoteGames,

@@ -64,18 +64,9 @@ class _EspyScaffoldState extends State<EspyScaffold>
                 extendBodyBehindAppBar: AppConfigModel.isMobile(context),
                 appBar: appBar(context),
                 floatingActionButton: FloatingActionButton(
-                  heroTag: 'quickAdd',
-                  child: Icon(Icons.add),
-                  onPressed: () => MatchingDialog.show(
-                    context,
-                    onMatch: (storeEntry, gameEntry) {
-                      context
-                          .read<GameLibraryModel>()
-                          .matchEntry(storeEntry, gameEntry);
-                      context.pushNamed('details',
-                          params: {'gid': '${gameEntry.id}'});
-                    },
-                  ),
+                  heroTag: 'searchButton',
+                  child: Icon(Icons.search),
+                  onPressed: () => context.pushNamed('search'),
                 ),
                 body: NotificationListener<ScrollNotification>(
                   onNotification: _scrollListener,

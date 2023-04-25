@@ -1,12 +1,23 @@
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/material.dart';
 
-class CompanyChip extends EspyChip {
-  CompanyChip(String company,
-      {VoidCallback? onPressed, VoidCallback? onDeleted, bool developer = true})
+class DeveloperChip extends EspyChip {
+  DeveloperChip(String company,
+      {VoidCallback? onPressed, VoidCallback? onDeleted})
       : super(
           label: company,
-          color: developer ? Colors.redAccent : Colors.red[200]!,
+          color: Colors.redAccent,
+          onPressed: onPressed ?? () {},
+          onDeleted: onDeleted,
+        );
+}
+
+class PublisherChip extends EspyChip {
+  PublisherChip(String company,
+      {VoidCallback? onPressed, VoidCallback? onDeleted})
+      : super(
+          label: company,
+          color: Colors.red[200]!,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );

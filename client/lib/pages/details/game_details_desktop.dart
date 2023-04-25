@@ -81,6 +81,8 @@ class GameDetailsBody extends StatelessWidget {
           primary: false,
           shrinkWrap: true,
           slivers: [
+            if (gameEntry.parent != null)
+              RelatedGamesGroup('Base Game', [gameEntry.parent!]),
             if (gameEntry.expansions.isNotEmpty)
               RelatedGamesGroup('Expansions', gameEntry.expansions),
             if (gameEntry.dlcs.isNotEmpty)
