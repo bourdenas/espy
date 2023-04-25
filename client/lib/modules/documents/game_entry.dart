@@ -1,3 +1,4 @@
+import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/steam_data.dart';
 
@@ -29,6 +30,21 @@ class GameEntry {
   final List<Website> websites;
 
   final SteamData? steamData;
+
+  List<ImageData> get screenshotData => steamData != null
+      ? steamData!.screenshots
+          .map(
+            (e) => ImageData(e.pathThumbnail, e.pathFull),
+          )
+          .toList()
+      : screenshots
+          .map(
+            (e) => ImageData(
+              '${Urls.imageProvider}/t_720p/${e.imageId}.jpg',
+              '${Urls.imageProvider}/t_1080p/${e.imageId}.jpg',
+            ),
+          )
+          .toList();
 
   const GameEntry({
     required this.id,
@@ -289,4 +305,11 @@ class Website {
       'authority': authority,
     };
   }
+}
+
+class ImageData {
+  ImageData(this.thumbnail, this.full);
+
+  String thumbnail;
+  String full;
 }

@@ -1,4 +1,3 @@
-import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/image_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
@@ -11,23 +10,8 @@ class GameImageGallery extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenshots = gameEntry.steamData != null
-        ? gameEntry.steamData!.screenshots
-            .map(
-              (e) => _ImageData(e.pathThumbnail, e.pathFull),
-            )
-            .toList()
-        : gameEntry.screenshots
-            .map(
-              (e) => _ImageData(
-                '${Urls.imageProvider}/t_720p/${e.imageId}.jpg',
-                '${Urls.imageProvider}/t_1080p/${e.imageId}.jpg',
-              ),
-            )
-            .toList();
-
     return TileCarousel(
-      tiles: screenshots
+      tiles: gameEntry.screenshotData
           .map(
             (e) => TileData(
               image: e.thumbnail,

@@ -11,10 +11,10 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class GameEntryActionBar extends StatelessWidget {
-  const GameEntryActionBar({
+  const GameEntryActionBar(
+    this.gameEntry,
+    this.libraryEntry, {
     Key? key,
-    required this.libraryEntry,
-    required this.gameEntry,
   }) : super(key: key);
 
   final LibraryEntry libraryEntry;

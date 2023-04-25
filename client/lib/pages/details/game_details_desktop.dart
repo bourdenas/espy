@@ -163,10 +163,7 @@ class GameDetailsActionBar extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            GameEntryActionBar(
-              libraryEntry: libraryEntry,
-              gameEntry: gameEntry,
-            ),
+            GameEntryActionBar(gameEntry, libraryEntry),
             SizedBox(height: 16.0),
             GameImageGallery(gameEntry: gameEntry),
             SizedBox(height: 16.0),

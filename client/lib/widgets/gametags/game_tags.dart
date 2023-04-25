@@ -80,8 +80,7 @@ class _GameChipsWrap extends StatelessWidget {
               queryParams: LibraryFilter(collections: {collection}).params(),
             ),
           ),
-        for (final tag
-            in context.watch<GameTagsModel>().userTags.byGameId(tags['gameId']))
+        for (final tag in tagsModel.userTags.byGameId(tags['gameId']))
           TagChip(
             tag,
             onPressed: () => context.pushNamed(

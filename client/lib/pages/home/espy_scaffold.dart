@@ -1,6 +1,4 @@
-import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/espy_rail.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
