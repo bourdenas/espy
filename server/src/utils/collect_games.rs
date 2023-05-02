@@ -19,12 +19,18 @@ struct Opts {
     firestore_credentials: String,
 
     #[clap(long, default_value = "0")]
+    updated_since: u64,
+
+    #[clap(long, default_value = "0")]
     offset: u64,
+
+    #[clap(long)]
+    count: bool,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    Tracing::setup("utils/game_retrieval")?;
+    Tracing::setup("utils/collect_games")?;
 
     let opts: Opts = Opts::parse();
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
@@ -43,7 +49,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let mut k = opts.offset;
     for i in 0.. {
-        let games = igdb_batch.collect_igdb_games(opts.offset + i * 500).await?;
+        let games = igdb_batch
+            .collect_igdb_games(opts.updated_since, opts.offset + i * 500)
+            .await?;
         if games.len() == 0 {
             break;
         }
@@ -52,6 +60,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             opts.offset + i * 500,
             opts.offset + i * 500 + games.len() as u64
         );
+
+        if opts.count {
+            continue;
+        }
 
         for igdb_game in games {
             let mut game_entry = match igdb.resolve(igdb_game).await {
