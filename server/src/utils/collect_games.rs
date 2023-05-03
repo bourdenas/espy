@@ -1,4 +1,4 @@
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use clap::Parser;
 use espy_server::{api, games, library::firestore, util, Tracing};
@@ -18,7 +18,8 @@ struct Opts {
     )]
     firestore_credentials: String,
 
-    #[clap(long, default_value = "0")]
+    /// Collect only game entries that were updated in the last N days.
+    #[clap(long, default_value = "60")]
     updated_since: u64,
 
     #[clap(long, default_value = "0")]
@@ -47,10 +48,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .checked_add(Duration::from_secs(30 * 60))
         .unwrap();
 
+    let updated_timestamp = SystemTime::now()
+        .checked_sub(Duration::from_secs(24 * 60 * 60 * opts.updated_since))
+        .unwrap()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+
     let mut k = opts.offset;
     for i in 0.. {
         let games = igdb_batch
-            .collect_igdb_games(opts.updated_since, opts.offset + i * 500)
+            .collect_igdb_games(updated_timestamp, opts.offset + i * 500)
             .await?;
         if games.len() == 0 {
             break;
