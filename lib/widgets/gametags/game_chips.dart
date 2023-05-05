@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 
 class DeveloperChip extends EspyChip {
   DeveloperChip(String company,
-      {VoidCallback? onPressed, VoidCallback? onDeleted})
+      {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})
       : super(
+          key: key,
           label: company,
           color: Colors.redAccent,
           onPressed: onPressed ?? () {},
@@ -14,8 +15,9 @@ class DeveloperChip extends EspyChip {
 
 class PublisherChip extends EspyChip {
   PublisherChip(String company,
-      {VoidCallback? onPressed, VoidCallback? onDeleted})
+      {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})
       : super(
+          key: key,
           label: company,
           color: Colors.red[200]!,
           onPressed: onPressed ?? () {},
@@ -25,8 +27,9 @@ class PublisherChip extends EspyChip {
 
 class CollectionChip extends EspyChip {
   CollectionChip(String collection,
-      {VoidCallback? onPressed, VoidCallback? onDeleted})
+      {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})
       : super(
+          key: key,
           label: collection,
           color: Colors.indigoAccent,
           onPressed: onPressed ?? () {},
@@ -35,8 +38,10 @@ class CollectionChip extends EspyChip {
 }
 
 class StoreChip extends EspyChip {
-  StoreChip(String store, {VoidCallback? onPressed, VoidCallback? onDeleted})
+  StoreChip(String store,
+      {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})
       : super(
+          key: key,
           label: store,
           color: Colors.deepPurpleAccent,
           onPressed: onPressed ?? () {},
@@ -47,10 +52,12 @@ class StoreChip extends EspyChip {
 class TagChip extends EspyChip {
   TagChip(
     UserTag tag, {
+    Key? key,
     VoidCallback? onPressed,
     VoidCallback? onDeleted,
     VoidCallback? onRightClick,
   }) : super(
+          key: key,
           label: tag.name,
           color: tag.color,
           onPressed: onPressed,
@@ -67,12 +74,13 @@ class EspyChip extends StatelessWidget {
   final VoidCallback? onRightClick;
 
   const EspyChip({
+    Key? key,
     required this.label,
     required this.color,
     this.onPressed,
     this.onDeleted,
     this.onRightClick,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

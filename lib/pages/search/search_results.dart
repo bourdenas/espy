@@ -7,7 +7,7 @@ import 'package:espy/pages/gamelist/game_list_card.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/src/provider.dart';
+import 'package:provider/provider.dart';
 
 class GameSearchResults extends StatelessWidget {
   const GameSearchResults({
@@ -24,7 +24,7 @@ class GameSearchResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return context.watch<AppConfigModel>().libraryLayout.value ==
-            LibraryLayout.GRID
+            LibraryLayout.grid
         ? gridView(entries)
         : listView(entries);
   }
@@ -171,12 +171,12 @@ class _ChipResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: [
           Row(
             children: [
-              Text(
+              const Text(
                 'Results for ',
                 style: TextStyle(
                   fontSize: 16.0,
@@ -193,7 +193,7 @@ class _ChipResults extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Container(
+            child: SizedBox(
               height: 40,
               child: ListView(
                 primary: true,

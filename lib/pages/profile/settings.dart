@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class Settings extends StatefulWidget {
-  Settings({Key? key}) : super(key: key);
+  const Settings({Key? key}) : super(key: key);
 
   @override
   State<Settings> createState() => _SettingsState();
@@ -18,22 +18,22 @@ class _SettingsState extends State<Settings> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Text(
           'Settings',
-          style: Theme.of(context).textTheme.headline6!.copyWith(
+          style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 color: Colors.white70,
               ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         storefrontCodeBoxes(context),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         syncButton(context),
-        SizedBox(height: 32),
+        const SizedBox(height: 32),
         manualEditBoxes(context),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         uploadButton(context),
-        SizedBox(height: 32),
+        const SizedBox(height: 32),
         syncLog(),
       ],
     );
@@ -50,7 +50,7 @@ class _SettingsState extends State<Settings> {
     return Form(
       key: _formKey,
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 400.0),
+        constraints: const BoxConstraints(maxWidth: 400.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -90,7 +90,7 @@ class _SettingsState extends State<Settings> {
             child: Image.asset(logoAsset, width: 48),
           ),
           Expanded(
-            child: Container(
+            child: SizedBox(
               width: 200.0,
               child: TextFormField(
                 controller: textController..text = token,
@@ -104,7 +104,7 @@ class _SettingsState extends State<Settings> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 0, 8),
             child: IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.link_off,
                 color: Colors.grey,
               ),
@@ -123,9 +123,9 @@ class _SettingsState extends State<Settings> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _syncLoading
-            ? CircularProgressIndicator()
+            ? const CircularProgressIndicator()
             : ElevatedButton(
-                child: Text("Sync"),
+                child: const Text('Sync'),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     setState(() {
@@ -158,7 +158,7 @@ class _SettingsState extends State<Settings> {
     return Form(
       // key: _formKey,
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 400.0),
+        constraints: const BoxConstraints(maxWidth: 400.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -189,7 +189,7 @@ class _SettingsState extends State<Settings> {
             child: Image.asset(logoAsset, width: 48),
           ),
           Expanded(
-            child: Container(
+            child: SizedBox(
               width: 200.0,
               child: TextFormField(
                 maxLines: 5,
@@ -211,9 +211,9 @@ class _SettingsState extends State<Settings> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _uploadLoading
-            ? CircularProgressIndicator()
+            ? const CircularProgressIndicator()
             : ElevatedButton(
-                child: Text("Upload"),
+                child: const Text('Upload'),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     setState(() {
@@ -249,7 +249,7 @@ class _SettingsState extends State<Settings> {
 
   Widget syncLog() {
     return Expanded(
-      child: Container(
+      child: SizedBox(
         width: 400,
         child: Text(
           _syncLog,

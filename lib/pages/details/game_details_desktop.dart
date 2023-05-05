@@ -64,9 +64,9 @@ class GameDetailsBody extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 64),
+          const SizedBox(width: 64),
           GameDescription(gameEntry: gameEntry),
-          SizedBox(width: 64),
+          const SizedBox(width: 64),
           relatedGames(),
         ],
       ),
@@ -113,36 +113,36 @@ class GameDescription extends StatelessWidget {
         : gameEntry.summary;
 
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 600),
+      constraints: const BoxConstraints(maxWidth: 600),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Html(
             data: description,
           ),
-          SizedBox(height: 8.0),
+          const SizedBox(height: 8.0),
           if (gameEntry.genres.isNotEmpty)
             Text(
               'Genres: ${gameEntry.genres.join(", ")}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w500,
                 letterSpacing: 1.2,
               ),
             ),
-          SizedBox(height: 4.0),
+          const SizedBox(height: 4.0),
           if (gameEntry.keywords.isNotEmpty)
             Text(
               'Keywords: ${gameEntry.keywords.join(", ")}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w500,
                 letterSpacing: 1.2,
               ),
             ),
-          SizedBox(height: 16.0),
+          const SizedBox(height: 16.0),
         ],
       ),
     );
@@ -150,7 +150,7 @@ class GameDescription extends StatelessWidget {
 }
 
 class GameDetailsActionBar extends StatelessWidget {
-  GameDetailsActionBar(this.gameEntry, this.libraryEntry, {Key? key})
+  const GameDetailsActionBar(this.gameEntry, this.libraryEntry, {Key? key})
       : super(key: key);
 
   final GameEntry gameEntry;
@@ -164,9 +164,9 @@ class GameDetailsActionBar extends StatelessWidget {
         child: Column(
           children: [
             GameEntryActionBar(gameEntry, libraryEntry),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             GameImageGallery(gameEntry: gameEntry),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
           ],
         ),
       ),
@@ -175,7 +175,7 @@ class GameDetailsActionBar extends StatelessWidget {
 }
 
 class GameDetailsHeader extends StatelessWidget {
-  GameDetailsHeader(this.gameEntry, {Key? key}) : super(key: key);
+  const GameDetailsHeader(this.gameEntry, {Key? key}) : super(key: key);
 
   final GameEntry gameEntry;
 
@@ -202,7 +202,7 @@ class GameDetailsHeader extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   coverImage(),
-                  Padding(padding: EdgeInsets.all(8)),
+                  const Padding(padding: EdgeInsets.all(8)),
                   gameTitle(context),
                 ],
               ),
@@ -220,7 +220,7 @@ class GameDetailsHeader extends StatelessWidget {
         CachedNetworkImage(
           imageUrl:
               '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
-          errorWidget: (context, url, error) => Icon(Icons.error),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
         ),
         // Positioned(
         //   right: 0,
@@ -272,7 +272,7 @@ class GameDetailsHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 gameEntry.name,
-                style: Theme.of(context).textTheme.headline3,
+                style: Theme.of(context).textTheme.displaySmall,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -280,12 +280,12 @@ class GameDetailsHeader extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${gameEntry.id}',
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.headlineSmall,
                   textAlign: TextAlign.center,
                 ),
               ),
           ]),
-          Padding(padding: EdgeInsets.all(16)),
+          const Padding(padding: EdgeInsets.all(16)),
           GameTags(gameEntry: gameEntry),
         ],
       ),

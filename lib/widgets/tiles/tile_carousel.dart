@@ -58,13 +58,13 @@ class _TileCarouselState extends State<TileCarousel> {
 
   Widget carousel(BuildContext context) {
     return FadeIn(
-      duration: Duration(milliseconds: 500),
-      child: Container(
+      duration: const Duration(milliseconds: 500),
+      child: SizedBox(
         height: widget.tileSize.height,
         child: ListView.builder(
           controller: _scrollController,
           scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           itemCount: widget.tiles.length,
           itemBuilder: (context, index) {
             return _Tile(
@@ -77,7 +77,7 @@ class _TileCarouselState extends State<TileCarousel> {
     );
   }
 
-  ScrollController _scrollController = new ScrollController();
+  final ScrollController _scrollController = ScrollController();
 }
 
 class _CarouselHeader extends StatelessWidget {
@@ -96,7 +96,7 @@ class _CarouselHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 8.0),
+      margin: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -111,7 +111,7 @@ class _CarouselHeader extends StatelessWidget {
     return InkWell(
       onTap: onTitleTap,
       child: Container(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: 8.0,
           vertical: 2.0,
         ),
@@ -120,7 +120,7 @@ class _CarouselHeader extends StatelessWidget {
         ),
         child: Text(
           titleText,
-          style: Theme.of(context).textTheme.headline6,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
     );
@@ -137,8 +137,8 @@ class _CarouselHeader extends StatelessWidget {
               duration: const Duration(milliseconds: 300),
             );
           },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
+          child: const Padding(
+            padding: EdgeInsets.all(8.0),
             child: Icon(Icons.arrow_back_ios, size: 16.0),
           ),
         ),
@@ -150,8 +150,8 @@ class _CarouselHeader extends StatelessWidget {
               duration: const Duration(milliseconds: 300),
             );
           },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
+          child: const Padding(
+            padding: EdgeInsets.all(8.0),
             child: Icon(Icons.arrow_forward_ios, size: 16.0),
           ),
         ),
@@ -179,7 +179,7 @@ class _Tile extends StatelessWidget {
         onSecondaryTap: data.onLongTap,
         onLongPress: data.onLongTap,
         child: ClipRRect(
-          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+          borderRadius: const BorderRadius.all(Radius.circular(8.0)),
           child: Stack(
             children: [
               if (data.image != null)
@@ -188,7 +188,7 @@ class _Tile extends StatelessWidget {
                   imageUrl: data.image!,
                   placeholder: (context, url) => Container(),
                   errorWidget: (context, url, error) =>
-                      Center(child: Icon(Icons.error_outline)),
+                      const Center(child: Icon(Icons.error_outline)),
                 )
               else
                 SizedBox(
@@ -199,7 +199,7 @@ class _Tile extends StatelessWidget {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Container(
+                    SizedBox(
                       width: tileSize.width,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -229,6 +229,8 @@ class _PlaceholderShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
+      baseColor: Colors.grey[850]!,
+      highlightColor: Colors.grey[800]!,
       child: Container(
         height: tileSize.height,
         width: tileSize.width,
@@ -237,8 +239,6 @@ class _PlaceholderShimmer extends StatelessWidget {
           borderRadius: BorderRadius.circular(8.0),
         ),
       ),
-      baseColor: Colors.grey[850]!,
-      highlightColor: Colors.grey[800]!,
     );
   }
 }

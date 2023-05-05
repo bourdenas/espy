@@ -21,14 +21,7 @@ class GameImageGallery extends StatelessWidget {
             ),
           )
           .toList(),
-      tileSize: TileSize(width: 320, height: 240),
+      tileSize: const TileSize(width: 320, height: 240),
     );
   }
-}
-
-class _ImageData {
-  _ImageData(this.thumbnail, this.full);
-
-  String thumbnail;
-  String full;
 }

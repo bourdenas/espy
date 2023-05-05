@@ -81,7 +81,7 @@ class StoresManager {
         store.toLowerCase().split(' ').any((word) => word.startsWith(ngram))));
   }
 
-  Map<String, List<int>> _storeToGameIds = {};
+  final Map<String, List<int>> _storeToGameIds = {};
 }
 
 class DevelopersManager {
@@ -119,7 +119,7 @@ class DevelopersManager {
         company.toLowerCase().split(' ').any((word) => word == ngram)));
   }
 
-  Map<String, List<int>> _developerToGameIds = {};
+  final Map<String, List<int>> _developerToGameIds = {};
 }
 
 class PublishersManager {
@@ -157,7 +157,7 @@ class PublishersManager {
         company.toLowerCase().split(' ').any((word) => word == ngram)));
   }
 
-  Map<String, List<int>> _publisherToGameIds = {};
+  final Map<String, List<int>> _publisherToGameIds = {};
 }
 
 class CollectionManager {
@@ -196,7 +196,7 @@ class CollectionManager {
         collection.toLowerCase().split(' ').any((word) => word == ngram)));
   }
 
-  Map<String, List<int>> _collectionToGameIds = {};
+  final Map<String, List<int>> _collectionToGameIds = {};
 }
 
 class UserTagManager {
@@ -332,11 +332,11 @@ class UserTagManager {
     }
   }
 
-  String _userId = '';
-  UserTags _userTags = UserTags();
-  Map<int, List<UserTag>> _gameIdToTags = {};
-  Map<String, List<int>> _tagToGameIds = {};
-  Map<String, int> _tagToCluster = {};
+  final String _userId;
+  final UserTags _userTags;
+  final Map<int, List<UserTag>> _gameIdToTags = {};
+  final Map<String, List<int>> _tagToGameIds = {};
+  final Map<String, int> _tagToCluster = {};
 
   void build() {
     // Ensure Firestore copy has at least as many clusters as the local clusters.
@@ -377,7 +377,7 @@ class UserTagManager {
 
 class UserTag {
   String name;
-  int _clusterId;
+  final int _clusterId;
 
   UserTag({
     required this.name,
@@ -387,7 +387,7 @@ class UserTag {
   MaterialColor get color => _tagClusters[_clusterId].color;
   String get cluster => _tagClusters[_clusterId].name;
 
-  static List<_UserTagCluster> _tagClusters = [
+  static final List<_UserTagCluster> _tagClusters = [
     _UserTagCluster(name: 'genre', color: Colors.blueGrey),
     _UserTagCluster(name: 'style', color: Colors.orange),
     _UserTagCluster(name: 'theme', color: Colors.green),

@@ -19,7 +19,7 @@ class AutocompleteField extends StatelessWidget {
   final List<Suggestion> Function(String text) createSuggestions;
   final void Function(String text, Suggestion? suggestion) onSubmit;
 
-  AutocompleteField({
+  const AutocompleteField({
     Key? key,
     required this.width,
     required this.hintText,
@@ -30,7 +30,7 @@ class AutocompleteField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: width,
       child: Autocomplete<Suggestion>(
         displayStringForOption: (Suggestion suggestoin) => suggestoin.text,

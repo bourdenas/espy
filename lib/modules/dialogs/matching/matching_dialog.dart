@@ -3,7 +3,7 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/src/provider.dart';
+import 'package:provider/provider.dart';
 
 class MatchingDialog extends StatefulWidget {
   static void show(
@@ -50,7 +50,9 @@ class _MatchingDialogState extends State<MatchingDialog> {
 }
 
 class MatchingDialogAnimation extends StatefulWidget {
-  MatchingDialogAnimation(this.storeEntry, this.matches, this.onMatch);
+  const MatchingDialogAnimation(this.storeEntry, this.matches, this.onMatch,
+      {Key? key})
+      : super(key: key);
 
   final StoreEntry? storeEntry;
   final Future<List<GameEntry>> matches;
@@ -67,8 +69,8 @@ class _MatchingDialogAnimationState extends State<MatchingDialogAnimation>
   void initState() {
     super.initState();
 
-    _animationController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+    _animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
     _scalingAnimation = CurvedAnimation(
         parent: _animationController, curve: Curves.elasticInOut);
     _animationController.addListener(() {

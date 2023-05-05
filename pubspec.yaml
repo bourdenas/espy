@@ -22,6 +22,7 @@ dependencies:
   firebase_auth: ^4.2.5
   firebase_core: ^2.4.1
   flutter_html: ^3.0.0-alpha.6
+  flutter_lints: ^2.0.1
   flutterfire_ui: ^0.4.2
   go_router: ^6.0.0
   google_sign_in: ^5.2.1

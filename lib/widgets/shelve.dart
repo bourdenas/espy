@@ -20,13 +20,17 @@ class Shelve extends StatefulWidget {
   final bool expanded;
 
   @override
-  State<Shelve> createState() => _ShelveState(expanded);
+  State<Shelve> createState() => _ShelveState();
 }
 
 class _ShelveState extends State<Shelve> {
-  _ShelveState(this.expanded);
+  bool expanded = false;
 
-  bool expanded;
+  @override
+  void initState() {
+    super.initState();
+    expanded = widget.expanded;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +108,9 @@ class HeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => maxHeight;
 
   @override
-  bool shouldRebuild(HeaderDelegate oldHeader) {
-    return maxHeight != oldHeader.maxHeight ||
-        minHeight != oldHeader.minHeight ||
-        child != oldHeader.child;
+  bool shouldRebuild(HeaderDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
   }
 }

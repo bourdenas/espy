@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 
 class WishlistModel extends ChangeNotifier {
   String _userId = '';
-  Library _wishlist = Library();
+  Library _wishlist = const Library();
 
   UnmodifiableListView<LibraryEntry> get wishlist =>
       UnmodifiableListView(_wishlist.entries.reversed);
@@ -19,7 +19,7 @@ class WishlistModel extends ChangeNotifier {
   void update(UserData? userData) async {
     if (userData == null) {
       _userId = '';
-      _wishlist = Library();
+      _wishlist = const Library();
       return;
     }
 
@@ -31,9 +31,9 @@ class WishlistModel extends ChangeNotifier {
     _loadRecent(_userId);
   }
 
-  bool contains(int game_id) {
+  bool contains(int gameId) {
     for (final entry in _wishlist.entries) {
-      if (entry.id == game_id) return true;
+      if (entry.id == gameId) return true;
     }
     return false;
   }
@@ -50,13 +50,13 @@ class WishlistModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<Library> snapshot) {
-      _wishlist = snapshot.data() ?? Library();
+      _wishlist = snapshot.data() ?? const Library();
 
       notifyListeners();
     });
   }
 
-  Future<void> add_to_wishlist(LibraryEntry libraryEntry) async {
+  Future<void> addToWishlist(LibraryEntry libraryEntry) async {
     await http.post(
       Uri.parse('${Urls.espyBackend}/library/$_userId/wishlist'),
       headers: {
@@ -68,14 +68,14 @@ class WishlistModel extends ChangeNotifier {
     );
   }
 
-  Future<void> remove_from_wishlist(int game_id) async {
+  Future<void> removeFromWishlist(int gameId) async {
     await http.post(
       Uri.parse('${Urls.espyBackend}/library/$_userId/wishlist'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
-        'remove_game': game_id,
+        'remove_game': gameId,
       }),
     );
   }

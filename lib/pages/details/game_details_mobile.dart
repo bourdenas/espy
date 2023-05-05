@@ -24,7 +24,7 @@ class GameDetailsContentMobile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
-      key: Key('gameDetailsScrollView'),
+      key: const Key('gameDetailsScrollView'),
       slivers: [
         _GameDetailsHeader(gameEntry),
         SliverToBoxAdapter(
@@ -86,10 +86,10 @@ class GameDetailsContentMobile extends StatelessWidget {
             for (final screenshot in gameEntry.screenshotData)
               CachedNetworkImage(
                 imageUrl: screenshot.thumbnail,
-                placeholder: (context, url) => Center(
+                placeholder: (context, url) => const Center(
                   child: CircularProgressIndicator(),
                 ),
-                errorWidget: (context, url, error) => Icon(Icons.error),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
               )
           ],
         ),
@@ -127,29 +127,29 @@ class _GameDescription extends StatelessWidget {
               )
             },
           ),
-          SizedBox(height: 8.0),
+          const SizedBox(height: 8.0),
           if (gameEntry.genres.isNotEmpty)
             Text(
               'Genres: ${gameEntry.genres.join(', ')}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w500,
                 letterSpacing: 1.2,
               ),
             ),
-          SizedBox(height: 4.0),
+          const SizedBox(height: 4.0),
           if (gameEntry.keywords.isNotEmpty)
             Text(
               'Keywords: ${gameEntry.keywords.join(', ')}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12.0,
                 fontWeight: FontWeight.w500,
                 letterSpacing: 1.2,
               ),
             ),
-          SizedBox(height: 16.0),
+          const SizedBox(height: 16.0),
         ],
       ),
     );
@@ -157,7 +157,7 @@ class _GameDescription extends StatelessWidget {
 }
 
 class _GameDetailsHeader extends StatelessWidget {
-  _GameDetailsHeader(this.gameEntry, {Key? key}) : super(key: key);
+  const _GameDetailsHeader(this.gameEntry, {Key? key}) : super(key: key);
 
   final GameEntry gameEntry;
 
@@ -190,11 +190,11 @@ class _GameDetailsHeader extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         FadeIn(
-          duration: Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 500),
           child: CachedNetworkImage(
             imageUrl:
                 '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
-            errorWidget: (context, url, error) => Icon(Icons.error),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
         ),
       ],

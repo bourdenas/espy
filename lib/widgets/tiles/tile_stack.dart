@@ -66,32 +66,32 @@ class _TileStackState extends State<TileStack> {
         children: [
           Stack(
             children: [
-              for (final index_image in tiles.entries)
+              for (final indexImage in tiles.entries)
                 Transform.translate(
-                  offset: deckOffsets[index_image.key],
+                  offset: deckOffsets[indexImage.key],
                   child: Transform.rotate(
-                    angle: deckAngles[index_image.key],
-                    origin: Offset(0, 150),
+                    angle: deckAngles[indexImage.key],
+                    origin: const Offset(0, 150),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
                       child: CachedNetworkImage(
                         fit: BoxFit.fill,
-                        imageUrl: index_image.value,
+                        imageUrl: indexImage.value,
                         placeholder: (context, url) => Container(),
                         errorWidget: (context, url, error) =>
-                            Center(child: Icon(Icons.error_outline)),
+                            const Center(child: Icon(Icons.error_outline)),
                       ),
                     ),
                   ),
                 ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 24,
           ),
           Text(
             widget.title,
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme.of(context).textTheme.titleLarge,
             overflow: TextOverflow.ellipsis,
           ),
         ],

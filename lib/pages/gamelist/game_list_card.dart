@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class GameListCard extends StatelessWidget {
-  GameListCard({
+  const GameListCard({
     Key? key,
     required this.libraryEntry,
   }) : super(key: key);
@@ -29,8 +29,8 @@ class GameListCard extends StatelessWidget {
           : EditEntryDialog.show(context, libraryEntry,
               gameId: libraryEntry.id),
       child: Container(
-        padding: EdgeInsets.all(8.0),
-        margin: EdgeInsets.only(bottom: 16.0),
+        padding: const EdgeInsets.all(8.0),
+        margin: const EdgeInsets.only(bottom: 16.0),
         decoration: BoxDecoration(
           color: Colors.grey[850],
           borderRadius: BorderRadius.circular(10.0),
@@ -39,7 +39,7 @@ class GameListCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             coverImage(),
-            SizedBox(width: 16.0),
+            const SizedBox(width: 16.0),
             cardInfo(context),
           ],
         ),
@@ -52,10 +52,10 @@ class GameListCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(8.0),
       child: CachedNetworkImage(
         imageUrl: '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
-        placeholder: (context, url) => Center(
+        placeholder: (context, url) => const Center(
           child: CircularProgressIndicator(),
         ),
-        errorWidget: (context, url, error) => Icon(Icons.error),
+        errorWidget: (context, url, error) => const Icon(Icons.error),
       ),
     );
   }
@@ -70,14 +70,14 @@ class GameListCard extends StatelessWidget {
           Text(
             libraryEntry.name,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme.of(context).textTheme.titleLarge,
             maxLines: 1,
           ),
-          SizedBox(height: 4.0),
+          const SizedBox(height: 4.0),
           Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 8.0,
                   vertical: 2.0,
                 ),
@@ -88,17 +88,17 @@ class GameListCard extends StatelessWidget {
                 child: Text(
                     '${DateTime.fromMillisecondsSinceEpoch(libraryEntry.releaseDate * 1000).year}'),
               ),
-              SizedBox(width: 16.0),
-              Icon(
+              const SizedBox(width: 16.0),
+              const Icon(
                 Icons.star,
                 color: Colors.amber,
                 size: 18.0,
               ),
-              SizedBox(width: 4.0),
-              Text('4.3'),
+              const SizedBox(width: 4.0),
+              const Text('4.3'),
             ],
           ),
-          SizedBox(height: 16.0),
+          const SizedBox(height: 16.0),
           GameCardChips(
             libraryEntry: libraryEntry,
             includeCompanies: true,

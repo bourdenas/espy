@@ -17,7 +17,7 @@ class GameListView extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: FadeInUp(
         from: 20,
-        duration: Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 500),
         child: CustomScrollView(
           primary: true,
           shrinkWrap: true,

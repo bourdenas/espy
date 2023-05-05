@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class FailedMatchCard extends StatelessWidget {
-  FailedMatchCard({
+  const FailedMatchCard({
     Key? key,
     required this.entry,
   }) : super(key: key);
@@ -27,22 +27,22 @@ class FailedMatchCard extends StatelessWidget {
       ),
       onSecondaryTap: () {},
       child: Container(
-        padding: EdgeInsets.all(8.0),
-        margin: EdgeInsets.only(bottom: 16.0),
+        padding: const EdgeInsets.all(8.0),
+        margin: const EdgeInsets.only(bottom: 16.0),
         decoration: BoxDecoration(
           color: Colors.grey[850],
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Row(
           children: [
-            SizedBox(
+            const SizedBox(
               height: 170,
               width: 120,
               child: Center(
                 child: Icon(Icons.help_outline),
               ),
             ),
-            SizedBox(width: 16.0),
+            const SizedBox(width: 16.0),
             Expanded(
               flex: 3,
               child: Column(
@@ -51,14 +51,14 @@ class FailedMatchCard extends StatelessWidget {
                   Text(
                     entry.title,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.titleLarge,
                     maxLines: 1,
                   ),
-                  SizedBox(height: 4.0),
+                  const SizedBox(height: 4.0),
                   Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 8.0,
                           vertical: 2.0,
                         ),
@@ -66,11 +66,11 @@ class FailedMatchCard extends StatelessWidget {
                           color: Colors.grey[800],
                           borderRadius: BorderRadius.circular(4.0),
                         ),
-                        child: Text('???'),
+                        child: const Text('???'),
                       ),
                     ],
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   StoreChip(entry.storefront),
                 ],
               ),

@@ -5,8 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show ChangeNotifier;
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier, kDebugMode;
 import 'package:http/http.dart' as http;
 
 /// Model that handles user profile data.
@@ -34,7 +33,9 @@ class UserDataModel extends ChangeNotifier {
           'steam_user_id': keys.steamUserId,
         },
       }).onError((error, _) {
-        print(error);
+        if (kDebugMode) {
+          print(error);
+        }
       });
     }
 
@@ -56,7 +57,9 @@ class UserDataModel extends ChangeNotifier {
     );
 
     if (response.statusCode != 200) {
-      print('Failed to unlink storefront:\n${response.statusCode}');
+      if (kDebugMode) {
+        print('Failed to unlink storefront:\n${response.statusCode}');
+      }
     }
   }
 

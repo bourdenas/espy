@@ -6,7 +6,7 @@ import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/src/provider.dart';
+import 'package:provider/provider.dart';
 
 class HomeHeadline extends StatelessWidget {
   const HomeHeadline({Key? key}) : super(key: key);
@@ -15,10 +15,10 @@ class HomeHeadline extends StatelessWidget {
   Widget build(BuildContext context) {
     final entries = context
         .watch<GameEntriesModel>()
-        .filter(LibraryFilter(view: LibraryView.WISHLIST));
+        .filter(LibraryFilter(view: LibraryView.wishlist));
 
     return FadeIn(
-      duration: Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 500),
       child: CarouselSlider(
         options: CarouselOptions(
           height: 480.0,
@@ -57,25 +57,25 @@ class HomeHeadline extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Padding(
-            padding: EdgeInsets.only(bottom: 16.0),
+            padding: const EdgeInsets.only(bottom: 16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.favorite_border,
                   size: 16.0,
                 ),
-                SizedBox(width: 4.0),
+                const SizedBox(width: 4.0),
                 Text(
                   'wishlisted'.toUpperCase(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16.0,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 20.0),
+          const SizedBox(height: 20.0),
         ],
       ),
     );
@@ -84,7 +84,7 @@ class HomeHeadline extends StatelessWidget {
   Widget _fadeShader(Widget child) {
     return ShaderMask(
       shaderCallback: (rect) {
-        return LinearGradient(
+        return const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [

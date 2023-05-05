@@ -7,11 +7,11 @@ import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class HomeSlatesModel extends ChangeNotifier {
-  List<_SlateInfo> _slates = [];
-  List<_SlateInfo> _stacks = [];
+  List<SlateInfo> _slates = [];
+  List<SlateInfo> _stacks = [];
 
-  List<_SlateInfo> get slates => _slates;
-  List<_SlateInfo> get stacks => _stacks;
+  List<SlateInfo> get slates => _slates;
+  List<SlateInfo> get stacks => _stacks;
 
   void update(
     GameEntriesModel gameEntries,
@@ -19,31 +19,31 @@ class HomeSlatesModel extends ChangeNotifier {
     GameTagsModel tagsModel,
     AppConfigModel appConfigModel,
   ) {
-    _SlateInfo slate(String title, LibraryFilter filter,
+    SlateInfo slate(String title, LibraryFilter filter,
         [Iterable<LibraryEntry>? entries]) {
-      return _SlateInfo(
+      return SlateInfo(
           title: title,
           filter: filter,
           entries: entries ?? gameEntries.filter(filter));
     }
 
     _slates = [
-      slate('Library', LibraryFilter(view: LibraryView.IN_LIBRARY)),
-      slate('Wishlist', LibraryFilter(view: LibraryView.WISHLIST)),
+      slate('Library', LibraryFilter(view: LibraryView.inLibrary)),
+      slate('Wishlist', LibraryFilter(view: LibraryView.wishlist)),
       slate('Recent', LibraryFilter(), gameEntries.getRecentEntries()),
     ];
 
     _stacks = [
-      if (appConfigModel.stacks.value == Stacks.COLLECTIONS)
+      if (appConfigModel.stacks.value == Stacks.collections)
         for (final collection in tagsModel.collections.nonSingleton)
           slate(collection, LibraryFilter(collections: {collection})),
-      if (appConfigModel.stacks.value == Stacks.GENRES)
+      if (appConfigModel.stacks.value == Stacks.genres)
         for (final tag in tagsModel.userTags.tagByPopulationInCluster('genre'))
           slate(tag.name, LibraryFilter(tags: {tag.name})),
-      if (appConfigModel.stacks.value == Stacks.STYLES)
+      if (appConfigModel.stacks.value == Stacks.styles)
         for (final tag in tagsModel.userTags.tagByPopulationInCluster('style'))
           slate(tag.name, LibraryFilter(tags: {tag.name})),
-      if (appConfigModel.stacks.value == Stacks.THEMES)
+      if (appConfigModel.stacks.value == Stacks.themes)
         for (final tag in tagsModel.userTags.tagByPopulationInCluster('theme'))
           slate(tag.name, LibraryFilter(tags: {tag.name})),
     ];
@@ -52,8 +52,8 @@ class HomeSlatesModel extends ChangeNotifier {
   }
 }
 
-class _SlateInfo {
-  _SlateInfo({
+class SlateInfo {
+  SlateInfo({
     required this.title,
     required this.entries,
     required this.filter,

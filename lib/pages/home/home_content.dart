@@ -9,14 +9,16 @@ import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:espy/widgets/tiles/tile_stack.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/src/provider.dart';
+import 'package:provider/provider.dart';
 
 class HomeContent extends StatelessWidget {
+  const HomeContent({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return context.watch<GameEntriesModel>().isNotEmpty
         ? library(context)
-        : EmptyLibrary();
+        : const EmptyLibrary();
   }
 
   Widget library(BuildContext context) {
@@ -32,9 +34,9 @@ class HomeContent extends StatelessWidget {
       shrinkWrap: true,
       slivers: [
         if (isMobile)
-          SliverToBoxAdapter(child: HomeHeadline())
+          const SliverToBoxAdapter(child: HomeHeadline())
         else
-          SliverToBoxAdapter(child: SizedBox(height: 16)),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
         SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
@@ -46,8 +48,8 @@ class HomeContent extends StatelessWidget {
                   queryParams: slate.filter.params(),
                 ),
                 tileSize: AppConfigModel.isMobile(context)
-                    ? TileSize(width: 133, height: 190)
-                    : TileSize(width: 227, height: 320),
+                    ? const TileSize(width: 133, height: 190)
+                    : const TileSize(width: 227, height: 320),
                 tiles: slate.entries
                     .map((libraryEntry) => TileData(
                           image:
@@ -73,21 +75,21 @@ class HomeContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: InkWell(
                   onTap: () => appConfig.stacks.nextValue(),
                   child: Text(
-                    "Browse by ${appConfig.stacks.value.name}",
-                    style: Theme.of(context).textTheme.headline6,
+                    'Browse by ${appConfig.stacks.value.name}',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
               ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -110,7 +112,7 @@ class HomeContent extends StatelessWidget {
             ],
           ),
         ),
-        SliverToBoxAdapter(
+        const SliverToBoxAdapter(
           child: SizedBox(height: 32.0),
         ),
       ],

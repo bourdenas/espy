@@ -27,11 +27,11 @@ class GameEntryActionBar extends StatelessWidget {
         Row(
           children: [
             releaseYear(),
-            SizedBox(width: 8.0),
+            const SizedBox(width: 8.0),
             rating(),
-            SizedBox(width: 16.0),
+            const SizedBox(width: 16.0),
             actionButtons(context),
-            SizedBox(width: 16.0),
+            const SizedBox(width: 16.0),
             linkButtons(context, gameEntry, libraryEntry),
           ],
         ),
@@ -41,7 +41,7 @@ class GameEntryActionBar extends StatelessWidget {
 
   Widget releaseYear() {
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         vertical: 2.0,
         horizontal: 8.0,
       ),
@@ -51,7 +51,7 @@ class GameEntryActionBar extends StatelessWidget {
       ),
       child: Text(
         '${DateTime.fromMillisecondsSinceEpoch(gameEntry.releaseDate * 1000).year}',
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 16.0,
           fontWeight: FontWeight.w500,
         ),
@@ -62,12 +62,12 @@ class GameEntryActionBar extends StatelessWidget {
   Widget rating() {
     return Row(
       children: [
-        Icon(
+        const Icon(
           Icons.star,
           color: Colors.amber,
           size: 18.0,
         ),
-        SizedBox(width: 4.0),
+        const SizedBox(width: 4.0),
         Text(gameEntry.igdbRating > 0
             ? (5 * gameEntry.igdbRating / 100.0).toStringAsFixed(1)
             : '--'),
@@ -88,7 +88,7 @@ class GameEntryActionBar extends StatelessWidget {
                   libraryEntry,
                   gameEntry: gameEntry,
                 ),
-          icon: Icon(
+          icon: const Icon(
             Icons.edit,
             size: 24.0,
           ),
@@ -98,11 +98,9 @@ class GameEntryActionBar extends StatelessWidget {
           IconButton(
             onPressed: () {
               if (inWishlist) {
-                context
-                    .read<WishlistModel>()
-                    .remove_from_wishlist(gameEntry.id);
+                context.read<WishlistModel>().removeFromWishlist(gameEntry.id);
               } else {
-                context.read<WishlistModel>().add_to_wishlist(libraryEntry);
+                context.read<WishlistModel>().addToWishlist(libraryEntry);
               }
             },
             icon: Icon(
@@ -148,34 +146,34 @@ class GameEntryActionBar extends StatelessWidget {
 
   Widget websiteIcon(String website, {bool disabled = false}) {
     switch (website) {
-      case "Official":
-        return Icon(Icons.web);
-      case "Wikipedia":
+      case 'Official':
+        return const Icon(Icons.web);
+      case 'Wikipedia':
         return Image.asset('assets/images/wikipedia-128.png');
-      case "Igdb":
+      case 'Igdb':
         return Image.asset('assets/images/igdb-128.png');
-      case "Gog":
+      case 'Gog':
         return Image.asset(
           'assets/images/gog-128.png',
           color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
           colorBlendMode: BlendMode.modulate,
         );
-      case "Steam":
+      case 'Steam':
         return Image.asset(
           'assets/images/steam-128.png',
           color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
           colorBlendMode: BlendMode.modulate,
         );
-      case "Egs":
+      case 'Egs':
         return Image.asset(
           'assets/images/egs-128.png',
           color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
           colorBlendMode: BlendMode.modulate,
         );
-      case "Youtube":
+      case 'Youtube':
         return Image.asset('assets/images/youtube-128.png');
     }
-    return Icon(Icons.error);
+    return const Icon(Icons.error);
   }
 }
 

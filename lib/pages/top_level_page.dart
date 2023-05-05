@@ -14,7 +14,8 @@ class TopLevelPage extends StatefulWidget {
   final Widget body;
   final String path;
 
-  TopLevelPage({required this.body, required this.path});
+  const TopLevelPage({Key? key, required this.body, required this.path})
+      : super(key: key);
 
   @override
   State<TopLevelPage> createState() => _TopLevelPageState();
@@ -31,7 +32,7 @@ class _TopLevelPageState extends State<TopLevelPage>
 
     _drawerAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
     );
     _drawerTween = Tween(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -94,7 +95,7 @@ class _TopLevelPageState extends State<TopLevelPage>
 
           return Stack(
             children: [
-              Container(
+              SizedBox(
                 width: 220.0,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -132,25 +133,23 @@ class _TopLevelPageState extends State<TopLevelPage>
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 32.0),
+          const SizedBox(height: 32.0),
           GestureDetector(
-            key: Key('closeDrawerButton'),
+            key: const Key('closeDrawerButton'),
             onTap: () {
               _drawerAnimationController.reverse();
             },
             child: Row(
-              children: [
+              children: const [
                 SizedBox(width: 8.0),
                 CircleAvatar(
-                  child: Icon(
-                    Icons.close,
-                  ),
                   backgroundColor: Colors.white,
+                  child: Icon(Icons.close),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 64.0),
+          const SizedBox(height: 64.0),
           if (user != null)
             Row(
               children: [
@@ -162,7 +161,7 @@ class _TopLevelPageState extends State<TopLevelPage>
                     ),
                   ),
                 ),
-                SizedBox(width: 16.0),
+                const SizedBox(width: 16.0),
                 Expanded(
                   flex: 3,
                   child: Column(
@@ -170,13 +169,13 @@ class _TopLevelPageState extends State<TopLevelPage>
                     children: [
                       Text(
                         user.displayName!,
-                        style: Theme.of(context).textTheme.headline6!.copyWith(
+                        style: Theme.of(context).textTheme.titleLarge!.copyWith(
                               fontSize: 16.0,
                             ),
                       ),
                       Text(
                         user.email!,
-                        style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                               color: Colors.white70,
                             ),
                       ),
@@ -185,12 +184,12 @@ class _TopLevelPageState extends State<TopLevelPage>
                 )
               ],
             ),
-          SizedBox(height: 32.0),
+          const SizedBox(height: 32.0),
           ListTile(
-            key: Key('libraryListTile'),
+            key: const Key('libraryListTile'),
             onTap: () => context.pushNamed('games'),
-            leading: Icon(Icons.my_library_books),
-            title: Text('Library'),
+            leading: const Icon(Icons.my_library_books),
+            title: const Text('Library'),
             // selected: data.state == figure out,
             style: ListTileStyle.drawer,
             iconColor: Colors.white70,
@@ -202,10 +201,10 @@ class _TopLevelPageState extends State<TopLevelPage>
             ),
           ),
           ListTile(
-            key: Key('unmatchedListTile'),
+            key: const Key('unmatchedListTile'),
             onTap: () => context.pushNamed('unmatched'),
-            leading: Icon(Icons.device_unknown),
-            title: Text('Unmatched Titles'),
+            leading: const Icon(Icons.device_unknown),
+            title: const Text('Unmatched Titles'),
             // selected: data.state == figure out,
             style: ListTileStyle.drawer,
             iconColor: Colors.white70,
@@ -217,10 +216,10 @@ class _TopLevelPageState extends State<TopLevelPage>
             ),
           ),
           ListTile(
-            key: Key('settingsListTile'),
+            key: const Key('settingsListTile'),
             onTap: () => context.pushNamed('profile'),
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
+            leading: const Icon(Icons.settings),
+            title: const Text('Settings'),
             iconColor: Colors.white70,
             textColor: Colors.white70,
           ),

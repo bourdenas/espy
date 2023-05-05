@@ -55,7 +55,7 @@ class GameEntry {
     this.igdbRating = 0.0,
     this.genres = const [],
     this.keywords = const [],
-    this.parent = null,
+    this.parent,
     this.expansions = const [],
     this.dlcs = const [],
     this.remakes = const [],
@@ -67,7 +67,7 @@ class GameEntry {
     this.screenshots = const [],
     this.artwork = const [],
     this.websites = const [],
-    this.steamData = null,
+    this.steamData,
   });
 
   GameEntry.fromJson(Map<String, dynamic> json)

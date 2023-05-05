@@ -11,7 +11,8 @@ class GameTags extends StatelessWidget {
   final GameEntry? gameEntry;
   final LibraryEntry? libraryEntry;
 
-  GameTags({this.gameEntry, this.libraryEntry});
+  const GameTags({Key? key, this.gameEntry, this.libraryEntry})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -106,18 +107,19 @@ class GameCardChips extends StatelessWidget {
   final bool includeCollections;
 
   const GameCardChips({
+    Key? key,
     this.libraryEntry,
     this.gameEntry,
     this.includeCompanies = false,
     this.includeCollections = true,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final tagsModel = context.watch<GameTagsModel>();
     final tags = extractTags(gameEntry, libraryEntry);
 
-    return Container(
+    return SizedBox(
       height: 40.0,
       child: ListView(
         scrollDirection: Axis.horizontal,
@@ -183,7 +185,7 @@ class GameCardChips extends StatelessWidget {
 }
 
 class GameChipsFilter extends StatelessWidget {
-  GameChipsFilter(this.filter);
+  const GameChipsFilter(this.filter, {Key? key}) : super(key: key);
 
   final LibraryFilter filter;
 

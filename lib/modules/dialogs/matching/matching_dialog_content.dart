@@ -5,7 +5,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/src/provider.dart';
+import 'package:provider/provider.dart';
 
 class MatchingDialogContent extends StatefulWidget {
   const MatchingDialogContent(
@@ -20,15 +20,11 @@ class MatchingDialogContent extends StatefulWidget {
   final void Function(StoreEntry, GameEntry)? onMatch;
 
   @override
-  State<MatchingDialogContent> createState() =>
-      _MatchingDialogContentState(storeEntry);
+  State<MatchingDialogContent> createState() => _MatchingDialogContentState();
 }
 
 class _MatchingDialogContentState extends State<MatchingDialogContent> {
-  StoreEntry? storeEntry;
   String storeName = 'egs';
-
-  _MatchingDialogContentState(this.storeEntry);
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +42,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
               controller: _matchController,
               focusNode: _matchFocusNode,
               autofocus: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.search),
                 hintText: 'Game title...',
               ),
@@ -55,7 +51,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: AbsorbPointer(
-              absorbing: storeEntry != null,
+              absorbing: widget.storeEntry != null,
               child: DropdownButton<String>(
                 value: storeName,
                 items: [
@@ -71,8 +67,8 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                       child: Text(store),
                     ),
                 ],
-                hint: Text(
-                  "Storefront",
+                hint: const Text(
+                  'Storefront',
                 ),
                 onChanged: (String? value) {
                   setState(() {
@@ -88,16 +84,16 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                 Widget result = TileCarousel(
                   title: 'Matches',
                   tiles: [
-                    for (var i = 0; i < 5; ++i) TileData(),
+                    for (var i = 0; i < 5; ++i) const TileData(),
                   ],
                   tileSize: AppConfigModel.isMobile(context)
-                      ? TileSize(width: 133, height: 190)
-                      : TileSize(width: 227, height: 320),
+                      ? const TileSize(width: 133, height: 190)
+                      : const TileSize(width: 227, height: 320),
                 );
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   Future.delayed(Duration.zero, () {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content: Text('Looking up for matches...'),
                       duration: Duration(seconds: 10),
                     ));
@@ -107,7 +103,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                     child: Text('Something went wrong: ${snapshot.error}'),
                   );
                 } else if (!snapshot.hasData) {
-                  result = Center(child: Text('No data'));
+                  result = const Center(child: Text('No data'));
                 } else if (snapshot.connectionState == ConnectionState.done &&
                     snapshot.hasData) {
                   Future.delayed(Duration.zero, () {
@@ -122,8 +118,9 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                               ? '${Urls.imageProvider}/t_cover_big/${gameEntry.cover!.imageId}.jpg'
                               : null,
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text('Matching in progress...')));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Matching in progress...')));
                             widget.onMatch!(getStoreEntry(), gameEntry);
                             Navigator.of(context).pop();
                           }))
@@ -134,13 +131,13 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                           title: 'Matches',
                           tiles: tiles,
                           tileSize: AppConfigModel.isMobile(context)
-                              ? TileSize(width: 133, height: 190)
-                              : TileSize(width: 227, height: 320),
+                              ? const TileSize(width: 133, height: 190)
+                              : const TileSize(width: 227, height: 320),
                         )
-                      : Center(child: Text('No matches found!'));
+                      : const Center(child: Text('No matches found!'));
                 }
 
-                return Container(
+                return SizedBox(
                   // hacky: Manually measure height of HomeSlate to avoid
                   // resize if a message is shown instead.
                   height: 400.0,
@@ -154,7 +151,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
   }
 
   StoreEntry getStoreEntry() {
-    return storeEntry ??
+    return widget.storeEntry ??
         StoreEntry(
           id: '',
           title: _matchController.text,

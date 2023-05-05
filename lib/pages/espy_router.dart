@@ -18,7 +18,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/src/provider.dart';
+import 'package:provider/provider.dart';
 
 class EspyRouter extends StatelessWidget {
   final _router = GoRouter(
@@ -29,7 +29,7 @@ class EspyRouter extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
           child: TopLevelPage(
-            body: HomeContent(),
+            body: const HomeContent(),
             path: state.path!,
           ),
         ),
@@ -75,7 +75,7 @@ class EspyRouter extends StatelessWidget {
         path: '/search',
         pageBuilder: (context, state) => NoTransitionPage(
           child: TopLevelPage(
-            body: SearchPage(),
+            body: const SearchPage(),
             path: state.path!,
           ),
         ),
@@ -85,7 +85,7 @@ class EspyRouter extends StatelessWidget {
         path: '/unmatched',
         pageBuilder: (context, state) => NoTransitionPage(
           child: TopLevelPage(
-            body: FailedMatchPage(),
+            body: const FailedMatchPage(),
             path: state.path!,
           ),
         ),
@@ -95,13 +95,13 @@ class EspyRouter extends StatelessWidget {
         path: '/profile',
         pageBuilder: (context, state) => NoTransitionPage(
           child: TopLevelPage(
-            body: ProfilePage(),
+            body: const ProfilePage(),
             path: state.path!,
           ),
         ),
       ),
     ],
-    errorBuilder: (context, state) => TopLevelPage(
+    errorBuilder: (context, state) => const TopLevelPage(
       body: Center(
         child: Text('Page not found :('),
       ),
@@ -109,26 +109,26 @@ class EspyRouter extends StatelessWidget {
     ),
   );
 
+  EspyRouter({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Shortcuts(
-      shortcuts: {
-        SingleActivator(LogicalKeyboardKey.slash): const SearchIntent(),
-        SingleActivator(LogicalKeyboardKey.keyF, control: true):
-            const SearchIntent(),
-        SingleActivator(LogicalKeyboardKey.keyG, control: true):
-            const HomeIntent(),
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.slash): SearchIntent(),
+        SingleActivator(LogicalKeyboardKey.keyF, control: true): SearchIntent(),
+        SingleActivator(LogicalKeyboardKey.keyG, control: true): HomeIntent(),
         SingleActivator(LogicalKeyboardKey.period, control: true):
-            const EditDialogIntent(),
+            EditDialogIntent(),
         SingleActivator(LogicalKeyboardKey.keyQ, control: true):
-            const AddGameIntent(),
+            AddGameIntent(),
       },
       child: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             // TODO: Show a loading screen.
-            return MaterialApp(home: Scaffold());
+            return const MaterialApp(home: Scaffold());
           }
 
           if (snapshot.connectionState == ConnectionState.active) {
@@ -142,10 +142,10 @@ class EspyRouter extends StatelessWidget {
                 debugShowCheckedModeBanner: false,
               );
             } else {
-              return MaterialApp(home: LoginPage());
+              return const MaterialApp(home: LoginPage());
             }
           }
-          return MaterialApp(home: Scaffold());
+          return const MaterialApp(home: Scaffold());
         },
       ),
     );

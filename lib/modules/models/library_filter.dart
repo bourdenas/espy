@@ -3,15 +3,15 @@ import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 
 enum LibraryView {
-  ALL,
-  IN_LIBRARY,
-  WISHLIST,
-  UNTAGGED,
+  all,
+  inLibrary,
+  wishlist,
+  untagged,
 }
 
 class LibraryFilter {
   LibraryFilter({
-    this.view = LibraryView.ALL,
+    this.view = LibraryView.all,
     this.stores = const {},
     this.developers = const {},
     this.publishers = const {},
@@ -60,13 +60,13 @@ class LibraryFilter {
 
   bool _filterView(LibraryEntry entry, GameTagsModel tagsModel) {
     switch (view) {
-      case LibraryView.ALL:
+      case LibraryView.all:
         return true;
-      case LibraryView.IN_LIBRARY:
+      case LibraryView.inLibrary:
         return entry.storeEntries.isNotEmpty;
-      case LibraryView.WISHLIST:
+      case LibraryView.wishlist:
         return entry.storeEntries.isEmpty;
-      case LibraryView.UNTAGGED:
+      case LibraryView.untagged:
         return tagsModel.userTags.byGameId(entry.id).isEmpty;
     }
   }
@@ -105,13 +105,13 @@ class LibraryFilter {
 
   String get _viewEncoding {
     switch (view) {
-      case LibraryView.ALL:
+      case LibraryView.all:
         return 'all';
-      case LibraryView.IN_LIBRARY:
+      case LibraryView.inLibrary:
         return 'lib';
-      case LibraryView.WISHLIST:
+      case LibraryView.wishlist:
         return 'wsl';
-      case LibraryView.UNTAGGED:
+      case LibraryView.untagged:
         return 'unt';
       default:
         return 'all';
@@ -121,16 +121,16 @@ class LibraryFilter {
   set _view(String encoded) {
     switch (encoded) {
       case 'all':
-        view = LibraryView.ALL;
+        view = LibraryView.all;
         break;
       case 'lib':
-        view = LibraryView.IN_LIBRARY;
+        view = LibraryView.inLibrary;
         break;
       case 'wsl':
-        view = LibraryView.WISHLIST;
+        view = LibraryView.wishlist;
         break;
       case 'unt':
-        view = LibraryView.UNTAGGED;
+        view = LibraryView.untagged;
         break;
     }
   }

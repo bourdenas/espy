@@ -10,7 +10,7 @@ class ChoiceTags extends StatefulWidget {
   final LibraryEntry entry;
   final List<String> keywords;
 
-  ChoiceTags(this.entry, this.keywords);
+  const ChoiceTags(this.entry, this.keywords, {Key? key}) : super(key: key);
 
   @override
   State<ChoiceTags> createState() => _ChoiceTagsState();
@@ -22,13 +22,13 @@ class _ChoiceTagsState extends State<ChoiceTags> {
 
   @override
   Widget build(BuildContext context) {
-    final onSelected = (bool selected, UserTag tag) {
+    void onSelected(bool selected, UserTag tag) {
       if (selected) {
         context.read<GameTagsModel>().userTags.add(tag, widget.entry.id);
       } else {
         context.read<GameTagsModel>().userTags.remove(tag, widget.entry.id);
       }
-    };
+    }
 
     final tagsModel = context.watch<GameTagsModel>();
     final filteredTags = tagsModel.userTags.filter(filter.split(' '));
@@ -40,7 +40,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: 350),
+            constraints: const BoxConstraints(maxHeight: 350),
             child: ListView(
               shrinkWrap: true,
               children: [
@@ -68,7 +68,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
                               tag.name,
                               style: Theme.of(context)
                                   .textTheme
-                                  .bodyText1!
+                                  .bodyLarge!
                                   .copyWith(
                                       color: selectedTags
                                               .any((e) => e.name == tag.name)
@@ -92,7 +92,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
           padding: const EdgeInsets.all(16.0),
           child: TextFormField(
             autofocus: !AppConfigModel.isMobile(context),
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               prefixIcon: Icon(Icons.label),
               hintText: 'Label...',
             ),

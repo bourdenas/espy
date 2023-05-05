@@ -13,6 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
+  const SearchPage({Key? key}) : super(key: key);
+
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
@@ -26,7 +28,7 @@ class _SearchPageState extends State<SearchPage> {
 
     final titleMatches = _text.isNotEmpty
         ? gameEntriesModel
-            .filter(LibraryFilter(view: LibraryView.ALL))
+            .filter(LibraryFilter(view: LibraryView.all))
             .where((entry) => ngrams.every((term) => entry.name
                 .toLowerCase()
                 .split(' ')

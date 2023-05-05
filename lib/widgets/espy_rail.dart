@@ -10,7 +10,8 @@ class EspyNavigationRail extends StatefulWidget {
   final bool extended;
   final String path;
 
-  const EspyNavigationRail(this.extended, this.path);
+  const EspyNavigationRail(this.extended, this.path, {Key? key})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -20,7 +21,7 @@ class EspyNavigationRail extends StatefulWidget {
 
 class EspyNavigationRailState extends State<EspyNavigationRail> {
   int _selectedIndex = 0;
-  Map<String, int> _mapping = {
+  final Map<String, int> _mapping = {
     '/': 0,
     '/games': 1,
     '/unmatched': 3,
@@ -51,7 +52,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
                   ? ClipOval(
                       child: Image.network(user.photoURL!),
                     )
-                  : Icon(Icons.person),
+                  : const Icon(Icons.person),
             ),
             onPressed: () => context.pushNamed('profile')),
       ),
@@ -118,7 +119,7 @@ List<_MenuItem> _menuItems = [
     icon: Icons.label_off_outlined,
     selectedIcon: Icons.label_off,
     onTap: (context) => context.pushNamed('games',
-        queryParams: LibraryFilter(view: LibraryView.UNTAGGED).params()),
+        queryParams: LibraryFilter(view: LibraryView.untagged).params()),
   ),
   _MenuItem(
     label: 'Failed',

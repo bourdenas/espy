@@ -8,8 +8,8 @@ class AppConfigModel extends ChangeNotifier {
         scaffoldBackgroundColor: backgrounColor,
       );
 
-  static Color get foregroundColor => Color(0xFF0F1720);
-  static Color get backgrounColor => Color(0xFF1B2838);
+  static Color get foregroundColor => const Color(0xFF0F1720);
+  static Color get backgrounColor => const Color(0xFF1B2838);
 
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width <= 800;
@@ -65,33 +65,33 @@ class AppConfigModel extends ChangeNotifier {
 }
 
 enum LibraryLayout {
-  GRID,
-  LIST,
+  grid,
+  list,
 }
 
 enum CardDecoration {
-  EMPTY,
-  INFO,
-  TAGS,
+  empty,
+  info,
+  tags,
 }
 
 enum GroupBy {
-  NONE,
-  YEAR,
+  none,
+  year,
 }
 
 enum Stacks {
-  COLLECTIONS,
-  GENRES,
-  STYLES,
-  THEMES,
+  collections,
+  genres,
+  styles,
+  themes,
 }
 
 class ModalOption<OptionEnum> {
-  OptionEnum Function(int) _valueGetter;
+  final OptionEnum Function(int) _valueGetter;
   OptionEnum _value;
   int _valueIndex;
-  int _valuesLen;
+  final int _valuesLen;
   void Function()? onUpdate;
 
   ModalOption(this._valueGetter, this._valuesLen)

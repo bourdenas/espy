@@ -6,18 +6,18 @@ import 'package:espy/pages/gamelist/game_grid_view.dart';
 import 'package:espy/pages/gamelist/game_list_view.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/src/provider.dart';
+import 'package:provider/provider.dart';
 
 class GameListPage extends StatefulWidget {
-  const GameListPage({required this.filter});
+  const GameListPage({Key? key, required this.filter}) : super(key: key);
 
   final LibraryFilter filter;
 
   @override
-  _GameListPageState createState() => _GameListPageState();
+  GameListPageState createState() => GameListPageState();
 }
 
-class _GameListPageState extends State<GameListPage> {
+class GameListPageState extends State<GameListPage> {
   @override
   Widget build(BuildContext context) {
     final entries =
@@ -27,7 +27,7 @@ class _GameListPageState extends State<GameListPage> {
       appBar: AppBar(
         leading: badges.Badge(
           badgeContent: Text('${entries.length}'),
-          badgeStyle: badges.BadgeStyle(
+          badgeStyle: const badges.BadgeStyle(
             shape: badges.BadgeShape.instagram,
             badgeColor: Colors.deepPurple,
             padding: EdgeInsets.all(8),
@@ -40,7 +40,7 @@ class _GameListPageState extends State<GameListPage> {
         elevation: 0.0,
       ),
       body: context.watch<AppConfigModel>().libraryLayout.value ==
-              LibraryLayout.GRID
+              LibraryLayout.grid
           ? GameGridView(entries: entries)
           : GameListView(entries: entries),
     );

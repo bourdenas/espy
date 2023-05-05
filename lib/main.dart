@@ -80,6 +80,6 @@ Future<void> main() async {
         },
       ),
     ],
-    child: EspyApp(),
+    child: const EspyApp(),
   ));
 }

@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Model that handles interactions with remote library data store.
 class GameLibraryModel extends ChangeNotifier {
-  Library _library = Library();
+  Library _library = const Library();
   String userId = '';
 
   List<LibraryEntry> get entries => _library.entries;
@@ -21,7 +21,7 @@ class GameLibraryModel extends ChangeNotifier {
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
-      _library = Library();
+      _library = const Library();
       notifyListeners();
       return;
     }
@@ -66,7 +66,7 @@ class GameLibraryModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<Library> snapshot) {
-      _library = snapshot.data() ?? Library();
+      _library = snapshot.data() ?? const Library();
       notifyListeners();
       _saveLocally();
     });

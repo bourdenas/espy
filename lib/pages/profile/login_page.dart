@@ -6,7 +6,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SignInScreen(
+    return const SignInScreen(
       providerConfigs: _providerConfigs,
       actions: [],
     );

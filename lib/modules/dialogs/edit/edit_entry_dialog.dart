@@ -7,8 +7,8 @@ class EditEntryDialog extends StatelessWidget {
   static Future<void> show(
     BuildContext context,
     LibraryEntry libraryEntry, {
-    GameEntry? gameEntry = null,
-    int? gameId = null,
+    GameEntry? gameEntry,
+    int? gameId,
   }) async {
     showDialog(
       context: context,
@@ -20,7 +20,9 @@ class EditEntryDialog extends StatelessWidget {
   final GameEntry? gameEntry;
   final int? gameId;
 
-  EditEntryDialog(this.libraryEntry, this.gameEntry, this.gameId);
+  const EditEntryDialog(this.libraryEntry, this.gameEntry, this.gameId,
+      {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

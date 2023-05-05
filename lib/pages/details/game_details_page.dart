@@ -5,10 +5,10 @@ import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/src/provider.dart';
+import 'package:provider/provider.dart';
 
 class GameDetailsPage extends StatelessWidget {
-  const GameDetailsPage({required this.path});
+  const GameDetailsPage({Key? key, required this.path}) : super(key: key);
 
   final String path;
 
@@ -27,7 +27,7 @@ class GameDetailsPage extends StatelessWidget {
         if (snapshot.hasError) {
           return Center(child: Text('Something went wrong: ${snapshot.error}'));
         } else if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (!snapshot.hasData || snapshot.data?.data() == null) {
@@ -38,7 +38,7 @@ class GameDetailsPage extends StatelessWidget {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+              children: const [
                 Text('Retrieving game info'),
                 SizedBox(height: 16),
                 CircularProgressIndicator(),
@@ -48,7 +48,7 @@ class GameDetailsPage extends StatelessWidget {
         }
 
         final jsonObj = snapshot.data!.data();
-        var gameEntry = GameEntry(id: 0, name: '');
+        var gameEntry = const GameEntry(id: 0, name: '');
         try {
           gameEntry = GameEntry.fromJson(jsonObj!);
         } catch (_) {

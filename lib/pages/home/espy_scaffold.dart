@@ -10,7 +10,9 @@ class EspyScaffold extends StatefulWidget {
   final Widget body;
   final String path;
 
-  EspyScaffold({required this.body, required this.path, this.onShowMenu});
+  const EspyScaffold(
+      {Key? key, required this.body, required this.path, this.onShowMenu})
+      : super(key: key);
 
   @override
   State<EspyScaffold> createState() => _EspyScaffoldState();
@@ -27,7 +29,7 @@ class _EspyScaffoldState extends State<EspyScaffold>
 
     _colorAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 0),
+      duration: const Duration(milliseconds: 0),
     );
     _colorTween = ColorTween(
       begin: Colors.transparent,
@@ -63,7 +65,7 @@ class _EspyScaffoldState extends State<EspyScaffold>
                 appBar: appBar(context),
                 floatingActionButton: FloatingActionButton(
                   heroTag: 'searchButton',
-                  child: Icon(Icons.search),
+                  child: const Icon(Icons.search),
                   onPressed: () => context.pushNamed('search'),
                 ),
                 body: NotificationListener<ScrollNotification>(
@@ -98,7 +100,7 @@ class _EspyScaffoldState extends State<EspyScaffold>
               tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
             )
           : null,
-      title: Text(
+      title: const Text(
         'espy',
         style: TextStyle(
           fontWeight: FontWeight.bold,
@@ -108,56 +110,56 @@ class _EspyScaffoldState extends State<EspyScaffold>
       actions: [
         if (AppConfigModel.isMobile(context)) ...[
           IconButton(
-            key: Key('layoutButton'),
+            key: const Key('layoutButton'),
             icon: Icon(
                 _libraryViews[appConfig.libraryLayout.value.index].iconData),
             splashRadius: 20.0,
             onPressed: () => appConfig.libraryLayout.nextValue(),
           ),
           IconButton(
-            key: Key('cardInfoButton'),
+            key: const Key('cardInfoButton'),
             icon:
                 Icon(_cardViews[appConfig.cardDecoration.value.index].iconData),
             splashRadius: 20.0,
             onPressed: () => appConfig.cardDecoration.nextValue(),
           ),
           IconButton(
-            key: Key('groupByButton'),
+            key: const Key('groupByButton'),
             icon: Icon(_groupViews[appConfig.groupBy.value.index].iconData),
             splashRadius: 20.0,
             onPressed: () => appConfig.groupBy.nextValue(),
           ),
           IconButton(
-            key: Key('searchButton'),
-            icon: Icon(Icons.search),
+            key: const Key('searchButton'),
+            icon: const Icon(Icons.search),
             splashRadius: 20.0,
             onPressed: () => context.pushNamed('search'),
           ),
         ] else ...[
           ToggleButtons(
             renderBorder: false,
-            children: _libraryViews.map((e) => Icon(e.iconData)).toList(),
             isSelected: List.generate(_libraryViews.length,
                 (i) => i == appConfig.libraryLayout.value.index),
             onPressed: (index) => appConfig.libraryLayout.valueIndex = index,
+            children: _libraryViews.map((e) => Icon(e.iconData)).toList(),
           ),
-          SizedBox(width: 24),
+          const SizedBox(width: 24),
           ToggleButtons(
             renderBorder: false,
-            children: _cardViews.map((e) => Icon(e.iconData)).toList(),
             isSelected: List.generate(_cardViews.length,
                 (i) => i == appConfig.cardDecoration.value.index),
             onPressed: (index) => appConfig.cardDecoration.valueIndex = index,
+            children: _cardViews.map((e) => Icon(e.iconData)).toList(),
           ),
-          SizedBox(width: 24),
+          const SizedBox(width: 24),
           ToggleButtons(
             renderBorder: false,
-            children: _groupViews.map((e) => Icon(e.iconData)).toList(),
             isSelected: List.generate(
                 _groupViews.length, (i) => i == appConfig.groupBy.value.index),
             onPressed: (index) => appConfig.groupBy.valueIndex = index,
+            children: _groupViews.map((e) => Icon(e.iconData)).toList(),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
         ],
       ],
       backgroundColor: _colorTween.value,
@@ -165,20 +167,20 @@ class _EspyScaffoldState extends State<EspyScaffold>
     );
   }
 
-  List<_LibraryView> _libraryViews = const [
-    _LibraryView(LibraryLayout.GRID, Icons.grid_view),
-    _LibraryView(LibraryLayout.LIST, Icons.view_list),
+  final List<_LibraryView> _libraryViews = const [
+    _LibraryView(LibraryLayout.grid, Icons.grid_view),
+    _LibraryView(LibraryLayout.list, Icons.view_list),
   ];
 
-  List<_CardsView> _cardViews = const [
-    _CardsView(CardDecoration.EMPTY, Icons.label_off),
-    _CardsView(CardDecoration.INFO, Icons.info),
-    _CardsView(CardDecoration.TAGS, Icons.collections_bookmark),
+  final List<_CardsView> _cardViews = const [
+    _CardsView(CardDecoration.empty, Icons.label_off),
+    _CardsView(CardDecoration.info, Icons.info),
+    _CardsView(CardDecoration.tags, Icons.collections_bookmark),
   ];
 
-  List<_GroupView> _groupViews = const [
-    _GroupView(GroupBy.NONE, Icons.block),
-    _GroupView(GroupBy.YEAR, Icons.calendar_month),
+  final List<_GroupView> _groupViews = const [
+    _GroupView(GroupBy.none, Icons.block),
+    _GroupView(GroupBy.year, Icons.calendar_month),
   ];
 }
 

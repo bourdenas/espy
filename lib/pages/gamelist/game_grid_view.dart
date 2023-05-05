@@ -15,7 +15,7 @@ class GameGridView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groups = context.watch<AppConfigModel>().groupBy.value == GroupBy.YEAR
+    final groups = context.watch<AppConfigModel>().groupBy.value == GroupBy.year
         ? groupBy(
             entries,
             (e) =>
@@ -36,7 +36,7 @@ class GameGridView extends StatelessWidget {
         else ...[
           for (final key in keys.reversed)
             TileShelve(
-              title: '$key',
+              title: key,
               color: Colors.grey,
               entries: groups[key]!,
               cardWidth: _maxCardWidth,

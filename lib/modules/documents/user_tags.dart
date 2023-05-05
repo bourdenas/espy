@@ -17,6 +17,7 @@ class UserTags {
   UserTags.fromJson(Map<String, dynamic> json)
       : this(
           classes: [
+            // ignore: no_leading_underscores_for_local_identifiers
             for (final _class in json['classes'] ?? [])
               TagClass.fromJson(_class),
           ],
@@ -25,6 +26,7 @@ class UserTags {
   Map<String, dynamic> toJson() {
     return {
       'classes': [
+        // ignore: no_leading_underscores_for_local_identifiers
         for (final _class in classes) _class.toJson(),
       ],
     };

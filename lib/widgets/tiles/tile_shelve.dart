@@ -29,13 +29,17 @@ class TileShelve extends StatefulWidget {
   final bool expanded;
 
   @override
-  State<TileShelve> createState() => _TileShelveState(expanded);
+  State<TileShelve> createState() => _TileShelveState();
 }
 
 class _TileShelveState extends State<TileShelve> {
-  _TileShelveState(this.expanded);
+  bool expanded = false;
 
-  bool expanded;
+  @override
+  void initState() {
+    super.initState();
+    expanded = widget.expanded;
+  }
 
   @override
   Widget build(BuildContext context) {

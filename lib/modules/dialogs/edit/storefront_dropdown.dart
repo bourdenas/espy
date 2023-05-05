@@ -7,22 +7,19 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class StorefrontDropdown extends StatefulWidget {
-  StorefrontDropdown(this.libraryEntry);
+  const StorefrontDropdown(this.libraryEntry, {Key? key}) : super(key: key);
 
   final LibraryEntry libraryEntry;
 
   @override
-  _StorefrontDropdownState createState() =>
-      _StorefrontDropdownState(libraryEntry.storeEntries[0]);
+  StorefrontDropdownState createState() => StorefrontDropdownState();
 }
 
-class _StorefrontDropdownState extends State<StorefrontDropdown> {
-  _StorefrontDropdownState(this.storeEntry);
-
-  StoreEntry storeEntry;
-
+class StorefrontDropdownState extends State<StorefrontDropdown> {
   @override
   Widget build(BuildContext context) {
+    StoreEntry storeEntry = widget.libraryEntry.storeEntries[0];
+
     return Material(
       elevation: 5,
       child: Column(
@@ -36,8 +33,8 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
                   child: Text(storeEntry.storefront),
                 ),
             ],
-            hint: Text(
-              "Storefront selection",
+            hint: const Text(
+              'Storefront selection',
             ),
             onChanged: (StoreEntry? value) {
               setState(() {
@@ -50,7 +47,7 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
             child: TextField(
               controller: TextEditingController()..text = storeEntry.title,
               readOnly: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Store Title',
                 floatingLabelBehavior: FloatingLabelBehavior.auto,
               ),
@@ -62,15 +59,15 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  child: Text('Re-match'),
+                  child: const Text('Re-match'),
                   onPressed: () => onRematch(context),
                 ),
                 ElevatedButton(
-                  child: Text('Unmatch'),
+                  child: const Text('Unmatch'),
                   onPressed: () => onUnmatch(context),
                 ),
                 ElevatedButton(
-                  child: Text('Delete'),
+                  child: const Text('Delete'),
                   onPressed: () => onDelete(context),
                 ),
               ],
@@ -84,7 +81,7 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
   void onRematch(BuildContext context) {
     MatchingDialog.show(
       context,
-      storeEntry: storeEntry,
+      storeEntry: widget.libraryEntry.storeEntries[0],
       onMatch: (storeEntry, gameEntry) {
         context
             .read<GameLibraryModel>()
@@ -99,28 +96,28 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          content: Text('Are you sure you want to unmatch this entry?'),
+          content: const Text('Are you sure you want to unmatch this entry?'),
           actions: [
             TextButton(
-              child: Text('Confirm'),
+              child: const Text('Confirm'),
               onPressed: () async {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text("Unmatching '${storeEntry.title}'...")));
+                    content: Text(
+                        "Unmatching '${widget.libraryEntry.storeEntries[0].title}'...")));
                 Navigator.of(context).pop();
 
                 if (widget.libraryEntry.storeEntries.length == 1) {
                   Navigator.pop(context);
                 }
 
-                context
-                    .read<GameLibraryModel>()
-                    .unmatchEntry(storeEntry, widget.libraryEntry);
+                context.read<GameLibraryModel>().unmatchEntry(
+                    widget.libraryEntry.storeEntries[0], widget.libraryEntry);
                 Navigator.pop(context);
               },
             ),
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],
@@ -134,14 +131,15 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          content: Text('Are you sure you want to delete this entry?'),
+          content: const Text('Are you sure you want to delete this entry?'),
           actions: [
             TextButton(
-              child: Text('Confirm'),
+              child: const Text('Confirm'),
               onPressed: () async {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text("Deleting '${storeEntry.title}'...")));
+                    content: Text(
+                        "Deleting '${widget.libraryEntry.storeEntries[0].title}'...")));
                 Navigator.of(context).pop();
 
                 if (widget.libraryEntry.storeEntries.length == 1) {
@@ -149,13 +147,13 @@ class _StorefrontDropdownState extends State<StorefrontDropdown> {
                 }
 
                 context.read<GameLibraryModel>().unmatchEntry(
-                    storeEntry, widget.libraryEntry,
+                    widget.libraryEntry.storeEntries[0], widget.libraryEntry,
                     delete: true);
                 Navigator.pop(context);
               },
             ),
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],

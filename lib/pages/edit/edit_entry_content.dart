@@ -10,10 +10,11 @@ import 'package:flutter/material.dart';
 
 class EditEntryContent extends StatelessWidget {
   const EditEntryContent({
+    Key? key,
     required this.libraryEntry,
     this.gameEntry,
     this.gameId,
-  });
+  }) : super(key: key);
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;
@@ -51,10 +52,8 @@ class EditEntryContent extends StatelessWidget {
 }
 
 Future<GameEntry> _getGameEntry(int gameId) async {
-  final snapshot = await FirebaseFirestore.instance
-      .collection('games')
-      .doc('${gameId}')
-      .get();
+  final snapshot =
+      await FirebaseFirestore.instance.collection('games').doc('$gameId').get();
   return GameEntry.fromJson(snapshot.data()!);
 }
 
@@ -76,7 +75,7 @@ class _EditEntryView extends StatelessWidget {
     return ListView(
       shrinkWrap: true,
       children: [
-        SizedBox(height: 16.0),
+        const SizedBox(height: 16.0),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -86,11 +85,11 @@ class _EditEntryView extends StatelessWidget {
                   '${Urls.imageProvider}/t_thumb/${libraryEntry.cover}.jpg',
                 ),
               ),
-              SizedBox(width: 16.0),
+              const SizedBox(width: 16.0),
               Expanded(
                 child: Text(
                   libraryEntry.name,
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.headlineSmall,
                   overflow: TextOverflow.ellipsis,
                   softWrap: false,
                 ),
@@ -98,25 +97,25 @@ class _EditEntryView extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(height: 16.0),
+        const SizedBox(height: 16.0),
         Card(
           child: ExpandableNotifier(
             initialExpanded: true,
             child: ExpandablePanel(
-              header: Padding(
-                padding: const EdgeInsets.all(8.0),
+              header: const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: Text('Game Tags'),
               ),
               collapsed: Container(),
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 4.0),
+                  const SizedBox(height: 4.0),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text(
                       'Keywords: ${keywords.join(", ")}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 12.0,
                         fontWeight: FontWeight.w500,
@@ -124,9 +123,9 @@ class _EditEntryView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(height: 8.0),
+                  const SizedBox(height: 8.0),
                   ChoiceTags(libraryEntry, keywords),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                 ],
               ),
             ),
@@ -137,8 +136,8 @@ class _EditEntryView extends StatelessWidget {
             child: ExpandableNotifier(
               initialExpanded: false,
               child: ExpandablePanel(
-                header: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                header: const Padding(
+                  padding: EdgeInsets.all(8.0),
                   child: Text('Storefronts'),
                 ),
                 collapsed: Container(),
