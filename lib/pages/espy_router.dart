@@ -13,7 +13,6 @@ import 'package:espy/pages/profile/profile_page.dart';
 import 'package:espy/pages/search/search_page.dart';
 import 'package:espy/pages/top_level_page.dart';
 import 'package:espy/pages/failed/failed_match_page.dart';
-import 'package:espy/widgets/webpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -61,12 +60,6 @@ class EspyRouter extends StatelessWidget {
             path: 'edit',
             builder: (context, state) =>
                 EditEntryPage(id: state.params['gid']!),
-          ),
-          GoRoute(
-            name: 'web',
-            path: 'web',
-            builder: (context, state) =>
-                WebPage(url: state.queryParams['url']!),
           ),
         ],
       ),
