@@ -129,7 +129,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                         &igdb_collection.name
                     );
                 }
-                info!("#{} Saved collection '{}'", k, igdb_collection.name);
+                info!(
+                    "#{} Saved collection '{}' ({})",
+                    k, igdb_collection.name, igdb_collection.id
+                );
             }
             k += 1;
 
