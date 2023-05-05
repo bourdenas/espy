@@ -1,3 +1,5 @@
+mod collection;
+mod external_game;
 mod game_digest;
 mod game_entry;
 mod library_entry;
@@ -8,6 +10,8 @@ mod storefront;
 mod user_data;
 mod user_tags;
 
+pub use collection::IgdbCollection;
+pub use external_game::ExternalGame;
 pub use game_digest::GameDigest;
 pub use game_entry::*;
 pub use library_entry::{Library, LibraryEntry};

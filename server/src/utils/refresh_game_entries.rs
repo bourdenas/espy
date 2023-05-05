@@ -1,5 +1,5 @@
 use clap::Parser;
-use espy_server::{games::Resolver, *};
+use espy_server::*;
 use std::{
     sync::{Arc, Mutex},
     time::{Duration, SystemTime},
@@ -31,7 +31,7 @@ struct Opts {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    Tracing::setup("utils/refresh_entries")?;
+    Tracing::setup("utils/refresh_game_entries")?;
 
     let opts: Opts = Opts::parse();
     let keys = util::keys::Keys::from_file(&opts.key_store).unwrap();
@@ -107,11 +107,11 @@ async fn refresh(
             ));
         }
 
-        if let Err(e) =
-            Resolver::resolve(game_entry.id, &igdb, &steam, Arc::clone(&firestore)).await
-        {
-            error!("Failed to refresh '{}': {e}", game_entry.name);
-        }
+        // if let Err(e) =
+        //     Resolver::resolve(game_entry.id, &igdb, &steam, Arc::clone(&firestore)).await
+        // {
+        //     error!("Failed to refresh '{}': {e}", game_entry.name);
+        // }
     }
 
     Ok(())

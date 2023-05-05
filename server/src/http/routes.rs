@@ -1,6 +1,5 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
-    games::SteamDataApi,
     util,
 };
 use std::sync::{Arc, Mutex};
@@ -13,34 +12,16 @@ use super::{handlers, models, resources::*};
 pub fn routes(
     keys: Arc<util::keys::Keys>,
     igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
     firestore: Arc<Mutex<FirestoreApi>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     home()
         .or(post_search(Arc::clone(&igdb)))
-        .or(post_resolve(
-            Arc::clone(&firestore),
-            Arc::clone(&igdb),
-            Arc::clone(&steam),
-        ))
-        .or(post_match(
-            Arc::clone(&firestore),
-            Arc::clone(&igdb),
-            Arc::clone(&steam),
-        ))
+        .or(post_resolve(Arc::clone(&firestore), Arc::clone(&igdb)))
+        .or(post_match(Arc::clone(&firestore)))
         .or(post_wishlist(Arc::clone(&firestore)))
         .or(post_unlink(Arc::clone(&firestore)))
-        .or(post_sync(
-            keys,
-            Arc::clone(&firestore),
-            Arc::clone(&igdb),
-            Arc::clone(&steam),
-        ))
-        .or(post_upload(
-            Arc::clone(&firestore),
-            Arc::clone(&igdb),
-            Arc::clone(&steam),
-        ))
+        .or(post_sync(keys, Arc::clone(&firestore), Arc::clone(&igdb)))
+        .or(post_upload(Arc::clone(&firestore), Arc::clone(&igdb)))
         .or(get_images())
         .or_else(|e| async {
             warn! {"Rejected route: {:?}", e};
@@ -68,29 +49,23 @@ fn post_search(
 fn post_resolve(
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("resolve")
         .and(warp::post())
         .and(json_body::<models::Resolve>())
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
-        .and(with_steam(steam))
         .and_then(handlers::post_resolve)
 }
 
 /// POST /library/{user_id}/match
 fn post_match(
     firestore: Arc<Mutex<FirestoreApi>>,
-    igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "match")
         .and(warp::post())
         .and(json_body::<models::MatchOp>())
         .and(with_firestore(firestore))
-        .and(with_igdb(igdb))
-        .and(with_steam(steam))
         .and_then(handlers::post_match)
 }
 
@@ -121,14 +96,12 @@ fn post_sync(
     keys: Arc<util::keys::Keys>,
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "sync")
         .and(warp::post())
         .and(with_keys(keys))
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
-        .and(with_steam(steam))
         .and_then(handlers::post_sync)
 }
 
@@ -136,14 +109,12 @@ fn post_sync(
 fn post_upload(
     firestore: Arc<Mutex<FirestoreApi>>,
     igdb: Arc<IgdbApi>,
-    steam: Arc<SteamDataApi>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("library" / String / "upload")
         .and(warp::post())
         .and(json_body::<models::Upload>())
         .and(with_firestore(firestore))
         .and(with_igdb(igdb))
-        .and(with_steam(steam))
         .and_then(handlers::post_upload)
 }
 

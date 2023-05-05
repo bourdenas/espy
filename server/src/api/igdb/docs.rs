@@ -17,7 +17,19 @@ pub struct IgdbGame {
     pub first_release_date: Option<i64>,
 
     #[serde(default)]
+    pub aggregated_rating: Option<f64>,
+
+    #[serde(default)]
     pub total_rating: Option<f64>,
+
+    #[serde(default)]
+    pub follows: i64,
+
+    #[serde(default)]
+    pub hypes: i64,
+
+    #[serde(default)]
+    pub category: u64,
 
     #[serde(default)]
     pub genres: Vec<u64>,
@@ -72,6 +84,10 @@ pub struct IgdbGame {
 pub struct ExternalGame {
     pub id: u64,
     pub game: u64,
+    pub uid: String,
+
+    #[serde(default)]
+    pub url: Option<String>,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]
@@ -117,6 +133,13 @@ pub struct Collection {
 
     #[serde(default)]
     pub slug: String,
+
+    #[serde(default)]
+    pub url: String,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub games: Vec<u64>,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]

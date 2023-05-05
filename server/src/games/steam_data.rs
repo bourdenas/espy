@@ -24,25 +24,6 @@ impl SteamDataApi {
         fields(game_entry = %game_entry.name),
     )]
     pub async fn retrieve_steam_data(&self, game_entry: &mut GameEntry) -> Result<(), Status> {
-        self.update_steam_data(game_entry).await?;
-
-        for game_entry in &mut game_entry.expansions {
-            self.update_steam_data(game_entry).await?;
-        }
-        for game_entry in &mut game_entry.dlcs {
-            self.update_steam_data(game_entry).await?;
-        }
-        for game_entry in &mut game_entry.remakes {
-            self.update_steam_data(game_entry).await?;
-        }
-        for game_entry in &mut game_entry.remasters {
-            self.update_steam_data(game_entry).await?;
-        }
-
-        Ok(())
-    }
-
-    async fn update_steam_data(&self, game_entry: &mut GameEntry) -> Result<(), Status> {
         let steam_appid = get_steam_appid(game_entry);
 
         if let None = steam_appid {

@@ -10,12 +10,28 @@ path = "src/http_server.rs"
 
 # Command line utils
 [[bin]] 
+name = "collect_collections"
+path = "src/utils/collect_collections.rs"
+
+[[bin]] 
+name = "collect_external_games"
+path = "src/utils/collect_external_games.rs"
+
+[[bin]] 
+name = "collect_games"
+path = "src/utils/collect_games.rs"
+
+[[bin]] 
 name = "sync_library"
 path = "src/utils/sync_library.rs"
 
 [[bin]] 
-name = "refresh_entries"
-path = "src/utils/refresh_entries.rs"
+name = "refresh_collections"
+path = "src/utils/refresh_collections.rs"
+
+[[bin]] 
+name = "refresh_game_entries"
+path = "src/utils/refresh_game_entries.rs"
 
 [[bin]] 
 name = "refresh_library_entries"
@@ -33,14 +49,14 @@ path = "src/utils/storefront_cleanup.rs"
 [dependencies]
 async-recursion = "1.0"
 async-trait = "0.1"
-clap = { version="4.0", features = ["derive"] }
+clap = { version="4.2", features = ["derive"] }
 firestore-db-and-auth = "0.6"
 futures = "0.3"
 itertools = "0.10"
 reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "1.21", features = ["full", "tracing"] }
+tokio = { version = "1.27", features = ["full", "tracing"] }
 warp = "0.3"
 
 tracing = "0.1"

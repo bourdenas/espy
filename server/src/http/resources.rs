@@ -1,6 +1,5 @@
 use crate::{
     api::{FirestoreApi, IgdbApi},
-    games::SteamDataApi,
     util,
 };
 use std::{
@@ -13,12 +12,6 @@ pub fn with_igdb(
     igdb: Arc<IgdbApi>,
 ) -> impl Filter<Extract = (Arc<IgdbApi>,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&igdb))
-}
-
-pub fn with_steam(
-    steam: Arc<SteamDataApi>,
-) -> impl Filter<Extract = (Arc<SteamDataApi>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::clone(&steam))
 }
 
 pub fn with_firestore(

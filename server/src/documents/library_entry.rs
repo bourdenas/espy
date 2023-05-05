@@ -1,11 +1,10 @@
-use super::{CompanyRole, GameDigest};
-use crate::documents::{GameEntry, StoreEntry};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashSet,
     fmt,
     time::{SystemTime, UNIX_EPOCH},
 };
+
+use super::{GameDigest, GameEntry, StoreEntry};
 
 /// Document type under 'users/{user_id}/games/library' that includes user's
 /// library with games matched with an IGDB entry.
@@ -21,60 +20,24 @@ pub struct LibraryEntry {
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub added_date: Option<u64>,
+    pub parent_digest: Option<GameDigest>,
 
     #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub store_entries: Vec<StoreEntry>,
 
     #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub owned_versions: Vec<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub added_date: Option<u64>,
 }
 
 impl LibraryEntry {
-    pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>, owned_versions: Vec<u64>) -> Self {
+    pub fn new(game: GameEntry, store_entries: Vec<StoreEntry>) -> Self {
         LibraryEntry {
             id: game.id,
-            digest: GameDigest {
-                name: game.name,
-                cover: match game.cover {
-                    Some(cover) => Some(cover.image_id),
-                    None => None,
-                },
-                release_date: game.release_date,
-                rating: game.igdb_rating,
-
-                collections: game
-                    .collections
-                    .into_iter()
-                    .map(|collection| collection.name)
-                    .collect::<HashSet<_>>()
-                    .into_iter()
-                    .collect(),
-
-                companies: game
-                    .companies
-                    .into_iter()
-                    .filter(|company| match company.role {
-                        CompanyRole::Developer => true,
-                        _ => false,
-                    })
-                    .map(|company| company.name)
-                    .collect::<HashSet<_>>()
-                    .into_iter()
-                    .collect(),
-
-                genres: match game.steam_data {
-                    Some(steam_data) => steam_data
-                        .genres
-                        .into_iter()
-                        .map(|genre| genre.description)
-                        .collect(),
-                    None => game.genres,
-                },
-                keywords: game.keywords,
-            },
+            parent_digest: game.parent.clone(),
+            digest: GameDigest::new(game),
+            store_entries,
 
             added_date: Some(
                 SystemTime::now()
@@ -82,9 +45,6 @@ impl LibraryEntry {
                     .unwrap()
                     .as_secs(),
             ),
-
-            store_entries,
-            owned_versions,
         }
     }
 }
