@@ -8,14 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class GameDetailsPage extends StatelessWidget {
-  const GameDetailsPage({Key? key, required this.path}) : super(key: key);
+  const GameDetailsPage({Key? key, required this.id}) : super(key: key);
 
-  final String path;
+  final String id;
 
   @override
   Widget build(BuildContext context) {
-    final ids = path.split(',');
-    final id = ids[0];
     final libraryEntry =
         context.watch<GameEntriesModel>().getEntryByStringId(id);
 

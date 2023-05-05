@@ -51,7 +51,7 @@ class EspyRouter extends StatelessWidget {
         path: '/details/:gid',
         pageBuilder: (context, state) => NoTransitionPage(
           child: TopLevelPage(
-            body: GameDetailsPage(path: state.params['gid']!),
+            body: GameDetailsPage(id: state.params['gid']!),
             path: state.path!,
           ),
         ),
