@@ -24,7 +24,6 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
     '/': 0,
     '/games': 1,
     '/unmatched': 3,
-    '/search': 4,
   };
 
   @override
@@ -128,11 +127,5 @@ List<_MenuItem> _menuItems = [
     onTap: (context) => context.pushNamed('unmatched'),
     badgeText: (context) =>
         Text('${context.watch<FailedModel>().entries.length}'),
-  ),
-  _MenuItem(
-    label: 'Search',
-    icon: Icons.search_outlined,
-    selectedIcon: Icons.search,
-    onTap: (context) => context.pushNamed('search'),
   ),
 ];

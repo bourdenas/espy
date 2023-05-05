@@ -1,3 +1,5 @@
+import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/steam_data.dart';
 
 class GameEntry {
@@ -12,15 +14,15 @@ class GameEntry {
   final List<String> genres;
   final List<String> keywords;
 
-  final List<GameEntry> expansions;
-  final List<GameEntry> dlcs;
-  final List<GameEntry> remakes;
-  final List<GameEntry> remasters;
-  final List<int> versions;
-  final int? parent;
+  final GameDigest? parent;
+  final List<GameDigest> expansions;
+  final List<GameDigest> dlcs;
+  final List<GameDigest> remakes;
+  final List<GameDigest> remasters;
 
   final List<Collection> collections;
-  final List<Company> companies;
+  final List<Company> developers;
+  final List<Company> publishers;
 
   final GameImage? cover;
   final List<GameImage> screenshots;
@@ -28,6 +30,21 @@ class GameEntry {
   final List<Website> websites;
 
   final SteamData? steamData;
+
+  List<ImageData> get screenshotData => steamData != null
+      ? steamData!.screenshots
+          .map(
+            (e) => ImageData(e.pathThumbnail, e.pathFull),
+          )
+          .toList()
+      : screenshots
+          .map(
+            (e) => ImageData(
+              '${Urls.imageProvider}/t_720p/${e.imageId}.jpg',
+              '${Urls.imageProvider}/t_1080p/${e.imageId}.jpg',
+            ),
+          )
+          .toList();
 
   const GameEntry({
     required this.id,
@@ -38,14 +55,14 @@ class GameEntry {
     this.igdbRating = 0.0,
     this.genres = const [],
     this.keywords = const [],
+    this.parent = null,
     this.expansions = const [],
     this.dlcs = const [],
     this.remakes = const [],
     this.remasters = const [],
-    this.versions = const [],
-    this.parent = null,
     this.collections = const [],
-    this.companies = const [],
+    this.developers = const [],
+    this.publishers = const [],
     this.cover,
     this.screenshots = const [],
     this.artwork = const [],
@@ -67,29 +84,34 @@ class GameEntry {
           keywords: [
             for (final kw in json['keywords'] ?? []) kw,
           ],
+          parent: json.containsKey('parent')
+              ? GameDigest.fromJson(json['parent'])
+              : null,
           expansions: [
             for (final entry in json['expansions'] ?? [])
-              GameEntry.fromJson(entry),
+              GameDigest.fromJson(entry),
           ],
           dlcs: [
-            for (final entry in json['dlcs'] ?? []) GameEntry.fromJson(entry),
+            for (final entry in json['dlcs'] ?? []) GameDigest.fromJson(entry),
           ],
           remakes: [
             for (final entry in json['remakes'] ?? [])
-              GameEntry.fromJson(entry),
+              GameDigest.fromJson(entry),
           ],
           remasters: [
             for (final entry in json['remasters'] ?? [])
-              GameEntry.fromJson(entry),
+              GameDigest.fromJson(entry),
           ],
-          versions: [for (final version in json['versions'] ?? []) version],
-          parent: json['parent'],
           collections: [
             for (final entry in json['collections'] ?? [])
               Collection.fromJson(entry),
           ],
-          companies: [
-            for (final entry in json['companies'] ?? [])
+          developers: [
+            for (final entry in json['developers'] ?? [])
+              Company.fromJson(entry),
+          ],
+          publishers: [
+            for (final entry in json['publishers'] ?? [])
               Company.fromJson(entry),
           ],
           cover: json.containsKey('cover')
@@ -121,6 +143,7 @@ class GameEntry {
       if (igdbRating > 0.0) 'igdb_rating': igdbRating,
       if (genres.isNotEmpty) 'genres': genres,
       if (keywords.isNotEmpty) 'keywords': keywords,
+      if (parent != null) 'parent': parent!.toJson(),
       if (expansions.isNotEmpty)
         'expansions': [
           for (final entry in expansions) entry.toJson(),
@@ -137,15 +160,17 @@ class GameEntry {
         'remasters': [
           for (final entry in remasters) entry.toJson(),
         ],
-      if (versions.isNotEmpty) 'versions': versions,
-      if (parent != null) 'parent': parent,
       if (collections.isNotEmpty)
         'collections': [
           for (final entry in collections) entry.toJson(),
         ],
-      if (companies.isNotEmpty)
-        'companies': [
-          for (final entry in companies) entry.toJson(),
+      if (developers.isNotEmpty)
+        'developers': [
+          for (final entry in developers) entry.toJson(),
+        ],
+      if (publishers.isNotEmpty)
+        'publishers': [
+          for (final entry in publishers) entry.toJson(),
         ],
       if (cover != null) 'cover': cover!.toJson(),
       if (screenshots.isNotEmpty)
@@ -280,4 +305,11 @@ class Website {
       'authority': authority,
     };
   }
+}
+
+class ImageData {
+  ImageData(this.thumbnail, this.full);
+
+  String thumbnail;
+  String full;
 }

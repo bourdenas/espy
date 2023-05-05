@@ -3,11 +3,10 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/pages/home/home_slate.dart';
-import 'package:espy/pages/home/home_stack.dart';
-import 'package:espy/pages/home/slate_tile.dart';
 import 'package:espy/widgets/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
+import 'package:espy/widgets/tiles/tile_carousel.dart';
+import 'package:espy/widgets/tiles/tile_stack.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/src/provider.dart';
@@ -40,14 +39,17 @@ class HomeContent extends StatelessWidget {
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               final slate = slates[index];
-              return HomeSlate(
+              return TileCarousel(
                 title: slate.title,
-                onExpand: () => context.pushNamed(
+                onTitleTap: () => context.pushNamed(
                   'games',
                   queryParams: slate.filter.params(),
                 ),
+                tileSize: AppConfigModel.isMobile(context)
+                    ? TileSize(width: 133, height: 190)
+                    : TileSize(width: 227, height: 320),
                 tiles: slate.entries
-                    .map((libraryEntry) => SlateTileData(
+                    .map((libraryEntry) => TileData(
                           image:
                               '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
                           onTap: () => context.pushNamed('details',
@@ -98,26 +100,12 @@ class HomeContent extends StatelessWidget {
             childAspectRatio: .7,
             children: [
               for (final stack in stacks)
-                HomeStack(
+                TileStack(
                   title: stack.title,
+                  tileImages: stack.entries.map((libraryEntry) =>
+                      '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg'),
                   onExpand: () => context.pushNamed('games',
                       queryParams: stack.filter.params()),
-                  tiles: stack.entries.map(
-                    (libraryEntry) => SlateTileData(
-                      image:
-                          '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
-                      onTap: () => context.pushNamed('details',
-                          params: {'gid': '${libraryEntry.id}'}),
-                      onLongTap: () => isMobile
-                          ? context.pushNamed('edit',
-                              params: {'gid': '${libraryEntry.id}'})
-                          : EditEntryDialog.show(
-                              context,
-                              libraryEntry,
-                              gameId: libraryEntry.id,
-                            ),
-                    ),
-                  ),
                 ),
             ],
           ),
@@ -125,8 +113,6 @@ class HomeContent extends StatelessWidget {
         SliverToBoxAdapter(
           child: SizedBox(height: 32.0),
         ),
-
-        // ,
       ],
     );
   }

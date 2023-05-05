@@ -1,26 +1,25 @@
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:espy/pages/home/slate_tile.dart';
 import 'package:flutter/material.dart';
 
-class HomeStack extends StatefulWidget {
+class TileStack extends StatefulWidget {
   final String title;
   final VoidCallback? onExpand;
-  final Iterable<SlateTileData> tiles;
+  final Iterable<String> tileImages;
 
-  const HomeStack({
+  const TileStack({
     Key? key,
     required this.title,
+    required this.tileImages,
     this.onExpand,
-    required this.tiles,
   }) : super(key: key);
 
   @override
-  State<HomeStack> createState() => _HomeStackState();
+  State<TileStack> createState() => _TileStackState();
 }
 
-class _HomeStackState extends State<HomeStack> {
+class _TileStackState extends State<TileStack> {
   List<double> deckAngles = narrowDeckAngles;
   List<Offset> deckOffsets = narrowDeckOffsets;
 
@@ -56,7 +55,7 @@ class _HomeStackState extends State<HomeStack> {
 
   @override
   Widget build(BuildContext context) {
-    final tiles = widget.tiles.take(5).toList().reversed.toList().asMap();
+    final tiles = widget.tileImages.take(5).toList().reversed.toList().asMap();
     return InkWell(
       onTap: () => widget.onExpand!(),
       onHover: (isHovering) => setState(() {
@@ -67,17 +66,17 @@ class _HomeStackState extends State<HomeStack> {
         children: [
           Stack(
             children: [
-              for (final index_tile in tiles.entries)
+              for (final index_image in tiles.entries)
                 Transform.translate(
-                  offset: deckOffsets[index_tile.key],
+                  offset: deckOffsets[index_image.key],
                   child: Transform.rotate(
-                    angle: deckAngles[index_tile.key],
+                    angle: deckAngles[index_image.key],
                     origin: Offset(0, 150),
                     child: ClipRRect(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       child: CachedNetworkImage(
                         fit: BoxFit.fill,
-                        imageUrl: index_tile.value.image!,
+                        imageUrl: index_image.value,
                         placeholder: (context, url) => Container(),
                         errorWidget: (context, url, error) =>
                             Center(child: Icon(Icons.error_outline)),

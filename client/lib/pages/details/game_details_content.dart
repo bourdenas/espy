@@ -10,37 +10,21 @@ class GameDetailsContent extends StatelessWidget {
     Key? key,
     required this.libraryEntry,
     required this.gameEntry,
-    required this.childPath,
   }) : super(key: key);
 
   final LibraryEntry libraryEntry;
   final GameEntry gameEntry;
-  final List<String> childPath;
 
   @override
   Widget build(BuildContext context) {
-    var shownEntry = gameEntry;
-    for (final id in childPath) {
-      final gameId = int.tryParse(id) ?? 0;
-
-      shownEntry = [
-        shownEntry.expansions,
-        shownEntry.dlcs,
-        shownEntry.remakes,
-        shownEntry.remasters,
-      ].expand((e) => e).firstWhere((e) => e.id == gameId);
-    }
-
     return AppConfigModel.isMobile(context)
         ? GameDetailsContentMobile(
             libraryEntry: libraryEntry,
-            gameEntry: shownEntry,
-            childPath: childPath,
+            gameEntry: gameEntry,
           )
         : GameDetailsContentDesktop(
             libraryEntry: libraryEntry,
-            gameEntry: shownEntry,
-            childPath: childPath,
+            gameEntry: gameEntry,
           );
   }
 }
