@@ -39,9 +39,11 @@ class GameLibraryModel extends ChangeNotifier {
 
     final encodedLibrary = prefs.getString('${userId}_library');
     if (encodedLibrary != null) {
-      _library =
-          Library.fromJson(jsonDecode(encodedLibrary) as Map<String, dynamic>);
-      notifyListeners();
+      try {
+        _library = Library.fromJson(
+            jsonDecode(encodedLibrary) as Map<String, dynamic>);
+        notifyListeners();
+      } catch (_) {}
     }
 
     _fetch();
@@ -162,7 +164,7 @@ class GameLibraryModel extends ChangeNotifier {
     GameEntry gameEntry,
   ) async {
     final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$userId/rematch'),
+      Uri.parse('${Urls.espyBackend}/library/$userId/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },

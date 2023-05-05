@@ -23,7 +23,8 @@ class GameSearchResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return context.watch<AppConfigModel>().libraryLayout == LibraryLayout.GRID
+    return context.watch<AppConfigModel>().libraryLayout.value ==
+            LibraryLayout.GRID
         ? gridView(entries)
         : listView(entries);
   }
@@ -40,7 +41,8 @@ class GameSearchResults extends StatelessWidget {
     return SliverGrid.extent(
       maxCrossAxisExtent: cardWidth ?? 600.0,
       childAspectRatio: cardAspectRatio ?? 2.5,
-      children: matchedEntries.map((e) => GameListCard(entry: e)).toList(),
+      children:
+          matchedEntries.map((e) => GameListCard(libraryEntry: e)).toList(),
     );
   }
 }
@@ -49,14 +51,16 @@ class TagSearchResults extends StatelessWidget {
   const TagSearchResults(
     this.stores,
     this.userTags,
-    this.companies,
+    this.developers,
+    this.publishers,
     this.collections, {
     Key? key,
   }) : super(key: key);
 
   final Iterable<String> stores;
   final Iterable<UserTag> userTags;
-  final Iterable<String> companies;
+  final Iterable<String> developers;
+  final Iterable<String> publishers;
   final Iterable<String> collections;
 
   @override
@@ -79,16 +83,30 @@ class TagSearchResults extends StatelessWidget {
                 ),
               ),
             ),
-          if (companies.isNotEmpty)
+          if (developers.isNotEmpty)
             _ChipResults(
-              title: 'Companies',
+              title: 'Developers',
               color: Colors.redAccent,
-              chips: companies.map(
-                (company) => CompanyChip(
+              chips: developers.map(
+                (company) => DeveloperChip(
                   company,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(companies: {company}).params(),
+                    queryParams: LibraryFilter(developers: {company}).params(),
+                  ),
+                ),
+              ),
+            ),
+          if (publishers.isNotEmpty)
+            _ChipResults(
+              title: 'Publishers',
+              color: Colors.red[200]!,
+              chips: publishers.map(
+                (company) => PublisherChip(
+                  company,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParams: LibraryFilter(publishers: {company}).params(),
                   ),
                 ),
               ),
@@ -108,11 +126,11 @@ class TagSearchResults extends StatelessWidget {
                 ),
               ),
             ),
-          if (userTags.isNotEmpty)
+          for (final group in groupTags(userTags).entries)
             _ChipResults(
               title: 'Tags',
-              color: Colors.blueGrey,
-              chips: userTags.map(
+              color: group.key,
+              chips: group.value.map(
                 (tag) => TagChip(
                   tag,
                   onPressed: () => context.pushNamed(
@@ -120,7 +138,7 @@ class TagSearchResults extends StatelessWidget {
                     queryParams: LibraryFilter(tags: {tag.name}).params(),
                   ),
                   onRightClick: () =>
-                      context.read<GameTagsModel>().moveUserTagCluster(tag),
+                      context.read<GameTagsModel>().userTags.moveCluster(tag),
                 ),
               ),
             ),
@@ -128,6 +146,14 @@ class TagSearchResults extends StatelessWidget {
       ),
     );
   }
+}
+
+Map<Color, List<UserTag>> groupTags(Iterable<UserTag> tags) {
+  var groups = <Color, List<UserTag>>{};
+  for (final tag in tags) {
+    (groups[tag.color] ??= []).add(tag);
+  }
+  return groups;
 }
 
 class _ChipResults extends StatelessWidget {

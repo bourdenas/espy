@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,7 +24,6 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
     '/': 0,
     '/games': 1,
     '/unmatched': 3,
-    '/profile': 4,
   };
 
   @override
@@ -44,23 +43,31 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       selectedIndex: _selectedIndex,
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: CircleAvatar(
-          child: user != null
-              ? ClipOval(
-                  child: Image.network(user.photoURL!),
-                )
-              : Icon(Icons.person),
-        ),
+        child: FloatingActionButton(
+            heroTag: 'userPic',
+            child: CircleAvatar(
+              radius: 28,
+              child: user != null
+                  ? ClipOval(
+                      child: Image.network(user.photoURL!),
+                    )
+                  : Icon(Icons.person),
+            ),
+            onPressed: () => context.pushNamed('profile')),
       ),
       groupAlignment: 0,
       destinations: _menuItems
           .map((e) => NavigationRailDestination(
                 label: Text(e.label),
                 icon: e.badgeText != null
-                    ? Badge(
+                    ? badges.Badge(
                         badgeContent: e.badgeText!(context),
-                        position: BadgePosition.topEnd(top: -24, end: -16),
-                        borderRadius: BorderRadius.circular(1),
+                        position:
+                            badges.BadgePosition.topEnd(top: -24, end: -16),
+                        badgeStyle: badges.BadgeStyle(
+                          shape: badges.BadgeShape.square,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
                         child: Icon(e.icon),
                       )
                     : Icon(e.icon),
@@ -111,7 +118,7 @@ List<_MenuItem> _menuItems = [
     icon: Icons.label_off_outlined,
     selectedIcon: Icons.label_off,
     onTap: (context) => context.pushNamed('games',
-        queryParams: LibraryFilter(untagged: true).params()),
+        queryParams: LibraryFilter(view: LibraryView.UNTAGGED).params()),
   ),
   _MenuItem(
     label: 'Failed',
@@ -120,11 +127,5 @@ List<_MenuItem> _menuItems = [
     onTap: (context) => context.pushNamed('unmatched'),
     badgeText: (context) =>
         Text('${context.watch<FailedModel>().entries.length}'),
-  ),
-  _MenuItem(
-    label: 'Settings',
-    icon: Icons.settings,
-    selectedIcon: Icons.settings,
-    onTap: (context) => context.pushNamed('profile'),
   ),
 ];

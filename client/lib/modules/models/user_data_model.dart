@@ -13,15 +13,9 @@ import 'package:http/http.dart' as http;
 class UserDataModel extends ChangeNotifier {
   get userData => _userData;
 
-  get userId => _userData!.uid;
-  get steamUserId => _userData != null && _userData!.keys != null
-      ? _userData!.keys!.steamUserId
-      : '';
-  get gogAuthCode => _userData != null &&
-          _userData!.keys != null &&
-          _userData!.keys!.gogToken != null
-      ? _userData!.keys!.gogToken!.oauthCode
-      : '';
+  String get userId => _userData?.uid ?? '';
+  String get gogAuthCode => _userData?.keys?.gogAuthCode ?? '';
+  String get steamUserId => _userData?.keys?.steamUserId ?? '';
 
   UserDataModel() {
     _userId = FirebaseAuth.instance.currentUser?.uid;
@@ -33,19 +27,14 @@ class UserDataModel extends ChangeNotifier {
 
   /// Update Firestore with user's credentials to third-party data stores.
   Future<void> setUserKeys(Keys keys) async {
-    if (_userData!.keys!.gogToken!.oauthCode != keys.gogToken!.oauthCode ||
-        _userData!.keys!.steamUserId != keys.steamUserId) {
-      // NOTE: EGS auth code is too ephemeral.
-      // There is no point to store to Firebase.
+    if (gogAuthCode != keys.gogAuthCode || steamUserId != keys.steamUserId) {
       FirebaseFirestore.instance.collection('users').doc(_userId!).update({
         'keys': {
-          'gog_token': {
-            'oauth_code': gogAuthCode,
-          },
-          'steam_user_id': steamUserId,
+          'gog_auth_code': keys.gogAuthCode,
+          'steam_user_id': keys.steamUserId,
         },
       }).onError((error, _) {
-        // TODO: error reporting
+        print(error);
       });
     }
 
@@ -54,6 +43,21 @@ class UserDataModel extends ChangeNotifier {
       keys: keys,
       version: _userData!.version,
     );
+  }
+
+  /// Unlinks a storefront from the account.
+  Future<void> unlink(String storefrontId) async {
+    var response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/${_userId!}/unlink'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({'storefront_id': storefrontId}),
+    );
+
+    if (response.statusCode != 200) {
+      print('Failed to unlink storefront:\n${response.statusCode}');
+    }
   }
 
   /// Initiates the library sync process to the espy backend for the user.

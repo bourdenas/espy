@@ -24,16 +24,16 @@ class _ChoiceTagsState extends State<ChoiceTags> {
   Widget build(BuildContext context) {
     final onSelected = (bool selected, UserTag tag) {
       if (selected) {
-        context.read<GameTagsModel>().addUserTag(tag, widget.entry.id);
+        context.read<GameTagsModel>().userTags.add(tag, widget.entry.id);
       } else {
-        context.read<GameTagsModel>().removeUserTag(tag, widget.entry.id);
+        context.read<GameTagsModel>().userTags.remove(tag, widget.entry.id);
       }
     };
 
     final tagsModel = context.watch<GameTagsModel>();
-    final filteredTags = tagsModel.filterTags(filter.split(' '));
+    final filteredTags = tagsModel.userTags.filter(filter.split(' '));
     selectedTags.clear();
-    selectedTags.addAll(tagsModel.tagsByEntry(widget.entry.id));
+    selectedTags.addAll(tagsModel.userTags.byGameId(widget.entry.id));
 
     return Column(
       children: [
@@ -105,7 +105,8 @@ class _ChoiceTagsState extends State<ChoiceTags> {
             onFieldSubmitted: (text) {
               context
                   .read<GameTagsModel>()
-                  .addUserTag(UserTag(name: text), widget.entry.id);
+                  .userTags
+                  .add(UserTag(name: text), widget.entry.id);
               setState(() {
                 _textController.text = '';
                 filter = '';

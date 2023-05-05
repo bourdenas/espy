@@ -25,7 +25,7 @@ class GameDetailsPage extends StatelessWidget {
       builder: (BuildContext context,
           AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text("Something went wrong: ${snapshot.error}"));
+          return Center(child: Text('Something went wrong: ${snapshot.error}'));
         } else if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
@@ -39,7 +39,7 @@ class GameDetailsPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Retrieving game info"),
+                Text('Retrieving game info'),
                 SizedBox(height: 16),
                 CircularProgressIndicator(),
               ],
@@ -48,12 +48,18 @@ class GameDetailsPage extends StatelessWidget {
         }
 
         final jsonObj = snapshot.data!.data();
-        final gameEntry = GameEntry.fromJson(jsonObj!);
+        var gameEntry = GameEntry(id: 0, name: '');
+        try {
+          gameEntry = GameEntry.fromJson(jsonObj!);
+        } catch (_) {
+          context
+              .read<GameLibraryModel>()
+              .retrieveGameEntry(int.tryParse(id) ?? 0);
+        }
 
         return GameDetailsContent(
           libraryEntry: libraryEntry ?? LibraryEntry.fromGameEntry(gameEntry),
           gameEntry: gameEntry,
-          childPath: ids.sublist(1),
         );
       },
     );

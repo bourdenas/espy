@@ -1,9 +1,18 @@
 class UserTags {
-  final List<TagClass> classes;
+  List<TagClass> classes;
 
   UserTags({
     this.classes = const [],
-  });
+  }) {
+    if (classes.isEmpty) {
+      classes = [
+        TagClass(name: 'genre'),
+        TagClass(name: 'style'),
+        TagClass(name: 'theme'),
+        TagClass(name: 'other'),
+      ];
+    }
+  }
 
   UserTags.fromJson(Map<String, dynamic> json)
       : this(
@@ -24,12 +33,16 @@ class UserTags {
 
 class TagClass {
   final String name;
-  final List<Tag> tags;
+  List<Tag> tags = [];
 
   TagClass({
     required this.name,
     this.tags = const [],
-  });
+  }) {
+    if (tags.isEmpty) {
+      tags = [];
+    }
+  }
 
   TagClass.fromJson(Map<String, dynamic> json)
       : this(

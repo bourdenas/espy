@@ -10,22 +10,24 @@ import 'package:go_router/go_router.dart';
 class GameListCard extends StatelessWidget {
   GameListCard({
     Key? key,
-    required this.entry,
+    required this.libraryEntry,
   }) : super(key: key);
 
-  final LibraryEntry entry;
+  final LibraryEntry libraryEntry;
 
   @override
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
 
     return GestureDetector(
-      onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
+      onTap: () =>
+          context.pushNamed('details', params: {'gid': '${libraryEntry.id}'}),
       onSecondaryTap: () =>
-          EditEntryDialog.show(context, entry, gameId: entry.id),
+          EditEntryDialog.show(context, libraryEntry, gameId: libraryEntry.id),
       onLongPress: () => isMobile
-          ? context.pushNamed('edit', params: {'gid': '${entry.id}'})
-          : EditEntryDialog.show(context, entry, gameId: entry.id),
+          ? context.pushNamed('edit', params: {'gid': '${libraryEntry.id}'})
+          : EditEntryDialog.show(context, libraryEntry,
+              gameId: libraryEntry.id),
       child: Container(
         padding: EdgeInsets.all(8.0),
         margin: EdgeInsets.only(bottom: 16.0),
@@ -49,7 +51,7 @@ class GameListCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8.0),
       child: CachedNetworkImage(
-        imageUrl: '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+        imageUrl: '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
         placeholder: (context, url) => Center(
           child: CircularProgressIndicator(),
         ),
@@ -66,7 +68,7 @@ class GameListCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            entry.name,
+            libraryEntry.name,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.headline6,
             maxLines: 1,
@@ -84,7 +86,7 @@ class GameListCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4.0),
                 ),
                 child: Text(
-                    '${DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000).year}'),
+                    '${DateTime.fromMillisecondsSinceEpoch(libraryEntry.releaseDate * 1000).year}'),
               ),
               SizedBox(width: 16.0),
               Icon(
@@ -97,7 +99,10 @@ class GameListCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 16.0),
-          GameCardChips(entry),
+          GameCardChips(
+            libraryEntry: libraryEntry,
+            includeCompanies: true,
+          ),
         ],
       ),
     );

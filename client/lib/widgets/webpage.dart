@@ -25,6 +25,6 @@ class _WebPageState extends State<WebPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(),
-        body: WebView(initialUrl: widget.url),
+        body: Container(),
       );
 }

@@ -1,20 +1,20 @@
-import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
-import 'package:espy/pages/home/home_slate.dart';
-import 'package:espy/pages/home/slate_tile.dart';
+import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GameEntryActionBar extends StatelessWidget {
-  const GameEntryActionBar({
+  const GameEntryActionBar(
+    this.gameEntry,
+    this.libraryEntry, {
     Key? key,
-    required this.libraryEntry,
-    required this.gameEntry,
   }) : super(key: key);
 
   final LibraryEntry libraryEntry;
@@ -32,9 +32,7 @@ class GameEntryActionBar extends StatelessWidget {
             SizedBox(width: 16.0),
             actionButtons(context),
             SizedBox(width: 16.0),
-            storeIcons(context),
-            // SizedBox(width: 16.0),
-            // linkButtons(context, gameEntry),
+            linkButtons(context, gameEntry, libraryEntry),
           ],
         ),
       ],
@@ -77,27 +75,14 @@ class GameEntryActionBar extends StatelessWidget {
     );
   }
 
-  Widget storeIcons(BuildContext context) {
-    return Row(
-      children: [
-        for (final store in libraryEntry.storeEntries)
-          IconButton(
-            onPressed: () {},
-            icon: storeIcon(store.storefront),
-            splashRadius: 20.0,
-          ),
-      ],
-    );
-  }
-
   Widget actionButtons(BuildContext context) {
-    final inWishlist = context.watch<WishlistModel>().contains(libraryEntry.id);
+    final inWishlist = context.watch<WishlistModel>().contains(gameEntry.id);
 
     return Row(
       children: [
         IconButton(
           onPressed: () => AppConfigModel.isMobile(context)
-              ? context.pushNamed('edit', params: {'gid': '${libraryEntry.id}'})
+              ? context.pushNamed('edit', params: {'gid': '${gameEntry.id}'})
               : EditEntryDialog.show(
                   context,
                   libraryEntry,
@@ -115,7 +100,7 @@ class GameEntryActionBar extends StatelessWidget {
               if (inWishlist) {
                 context
                     .read<WishlistModel>()
-                    .remove_from_wishlist(libraryEntry.id);
+                    .remove_from_wishlist(gameEntry.id);
               } else {
                 context.read<WishlistModel>().add_to_wishlist(libraryEntry);
               }
@@ -131,35 +116,37 @@ class GameEntryActionBar extends StatelessWidget {
     );
   }
 
-  Widget linkButtons(BuildContext context, GameEntry gameEntry) {
+  Widget linkButtons(
+      BuildContext context, GameEntry gameEntry, LibraryEntry libraryEntry) {
     return Row(
       children: [
-        for (final website in gameEntry.websites)
-          if (website.authority != "Null" && website.authority != "Youtube")
+        for (final label in const [
+          'Official',
+          'Igdb',
+          'Wikipedia',
+        ])
+          for (final website
+              in gameEntry.websites.where((site) => site.authority == label))
             IconButton(
-              onPressed: () => context.pushNamed('web',
-                  params: {'gid': '${libraryEntry.id}'},
-                  queryParams: {'url': website.url}),
+              onPressed: () async => await launchUrl(Uri.parse(website.url)),
               icon: websiteIcon(website.authority),
               splashRadius: 20.0,
-            )
+            ),
+        for (final label in const ['Gog', 'Steam', 'Egs'])
+          for (final website
+              in gameEntry.websites.where((site) => site.authority == label))
+            IconButton(
+              onPressed: () async => await launchUrl(Uri.parse(website.url)),
+              icon: websiteIcon(website.authority,
+                  disabled: libraryEntry.storeEntries.every(
+                      (entry) => entry.storefront != label.toLowerCase())),
+              splashRadius: 20.0,
+            ),
       ],
     );
   }
 
-  Widget storeIcon(String storeName) {
-    switch (storeName) {
-      case "gog":
-        return Image.asset('assets/images/gog-128.png');
-      case "steam":
-        return Image.asset('assets/images/steam-128.png');
-      case "egs":
-        return Image.asset('assets/images/egs-128.png');
-    }
-    return Icon(Icons.error);
-  }
-
-  Widget websiteIcon(String website) {
+  Widget websiteIcon(String website, {bool disabled = false}) {
     switch (website) {
       case "Official":
         return Icon(Icons.web);
@@ -168,11 +155,23 @@ class GameEntryActionBar extends StatelessWidget {
       case "Igdb":
         return Image.asset('assets/images/igdb-128.png');
       case "Gog":
-        return Image.asset('assets/images/gog-128.png');
+        return Image.asset(
+          'assets/images/gog-128.png',
+          color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
+          colorBlendMode: BlendMode.modulate,
+        );
       case "Steam":
-        return Image.asset('assets/images/steam-128.png');
+        return Image.asset(
+          'assets/images/steam-128.png',
+          color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
+          colorBlendMode: BlendMode.modulate,
+        );
       case "Egs":
-        return Image.asset('assets/images/egs-128.png');
+        return Image.asset(
+          'assets/images/egs-128.png',
+          color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
+          colorBlendMode: BlendMode.modulate,
+        );
       case "Youtube":
         return Image.asset('assets/images/youtube-128.png');
     }
@@ -180,56 +179,19 @@ class GameEntryActionBar extends StatelessWidget {
   }
 }
 
-class GameEntryExpansions extends StatelessWidget {
-  const GameEntryExpansions(this.gameEntry, {Key? key, this.idPath = const []})
+class RelatedGamesGroup extends StatelessWidget {
+  const RelatedGamesGroup(this.title, this.gameDigests, {Key? key})
       : super(key: key);
 
-  final GameEntry gameEntry;
-  final List<String> idPath;
+  final String title;
+  final List<GameDigest> gameDigests;
 
   @override
   Widget build(BuildContext context) {
-    return HomeSlate(
-      title: 'Expansions & DLC',
-      tiles: [gameEntry.expansions, gameEntry.dlcs]
-          .expand((e) => e)
-          .map((dlc) => SlateTileData(
-                image: dlc.cover != null
-                    ? '${Urls.imageProvider}/t_cover_big/${dlc.cover!.imageId}.jpg'
-                    : null,
-                title: dlc.cover == null ? dlc.name : null,
-                onTap: () => context.pushNamed('details', params: {
-                  'gid': [...idPath, dlc.id].join(',')
-                }),
-              ))
-          .toList(),
-    );
-  }
-}
-
-class GameEntryRemakes extends StatelessWidget {
-  const GameEntryRemakes(this.gameEntry, {Key? key, this.idPath = const []})
-      : super(key: key);
-
-  final GameEntry gameEntry;
-  final List<String> idPath;
-
-  @override
-  Widget build(BuildContext context) {
-    return HomeSlate(
-      title: 'Remakes',
-      tiles: [gameEntry.remakes, gameEntry.remasters]
-          .expand((e) => e)
-          .map((remake) => SlateTileData(
-                image: remake.cover != null
-                    ? '${Urls.imageProvider}/t_cover_big/${remake.cover!.imageId}.jpg'
-                    : null,
-                title: remake.cover == null ? remake.name : null,
-                onTap: () => context.pushNamed('details', params: {
-                  'gid': [...idPath, remake.id].join(',')
-                }),
-              ))
-          .toList(),
+    return TileShelve(
+      title: title,
+      entries: gameDigests
+          .map((gameEntry) => LibraryEntry.fromGameDigest(gameEntry)),
     );
   }
 }

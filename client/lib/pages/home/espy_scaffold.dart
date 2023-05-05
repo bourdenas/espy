@@ -1,6 +1,4 @@
-import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_library_model.dart';
 import 'package:espy/widgets/espy_rail.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -64,17 +62,9 @@ class _EspyScaffoldState extends State<EspyScaffold>
                 extendBodyBehindAppBar: AppConfigModel.isMobile(context),
                 appBar: appBar(context),
                 floatingActionButton: FloatingActionButton(
-                  child: Icon(Icons.add),
-                  onPressed: () => MatchingDialog.show(
-                    context,
-                    onMatch: (storeEntry, gameEntry) {
-                      context
-                          .read<GameLibraryModel>()
-                          .matchEntry(storeEntry, gameEntry);
-                      context.pushNamed('details',
-                          params: {'gid': '${gameEntry.id}'});
-                    },
-                  ),
+                  heroTag: 'searchButton',
+                  child: Icon(Icons.search),
+                  onPressed: () => context.pushNamed('search'),
                 ),
                 body: NotificationListener<ScrollNotification>(
                   onNotification: _scrollListener,
@@ -119,54 +109,56 @@ class _EspyScaffoldState extends State<EspyScaffold>
         if (AppConfigModel.isMobile(context)) ...[
           IconButton(
             key: Key('layoutButton'),
-            icon: Icon(_libraryViews[appConfig.libraryLayout.index].iconData),
+            icon: Icon(
+                _libraryViews[appConfig.libraryLayout.value.index].iconData),
             splashRadius: 20.0,
-            onPressed: () => appConfig.nextLibraryLayout(),
+            onPressed: () => appConfig.libraryLayout.nextValue(),
           ),
           IconButton(
             key: Key('cardInfoButton'),
-            icon: Icon(_cardViews[appConfig.cardDecoration.index].iconData),
+            icon:
+                Icon(_cardViews[appConfig.cardDecoration.value.index].iconData),
             splashRadius: 20.0,
-            onPressed: () => appConfig.nextCardDecoration(),
+            onPressed: () => appConfig.cardDecoration.nextValue(),
           ),
           IconButton(
             key: Key('groupByButton'),
-            icon: Icon(_groupViews[appConfig.groupBy.index].iconData),
+            icon: Icon(_groupViews[appConfig.groupBy.value.index].iconData),
             splashRadius: 20.0,
-            onPressed: () => appConfig.nextGroupBy(),
+            onPressed: () => appConfig.groupBy.nextValue(),
+          ),
+          IconButton(
+            key: Key('searchButton'),
+            icon: Icon(Icons.search),
+            splashRadius: 20.0,
+            onPressed: () => context.pushNamed('search'),
           ),
         ] else ...[
           ToggleButtons(
             renderBorder: false,
             children: _libraryViews.map((e) => Icon(e.iconData)).toList(),
             isSelected: List.generate(_libraryViews.length,
-                (i) => i == appConfig.libraryLayout.index),
-            onPressed: (index) => appConfig.libraryLayoutIndex = index,
+                (i) => i == appConfig.libraryLayout.value.index),
+            onPressed: (index) => appConfig.libraryLayout.valueIndex = index,
           ),
           SizedBox(width: 24),
           ToggleButtons(
             renderBorder: false,
             children: _cardViews.map((e) => Icon(e.iconData)).toList(),
-            isSelected: List.generate(
-                _cardViews.length, (i) => i == appConfig.cardDecoration.index),
-            onPressed: (index) => appConfig.cardDecorationIndex = index,
+            isSelected: List.generate(_cardViews.length,
+                (i) => i == appConfig.cardDecoration.value.index),
+            onPressed: (index) => appConfig.cardDecoration.valueIndex = index,
           ),
           SizedBox(width: 24),
           ToggleButtons(
             renderBorder: false,
             children: _groupViews.map((e) => Icon(e.iconData)).toList(),
             isSelected: List.generate(
-                _groupViews.length, (i) => i == appConfig.groupBy.index),
-            onPressed: (index) => appConfig.groupByIndex = index,
+                _groupViews.length, (i) => i == appConfig.groupBy.value.index),
+            onPressed: (index) => appConfig.groupBy.valueIndex = index,
           ),
-          SizedBox(width: 24),
+          SizedBox(width: 8),
         ],
-        IconButton(
-          key: Key('searchButton'),
-          icon: Icon(Icons.search),
-          splashRadius: 20.0,
-          onPressed: () => context.pushNamed('search'),
-        ),
       ],
       backgroundColor: _colorTween.value,
       elevation: 0.0,

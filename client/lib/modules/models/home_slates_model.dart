@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_entries_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter.dart';
@@ -7,33 +8,44 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class HomeSlatesModel extends ChangeNotifier {
   List<_SlateInfo> _slates = [];
+  List<_SlateInfo> _stacks = [];
 
   List<_SlateInfo> get slates => _slates;
+  List<_SlateInfo> get stacks => _stacks;
 
   void update(
     GameEntriesModel gameEntries,
     WishlistModel wishlistModel,
     GameTagsModel tagsModel,
+    AppConfigModel appConfigModel,
   ) {
-    _SlateInfo slate(
-      String title, {
-      LibraryFilter? filter,
-      Iterable<LibraryEntry>? entries,
-    }) {
-      final filteredEntries = gameEntries.getEntries(filter: filter);
+    _SlateInfo slate(String title, LibraryFilter filter,
+        [Iterable<LibraryEntry>? entries]) {
       return _SlateInfo(
-          title: title, filter: filter, entries: entries ?? filteredEntries);
+          title: title,
+          filter: filter,
+          entries: entries ?? gameEntries.filter(filter));
     }
 
     _slates = [
-      slate('GOG', filter: LibraryFilter(stores: {'gog'})),
-      slate('Steam', filter: LibraryFilter(stores: {'steam'})),
-      slate('EGS', filter: LibraryFilter(stores: {'egs'})),
-      slate('Battle.Net', filter: LibraryFilter(stores: {'battle.net'})),
-      slate('Wishlist', entries: wishlistModel.wishlist),
-      slate('Recent', entries: gameEntries.getRecentEntries()),
-      for (final tag in tagsModel.tagsByPopulation)
-        slate(tag, filter: LibraryFilter(tags: {tag})),
+      slate('Library', LibraryFilter(view: LibraryView.IN_LIBRARY)),
+      slate('Wishlist', LibraryFilter(view: LibraryView.WISHLIST)),
+      slate('Recent', LibraryFilter(), gameEntries.getRecentEntries()),
+    ];
+
+    _stacks = [
+      if (appConfigModel.stacks.value == Stacks.COLLECTIONS)
+        for (final collection in tagsModel.collections.nonSingleton)
+          slate(collection, LibraryFilter(collections: {collection})),
+      if (appConfigModel.stacks.value == Stacks.GENRES)
+        for (final tag in tagsModel.userTags.tagByPopulationInCluster('genre'))
+          slate(tag.name, LibraryFilter(tags: {tag.name})),
+      if (appConfigModel.stacks.value == Stacks.STYLES)
+        for (final tag in tagsModel.userTags.tagByPopulationInCluster('style'))
+          slate(tag.name, LibraryFilter(tags: {tag.name})),
+      if (appConfigModel.stacks.value == Stacks.THEMES)
+        for (final tag in tagsModel.userTags.tagByPopulationInCluster('theme'))
+          slate(tag.name, LibraryFilter(tags: {tag.name})),
     ];
 
     notifyListeners();
@@ -44,10 +56,10 @@ class _SlateInfo {
   _SlateInfo({
     required this.title,
     required this.entries,
-    this.filter,
+    required this.filter,
   });
 
   String title;
   Iterable<LibraryEntry> entries = [];
-  LibraryFilter? filter;
+  LibraryFilter filter;
 }

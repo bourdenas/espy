@@ -16,7 +16,11 @@ import 'package:espy/pages/espy_app.dart'
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    // NOTE: Bug in the Firebase library. Adding the name attibute fails to connect.
+    // name: 'espy',
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(MultiProvider(
     providers: [
@@ -37,10 +41,16 @@ Future<void> main() async {
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
-      ChangeNotifierProxyProvider<GameLibraryModel, GameTagsModel>(
+      ChangeNotifierProxyProvider2<GameLibraryModel, WishlistModel,
+          GameTagsModel>(
         create: (_) => GameTagsModel(),
-        update: (_, libraryModel, model) {
-          return model!..update(libraryModel.userId, libraryModel.entries);
+        update: (_, libraryModel, wishlistModel, model) {
+          return model!
+            ..update(
+              libraryModel.userId,
+              libraryModel.entries,
+              wishlistModel.wishlist,
+            );
         },
       ),
       ChangeNotifierProxyProvider3<GameLibraryModel, WishlistModel,
@@ -55,15 +65,17 @@ Future<void> main() async {
             );
         },
       ),
-      ChangeNotifierProxyProvider3<GameEntriesModel, WishlistModel,
-          GameTagsModel, HomeSlatesModel>(
+      ChangeNotifierProxyProvider4<GameEntriesModel, WishlistModel,
+          GameTagsModel, AppConfigModel, HomeSlatesModel>(
         create: (_) => HomeSlatesModel(),
-        update: (_, gameEntriesModel, wishlistModel, gameTagsModel, model) {
+        update: (_, gameEntriesModel, wishlistModel, gameTagsModel,
+            appConfigModel, model) {
           return model!
             ..update(
               gameEntriesModel,
               wishlistModel,
               gameTagsModel,
+              appConfigModel,
             );
         },
       ),

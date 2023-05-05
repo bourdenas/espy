@@ -25,7 +25,8 @@ class GameListView extends StatelessWidget {
             SliverGrid.extent(
               maxCrossAxisExtent: _maxCardWidth,
               childAspectRatio: _cardAspectRation,
-              children: entries.map((e) => GameListCard(entry: e)).toList(),
+              children:
+                  entries.map((e) => GameListCard(libraryEntry: e)).toList(),
             ),
           ],
         ),

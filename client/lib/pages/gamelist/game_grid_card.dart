@@ -64,6 +64,7 @@ class GameGridCard extends StatelessWidget {
               child: SizedBox(
                 height: 32,
                 child: FloatingActionButton(
+                  heroTag: 'add_${entry.id}',
                   mini: true,
                   tooltip: 'Add...',
                   child: Icon(
@@ -90,9 +91,9 @@ class GameGridCard extends StatelessWidget {
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: appConfig.cardDecoration == CardDecoration.TAGS
+      child: appConfig.cardDecoration.value == CardDecoration.TAGS
           ? TagsTileBar(entry)
-          : appConfig.cardDecoration == CardDecoration.INFO
+          : appConfig.cardDecoration.value == CardDecoration.INFO
               ? InfoTileBar(entry)
               : null,
     );
@@ -123,15 +124,17 @@ class InfoTileBar extends StatelessWidget {
 }
 
 class TagsTileBar extends StatelessWidget {
-  const TagsTileBar(this.entry, {Key? key}) : super(key: key);
+  const TagsTileBar(this.libraryEntry, {Key? key}) : super(key: key);
 
-  final LibraryEntry entry;
+  final LibraryEntry libraryEntry;
 
   @override
   Widget build(BuildContext context) {
     return GridTileBar(
       backgroundColor: Colors.black45,
-      title: GameCardChips(entry),
+      title: GameCardChips(
+        libraryEntry: libraryEntry,
+      ),
     );
   }
 }
