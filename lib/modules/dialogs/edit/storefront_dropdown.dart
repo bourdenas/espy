@@ -1,7 +1,7 @@
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -84,7 +84,7 @@ class StorefrontDropdownState extends State<StorefrontDropdown> {
       storeEntry: widget.libraryEntry.storeEntries[0],
       onMatch: (storeEntry, gameEntry) {
         context
-            .read<GameLibraryModel>()
+            .read<UserLibraryModel>()
             .rematchEntry(storeEntry, widget.libraryEntry, gameEntry);
         context.pushNamed('details', params: {'gid': '${gameEntry.id}'});
       },
@@ -111,7 +111,7 @@ class StorefrontDropdownState extends State<StorefrontDropdown> {
                   Navigator.pop(context);
                 }
 
-                context.read<GameLibraryModel>().unmatchEntry(
+                context.read<UserLibraryModel>().unmatchEntry(
                     widget.libraryEntry.storeEntries[0], widget.libraryEntry);
                 Navigator.pop(context);
               },
@@ -146,7 +146,7 @@ class StorefrontDropdownState extends State<StorefrontDropdown> {
                   Navigator.pop(context);
                 }
 
-                context.read<GameLibraryModel>().unmatchEntry(
+                context.read<UserLibraryModel>().unmatchEntry(
                     widget.libraryEntry.storeEntries[0], widget.libraryEntry,
                     delete: true);
                 Navigator.pop(context);

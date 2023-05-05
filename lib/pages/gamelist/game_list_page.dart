@@ -1,7 +1,7 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/library_entries_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/gamelist/game_grid_view.dart';
 import 'package:espy/pages/gamelist/game_list_view.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
@@ -21,14 +21,14 @@ class GameListPageState extends State<GameListPage> {
   @override
   Widget build(BuildContext context) {
     final entries =
-        context.watch<GameEntriesModel>().filter(widget.filter).toList();
+        context.watch<LibraryEntriesModel>().filter(widget.filter).toList();
 
     return Scaffold(
       appBar: AppBar(
         leading: badges.Badge(
           badgeContent: Text('${entries.length}'),
           badgeStyle: const badges.BadgeStyle(
-            shape: badges.BadgeShape.instagram,
+            shape: badges.BadgeShape.circle,
             badgeColor: Colors.deepPurple,
             padding: EdgeInsets.all(8),
           ),

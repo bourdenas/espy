@@ -1,6 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/library_entries_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +48,7 @@ class _TileShelveState extends State<TileShelve> {
       expansion: GameSearchResults(
         entries: widget.entries != null
             ? widget.entries!
-            : context.watch<GameEntriesModel>().filter(widget.filter!),
+            : context.watch<LibraryEntriesModel>().filter(widget.filter!),
         cardWidth: widget.cardWidth,
         cardAspectRatio: widget.cardAspectRatio,
       ),

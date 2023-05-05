@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Model that handles interactions with remote library data store.
-class GameLibraryModel extends ChangeNotifier {
+class UserLibraryModel extends ChangeNotifier {
   Library _library = const Library();
   String userId = '';
 

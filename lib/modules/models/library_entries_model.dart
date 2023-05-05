@@ -1,9 +1,9 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
-class GameEntriesModel extends ChangeNotifier {
+class LibraryEntriesModel extends ChangeNotifier {
   Map<int, LibraryEntry> _entries = {};
   GameTagsModel _gameTagsModel = GameTagsModel();
 

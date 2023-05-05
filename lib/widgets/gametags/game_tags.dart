@@ -1,7 +1,7 @@
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

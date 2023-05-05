@@ -2,8 +2,8 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/library_entries_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +14,7 @@ class HomeHeadline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final entries = context
-        .watch<GameEntriesModel>()
+        .watch<LibraryEntriesModel>()
         .filter(LibraryFilter(view: LibraryView.wishlist));
 
     return FadeIn(

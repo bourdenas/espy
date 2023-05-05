@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/library_entries_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
@@ -23,7 +23,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final ngrams = _text.toLowerCase().split(' ');
-    final gameEntriesModel = context.watch<GameEntriesModel>();
+    final gameEntriesModel = context.watch<LibraryEntriesModel>();
     final tagsModel = context.watch<GameTagsModel>();
 
     final titleMatches = _text.isNotEmpty
@@ -116,13 +116,13 @@ class _SearchPageState extends State<SearchPage> {
                   _fetchingRemoteGames = true;
                 });
                 final remoteGames =
-                    await context.read<GameLibraryModel>().searchByTitle(text);
+                    await context.read<UserLibraryModel>().searchByTitle(text);
                 setState(() {
                   _fetchingRemoteGames = false;
                   _remoteGames = remoteGames
                       .where((gameEntry) =>
                           context
-                              .read<GameEntriesModel>()
+                              .read<LibraryEntriesModel>()
                               .getEntryById(gameEntry.id) ==
                           null)
                       .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))

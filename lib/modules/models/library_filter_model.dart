@@ -1,6 +1,26 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier;
+
+class LibraryFilterModel extends ChangeNotifier {
+  LibraryFilter _filter = LibraryFilter();
+
+  LibraryFilter get filter => _filter;
+
+  set filter(LibraryFilter filter) {
+    _filter = filter;
+    notifyListeners();
+  }
+
+  void add(LibraryFilter filter) {
+    _filter.add(filter);
+  }
+
+  void remove(LibraryFilter filter) {
+    _filter.remove(filter);
+  }
+}
 
 enum LibraryView {
   all,
@@ -27,8 +47,24 @@ class LibraryFilter {
   Set<String> collections;
   Set<String> tags;
 
+  void add(LibraryFilter other) {
+    stores = stores.union(other.stores);
+    developers = developers.union(other.developers);
+    publishers = publishers.union(other.publishers);
+    collections = collections.union(other.collections);
+    tags = tags.union(other.tags);
+  }
+
+  void remove(LibraryFilter other) {
+    stores = stores.difference(other.stores);
+    developers = developers.difference(other.developers);
+    publishers = publishers.difference(other.publishers);
+    collections = collections.difference(other.collections);
+    tags = tags.difference(other.tags);
+  }
+
   Iterable<LibraryEntry> filter(
-      GameEntriesModel entriesModel, GameTagsModel tagsModel) {
+      LibraryEntriesModel entriesModel, GameTagsModel tagsModel) {
     List<Set<int>> gameIdSets = [];
 
     for (final store in stores) {

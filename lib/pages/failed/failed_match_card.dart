@@ -1,6 +1,6 @@
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -21,7 +21,7 @@ class FailedMatchCard extends StatelessWidget {
         context,
         storeEntry: entry,
         onMatch: (storeEntry, gameEntry) {
-          context.read<GameLibraryModel>().matchEntry(storeEntry, gameEntry);
+          context.read<UserLibraryModel>().matchEntry(storeEntry, gameEntry);
           context.pushNamed('details', params: {'gid': '${gameEntry.id}'});
         },
       ),

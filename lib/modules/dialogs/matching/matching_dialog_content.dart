@@ -2,7 +2,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +37,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               onSubmitted: (text) => setState(() {
-                matches = context.read<GameLibraryModel>().searchByTitle(text);
+                matches = context.read<UserLibraryModel>().searchByTitle(text);
               }),
               controller: _matchController,
               focusNode: _matchFocusNode,

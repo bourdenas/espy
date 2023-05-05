@@ -3,7 +3,7 @@ import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/home/espy_scaffold.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -67,7 +67,7 @@ class _TopLevelPageState extends State<TopLevelPage>
                   context,
                   onMatch: (storeEntry, gameEntry) {
                     context
-                        .read<GameLibraryModel>()
+                        .read<UserLibraryModel>()
                         .matchEntry(storeEntry, gameEntry);
                     context.pushNamed('details',
                         params: {'gid': '${gameEntry.id}'});

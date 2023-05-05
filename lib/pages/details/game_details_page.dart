@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/library_entries_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +15,7 @@ class GameDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final libraryEntry =
-        context.watch<GameEntriesModel>().getEntryByStringId(id);
+        context.watch<LibraryEntriesModel>().getEntryByStringId(id);
 
     return StreamBuilder(
       stream:
@@ -30,7 +30,7 @@ class GameDetailsPage extends StatelessWidget {
 
         if (!snapshot.hasData || snapshot.data?.data() == null) {
           context
-              .read<GameLibraryModel>()
+              .read<UserLibraryModel>()
               .retrieveGameEntry(int.tryParse(id) ?? 0);
 
           return Center(
@@ -51,7 +51,7 @@ class GameDetailsPage extends StatelessWidget {
           gameEntry = GameEntry.fromJson(jsonObj!);
         } catch (_) {
           context
-              .read<GameLibraryModel>()
+              .read<UserLibraryModel>()
               .retrieveGameEntry(int.tryParse(id) ?? 0);
         }
 

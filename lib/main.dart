@@ -2,8 +2,8 @@ import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/library_entries_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
@@ -26,8 +26,8 @@ Future<void> main() async {
     providers: [
       ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref()),
       ChangeNotifierProvider(create: (_) => UserDataModel()),
-      ChangeNotifierProxyProvider<UserDataModel, GameLibraryModel>(
-        create: (_) => GameLibraryModel(),
+      ChangeNotifierProxyProvider<UserDataModel, UserLibraryModel>(
+        create: (_) => UserLibraryModel(),
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
@@ -41,7 +41,7 @@ Future<void> main() async {
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
-      ChangeNotifierProxyProvider2<GameLibraryModel, WishlistModel,
+      ChangeNotifierProxyProvider2<UserLibraryModel, WishlistModel,
           GameTagsModel>(
         create: (_) => GameTagsModel(),
         update: (_, libraryModel, wishlistModel, model) {
@@ -53,9 +53,9 @@ Future<void> main() async {
             );
         },
       ),
-      ChangeNotifierProxyProvider3<GameLibraryModel, WishlistModel,
-          GameTagsModel, GameEntriesModel>(
-        create: (_) => GameEntriesModel(),
+      ChangeNotifierProxyProvider3<UserLibraryModel, WishlistModel,
+          GameTagsModel, LibraryEntriesModel>(
+        create: (_) => LibraryEntriesModel(),
         update: (_, libraryModel, wishlistModel, gameTagsModel, model) {
           return model!
             ..update(
@@ -65,7 +65,7 @@ Future<void> main() async {
             );
         },
       ),
-      ChangeNotifierProxyProvider4<GameEntriesModel, WishlistModel,
+      ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel,
           GameTagsModel, AppConfigModel, HomeSlatesModel>(
         create: (_) => HomeSlatesModel(),
         update: (_, gameEntriesModel, wishlistModel, gameTagsModel,

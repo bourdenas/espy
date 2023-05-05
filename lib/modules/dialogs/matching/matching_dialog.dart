@@ -1,7 +1,7 @@
 import 'package:espy/modules/dialogs/matching/matching_dialog_content.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:espy/modules/models/game_library_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -43,7 +43,7 @@ class _MatchingDialogState extends State<MatchingDialog> {
     return MatchingDialogAnimation(
         widget.storeEntry,
         context
-            .read<GameLibraryModel>()
+            .read<UserLibraryModel>()
             .searchByTitle(widget.storeEntry?.title ?? ''),
         widget.onMatch);
   }

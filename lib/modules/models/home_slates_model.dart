@@ -1,8 +1,8 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/game_entries_model.dart';
+import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
@@ -14,7 +14,7 @@ class HomeSlatesModel extends ChangeNotifier {
   List<SlateInfo> get stacks => _stacks;
 
   void update(
-    GameEntriesModel gameEntries,
+    LibraryEntriesModel gameEntries,
     WishlistModel wishlistModel,
     GameTagsModel tagsModel,
     AppConfigModel appConfigModel,

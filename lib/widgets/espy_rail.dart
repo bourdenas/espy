@@ -1,6 +1,6 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/failed_model.dart';
-import 'package:espy/modules/models/library_filter.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
