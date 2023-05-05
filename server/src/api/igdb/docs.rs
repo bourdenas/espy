@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Default, Debug, Clone)]
 pub struct IgdbGame {
@@ -124,7 +124,7 @@ pub struct Company {
     pub logo: Option<u64>,
 }
 
-#[derive(Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Collection {
     pub id: u64,
 
@@ -133,6 +133,13 @@ pub struct Collection {
 
     #[serde(default)]
     pub slug: String,
+
+    #[serde(default)]
+    pub url: String,
+
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub games: Vec<u64>,
 }
 
 #[derive(Deserialize, Default, Debug, Clone)]

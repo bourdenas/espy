@@ -77,7 +77,7 @@ impl IgdbApi {
         let result: Vec<IgdbGame> = post(
             &connection,
             GAMES_ENDPOINT,
-            &format!("fields *; where id={id};"),
+            &format!("fields *; where id={id} & platforms = (6);"),
         )
         .await?;
 

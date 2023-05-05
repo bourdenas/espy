@@ -1,3 +1,4 @@
+pub mod collections;
 pub mod external_games;
 pub mod failed;
 pub mod games;
