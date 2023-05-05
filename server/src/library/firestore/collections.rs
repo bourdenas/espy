@@ -1,4 +1,8 @@
-use crate::{api::Collection, api::FirestoreApi, documents::GameEntry, Status};
+use crate::{
+    api::FirestoreApi,
+    documents::{GameEntry, IgdbCollection},
+    Status,
+};
 use tracing::instrument;
 
 /// Returns a GameEntry doc based on `game_id` from Firestore.
@@ -16,7 +20,7 @@ pub fn read(firestore: &FirestoreApi, collection_id: u64) -> Result<GameEntry, S
         collection = %collection.slug,
     )
 )]
-pub fn write(firestore: &FirestoreApi, collection: &Collection) -> Result<(), Status> {
+pub fn write(firestore: &FirestoreApi, collection: &IgdbCollection) -> Result<(), Status> {
     firestore.write("collections", Some(&collection.id.to_string()), collection)?;
     Ok(())
 }

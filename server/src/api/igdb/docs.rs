@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 #[derive(Deserialize, Default, Debug, Clone)]
 pub struct IgdbGame {
@@ -124,7 +124,7 @@ pub struct Company {
     pub logo: Option<u64>,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Deserialize, Default, Debug)]
 pub struct Collection {
     pub id: u64,
 

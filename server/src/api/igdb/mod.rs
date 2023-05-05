@@ -8,5 +8,5 @@ mod service;
 
 pub use batch::IgdbBatchApi;
 use connection::IgdbConnection;
-pub use docs::{Collection, IgdbGame};
+pub use docs::IgdbGame;
 pub use service::IgdbApi;

@@ -1,7 +1,13 @@
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use clap::Parser;
-use espy_server::{api, games, library::firestore, util, Status, Tracing};
+use espy_server::{
+    api,
+    documents::{GameDigest, IgdbCollection},
+    games,
+    library::firestore,
+    util, Status, Tracing,
+};
 use tracing::{error, info};
 
 /// Espy util for refreshing IGDB and Steam data for GameEntries.
@@ -74,10 +80,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         }
 
         for collection in collections {
-            let mut resolved_games = 0;
+            let mut igdb_collection = IgdbCollection {
+                id: collection.id,
+                name: collection.name,
+                slug: collection.slug,
+                url: collection.url,
+                games: vec![],
+            };
+
             for game in &collection.games {
                 match firestore::games::read(&firestore, *game) {
-                    Ok(_) => resolved_games += 1,
+                    Ok(game_entry) => igdb_collection.games.push(GameDigest::new(game_entry)),
                     Err(Status::NotFound(_)) => {
                         let igdb_game = match igdb.get(*game).await {
                             Ok(game) => game,
@@ -102,22 +115,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                         if let Err(e) = firestore::games::write(&firestore, &game_entry) {
                             error!("Failed to save '{}' in Firestore: {e}", game_entry.name);
                         }
-                        resolved_games += 1;
                         info!("#{} Resolved '{}' ({})", k, game_entry.name, game_entry.id);
+                        igdb_collection.games.push(GameDigest::new(game_entry))
                     }
                     Err(e) => error!("Failed to read from Firestore game with id={game}: {e}"),
                 }
             }
 
-            if resolved_games > 0 {
-                if let Err(e) = firestore::collections::write(&firestore, &collection) {
-                    error!("Failed to save '{}' in Firestore: {e}", &collection.name);
+            if !igdb_collection.games.is_empty() {
+                if let Err(e) = firestore::collections::write(&firestore, &igdb_collection) {
+                    error!(
+                        "Failed to save '{}' in Firestore: {e}",
+                        &igdb_collection.name
+                    );
                 }
-
-                info!(
-                    "#{} Saved collection '{}' ({})",
-                    k, collection.name, collection.id
-                );
+                info!("#{} Saved collection '{}'", k, igdb_collection.name);
             }
             k += 1;
 
