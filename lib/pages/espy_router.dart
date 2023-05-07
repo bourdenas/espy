@@ -40,7 +40,8 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           child: TopLevelPage(
             body: GameListPage(
-                filter: LibraryFilter.fromParams(state.queryParams)),
+              filter: LibraryFilter.fromParams(state.queryParams),
+            ),
             path: state.path!,
           ),
         ),

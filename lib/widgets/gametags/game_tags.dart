@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -76,10 +77,16 @@ class _GameChipsWrap extends StatelessWidget {
         for (final collection in tags['collections'])
           CollectionChip(
             collection,
-            onPressed: () => context.pushNamed(
-              'games',
-              queryParams: LibraryFilter(collections: {collection}).params(),
-            ),
+            onPressed: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .add(LibraryFilter(collections: {collection}));
+              context.pushNamed(
+                'games',
+                queryParams: filter.params(),
+              );
+            },
           ),
         for (final tag in tagsModel.userTags.byGameId(tags['gameId']))
           TagChip(
@@ -154,11 +161,16 @@ class GameCardChips extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: CollectionChip(
                   collection,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParams:
-                        LibraryFilter(collections: {collection}).params(),
-                  ),
+                  onPressed: () {
+                    final filter = context
+                        .read<LibraryFilterModel>()
+                        .filter
+                        .add(LibraryFilter(collections: {collection}));
+                    context.pushNamed(
+                      'games',
+                      queryParams: filter.params(),
+                    );
+                  },
                 ),
               ),
           for (final tag in tagsModel.userTags.byGameId(tags['gameId']))
@@ -213,7 +225,19 @@ class GameChipsFilter extends StatelessWidget {
       for (final collection in filter.collections) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: CollectionChip(collection, onDeleted: () {}),
+          child: CollectionChip(
+            collection,
+            onDeleted: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .remove(LibraryFilter(collections: {collection}));
+              context.pushNamed(
+                'games',
+                queryParams: filter.params(),
+              );
+            },
+          ),
         ),
       ],
       for (final tag in filter.tags) ...[

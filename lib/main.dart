@@ -3,6 +3,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
@@ -26,6 +27,7 @@ Future<void> main() async {
     providers: [
       ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref()),
       ChangeNotifierProvider(create: (_) => UserDataModel()),
+      ChangeNotifierProvider(create: (_) => LibraryFilterModel()),
       ChangeNotifierProxyProvider<UserDataModel, UserLibraryModel>(
         create: (_) => UserLibraryModel(),
         update: (_, userDataModel, model) =>

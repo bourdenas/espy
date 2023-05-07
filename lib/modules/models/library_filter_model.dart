@@ -12,14 +12,6 @@ class LibraryFilterModel extends ChangeNotifier {
     _filter = filter;
     notifyListeners();
   }
-
-  void add(LibraryFilter filter) {
-    _filter.add(filter);
-  }
-
-  void remove(LibraryFilter filter) {
-    _filter.remove(filter);
-  }
 }
 
 enum LibraryView {
@@ -47,20 +39,32 @@ class LibraryFilter {
   Set<String> collections;
   Set<String> tags;
 
-  void add(LibraryFilter other) {
-    stores = stores.union(other.stores);
-    developers = developers.union(other.developers);
-    publishers = publishers.union(other.publishers);
-    collections = collections.union(other.collections);
-    tags = tags.union(other.tags);
+  LibraryFilter add(LibraryFilter other) {
+    return LibraryFilter(
+      stores: stores.union(other.stores),
+      developers: developers.union(other.developers),
+      publishers: publishers.union(other.publishers),
+      collections: collections.union(other.collections),
+      tags: tags.union(other.tags),
+    );
   }
 
-  void remove(LibraryFilter other) {
-    stores = stores.difference(other.stores);
-    developers = developers.difference(other.developers);
-    publishers = publishers.difference(other.publishers);
-    collections = collections.difference(other.collections);
-    tags = tags.difference(other.tags);
+  LibraryFilter remove(LibraryFilter other) {
+    return LibraryFilter(
+      stores: stores.difference(other.stores),
+      developers: developers.difference(other.developers),
+      publishers: publishers.difference(other.publishers),
+      collections: collections.difference(other.collections),
+      tags: tags.difference(other.tags),
+    );
+  }
+
+  bool contains(LibraryFilter other) {
+    return other.stores.difference(stores).isEmpty &&
+        other.developers.difference(developers).isEmpty &&
+        other.publishers.difference(publishers).isEmpty &&
+        other.collections.difference(collections).isEmpty &&
+        other.tags.difference(tags).isEmpty;
   }
 
   Iterable<LibraryEntry> filter(
