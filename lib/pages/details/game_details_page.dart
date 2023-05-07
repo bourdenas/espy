@@ -46,7 +46,7 @@ class GameDetailsPage extends StatelessWidget {
         }
 
         final jsonObj = snapshot.data!.data();
-        var gameEntry = const GameEntry(id: 0, name: '');
+        var gameEntry = const GameEntry(id: 0, name: '', category: '');
         try {
           gameEntry = GameEntry.fromJson(jsonObj!);
         } catch (_) {

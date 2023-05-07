@@ -30,7 +30,9 @@ class RemoteLibraryModel {
 
     for (final collection in snapshot.docs) {
       for (final digest in collection.data().games) {
-        libraryEntries.add(LibraryEntry.fromGameDigest(digest));
+        if (digest.category == 'Main') {
+          libraryEntries.add(LibraryEntry.fromGameDigest(digest));
+        }
       }
     }
 

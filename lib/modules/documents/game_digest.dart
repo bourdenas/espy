@@ -3,6 +3,8 @@ import 'package:espy/modules/documents/game_entry.dart';
 class GameDigest {
   final int id;
   final String name;
+
+  final String? category;
   final String? cover;
 
   final int releaseDate;
@@ -15,6 +17,7 @@ class GameDigest {
   GameDigest({
     required this.id,
     required this.name,
+    this.category,
     this.cover,
     this.releaseDate = 0,
     this.rating = 0,
@@ -27,6 +30,7 @@ class GameDigest {
       : this(
           id: gameEntry.id,
           name: gameEntry.name,
+          category: gameEntry.category,
           cover: gameEntry.cover?.imageId,
           releaseDate: gameEntry.releaseDate,
           rating: gameEntry.igdbRating,
@@ -45,6 +49,7 @@ class GameDigest {
       : this(
           id: json['id']!,
           name: json['name']!,
+          category: json['category'] ?? '',
           cover: json['cover'],
           releaseDate: json['release_date'] ?? 0,
           rating: json['rating'] ?? 0,
@@ -63,6 +68,7 @@ class GameDigest {
     return {
       'id': id,
       'name': name,
+      'category': category,
       if (cover != null) 'cover': cover,
       'release_date': releaseDate,
       if (rating != 0) 'rating': rating,

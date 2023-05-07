@@ -5,6 +5,7 @@ import 'package:espy/modules/documents/steam_data.dart';
 class GameEntry {
   final int id;
   final String name;
+  final String category;
 
   final String summary;
   final String storyline;
@@ -49,6 +50,7 @@ class GameEntry {
   const GameEntry({
     required this.id,
     required this.name,
+    required this.category,
     this.summary = '',
     this.storyline = '',
     this.releaseDate = 0,
@@ -74,6 +76,7 @@ class GameEntry {
       : this(
           id: json['id']!,
           name: json['name']!,
+          category: json['category']!,
           summary: json['summary'] ?? '',
           storyline: json['storyline'] ?? '',
           releaseDate: json['release_date'] ?? 0,
@@ -137,6 +140,7 @@ class GameEntry {
     return {
       'id': id,
       'name': name,
+      'category': category,
       if (summary.isNotEmpty) 'summary': summary,
       if (storyline.isNotEmpty) 'storyline': storyline,
       if (releaseDate > 0) 'release_date': releaseDate,
