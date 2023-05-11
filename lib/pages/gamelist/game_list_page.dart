@@ -10,29 +10,37 @@ import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GameListPage extends StatelessWidget {
+class GameListPage extends StatefulWidget {
   const GameListPage({Key? key, required this.filter}) : super(key: key);
 
   final LibraryFilter filter;
 
   @override
+  State<GameListPage> createState() => _GameListPageState();
+}
+
+class _GameListPageState extends State<GameListPage> {
+  @override
   Widget build(BuildContext context) {
     final entries =
-        context.watch<LibraryEntriesModel>().filter(filter).toList();
+        context.watch<LibraryEntriesModel>().filter(widget.filter).toList();
 
-    return FutureBuilder<List<LibraryEntry>>(
-        future: RemoteLibraryModel.fromFilter(filter),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.hasData) {
-            final Set<int> entryIds = Set.from(entries.map((e) => e.id));
-            entries
-                .addAll(snapshot.data!.where((e) => !entryIds.contains(e.id)));
-            entries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
-          }
-          return LibraryContent(entries: entries, filter: filter);
-        });
+    if (!fetched) {
+      RemoteLibraryModel.fromFilter(widget.filter).then((value) => setState(() {
+            _remoteGames = value;
+            fetched = true;
+          }));
+    }
+
+    final Set<int> entryIds = Set.from(entries.map((e) => e.id));
+    entries.addAll(_remoteGames.where((e) => !entryIds.contains(e.id)));
+    entries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
+
+    return LibraryContent(entries: entries, filter: widget.filter);
   }
+
+  bool fetched = false;
+  List<LibraryEntry> _remoteGames = [];
 }
 
 class LibraryContent extends StatelessWidget {
