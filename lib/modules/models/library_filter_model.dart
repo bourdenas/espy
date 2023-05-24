@@ -95,6 +95,10 @@ class LibraryFilter {
         .map((id) => entriesModel.getEntryById(id))
         .where((e) => e != null)
         .map((e) => e!)
+        .where((e) =>
+            e.digest.category == 'Main' ||
+            e.digest.category == 'Remake' ||
+            e.digest.category == 'Remaster')
         .where((libraryEntry) => _filterView(libraryEntry, tagsModel));
   }
 

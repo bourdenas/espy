@@ -1,6 +1,8 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
+import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class LibraryEntriesModel extends ChangeNotifier {
@@ -8,12 +10,14 @@ class LibraryEntriesModel extends ChangeNotifier {
   GameTagsModel _gameTagsModel = GameTagsModel();
 
   void update(
-    List<LibraryEntry> library,
-    List<LibraryEntry> wishlist,
+    UserLibraryModel userLibraryModel,
+    WishlistModel wishlistModel,
     GameTagsModel gameTags,
   ) {
-    _entries = Map.fromEntries(library.map((e) => MapEntry(e.id, e)));
-    _entries.addAll(Map.fromEntries(wishlist.map((e) => MapEntry(e.id, e))));
+    _entries =
+        Map.fromEntries(userLibraryModel.entries.map((e) => MapEntry(e.id, e)));
+    _entries.addAll(
+        Map.fromEntries(wishlistModel.wishlist.map((e) => MapEntry(e.id, e))));
     _gameTagsModel = gameTags;
     notifyListeners();
   }
