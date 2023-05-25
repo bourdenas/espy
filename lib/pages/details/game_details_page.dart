@@ -33,10 +33,10 @@ class GameDetailsPage extends StatelessWidget {
               .read<UserLibraryModel>()
               .retrieveGameEntry(int.tryParse(id) ?? 0);
 
-          return Center(
+          return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Text('Retrieving game info'),
                 SizedBox(height: 16),
                 CircularProgressIndicator(),

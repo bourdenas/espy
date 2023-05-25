@@ -110,7 +110,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
                     ScaffoldMessenger.of(context).clearSnackBars();
                   });
 
-                  final gameEntries = snapshot.data! as List<GameEntry>;
+                  final gameEntries = snapshot.data!;
                   final tiles = gameEntries
                       .map((gameEntry) => TileData(
                           title: gameEntry.name,
