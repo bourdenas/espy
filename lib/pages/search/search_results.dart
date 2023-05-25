@@ -78,7 +78,7 @@ class TagSearchResults extends StatelessWidget {
                   store,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(stores: {store}).params(),
+                    queryParameters: LibraryFilter(stores: {store}).params(),
                   ),
                 ),
               ),
@@ -92,7 +92,8 @@ class TagSearchResults extends StatelessWidget {
                   company,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(developers: {company}).params(),
+                    queryParameters:
+                        LibraryFilter(developers: {company}).params(),
                   ),
                 ),
               ),
@@ -106,7 +107,8 @@ class TagSearchResults extends StatelessWidget {
                   company,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(publishers: {company}).params(),
+                    queryParameters:
+                        LibraryFilter(publishers: {company}).params(),
                   ),
                 ),
               ),
@@ -120,7 +122,7 @@ class TagSearchResults extends StatelessWidget {
                   collection,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams:
+                    queryParameters:
                         LibraryFilter(collections: {collection}).params(),
                   ),
                 ),
@@ -135,7 +137,7 @@ class TagSearchResults extends StatelessWidget {
                   tag,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(tags: {tag.name}).params(),
+                    queryParameters: LibraryFilter(tags: {tag.name}).params(),
                   ),
                   onRightClick: () =>
                       context.read<GameTagsModel>().userTags.moveCluster(tag),

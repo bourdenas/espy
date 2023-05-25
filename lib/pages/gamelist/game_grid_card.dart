@@ -23,11 +23,12 @@ class GameGridCard extends StatelessWidget {
     final appConfig = context.watch<AppConfigModel>();
 
     return GestureDetector(
-      onTap: () => context.pushNamed('details', params: {'gid': '${entry.id}'}),
+      onTap: () =>
+          context.pushNamed('details', pathParameters: {'gid': '${entry.id}'}),
       onSecondaryTap: () =>
           EditEntryDialog.show(context, entry, gameId: entry.id),
       onLongPress: () => isMobile
-          ? context.pushNamed('edit', params: {'gid': '${entry.id}'})
+          ? context.pushNamed('edit', pathParameters: {'gid': '${entry.id}'})
           : EditEntryDialog.show(
               context,
               entry,

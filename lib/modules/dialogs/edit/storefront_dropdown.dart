@@ -86,7 +86,8 @@ class StorefrontDropdownState extends State<StorefrontDropdown> {
         context
             .read<UserLibraryModel>()
             .rematchEntry(storeEntry, widget.libraryEntry, gameEntry);
-        context.pushNamed('details', params: {'gid': '${gameEntry.id}'});
+        context
+            .pushNamed('details', pathParameters: {'gid': '${gameEntry.id}'});
       },
     );
   }

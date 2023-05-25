@@ -138,6 +138,7 @@ class _SearchPageState extends State<SearchPage> {
 
   String _text = '';
   Timer _timer = Timer(const Duration(seconds: 0), () {});
+  // ignore: unused_field
   bool _fetchingRemoteGames = false;
   List<LibraryEntry> _remoteGames = [];
 }

@@ -2,7 +2,6 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -63,7 +62,7 @@ class _GameChipsWrap extends StatelessWidget {
             company,
             onPressed: () => context.pushNamed(
               'games',
-              queryParams: LibraryFilter(developers: {company}).params(),
+              queryParameters: LibraryFilter(developers: {company}).params(),
             ),
           ),
         for (final company in tags['publishers'])
@@ -71,7 +70,7 @@ class _GameChipsWrap extends StatelessWidget {
             company,
             onPressed: () => context.pushNamed(
               'games',
-              queryParams: LibraryFilter(publishers: {company}).params(),
+              queryParameters: LibraryFilter(publishers: {company}).params(),
             ),
           ),
         for (final collection in tags['collections'])
@@ -84,7 +83,7 @@ class _GameChipsWrap extends StatelessWidget {
                   .add(LibraryFilter(collections: {collection}));
               context.pushNamed(
                 'games',
-                queryParams: filter.params(),
+                queryParameters: filter.params(),
               );
             },
           ),
@@ -93,7 +92,7 @@ class _GameChipsWrap extends StatelessWidget {
             tag,
             onPressed: () => context.pushNamed(
               'games',
-              queryParams: LibraryFilter(tags: {tag.name}).params(),
+              queryParameters: LibraryFilter(tags: {tag.name}).params(),
             ),
             onDeleted: () => context
                 .read<GameTagsModel>()
@@ -139,7 +138,8 @@ class GameCardChips extends StatelessWidget {
                   company,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(developers: {company}).params(),
+                    queryParameters:
+                        LibraryFilter(developers: {company}).params(),
                   ),
                 ),
               ),
@@ -150,7 +150,8 @@ class GameCardChips extends StatelessWidget {
                   company,
                   onPressed: () => context.pushNamed(
                     'games',
-                    queryParams: LibraryFilter(publishers: {company}).params(),
+                    queryParameters:
+                        LibraryFilter(publishers: {company}).params(),
                   ),
                 ),
               ),
@@ -168,7 +169,7 @@ class GameCardChips extends StatelessWidget {
                         .add(LibraryFilter(collections: {collection}));
                     context.pushNamed(
                       'games',
-                      queryParams: filter.params(),
+                      queryParameters: filter.params(),
                     );
                   },
                 ),
@@ -180,7 +181,7 @@ class GameCardChips extends StatelessWidget {
                 tag,
                 onPressed: () => context.pushNamed(
                   'games',
-                  queryParams: LibraryFilter(tags: {tag.name}).params(),
+                  queryParameters: LibraryFilter(tags: {tag.name}).params(),
                 ),
                 onDeleted: () => context
                     .read<GameTagsModel>()
@@ -234,7 +235,7 @@ class GameChipsFilter extends StatelessWidget {
                   .remove(LibraryFilter(collections: {collection}));
               context.pushNamed(
                 'games',
-                queryParams: filter.params(),
+                queryParameters: filter.params(),
               );
             },
           ),

@@ -20,12 +20,13 @@ class GameListCard extends StatelessWidget {
     final isMobile = AppConfigModel.isMobile(context);
 
     return GestureDetector(
-      onTap: () =>
-          context.pushNamed('details', params: {'gid': '${libraryEntry.id}'}),
+      onTap: () => context
+          .pushNamed('details', pathParameters: {'gid': '${libraryEntry.id}'}),
       onSecondaryTap: () =>
           EditEntryDialog.show(context, libraryEntry, gameId: libraryEntry.id),
       onLongPress: () => isMobile
-          ? context.pushNamed('edit', params: {'gid': '${libraryEntry.id}'})
+          ? context
+              .pushNamed('edit', pathParameters: {'gid': '${libraryEntry.id}'})
           : EditEntryDialog.show(context, libraryEntry,
               gameId: libraryEntry.id),
       child: Container(
