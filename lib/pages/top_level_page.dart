@@ -70,7 +70,7 @@ class _TopLevelPageState extends State<TopLevelPage>
                         .read<UserLibraryModel>()
                         .matchEntry(storeEntry, gameEntry);
                     context.pushNamed('details',
-                        params: {'gid': '${gameEntry.id}'});
+                        pathParameters: {'gid': '${gameEntry.id}'});
                   },
                 )),
       },
@@ -139,8 +139,8 @@ class _TopLevelPageState extends State<TopLevelPage>
             onTap: () {
               _drawerAnimationController.reverse();
             },
-            child: Row(
-              children: const [
+            child: const Row(
+              children: [
                 SizedBox(width: 8.0),
                 CircleAvatar(
                   backgroundColor: Colors.white,

@@ -40,7 +40,7 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           child: TopLevelPage(
             body: GameListPage(
-              filter: LibraryFilter.fromParams(state.queryParams),
+              filter: LibraryFilter.fromParams(state.queryParameters),
             ),
             path: state.path!,
           ),
@@ -51,7 +51,7 @@ class EspyRouter extends StatelessWidget {
         path: '/details/:gid',
         pageBuilder: (context, state) => NoTransitionPage(
           child: TopLevelPage(
-            body: GameDetailsPage(id: state.params['gid']!),
+            body: GameDetailsPage(id: state.pathParameters['gid']!),
             path: state.path!,
           ),
         ),
@@ -60,7 +60,7 @@ class EspyRouter extends StatelessWidget {
             name: 'edit',
             path: 'edit',
             builder: (context, state) =>
-                EditEntryPage(id: state.params['gid']!),
+                EditEntryPage(id: state.pathParameters['gid']!),
           ),
         ],
       ),

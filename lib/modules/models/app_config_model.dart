@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// App configuration structure.
 class AppConfigModel extends ChangeNotifier {
   get theme => ThemeData.dark().copyWith(
+        // useMaterial3: true,
         appBarTheme: AppBarTheme(backgroundColor: backgrounColor),
         scaffoldBackgroundColor: backgrounColor,
       );

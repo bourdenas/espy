@@ -45,7 +45,7 @@ class HomeContent extends StatelessWidget {
                 title: slate.title,
                 onTitleTap: () => context.pushNamed(
                   'games',
-                  queryParams: slate.filter.params(),
+                  queryParameters: slate.filter.params(),
                 ),
                 tileSize: AppConfigModel.isMobile(context)
                     ? const TileSize(width: 133, height: 190)
@@ -55,10 +55,10 @@ class HomeContent extends StatelessWidget {
                           image:
                               '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
                           onTap: () => context.pushNamed('details',
-                              params: {'gid': '${libraryEntry.id}'}),
+                              pathParameters: {'gid': '${libraryEntry.id}'}),
                           onLongTap: () => isMobile
                               ? context.pushNamed('edit',
-                                  params: {'gid': '${libraryEntry.id}'})
+                                  pathParameters: {'gid': '${libraryEntry.id}'})
                               : EditEntryDialog.show(
                                   context,
                                   libraryEntry,
@@ -107,7 +107,7 @@ class HomeContent extends StatelessWidget {
                   tileImages: stack.entries.map((libraryEntry) =>
                       '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg'),
                   onExpand: () => context.pushNamed('games',
-                      queryParams: stack.filter.params()),
+                      queryParameters: stack.filter.params()),
                 ),
             ],
           ),

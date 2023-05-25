@@ -22,7 +22,8 @@ class FailedMatchCard extends StatelessWidget {
         storeEntry: entry,
         onMatch: (storeEntry, gameEntry) {
           context.read<UserLibraryModel>().matchEntry(storeEntry, gameEntry);
-          context.pushNamed('details', params: {'gid': '${gameEntry.id}'});
+          context
+              .pushNamed('details', pathParameters: {'gid': '${gameEntry.id}'});
         },
       ),
       onSecondaryTap: () {},

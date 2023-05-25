@@ -14,14 +14,12 @@ class ImageDialog extends StatelessWidget {
     return AlertDialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(2),
-      title: Container(
-        child: CachedNetworkImage(
-          fit: BoxFit.cover,
-          imageUrl: imageUrl,
-          placeholder: (context, url) => Container(),
-          errorWidget: (context, url, error) =>
-              const Center(child: Icon(Icons.error_outline)),
-        ),
+      title: CachedNetworkImage(
+        fit: BoxFit.cover,
+        imageUrl: imageUrl,
+        placeholder: (context, url) => Container(),
+        errorWidget: (context, url, error) =>
+            const Center(child: Icon(Icons.error_outline)),
       ),
     );
   }
