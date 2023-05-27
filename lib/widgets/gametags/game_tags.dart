@@ -39,6 +39,9 @@ extractTags(GameEntry? gameEntry, LibraryEntry? libraryEntry) {
     'collections': gameEntry != null
         ? gameEntry.collections.map((e) => e.name).toSet()
         : libraryEntry?.collections ?? [],
+    'franchises': gameEntry != null
+        ? gameEntry.franchises.map((e) => e.name).toSet()
+        : libraryEntry?.franchises ?? [],
   };
 }
 
@@ -81,6 +84,20 @@ class _GameChipsWrap extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .add(LibraryFilter(collections: {collection}));
+              context.pushNamed(
+                'games',
+                queryParameters: filter.params(),
+              );
+            },
+          ),
+        for (final franchise in tags['franchises'])
+          FranchiseChip(
+            franchise,
+            onPressed: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .add(LibraryFilter(franchises: {franchise}));
               context.pushNamed(
                 'games',
                 queryParameters: filter.params(),
@@ -156,7 +173,7 @@ class GameCardChips extends StatelessWidget {
                 ),
               ),
           ],
-          if (includeCollections)
+          if (includeCollections) ...[
             for (final collection in tags['collections'])
               Padding(
                 padding: const EdgeInsets.all(4.0),
@@ -174,6 +191,24 @@ class GameCardChips extends StatelessWidget {
                   },
                 ),
               ),
+            for (final franchise in tags['franchises'])
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: FranchiseChip(
+                  franchise,
+                  onPressed: () {
+                    final filter = context
+                        .read<LibraryFilterModel>()
+                        .filter
+                        .add(LibraryFilter(franchises: {franchise}));
+                    context.pushNamed(
+                      'games',
+                      queryParameters: filter.params(),
+                    );
+                  },
+                ),
+              ),
+          ],
           for (final tag in tagsModel.userTags.byGameId(tags['gameId']))
             Padding(
               padding: const EdgeInsets.all(4.0),
@@ -233,6 +268,24 @@ class GameChipsFilter extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .remove(LibraryFilter(collections: {collection}));
+              context.pushNamed(
+                'games',
+                queryParameters: filter.params(),
+              );
+            },
+          ),
+        ),
+      ],
+      for (final franchise in filter.franchises) ...[
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: FranchiseChip(
+            franchise,
+            onDeleted: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .remove(LibraryFilter(franchises: {franchise}));
               context.pushNamed(
                 'games',
                 queryParameters: filter.params(),

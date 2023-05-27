@@ -37,6 +37,18 @@ class CollectionChip extends EspyChip {
         );
 }
 
+class FranchiseChip extends EspyChip {
+  FranchiseChip(String collection,
+      {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})
+      : super(
+          key: key,
+          label: collection,
+          color: Colors.indigo[200]!,
+          onPressed: onPressed ?? () {},
+          onDeleted: onDeleted,
+        );
+}
+
 class StoreChip extends EspyChip {
   StoreChip(String store,
       {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})

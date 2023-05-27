@@ -28,6 +28,7 @@ class LibraryFilter {
     this.developers = const {},
     this.publishers = const {},
     this.collections = const {},
+    this.franchises = const {},
     this.tags = const {},
   });
 
@@ -37,6 +38,7 @@ class LibraryFilter {
   Set<String> developers;
   Set<String> publishers;
   Set<String> collections;
+  Set<String> franchises;
   Set<String> tags;
 
   LibraryFilter add(LibraryFilter other) {
@@ -45,6 +47,7 @@ class LibraryFilter {
       developers: developers.union(other.developers),
       publishers: publishers.union(other.publishers),
       collections: collections.union(other.collections),
+      franchises: franchises.union(other.franchises),
       tags: tags.union(other.tags),
     );
   }
@@ -55,6 +58,7 @@ class LibraryFilter {
       developers: developers.difference(other.developers),
       publishers: publishers.difference(other.publishers),
       collections: collections.difference(other.collections),
+      franchises: franchises.difference(other.franchises),
       tags: tags.difference(other.tags),
     );
   }
@@ -64,6 +68,7 @@ class LibraryFilter {
         other.developers.difference(developers).isEmpty &&
         other.publishers.difference(publishers).isEmpty &&
         other.collections.difference(collections).isEmpty &&
+        other.franchises.difference(franchises).isEmpty &&
         other.tags.difference(tags).isEmpty;
   }
 
@@ -82,6 +87,9 @@ class LibraryFilter {
     }
     for (final collection in collections) {
       gameIdSets.add(Set.from(tagsModel.collections.gameIds(collection)));
+    }
+    for (final franchise in franchises) {
+      gameIdSets.add(Set.from(tagsModel.franchises.gameIds(franchise)));
     }
     for (final tag in tags) {
       gameIdSets.add(Set.from(tagsModel.userTags.gameIds(tag)));
@@ -121,6 +129,7 @@ class LibraryFilter {
       if (developers.isNotEmpty) 'dev': developers.map((c) => c).join(','),
       if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(','),
       if (collections.isNotEmpty) 'col': collections.map((c) => c).join(','),
+      if (franchises.isNotEmpty) 'frn': franchises.map((c) => c).join(','),
       if (tags.isNotEmpty) 'tag': tags.map((t) => t).join(','),
       if (stores.isNotEmpty) 'str': stores.map((s) => s).join(','),
     };
@@ -138,6 +147,8 @@ class LibraryFilter {
         filter.publishers = value.split(',').toSet();
       } else if (key == 'col') {
         filter.collections = value.split(',').toSet();
+      } else if (key == 'frn') {
+        filter.franchises = value.split(',').toSet();
       } else if (key == 'tag') {
         filter.tags = value.split(',').toSet();
       } else if (key == 'str') {

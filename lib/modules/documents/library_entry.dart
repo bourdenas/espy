@@ -14,6 +14,7 @@ class LibraryEntry {
   int get releaseDate => digest.releaseDate;
   double get rating => digest.rating;
   List<String> get collections => digest.collections;
+  List<String> get franchises => digest.franchises;
   List<String> get developers => digest.developers;
   List<String> get publishers => digest.publishers;
 
