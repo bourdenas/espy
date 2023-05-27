@@ -11,6 +11,7 @@ class GameDigest {
   final double rating;
 
   final List<String> collections;
+  final List<String> franchises;
   final List<String> developers;
   final List<String> publishers;
 
@@ -22,6 +23,7 @@ class GameDigest {
     this.releaseDate = 0,
     this.rating = 0,
     this.collections = const [],
+    this.franchises = const [],
     this.developers = const [],
     this.publishers = const [],
   });
@@ -36,6 +38,9 @@ class GameDigest {
           rating: gameEntry.igdbRating,
           collections: [
             for (final collection in gameEntry.collections) collection.name
+          ],
+          franchises: [
+            for (final franchise in gameEntry.franchises) franchise.name
           ],
           developers: [
             for (final company in gameEntry.developers) company.name
@@ -56,6 +61,9 @@ class GameDigest {
           collections: [
             for (final collection in json['collections'] ?? []) collection,
           ],
+          franchises: [
+            for (final franchise in json['franchises'] ?? []) franchise,
+          ],
           developers: [
             for (final company in json['developers'] ?? []) company,
           ],
@@ -73,6 +81,7 @@ class GameDigest {
       'release_date': releaseDate,
       if (rating != 0) 'rating': rating,
       if (collections.isNotEmpty) 'collections': collections,
+      if (franchises.isNotEmpty) 'franchises': franchises,
       if (developers.isNotEmpty) 'developers': developers,
       if (publishers.isNotEmpty) 'publishers': publishers,
     };

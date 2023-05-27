@@ -22,6 +22,7 @@ class GameEntry {
   final List<GameDigest> remasters;
 
   final List<Collection> collections;
+  final List<Collection> franchises;
   final List<Company> developers;
   final List<Company> publishers;
 
@@ -63,6 +64,7 @@ class GameEntry {
     this.remakes = const [],
     this.remasters = const [],
     this.collections = const [],
+    this.franchises = const [],
     this.developers = const [],
     this.publishers = const [],
     this.cover,
@@ -107,6 +109,10 @@ class GameEntry {
           ],
           collections: [
             for (final entry in json['collections'] ?? [])
+              Collection.fromJson(entry),
+          ],
+          franchises: [
+            for (final entry in json['franchises'] ?? [])
               Collection.fromJson(entry),
           ],
           developers: [
@@ -167,6 +173,10 @@ class GameEntry {
       if (collections.isNotEmpty)
         'collections': [
           for (final entry in collections) entry.toJson(),
+        ],
+      if (franchises.isNotEmpty)
+        'franchises': [
+          for (final entry in franchises) entry.toJson(),
         ],
       if (developers.isNotEmpty)
         'developers': [
