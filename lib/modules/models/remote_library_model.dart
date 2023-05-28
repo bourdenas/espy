@@ -15,6 +15,12 @@ class RemoteLibraryModel {
       }
     }
 
+    if (filter.franchises.isNotEmpty) {
+      for (final franchise in filter.franchises) {
+        libraryEntries.addAll(await getFranchise(franchise));
+      }
+    }
+
     if (filter.developers.isNotEmpty) {
       for (final developer in filter.developers) {
         libraryEntries.addAll(await getDeveloper(developer));
@@ -45,6 +51,32 @@ class RemoteLibraryModel {
 
     for (final collection in snapshot.docs) {
       for (final digest in collection.data().games) {
+        if (digest.category == 'Main' ||
+            digest.category == 'Remake' ||
+            digest.category == 'Remaster') {
+          libraryEntries[digest.id] = LibraryEntry.fromGameDigest(digest);
+        }
+      }
+    }
+
+    return libraryEntries.values.toList();
+  }
+
+  static Future<List<LibraryEntry>> getFranchise(String name) async {
+    Map<int, LibraryEntry> libraryEntries = {};
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('franchises')
+        .where('name', isEqualTo: name)
+        .withConverter<IgdbCollection>(
+          fromFirestore: (snapshot, _) =>
+              IgdbCollection.fromJson(snapshot.data()!),
+          toFirestore: (entry, _) => entry.toJson(),
+        )
+        .get();
+
+    for (final franchise in snapshot.docs) {
+      for (final digest in franchise.data().games) {
         if (digest.category == 'Main' ||
             digest.category == 'Remake' ||
             digest.category == 'Remaster') {
