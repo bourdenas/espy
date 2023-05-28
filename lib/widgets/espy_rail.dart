@@ -54,7 +54,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
                     )
                   : const Icon(Icons.person),
             ),
-            onPressed: () => context.pushNamed('profile')),
+            onPressed: () => context.goNamed('profile')),
       ),
       groupAlignment: 0,
       destinations: _menuItems
@@ -112,20 +112,20 @@ List<_MenuItem> _menuItems = [
     label: 'Library',
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
-    onTap: (context) => context.pushNamed('games'),
+    onTap: (context) => context.goNamed('games'),
   ),
   _MenuItem(
     label: 'Untagged',
     icon: Icons.label_off_outlined,
     selectedIcon: Icons.label_off,
-    onTap: (context) => context.pushNamed('games',
+    onTap: (context) => context.goNamed('games',
         queryParameters: LibraryFilter(view: LibraryView.untagged).params()),
   ),
   _MenuItem(
     label: 'Failed',
     icon: Icons.error_outline,
     selectedIcon: Icons.error,
-    onTap: (context) => context.pushNamed('unmatched'),
+    onTap: (context) => context.goNamed('unmatched'),
     badgeText: (context) =>
         Text('${context.watch<FailedModel>().entries.length}'),
   ),

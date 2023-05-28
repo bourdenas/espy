@@ -54,8 +54,8 @@ class _TileShelveState extends State<TileShelve> {
       ),
       color: widget.color,
       headerLink: widget.filter != null
-          ? () => context.pushNamed('games',
-              queryParameters: widget.filter!.params())
+          ? () =>
+              context.goNamed('games', queryParameters: widget.filter!.params())
           : null,
       expanded: widget.expanded,
     );

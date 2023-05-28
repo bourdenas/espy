@@ -78,7 +78,7 @@ class TagSearchResults extends StatelessWidget {
               chips: stores.map(
                 (store) => StoreChip(
                   store,
-                  onPressed: () => context.pushNamed(
+                  onPressed: () => context.goNamed(
                     'games',
                     queryParameters: LibraryFilter(stores: {store}).params(),
                   ),
@@ -92,7 +92,7 @@ class TagSearchResults extends StatelessWidget {
               chips: developers.map(
                 (company) => DeveloperChip(
                   company,
-                  onPressed: () => context.pushNamed(
+                  onPressed: () => context.goNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(developers: {company}).params(),
@@ -107,7 +107,7 @@ class TagSearchResults extends StatelessWidget {
               chips: publishers.map(
                 (company) => PublisherChip(
                   company,
-                  onPressed: () => context.pushNamed(
+                  onPressed: () => context.goNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(publishers: {company}).params(),
@@ -122,7 +122,7 @@ class TagSearchResults extends StatelessWidget {
               chips: collections.map(
                 (collection) => CollectionChip(
                   collection,
-                  onPressed: () => context.pushNamed(
+                  onPressed: () => context.goNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(collections: {collection}).params(),
@@ -137,7 +137,7 @@ class TagSearchResults extends StatelessWidget {
               chips: franchises.map(
                 (franchise) => FranchiseChip(
                   franchise,
-                  onPressed: () => context.pushNamed(
+                  onPressed: () => context.goNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(franchises: {franchise}).params(),
@@ -152,7 +152,7 @@ class TagSearchResults extends StatelessWidget {
               chips: group.value.map(
                 (tag) => TagChip(
                   tag,
-                  onPressed: () => context.pushNamed(
+                  onPressed: () => context.goNamed(
                     'games',
                     queryParameters: LibraryFilter(tags: {tag.name}).params(),
                   ),
