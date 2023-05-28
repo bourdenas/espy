@@ -53,7 +53,8 @@ class TagSearchResults extends StatelessWidget {
     this.userTags,
     this.developers,
     this.publishers,
-    this.collections, {
+    this.collections,
+    this.franchises, {
     Key? key,
   }) : super(key: key);
 
@@ -62,6 +63,7 @@ class TagSearchResults extends StatelessWidget {
   final Iterable<String> developers;
   final Iterable<String> publishers;
   final Iterable<String> collections;
+  final Iterable<String> franchises;
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +126,21 @@ class TagSearchResults extends StatelessWidget {
                     'games',
                     queryParameters:
                         LibraryFilter(collections: {collection}).params(),
+                  ),
+                ),
+              ),
+            ),
+          if (franchises.isNotEmpty)
+            _ChipResults(
+              title: 'Franchises',
+              color: Colors.indigo[200]!,
+              chips: franchises.map(
+                (franchise) => FranchiseChip(
+                  franchise,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParameters:
+                        LibraryFilter(franchises: {franchise}).params(),
                   ),
                 ),
               ),

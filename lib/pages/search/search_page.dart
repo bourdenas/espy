@@ -47,6 +47,7 @@ class _SearchPageState extends State<SearchPage> {
           tagsModel.developers.filter(ngrams),
           tagsModel.publishers.filter(ngrams),
           tagsModel.collections.filter(ngrams),
+          tagsModel.franchises.filter(ngrams),
         ),
         for (final company in tagsModel.developers.filterExact(ngrams)) ...[
           TileShelve(
@@ -67,6 +68,13 @@ class _SearchPageState extends State<SearchPage> {
             title: collection,
             color: Colors.indigoAccent,
             filter: LibraryFilter(collections: {collection}),
+          ),
+        ],
+        for (final franchise in tagsModel.franchises.filterExact(ngrams)) ...[
+          TileShelve(
+            title: franchise,
+            color: Colors.indigo[200]!,
+            filter: LibraryFilter(franchises: {franchise}),
           ),
         ],
         for (final tag in tagsModel.userTags.filterExact(ngrams)) ...[
