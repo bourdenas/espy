@@ -11,6 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
   http:
 
   animate_do: ^3.0.0
