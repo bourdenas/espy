@@ -13,9 +13,11 @@ class GameGridCard extends StatelessWidget {
   const GameGridCard({
     Key? key,
     required this.entry,
+    required this.pushNavigation,
   }) : super(key: key);
 
   final LibraryEntry entry;
+  final bool pushNavigation;
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +25,10 @@ class GameGridCard extends StatelessWidget {
     final appConfig = context.watch<AppConfigModel>();
 
     return GestureDetector(
-      onTap: () =>
-          context.pushNamed('details', pathParameters: {'gid': '${entry.id}'}),
+      onTap: () => pushNavigation
+          ? context.pushNamed('details', pathParameters: {'gid': '${entry.id}'})
+          : context
+              .replaceNamed('details', pathParameters: {'gid': '${entry.id}'}),
       onSecondaryTap: () =>
           EditEntryDialog.show(context, entry, gameId: entry.id),
       onLongPress: () => isMobile

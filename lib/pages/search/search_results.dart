@@ -15,11 +15,13 @@ class GameSearchResults extends StatelessWidget {
     required this.entries,
     this.cardWidth,
     this.cardAspectRatio,
+    this.pushNavigation = true,
   }) : super(key: key);
 
   final Iterable<LibraryEntry> entries;
   final double? cardWidth;
   final double? cardAspectRatio;
+  final bool pushNavigation;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,12 @@ class GameSearchResults extends StatelessWidget {
     return SliverGrid.extent(
       maxCrossAxisExtent: cardWidth ?? 200,
       childAspectRatio: cardAspectRatio ?? .75,
-      children: matchedEntries.map((e) => GameGridCard(entry: e)).toList(),
+      children: matchedEntries
+          .map((e) => GameGridCard(
+                entry: e,
+                pushNavigation: pushNavigation,
+              ))
+          .toList(),
     );
   }
 
@@ -78,7 +85,7 @@ class TagSearchResults extends StatelessWidget {
               chips: stores.map(
                 (store) => StoreChip(
                   store,
-                  onPressed: () => context.goNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParameters: LibraryFilter(stores: {store}).params(),
                   ),
@@ -92,7 +99,7 @@ class TagSearchResults extends StatelessWidget {
               chips: developers.map(
                 (company) => DeveloperChip(
                   company,
-                  onPressed: () => context.goNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(developers: {company}).params(),
@@ -107,7 +114,7 @@ class TagSearchResults extends StatelessWidget {
               chips: publishers.map(
                 (company) => PublisherChip(
                   company,
-                  onPressed: () => context.goNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(publishers: {company}).params(),
@@ -122,7 +129,7 @@ class TagSearchResults extends StatelessWidget {
               chips: collections.map(
                 (collection) => CollectionChip(
                   collection,
-                  onPressed: () => context.goNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(collections: {collection}).params(),
@@ -137,7 +144,7 @@ class TagSearchResults extends StatelessWidget {
               chips: franchises.map(
                 (franchise) => FranchiseChip(
                   franchise,
-                  onPressed: () => context.goNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(franchises: {franchise}).params(),
@@ -152,7 +159,7 @@ class TagSearchResults extends StatelessWidget {
               chips: group.value.map(
                 (tag) => TagChip(
                   tag,
-                  onPressed: () => context.goNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParameters: LibraryFilter(tags: {tag.name}).params(),
                   ),
