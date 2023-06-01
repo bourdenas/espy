@@ -243,19 +243,55 @@ class GameChipsFilter extends StatelessWidget {
       for (final store in filter.stores) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: StoreChip(store, onDeleted: () {}),
+          child: StoreChip(
+            store,
+            onDeleted: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .remove(LibraryFilter(stores: {store}));
+              context.goNamed(
+                'games',
+                queryParameters: filter.params(),
+              );
+            },
+          ),
         ),
       ],
       for (final company in filter.developers) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: DeveloperChip(company, onDeleted: () {}),
+          child: DeveloperChip(
+            company,
+            onDeleted: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .remove(LibraryFilter(developers: {company}));
+              context.goNamed(
+                'games',
+                queryParameters: filter.params(),
+              );
+            },
+          ),
         ),
       ],
       for (final company in filter.publishers) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: PublisherChip(company, onDeleted: () {}),
+          child: PublisherChip(
+            company,
+            onDeleted: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .remove(LibraryFilter(publishers: {company}));
+              context.goNamed(
+                'games',
+                queryParameters: filter.params(),
+              );
+            },
+          ),
         ),
       ],
       for (final collection in filter.collections) ...[
@@ -297,8 +333,19 @@ class GameChipsFilter extends StatelessWidget {
       for (final tag in filter.tags) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: TagChip(context.read<GameTagsModel>().userTags.get(tag),
-              onDeleted: () {}),
+          child: TagChip(
+            context.read<GameTagsModel>().userTags.get(tag),
+            onDeleted: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .remove(LibraryFilter(tags: {tag}));
+              context.goNamed(
+                'games',
+                queryParameters: filter.params(),
+              );
+            },
+          ),
         ),
       ],
     ]);
