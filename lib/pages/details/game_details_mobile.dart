@@ -46,9 +46,8 @@ class GameDetailsContentMobile extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: GameCardChips(
+            child: GameTags(
               gameEntry: gameEntry,
-              includeCompanies: true,
             ),
           ),
         ),

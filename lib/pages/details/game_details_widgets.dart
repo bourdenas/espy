@@ -191,6 +191,7 @@ class RelatedGamesGroup extends StatelessWidget {
       title: title,
       entries: gameDigests
           .map((gameEntry) => LibraryEntry.fromGameDigest(gameEntry)),
+      pushNavigation: false,
     );
   }
 }

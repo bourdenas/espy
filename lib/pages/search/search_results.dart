@@ -15,11 +15,13 @@ class GameSearchResults extends StatelessWidget {
     required this.entries,
     this.cardWidth,
     this.cardAspectRatio,
+    this.pushNavigation = true,
   }) : super(key: key);
 
   final Iterable<LibraryEntry> entries;
   final double? cardWidth;
   final double? cardAspectRatio;
+  final bool pushNavigation;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,12 @@ class GameSearchResults extends StatelessWidget {
     return SliverGrid.extent(
       maxCrossAxisExtent: cardWidth ?? 200,
       childAspectRatio: cardAspectRatio ?? .75,
-      children: matchedEntries.map((e) => GameGridCard(entry: e)).toList(),
+      children: matchedEntries
+          .map((e) => GameGridCard(
+                entry: e,
+                pushNavigation: pushNavigation,
+              ))
+          .toList(),
     );
   }
 
