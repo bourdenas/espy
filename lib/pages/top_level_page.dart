@@ -59,7 +59,7 @@ class _TopLevelPageState extends State<TopLevelPage>
     return Actions(
       actions: {
         SearchIntent: CallbackAction<SearchIntent>(
-            onInvoke: (intent) => context.goNamed('search')),
+            onInvoke: (intent) => context.pushNamed('search')),
         HomeIntent: CallbackAction<HomeIntent>(
             onInvoke: (intent) => context.goNamed('home')),
         AddGameIntent: CallbackAction<AddGameIntent>(

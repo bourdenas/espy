@@ -67,7 +67,7 @@ class _GameChipsWrap extends StatelessWidget {
               if (context.canPop()) {
                 context.pop();
               }
-              context.replaceNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: LibraryFilter(developers: {company}).params(),
               );
@@ -80,7 +80,7 @@ class _GameChipsWrap extends StatelessWidget {
               if (context.canPop()) {
                 context.pop();
               }
-              context.replaceNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: LibraryFilter(publishers: {company}).params(),
               );
@@ -97,7 +97,7 @@ class _GameChipsWrap extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .add(LibraryFilter(collections: {collection}));
-              context.replaceNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: filter.params(),
               );
@@ -114,7 +114,7 @@ class _GameChipsWrap extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .add(LibraryFilter(franchises: {franchise}));
-              context.replaceNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: filter.params(),
               );
@@ -127,7 +127,7 @@ class _GameChipsWrap extends StatelessWidget {
               if (context.canPop()) {
                 context.pop();
               }
-              context.goNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: LibraryFilter(tags: {tag.name}).params(),
               );
@@ -174,7 +174,7 @@ class GameCardChips extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: DeveloperChip(
                   company,
-                  onPressed: () => context.replaceNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(developers: {company}).params(),
@@ -186,7 +186,7 @@ class GameCardChips extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: PublisherChip(
                   company,
-                  onPressed: () => context.replaceNamed(
+                  onPressed: () => context.pushNamed(
                     'games',
                     queryParameters:
                         LibraryFilter(publishers: {company}).params(),
@@ -205,7 +205,7 @@ class GameCardChips extends StatelessWidget {
                         .read<LibraryFilterModel>()
                         .filter
                         .add(LibraryFilter(collections: {collection}));
-                    context.replaceNamed(
+                    context.pushNamed(
                       'games',
                       queryParameters: filter.params(),
                     );
@@ -222,7 +222,7 @@ class GameCardChips extends StatelessWidget {
                         .read<LibraryFilterModel>()
                         .filter
                         .add(LibraryFilter(franchises: {franchise}));
-                    context.replaceNamed(
+                    context.pushNamed(
                       'games',
                       queryParameters: filter.params(),
                     );
@@ -235,7 +235,7 @@ class GameCardChips extends StatelessWidget {
               padding: const EdgeInsets.all(4.0),
               child: TagChip(
                 tag,
-                onPressed: () => context.replaceNamed(
+                onPressed: () => context.pushNamed(
                   'games',
                   queryParameters: LibraryFilter(tags: {tag.name}).params(),
                 ),
@@ -271,7 +271,7 @@ class GameChipsFilter extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .remove(LibraryFilter(stores: {store}));
-              context.goNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: filter.params(),
               );
@@ -289,7 +289,7 @@ class GameChipsFilter extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .remove(LibraryFilter(developers: {company}));
-              context.goNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: filter.params(),
               );
@@ -307,7 +307,7 @@ class GameChipsFilter extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .remove(LibraryFilter(publishers: {company}));
-              context.goNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: filter.params(),
               );
@@ -325,7 +325,7 @@ class GameChipsFilter extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .remove(LibraryFilter(collections: {collection}));
-              context.goNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: filter.params(),
               );
@@ -343,7 +343,7 @@ class GameChipsFilter extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .remove(LibraryFilter(franchises: {franchise}));
-              context.goNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: filter.params(),
               );
@@ -361,7 +361,7 @@ class GameChipsFilter extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .remove(LibraryFilter(tags: {tag}));
-              context.goNamed(
+              context.pushNamed(
                 'games',
                 queryParameters: filter.params(),
               );

@@ -66,7 +66,7 @@ class _EspyScaffoldState extends State<EspyScaffold>
                 floatingActionButton: FloatingActionButton(
                   heroTag: 'searchButton',
                   child: const Icon(Icons.search),
-                  onPressed: () => context.goNamed('search'),
+                  onPressed: () => context.pushNamed('search'),
                 ),
                 body: NotificationListener<ScrollNotification>(
                   onNotification: _scrollListener,

@@ -43,7 +43,7 @@ class HomeContent extends StatelessWidget {
               final slate = slates[index];
               return TileCarousel(
                 title: slate.title,
-                onTitleTap: () => context.goNamed(
+                onTitleTap: () => context.pushNamed(
                   'games',
                   queryParameters: slate.filter.params(),
                 ),
@@ -106,7 +106,7 @@ class HomeContent extends StatelessWidget {
                   title: stack.title,
                   tileImages: stack.entries.map((libraryEntry) =>
                       '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg'),
-                  onExpand: () => context.goNamed('games',
+                  onExpand: () => context.pushNamed('games',
                       queryParameters: stack.filter.params()),
                 ),
             ],

@@ -54,7 +54,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
                     )
                   : const Icon(Icons.person),
             ),
-            onPressed: () => context.goNamed('profile')),
+            onPressed: () => context.pushNamed('profile')),
       ),
       groupAlignment: 0,
       destinations: _menuItems
