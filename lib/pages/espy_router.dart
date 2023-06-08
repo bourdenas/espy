@@ -13,6 +13,7 @@ import 'package:espy/pages/profile/profile_page.dart';
 import 'package:espy/pages/search/search_page.dart';
 import 'package:espy/pages/top_level_page.dart';
 import 'package:espy/pages/failed/failed_match_page.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,12 +22,16 @@ import 'package:provider/provider.dart';
 
 class EspyRouter extends StatelessWidget {
   final _router = GoRouter(
+    observers: [
+      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance)
+    ],
     routes: [
       GoRoute(
         name: 'home',
         path: '/',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
+          name: 'home',
           child: TopLevelPage(
             body: const HomeContent(),
             path: state.path!,
@@ -38,6 +43,7 @@ class EspyRouter extends StatelessWidget {
         path: '/games',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
+          name: 'games',
           child: TopLevelPage(
             body: GameListPage(
               filter: LibraryFilter.fromParams(state.queryParameters),
@@ -50,6 +56,8 @@ class EspyRouter extends StatelessWidget {
         name: 'details',
         path: '/details/:gid',
         pageBuilder: (context, state) => NoTransitionPage(
+          name: 'details',
+          arguments: state.pathParameters['gid']!,
           child: TopLevelPage(
             body: GameDetailsPage(id: state.pathParameters['gid']!),
             path: state.path!,
@@ -68,6 +76,7 @@ class EspyRouter extends StatelessWidget {
         name: 'search',
         path: '/search',
         pageBuilder: (context, state) => NoTransitionPage(
+          name: 'search',
           child: TopLevelPage(
             body: const SearchPage(),
             path: state.path!,
@@ -78,6 +87,7 @@ class EspyRouter extends StatelessWidget {
         name: 'unmatched',
         path: '/unmatched',
         pageBuilder: (context, state) => NoTransitionPage(
+          name: 'unmatched',
           child: TopLevelPage(
             body: const FailedMatchPage(),
             path: state.path!,
@@ -88,6 +98,7 @@ class EspyRouter extends StatelessWidget {
         name: 'profile',
         path: '/profile',
         pageBuilder: (context, state) => NoTransitionPage(
+          name: 'profile',
           child: TopLevelPage(
             body: const ProfilePage(),
             path: state.path!,
