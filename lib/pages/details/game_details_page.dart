@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/igdb_game.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
@@ -46,7 +47,8 @@ class GameDetailsPage extends StatelessWidget {
         }
 
         final jsonObj = snapshot.data!.data();
-        var gameEntry = const GameEntry(id: 0, name: '', category: '');
+        var gameEntry = const GameEntry(
+            id: 0, name: '', category: '', igdbGame: IgdbGame(id: 0, name: ''));
         try {
           gameEntry = GameEntry.fromJson(jsonObj!);
         } catch (_) {

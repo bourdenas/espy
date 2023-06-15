@@ -110,7 +110,7 @@ class GameDescription extends StatelessWidget {
   Widget build(BuildContext context) {
     final description = gameEntry.steamData != null
         ? gameEntry.steamData!.aboutTheGame
-        : gameEntry.summary;
+        : gameEntry.igdbGame.summary;
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 600),

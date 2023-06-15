@@ -109,7 +109,7 @@ class _GameDescription extends StatelessWidget {
   Widget build(BuildContext context) {
     final description = gameEntry.steamData != null
         ? gameEntry.steamData!.aboutTheGame
-        : gameEntry.summary;
+        : gameEntry.igdbGame.summary;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

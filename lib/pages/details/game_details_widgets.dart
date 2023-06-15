@@ -50,7 +50,7 @@ class GameEntryActionBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(4.0),
       ),
       child: Text(
-        '${DateTime.fromMillisecondsSinceEpoch(gameEntry.releaseDate * 1000).year}',
+        '${DateTime.fromMillisecondsSinceEpoch(gameEntry.igdbGame.releaseDate * 1000).year}',
         style: const TextStyle(
           fontSize: 16.0,
           fontWeight: FontWeight.w500,
@@ -68,8 +68,8 @@ class GameEntryActionBar extends StatelessWidget {
           size: 18.0,
         ),
         const SizedBox(width: 4.0),
-        Text(gameEntry.igdbRating > 0
-            ? (5 * gameEntry.igdbRating / 100.0).toStringAsFixed(1)
+        Text(gameEntry.igdbGame.rating > 0
+            ? (5 * gameEntry.igdbGame.rating / 100.0).toStringAsFixed(1)
             : '--'),
       ],
     );

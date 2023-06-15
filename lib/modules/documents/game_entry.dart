@@ -1,16 +1,12 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
+import 'package:espy/modules/documents/igdb_game.dart';
 import 'package:espy/modules/documents/steam_data.dart';
 
 class GameEntry {
   final int id;
   final String name;
   final String category;
-
-  final String summary;
-  final String storyline;
-  final int releaseDate;
-  final double igdbRating;
 
   final List<String> genres;
   final List<String> keywords;
@@ -31,6 +27,7 @@ class GameEntry {
   final List<GameImage> artwork;
   final List<Website> websites;
 
+  final IgdbGame igdbGame;
   final SteamData? steamData;
 
   List<ImageData> get screenshotData => steamData != null
@@ -52,10 +49,6 @@ class GameEntry {
     required this.id,
     required this.name,
     required this.category,
-    this.summary = '',
-    this.storyline = '',
-    this.releaseDate = 0,
-    this.igdbRating = 0.0,
     this.genres = const [],
     this.keywords = const [],
     this.parent,
@@ -71,6 +64,7 @@ class GameEntry {
     this.screenshots = const [],
     this.artwork = const [],
     this.websites = const [],
+    required this.igdbGame,
     this.steamData,
   });
 
@@ -79,10 +73,6 @@ class GameEntry {
           id: json['id']!,
           name: json['name']!,
           category: json['category']!,
-          summary: json['summary'] ?? '',
-          storyline: json['storyline'] ?? '',
-          releaseDate: json['release_date'] ?? 0,
-          igdbRating: json['igdb_rating'] ?? 0,
           genres: [
             for (final genre in json['genres'] ?? []) genre,
           ],
@@ -137,6 +127,7 @@ class GameEntry {
           websites: [
             for (final entry in json['websites'] ?? []) Website.fromJson(entry),
           ],
+          igdbGame: IgdbGame.fromJson(json['igdb_game']),
           steamData: json.containsKey('steam_data')
               ? SteamData.fromJson(json['steam_data'])
               : null,
@@ -147,10 +138,6 @@ class GameEntry {
       'id': id,
       'name': name,
       'category': category,
-      if (summary.isNotEmpty) 'summary': summary,
-      if (storyline.isNotEmpty) 'storyline': storyline,
-      if (releaseDate > 0) 'release_date': releaseDate,
-      if (igdbRating > 0.0) 'igdb_rating': igdbRating,
       if (genres.isNotEmpty) 'genres': genres,
       if (keywords.isNotEmpty) 'keywords': keywords,
       if (parent != null) 'parent': parent!.toJson(),
@@ -199,6 +186,8 @@ class GameEntry {
         'websites': [
           for (final entry in websites) entry.toJson(),
         ],
+      'igdb_game': igdbGame.toJson(),
+      if (steamData != null) 'steam_data': steamData!.toJson()
     };
   }
 }
