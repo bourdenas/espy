@@ -1,75 +1,107 @@
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class StorefrontDropdown extends StatefulWidget {
-  const StorefrontDropdown(this.libraryEntry, {Key? key}) : super(key: key);
+class StorefrontView extends StatefulWidget {
+  const StorefrontView(this.libraryEntry, {Key? key}) : super(key: key);
 
   final LibraryEntry libraryEntry;
 
   @override
-  StorefrontDropdownState createState() => StorefrontDropdownState();
+  StorefrontViewState createState() => StorefrontViewState();
 }
 
-class StorefrontDropdownState extends State<StorefrontDropdown> {
+class StorefrontViewState extends State<StorefrontView>
+    with SingleTickerProviderStateMixin {
+  TabController? _tabController;
+  int tabIndex = 0;
+
+  @override
+  void initState() {
+    _tabController = TabController(
+      initialIndex: 0,
+      length: widget.libraryEntry.storeEntries.length,
+      vsync: this,
+    );
+    _tabController!.addListener(() {
+      setState(() {
+        tabIndex = _tabController!.index;
+      });
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    StoreEntry storeEntry = widget.libraryEntry.storeEntries[0];
-
     return Material(
       elevation: 5,
       child: Column(
         children: [
-          DropdownButton<StoreEntry>(
-            value: storeEntry,
-            items: [
+          TabBar(
+            controller: _tabController,
+            // isScrollable: true,
+            tabs: [
               for (final storeEntry in widget.libraryEntry.storeEntries)
-                DropdownMenuItem<StoreEntry>(
-                  value: storeEntry,
-                  child: Text(storeEntry.storefront),
+                Tab(
+                  // text: storeEntry.storefront,
+                  icon: SizedBox(
+                    height: 32,
+                    child: switch (storeEntry.storefront) {
+                      'gog' => Image.asset('assets/images/gog-128.png'),
+                      'steam' => Image.asset('assets/images/steam-128.png'),
+                      'egs' => Image.asset('assets/images/egs-128.png'),
+                      _ => const Icon(Icons.disc_full)
+                    },
+                  ),
+                  iconMargin: const EdgeInsets.only(bottom: 10.0),
                 ),
             ],
-            hint: const Text(
-              'Storefront selection',
-            ),
-            onChanged: (StoreEntry? value) {
-              setState(() {
-                storeEntry = value!;
-              });
-            },
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: TextEditingController()..text = storeEntry.title,
-              readOnly: true,
-              decoration: const InputDecoration(
-                labelText: 'Store Title',
-                floatingLabelBehavior: FloatingLabelBehavior.auto,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          SizedBox(
+            height: 120,
+            child: TabBarView(
+              controller: _tabController,
               children: [
-                ElevatedButton(
-                  child: const Text('Re-match'),
-                  onPressed: () => onRematch(context),
-                ),
-                ElevatedButton(
-                  child: const Text('Unmatch'),
-                  onPressed: () => onUnmatch(context),
-                ),
-                ElevatedButton(
-                  child: const Text('Delete'),
-                  onPressed: () => onDelete(context),
-                ),
+                for (final storeEntry in widget.libraryEntry.storeEntries)
+                  Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextField(
+                          controller: TextEditingController()
+                            ..text = storeEntry.title,
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Store Title',
+                            floatingLabelBehavior: FloatingLabelBehavior.auto,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              child: const Text('Re-match'),
+                              onPressed: () => onRematch(context),
+                            ),
+                            ElevatedButton(
+                              child: const Text('Unmatch'),
+                              onPressed: () => onUnmatch(context),
+                            ),
+                            ElevatedButton(
+                              child: const Text('Delete'),
+                              onPressed: () => onDelete(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),

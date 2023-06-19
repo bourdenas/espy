@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/dialogs/edit/storefront_dropdown.dart';
+import 'package:espy/modules/dialogs/edit/storefront_view.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/choice_tags.dart';
@@ -141,7 +141,7 @@ class _EditEntryView extends StatelessWidget {
                   child: Text('Storefronts'),
                 ),
                 collapsed: Container(),
-                expanded: StorefrontDropdown(libraryEntry),
+                expanded: StorefrontView(libraryEntry),
               ),
             ),
           ),

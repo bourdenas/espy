@@ -146,35 +146,28 @@ class GameEntryActionBar extends StatelessWidget {
   }
 
   Widget websiteIcon(String website, {bool disabled = false}) {
-    switch (website) {
-      case 'Official':
-        return const Icon(Icons.web);
-      case 'Wikipedia':
-        return Image.asset('assets/images/wikipedia-128.png');
-      case 'Igdb':
-        return Image.asset('assets/images/igdb-128.png');
-      case 'Gog':
-        return Image.asset(
+    return switch (website) {
+      'Official' => const Icon(Icons.web),
+      'Wikipedia' => Image.asset('assets/images/wikipedia-128.png'),
+      'Igdb' => Image.asset('assets/images/igdb-128.png'),
+      'Gog' => Image.asset(
           'assets/images/gog-128.png',
           color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
           colorBlendMode: BlendMode.modulate,
-        );
-      case 'Steam':
-        return Image.asset(
+        ),
+      'Steam' => Image.asset(
           'assets/images/steam-128.png',
           color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
           colorBlendMode: BlendMode.modulate,
-        );
-      case 'Egs':
-        return Image.asset(
+        ),
+      'Egs' => Image.asset(
           'assets/images/egs-128.png',
           color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
           colorBlendMode: BlendMode.modulate,
-        );
-      case 'Youtube':
-        return Image.asset('assets/images/youtube-128.png');
-    }
-    return const Icon(Icons.error);
+        ),
+      'Youtube' => Image.asset('assets/images/youtube-128.png'),
+      _ => const Icon(Icons.error),
+    };
   }
 }
 
