@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
@@ -101,12 +100,8 @@ class _GameGridCardState extends State<GameGridCard>
       child: Stack(
         children: [
           widget.entry.cover != null && widget.entry.cover!.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl:
-                      '${Urls.imageProvider}/t_cover_big/${widget.entry.cover}.jpg',
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                  fit: BoxFit.fitHeight,
-                )
+              ? Image.network(
+                  '${Urls.imageProvider}/t_cover_big/${widget.entry.cover}.jpg')
               : Image.asset('assets/images/placeholder.png'),
           if (showAddButton)
             Positioned(
