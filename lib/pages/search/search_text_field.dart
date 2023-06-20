@@ -4,9 +4,11 @@ class SearchTextField extends StatefulWidget {
   const SearchTextField({
     Key? key,
     required this.onChanged,
+    required this.onSubmitted,
   }) : super(key: key);
 
   final ValueChanged<String> onChanged;
+  final ValueChanged<String> onSubmitted;
 
   @override
   State<SearchTextField> createState() => _SearchTextFieldState();
@@ -33,6 +35,7 @@ class _SearchTextFieldState extends State<SearchTextField> {
               focusNode: _searchFocusNode,
               autofocus: true,
               onChanged: widget.onChanged,
+              onSubmitted: widget.onSubmitted,
               decoration: InputDecoration(
                 hintText: 'Search...',
                 prefixIcon: const Icon(
