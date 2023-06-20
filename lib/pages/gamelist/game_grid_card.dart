@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class GameGridCard extends StatelessWidget {
+class GameGridCard extends StatefulWidget {
   const GameGridCard({
     Key? key,
     required this.entry,
@@ -20,61 +20,106 @@ class GameGridCard extends StatelessWidget {
   final bool pushNavigation;
 
   @override
+  State<GameGridCard> createState() => _GameGridCardState();
+}
+
+class _GameGridCardState extends State<GameGridCard>
+    with SingleTickerProviderStateMixin {
+  bool hover = false;
+  late AnimationController _controller;
+  late Animation _animation;
+  late Animation padding;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _animation = Tween(begin: 1.0, end: 1.1).animate(CurvedAnimation(
+        parent: _controller, curve: Curves.ease, reverseCurve: Curves.easeIn));
+    padding = Tween(begin: 0.0, end: -12.5).animate(CurvedAnimation(
+        parent: _controller, curve: Curves.ease, reverseCurve: Curves.easeIn));
+    _controller.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
     final appConfig = context.watch<AppConfigModel>();
 
-    return GestureDetector(
-      onTap: () => pushNavigation
-          ? context.pushNamed('details', pathParameters: {'gid': '${entry.id}'})
-          : context
-              .replaceNamed('details', pathParameters: {'gid': '${entry.id}'}),
-      onSecondaryTap: () =>
-          EditEntryDialog.show(context, entry, gameId: entry.id),
-      onLongPress: () => isMobile
-          ? context.pushNamed('edit', pathParameters: {'gid': '${entry.id}'})
-          : EditEntryDialog.show(
-              context,
-              entry,
-              gameId: entry.id,
-            ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: GridTile(
-          footer: cardFooter(appConfig),
-          child: coverImage(context),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: InkWell(
+        onTap: () => widget.pushNavigation
+            ? context.pushNamed('details',
+                pathParameters: {'gid': '${widget.entry.id}'})
+            : context.replaceNamed('details',
+                pathParameters: {'gid': '${widget.entry.id}'}),
+        onSecondaryTap: () => EditEntryDialog.show(context, widget.entry,
+            gameId: widget.entry.id),
+        onLongPress: () => isMobile
+            ? context.pushNamed('edit',
+                pathParameters: {'gid': '${widget.entry.id}'})
+            : EditEntryDialog.show(
+                context,
+                widget.entry,
+                gameId: widget.entry.id,
+              ),
+        onHover: (val) => setState(() {
+          hover = val;
+          if (hover) {
+            _controller.forward();
+          } else {
+            _controller.reverse();
+          }
+        }),
+        child: Container(
+          transform: Matrix4(_animation.value, 0, 0, 0, 0, _animation.value, 0,
+              0, 0, 0, 1, 0, padding.value, padding.value, 0, 1),
+          child: GridTile(
+            footer: cardFooter(appConfig),
+            child: coverImage(context, hover),
+          ),
         ),
       ),
     );
   }
 
-  Widget coverImage(BuildContext context) {
+  Widget coverImage(BuildContext context, bool showAddButton) {
     return Material(
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          entry.cover != null && entry.cover!.isNotEmpty
+          widget.entry.cover != null && widget.entry.cover!.isNotEmpty
               ? CachedNetworkImage(
                   imageUrl:
-                      '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+                      '${Urls.imageProvider}/t_cover_big/${widget.entry.cover}.jpg',
                   errorWidget: (context, url, error) => const Icon(Icons.error),
                   fit: BoxFit.fitHeight,
                 )
               : Image.asset('assets/images/placeholder.png'),
-          if (entry.storeEntries.isEmpty)
+          if (showAddButton)
             Positioned(
-              right: -8,
+              right: 0,
               child: SizedBox(
-                height: 32,
+                height: 48,
                 child: FloatingActionButton(
-                  heroTag: 'add_${entry.id}',
+                  heroTag: 'add_${widget.entry.id}',
                   mini: true,
                   tooltip: 'Add...',
                   backgroundColor: const Color(0x00FFFFFF),
                   onPressed: () {
-                    context.read<WishlistModel>().addToWishlist(entry);
+                    context.read<WishlistModel>().addToWishlist(widget.entry);
                   },
                   child: const Icon(
                     Icons.add_box,
@@ -97,9 +142,9 @@ class GameGridCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: appConfig.cardDecoration.value == CardDecoration.tags
-          ? TagsTileBar(entry)
+          ? TagsTileBar(widget.entry)
           : appConfig.cardDecoration.value == CardDecoration.info
-              ? InfoTileBar(entry)
+              ? InfoTileBar(widget.entry)
               : null,
     );
   }
