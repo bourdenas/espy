@@ -53,6 +53,7 @@ class _GameGridCardState extends State<GameGridCard>
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
     final appConfig = context.watch<AppConfigModel>();
+    final inLibrary = widget.entry.storeEntries.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -85,7 +86,7 @@ class _GameGridCardState extends State<GameGridCard>
               0, 0, 0, 1, 0, padding.value, padding.value, 0, 1),
           child: GridTile(
             footer: cardFooter(appConfig),
-            child: coverImage(context, hover),
+            child: coverImage(context, hover || !inLibrary),
           ),
         ),
       ),
