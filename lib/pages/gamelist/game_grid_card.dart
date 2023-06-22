@@ -95,6 +95,29 @@ class _GameGridCardState extends State<GameGridCard>
   }
 
   Widget coverImage(BuildContext context, bool showAddButton) {
+    List<Widget> storeButtons = [
+      if (!context.read<WishlistModel>().contains(widget.entry.id))
+        FloatingActionButton(
+          mini: true,
+          backgroundColor: const Color(0x00FFFFFF),
+          onPressed: () =>
+              context.read<WishlistModel>().addToWishlist(widget.entry),
+          tooltip: 'wishlist',
+          child: const Icon(
+            Icons.favorite,
+            color: Colors.red,
+            size: 32,
+          ),
+        ),
+      storeButton('gog'),
+      storeButton('steam'),
+      storeButton('egs'),
+      storeButton('battlenet'),
+      storeButton('ea'),
+      storeButton('uplay'),
+      storeButton('disc'),
+    ].where((e) => e != null).map((e) => e!).toList();
+
     return Material(
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
@@ -114,52 +137,26 @@ class _GameGridCardState extends State<GameGridCard>
                 height: 200,
                 child: ExpandableFab(
                   distance: 54,
-                  children: [
-                    FloatingActionButton(
-                      mini: true,
-                      backgroundColor: const Color(0x00FFFFFF),
-                      onPressed: () => context
-                          .read<WishlistModel>()
-                          .addToWishlist(widget.entry),
-                      tooltip: 'wishlist',
-                      child: const Icon(
-                        Icons.favorite,
-                        color: Colors.red,
-                        size: 32,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 32,
-                      child: FloatingActionButton(
-                        mini: true,
-                        onPressed: () => print('gog'),
-                        child: Image.asset('assets/images/gog-128.png'),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 32,
-                      child: FloatingActionButton(
-                        mini: true,
-                        onPressed: () => print('steam'),
-                        child: Image.asset('assets/images/steam-128.png'),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 32,
-                      child: FloatingActionButton(
-                        mini: true,
-                        onPressed: () => print('egs'),
-                        tooltip: 'egs',
-                        child: Image.asset('assets/images/egs-128.png'),
-                      ),
-                    ),
-                  ],
+                  children: storeButtons,
                 ),
               ),
             ),
         ],
       ),
     );
+  }
+
+  Widget? storeButton(String store) {
+    return !widget.entry.storeEntries.any((e) => e.storefront == store)
+        ? SizedBox(
+            width: 32,
+            child: FloatingActionButton(
+              mini: true,
+              onPressed: () => print(store),
+              child: Image.asset('assets/images/$store-128.png'),
+            ),
+          )
+        : null;
   }
 
   Widget cardFooter(AppConfigModel appConfig) {
