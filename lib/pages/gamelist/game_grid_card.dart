@@ -3,6 +3,7 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
+import 'package:espy/widgets/expandable_fab.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -99,6 +100,7 @@ class _GameGridCardState extends State<GameGridCard>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       clipBehavior: Clip.antiAlias,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           widget.entry.cover != null && widget.entry.cover!.isNotEmpty
               ? Image.network(
@@ -108,20 +110,50 @@ class _GameGridCardState extends State<GameGridCard>
             Positioned(
               right: 0,
               child: SizedBox(
-                height: 48,
-                child: FloatingActionButton(
-                  heroTag: 'add_${widget.entry.id}',
-                  mini: true,
-                  tooltip: 'Add...',
-                  backgroundColor: const Color(0x00FFFFFF),
-                  onPressed: () {
-                    context.read<WishlistModel>().addToWishlist(widget.entry);
-                  },
-                  child: const Icon(
-                    Icons.add_box,
-                    color: Colors.green,
-                    size: 24,
-                  ),
+                width: 200,
+                height: 200,
+                child: ExpandableFab(
+                  distance: 54,
+                  children: [
+                    FloatingActionButton(
+                      mini: true,
+                      backgroundColor: const Color(0x00FFFFFF),
+                      onPressed: () => context
+                          .read<WishlistModel>()
+                          .addToWishlist(widget.entry),
+                      tooltip: 'wishlist',
+                      child: const Icon(
+                        Icons.favorite,
+                        color: Colors.red,
+                        size: 32,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 32,
+                      child: FloatingActionButton(
+                        mini: true,
+                        onPressed: () => print('gog'),
+                        child: Image.asset('assets/images/gog-128.png'),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 32,
+                      child: FloatingActionButton(
+                        mini: true,
+                        onPressed: () => print('steam'),
+                        child: Image.asset('assets/images/steam-128.png'),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 32,
+                      child: FloatingActionButton(
+                        mini: true,
+                        onPressed: () => print('egs'),
+                        tooltip: 'egs',
+                        child: Image.asset('assets/images/egs-128.png'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
