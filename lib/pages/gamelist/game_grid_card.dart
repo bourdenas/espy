@@ -1,7 +1,12 @@
+import 'package:espy/constants/stores.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
+import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/igdb_game.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/expandable_fab.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
@@ -96,7 +101,8 @@ class _GameGridCardState extends State<GameGridCard>
 
   Widget coverImage(BuildContext context, bool showAddButton) {
     List<Widget> storeButtons = [
-      if (!context.read<WishlistModel>().contains(widget.entry.id))
+      if (widget.entry.storeEntries.isEmpty &&
+          !context.read<WishlistModel>().contains(widget.entry.id))
         FloatingActionButton(
           mini: true,
           backgroundColor: const Color(0x00FFFFFF),
@@ -109,13 +115,7 @@ class _GameGridCardState extends State<GameGridCard>
             size: 32,
           ),
         ),
-      storeButton('gog'),
-      storeButton('steam'),
-      storeButton('egs'),
-      storeButton('battlenet'),
-      storeButton('ea'),
-      storeButton('uplay'),
-      storeButton('disc'),
+      ...Stores.ids.map((id) => storeButton(id)),
     ].where((e) => e != null).map((e) => e!).toList();
 
     return Material(
@@ -146,14 +146,28 @@ class _GameGridCardState extends State<GameGridCard>
     );
   }
 
-  Widget? storeButton(String store) {
-    return !widget.entry.storeEntries.any((e) => e.storefront == store)
+  Widget? storeButton(String storeId) {
+    return !widget.entry.storeEntries.any((e) => e.storefront == storeId)
         ? SizedBox(
             width: 32,
             child: FloatingActionButton(
               mini: true,
-              onPressed: () => print(store),
-              child: Image.asset('assets/images/$store-128.png'),
+              onPressed: () {
+                context.read<UserLibraryModel>().matchEntry(
+                      StoreEntry(
+                        id: '',
+                        title: widget.entry.name,
+                        storefront: storeId,
+                      ),
+                      GameEntry(
+                        id: widget.entry.id,
+                        name: widget.entry.name,
+                        category: widget.entry.digest.category ?? '',
+                        igdbGame: const IgdbGame(id: 0, name: ''),
+                      ),
+                    );
+              },
+              child: Stores.getIcon(storeId),
             ),
           )
         : null;
