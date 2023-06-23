@@ -1,5 +1,7 @@
+import 'package:espy/constants/stores.dart';
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -42,19 +44,12 @@ class StorefrontViewState extends State<StorefrontView>
         children: [
           TabBar(
             controller: _tabController,
-            // isScrollable: true,
             tabs: [
               for (final storeEntry in widget.libraryEntry.storeEntries)
                 Tab(
-                  // text: storeEntry.storefront,
                   icon: SizedBox(
                     height: 32,
-                    child: switch (storeEntry.storefront) {
-                      'gog' => Image.asset('assets/images/gog-128.png'),
-                      'steam' => Image.asset('assets/images/steam-128.png'),
-                      'egs' => Image.asset('assets/images/egs-128.png'),
-                      _ => const Icon(Icons.disc_full)
-                    },
+                    child: Stores.getIcon(storeEntry.storefront),
                   ),
                   iconMargin: const EdgeInsets.only(bottom: 10.0),
                 ),
@@ -87,15 +82,15 @@ class StorefrontViewState extends State<StorefrontView>
                           children: [
                             ElevatedButton(
                               child: const Text('Re-match'),
-                              onPressed: () => onRematch(context),
+                              onPressed: () => onRematch(context, storeEntry),
                             ),
                             ElevatedButton(
                               child: const Text('Unmatch'),
-                              onPressed: () => onUnmatch(context),
+                              onPressed: () => onUnmatch(context, storeEntry),
                             ),
                             ElevatedButton(
                               child: const Text('Delete'),
-                              onPressed: () => onDelete(context),
+                              onPressed: () => onDelete(context, storeEntry),
                             ),
                           ],
                         ),
@@ -110,10 +105,10 @@ class StorefrontViewState extends State<StorefrontView>
     );
   }
 
-  void onRematch(BuildContext context) {
+  void onRematch(BuildContext context, StoreEntry storeEntry) {
     MatchingDialog.show(
       context,
-      storeEntry: widget.libraryEntry.storeEntries[0],
+      storeEntry: storeEntry,
       onMatch: (storeEntry, gameEntry) {
         context
             .read<UserLibraryModel>()
@@ -124,7 +119,7 @@ class StorefrontViewState extends State<StorefrontView>
     );
   }
 
-  void onUnmatch(BuildContext context) {
+  void onUnmatch(BuildContext context, StoreEntry storeEntry) {
     showDialog(
       context: context,
       builder: (context) {
@@ -136,16 +131,16 @@ class StorefrontViewState extends State<StorefrontView>
               onPressed: () async {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(
-                        "Unmatching '${widget.libraryEntry.storeEntries[0].title}'...")));
+                    content: Text("Unmatching '${storeEntry.title}'...")));
                 Navigator.of(context).pop();
 
                 if (widget.libraryEntry.storeEntries.length == 1) {
                   Navigator.pop(context);
                 }
 
-                context.read<UserLibraryModel>().unmatchEntry(
-                    widget.libraryEntry.storeEntries[0], widget.libraryEntry);
+                context
+                    .read<UserLibraryModel>()
+                    .unmatchEntry(storeEntry, widget.libraryEntry);
                 Navigator.pop(context);
               },
             ),
@@ -159,7 +154,7 @@ class StorefrontViewState extends State<StorefrontView>
     );
   }
 
-  void onDelete(BuildContext context) {
+  void onDelete(BuildContext context, StoreEntry storeEntry) {
     showDialog(
       context: context,
       builder: (context) {
@@ -171,8 +166,7 @@ class StorefrontViewState extends State<StorefrontView>
               onPressed: () async {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(
-                        "Deleting '${widget.libraryEntry.storeEntries[0].title}'...")));
+                    content: Text("Deleting '${storeEntry.title}'...")));
                 Navigator.of(context).pop();
 
                 if (widget.libraryEntry.storeEntries.length == 1) {
@@ -180,8 +174,10 @@ class StorefrontViewState extends State<StorefrontView>
                 }
 
                 context.read<UserLibraryModel>().unmatchEntry(
-                    widget.libraryEntry.storeEntries[0], widget.libraryEntry,
-                    delete: true);
+                      storeEntry,
+                      widget.libraryEntry,
+                      delete: true,
+                    );
                 Navigator.pop(context);
               },
             ),
