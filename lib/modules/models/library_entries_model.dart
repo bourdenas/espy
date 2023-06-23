@@ -48,4 +48,8 @@ class LibraryEntriesModel extends ChangeNotifier {
   LibraryEntry? getEntryById(int id) {
     return _entries[id];
   }
+
+  bool inLibrary(int id) {
+    return _entries[id]?.storeEntries.isNotEmpty ?? false;
+  }
 }
