@@ -106,7 +106,8 @@ class LibraryFilter {
         .where((e) =>
             e.digest.category == 'Main' ||
             e.digest.category == 'Remake' ||
-            e.digest.category == 'Remaster')
+            e.digest.category == 'Remaster' ||
+            e.digest.category == 'StandaloneExpansion')
         .where((libraryEntry) => _filterView(libraryEntry, tagsModel));
   }
 
