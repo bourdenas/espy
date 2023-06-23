@@ -163,6 +163,10 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
   void initState() {
     super.initState();
 
+    if (widget.storeEntry != null) {
+      storeName = widget.storeEntry!.storefront;
+    }
+
     matches = widget.matches;
     _matchController.text = widget.storeEntry?.title ?? '';
   }

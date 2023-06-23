@@ -10,16 +10,16 @@ import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GameListPage extends StatefulWidget {
-  const GameListPage({Key? key, required this.filter}) : super(key: key);
+class GameLibraryPage extends StatefulWidget {
+  const GameLibraryPage({Key? key, required this.filter}) : super(key: key);
 
   final LibraryFilter filter;
 
   @override
-  State<GameListPage> createState() => _GameListPageState();
+  State<GameLibraryPage> createState() => _GameLibraryPageState();
 }
 
-class _GameListPageState extends State<GameListPage> {
+class _GameLibraryPageState extends State<GameLibraryPage> {
   @override
   Widget build(BuildContext context) {
     final entries =

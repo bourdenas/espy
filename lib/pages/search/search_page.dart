@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
@@ -97,6 +95,10 @@ class _SearchPageState extends State<SearchPage> {
             entries: _remoteGames,
           ),
         ],
+        if (_fetchingRemoteGames)
+          const SliverToBoxAdapter(
+            child: Center(child: LinearProgressIndicator()),
+          ),
       ],
     );
   }
@@ -114,28 +116,26 @@ class _SearchPageState extends State<SearchPage> {
             onChanged: (text) {
               text.toLowerCase().split(' ');
               setState(() {
+                _remoteGames.clear();
                 _text = text;
               });
-
-              _remoteGames.clear();
-              _timer.cancel();
-              _timer = Timer(const Duration(seconds: 1), () async {
-                setState(() {
-                  _fetchingRemoteGames = true;
-                });
-                final remoteGames =
-                    await context.read<UserLibraryModel>().searchByTitle(text);
-                setState(() {
-                  _fetchingRemoteGames = false;
-                  _remoteGames = remoteGames
-                      .where((gameEntry) =>
-                          context
-                              .read<LibraryEntriesModel>()
-                              .getEntryById(gameEntry.id) ==
-                          null)
-                      .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))
-                      .toList();
-                });
+            },
+            onSubmitted: (text) async {
+              setState(() {
+                _fetchingRemoteGames = true;
+              });
+              final remoteGames =
+                  await context.read<UserLibraryModel>().searchByTitle(text);
+              setState(() {
+                _fetchingRemoteGames = false;
+                _remoteGames = remoteGames
+                    .where((gameEntry) =>
+                        context
+                            .read<LibraryEntriesModel>()
+                            .getEntryById(gameEntry.id) ==
+                        null)
+                    .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))
+                    .toList();
               });
             },
           ),
@@ -145,8 +145,6 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   String _text = '';
-  Timer _timer = Timer(const Duration(seconds: 0), () {});
-  // ignore: unused_field
   bool _fetchingRemoteGames = false;
   List<LibraryEntry> _remoteGames = [];
 }

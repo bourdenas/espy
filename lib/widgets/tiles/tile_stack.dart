@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class TileStack extends StatefulWidget {
@@ -74,13 +73,7 @@ class _TileStackState extends State<TileStack> {
                     origin: const Offset(0, 150),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      child: CachedNetworkImage(
-                        fit: BoxFit.fill,
-                        imageUrl: indexImage.value,
-                        placeholder: (context, url) => Container(),
-                        errorWidget: (context, url, error) =>
-                            const Center(child: Icon(Icons.error_outline)),
-                      ),
+                      child: Image.network(indexImage.value),
                     ),
                   ),
                 ),

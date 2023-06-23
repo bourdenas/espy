@@ -134,7 +134,7 @@ class _EditEntryView extends StatelessWidget {
         if (libraryEntry.storeEntries.isNotEmpty)
           Card(
             child: ExpandableNotifier(
-              initialExpanded: false,
+              initialExpanded: true,
               child: ExpandablePanel(
                 header: const Padding(
                   padding: EdgeInsets.all(8.0),
