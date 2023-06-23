@@ -152,6 +152,7 @@ class _GameGridCardState extends State<GameGridCard>
             width: 32,
             child: FloatingActionButton(
               mini: true,
+              backgroundColor: Colors.transparent,
               onPressed: () {
                 context.read<UserLibraryModel>().matchEntry(
                       StoreEntry(
