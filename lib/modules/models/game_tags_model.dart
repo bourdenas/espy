@@ -17,6 +17,7 @@ class GameTagsModel extends ChangeNotifier {
   PublishersManager _publishersManager = PublishersManager([]);
   CollectionManager _collectionsManager = CollectionManager([]);
   FranchiseManager _franchisesManager = FranchiseManager([]);
+  KeywordManager _keywordsManager = KeywordManager([]);
   UserTagManager _userTagsManager = UserTagManager('', UserTags());
 
   StoresManager get stores => _storesManager;
@@ -24,6 +25,7 @@ class GameTagsModel extends ChangeNotifier {
   PublishersManager get publishers => _publishersManager;
   CollectionManager get collections => _collectionsManager;
   FranchiseManager get franchises => _franchisesManager;
+  KeywordManager get keywords => _keywordsManager;
   UserTagManager get userTags => _userTagsManager;
 
   void update(
@@ -37,6 +39,7 @@ class GameTagsModel extends ChangeNotifier {
     _publishersManager = PublishersManager(allEntries);
     _collectionsManager = CollectionManager(allEntries);
     _franchisesManager = FranchiseManager(allEntries);
+    _keywordsManager = KeywordManager(allEntries);
 
     if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;
@@ -239,6 +242,44 @@ class FranchiseManager {
   }
 
   final Map<String, List<int>> _franchiseToGameIds = {};
+}
+
+class KeywordManager {
+  KeywordManager(List<LibraryEntry> entries) {
+    for (final entry in entries) {
+      for (final keyword in entry.digest.keywords) {
+        (_keywordToGameIds[keyword] ??= []).add(entry.id);
+      }
+    }
+  }
+
+  UnmodifiableListView<String> get all =>
+      UnmodifiableListView(_keywordToGameIds.keys.toList()..sort());
+
+  UnmodifiableListView<String> get nonSingleton =>
+      UnmodifiableListView(_keywordToGameIds.entries
+          .where((entry) => entry.value.length > 1)
+          .map((entry) => entry.key)
+          .toList()
+        ..sort());
+
+  Iterable<int> gameIds(String keyword) => _keywordToGameIds[keyword] ?? [];
+
+  int size(String keyword) => _keywordToGameIds[keyword]?.length ?? 0;
+
+  Iterable<String> filter(Iterable<String> ngrams) {
+    return nonSingleton.where((keyword) => ngrams.every((ngram) => keyword
+        .toLowerCase()
+        .split(' ')
+        .any((word) => word.startsWith(ngram))));
+  }
+
+  Iterable<String> filterExact(Iterable<String> ngrams) {
+    return nonSingleton.where((keyword) => ngrams.every((ngram) =>
+        keyword.toLowerCase().split(' ').any((word) => word == ngram)));
+  }
+
+  final Map<String, List<int>> _keywordToGameIds = {};
 }
 
 class UserTagManager {

@@ -14,6 +14,7 @@ class GameDigest {
   final List<String> franchises;
   final List<String> developers;
   final List<String> publishers;
+  final List<String> keywords;
 
   GameDigest({
     required this.id,
@@ -26,6 +27,7 @@ class GameDigest {
     this.franchises = const [],
     this.developers = const [],
     this.publishers = const [],
+    this.keywords = const [],
   });
 
   GameDigest.fromGameEntry(GameEntry gameEntry)
@@ -48,6 +50,7 @@ class GameDigest {
           publishers: [
             for (final company in gameEntry.publishers) company.name
           ],
+          keywords: gameEntry.keywords,
         );
 
   GameDigest.fromJson(Map<String, dynamic> json)
@@ -70,6 +73,9 @@ class GameDigest {
           publishers: [
             for (final company in json['publishers'] ?? []) company,
           ],
+          keywords: [
+            for (final keyword in json['keywords'] ?? []) keyword,
+          ],
         );
 
   Map<String, dynamic> toJson() {
@@ -84,6 +90,7 @@ class GameDigest {
       if (franchises.isNotEmpty) 'franchises': franchises,
       if (developers.isNotEmpty) 'developers': developers,
       if (publishers.isNotEmpty) 'publishers': publishers,
+      if (keywords.isNotEmpty) 'keywords': keywords,
     };
   }
 }
