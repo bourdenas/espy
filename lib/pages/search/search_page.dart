@@ -46,6 +46,7 @@ class _SearchPageState extends State<SearchPage> {
           tagsModel.publishers.filter(ngrams),
           tagsModel.collections.filter(ngrams),
           tagsModel.franchises.filter(ngrams),
+          tagsModel.keywords.filter(ngrams),
         ),
         for (final company in tagsModel.developers.filterExact(ngrams)) ...[
           TileShelve(

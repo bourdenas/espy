@@ -29,6 +29,7 @@ class LibraryFilter {
     this.publishers = const {},
     this.collections = const {},
     this.franchises = const {},
+    this.keywords = const {},
     this.tags = const {},
   });
 
@@ -39,6 +40,7 @@ class LibraryFilter {
   Set<String> publishers;
   Set<String> collections;
   Set<String> franchises;
+  Set<String> keywords;
   Set<String> tags;
 
   LibraryFilter add(LibraryFilter other) {
@@ -48,6 +50,7 @@ class LibraryFilter {
       publishers: publishers.union(other.publishers),
       collections: collections.union(other.collections),
       franchises: franchises.union(other.franchises),
+      keywords: keywords.union(other.keywords),
       tags: tags.union(other.tags),
     );
   }
@@ -59,6 +62,7 @@ class LibraryFilter {
       publishers: publishers.difference(other.publishers),
       collections: collections.difference(other.collections),
       franchises: franchises.difference(other.franchises),
+      keywords: keywords.difference(other.keywords),
       tags: tags.difference(other.tags),
     );
   }
@@ -69,6 +73,7 @@ class LibraryFilter {
         other.publishers.difference(publishers).isEmpty &&
         other.collections.difference(collections).isEmpty &&
         other.franchises.difference(franchises).isEmpty &&
+        other.keywords.difference(keywords).isEmpty &&
         other.tags.difference(tags).isEmpty;
   }
 
@@ -90,6 +95,9 @@ class LibraryFilter {
     }
     for (final franchise in franchises) {
       gameIdSets.add(Set.from(tagsModel.franchises.gameIds(franchise)));
+    }
+    for (final keyword in keywords) {
+      gameIdSets.add(Set.from(tagsModel.keywords.gameIds(keyword)));
     }
     for (final tag in tags) {
       gameIdSets.add(Set.from(tagsModel.userTags.gameIds(tag)));
@@ -127,12 +135,13 @@ class LibraryFilter {
   Map<String, String> params() {
     return {
       'vw': _viewEncoding,
-      if (developers.isNotEmpty) 'dev': developers.map((c) => c).join(','),
-      if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(','),
-      if (collections.isNotEmpty) 'col': collections.map((c) => c).join(','),
-      if (franchises.isNotEmpty) 'frn': franchises.map((c) => c).join(','),
-      if (tags.isNotEmpty) 'tag': tags.map((t) => t).join(','),
-      if (stores.isNotEmpty) 'str': stores.map((s) => s).join(','),
+      if (developers.isNotEmpty) 'dev': developers.map((c) => c).join(':'),
+      if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(':'),
+      if (collections.isNotEmpty) 'col': collections.map((c) => c).join(':'),
+      if (franchises.isNotEmpty) 'frn': franchises.map((c) => c).join(':'),
+      if (keywords.isNotEmpty) 'kw': keywords.map((c) => c).join(':'),
+      if (tags.isNotEmpty) 'tag': tags.map((t) => t).join(':'),
+      if (stores.isNotEmpty) 'str': stores.map((s) => s).join(':'),
     };
   }
 
@@ -143,17 +152,19 @@ class LibraryFilter {
       if (key == 'vw') {
         filter._view = value;
       } else if (key == 'dev') {
-        filter.developers = value.split(',').toSet();
+        filter.developers = value.split(':').toSet();
       } else if (key == 'pub') {
-        filter.publishers = value.split(',').toSet();
+        filter.publishers = value.split(':').toSet();
       } else if (key == 'col') {
-        filter.collections = value.split(',').toSet();
+        filter.collections = value.split(':').toSet();
       } else if (key == 'frn') {
-        filter.franchises = value.split(',').toSet();
+        filter.franchises = value.split(':').toSet();
+      } else if (key == 'kw') {
+        filter.keywords = value.split(':').toSet();
       } else if (key == 'tag') {
-        filter.tags = value.split(',').toSet();
+        filter.tags = value.split(':').toSet();
       } else if (key == 'str') {
-        filter.stores = value.split(',').toSet();
+        filter.stores = value.split(':').toSet();
       }
     });
     return filter;
