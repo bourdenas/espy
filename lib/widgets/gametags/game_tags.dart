@@ -351,6 +351,42 @@ class GameChipsFilter extends StatelessWidget {
           ),
         ),
       ],
+      for (final genre in filter.genres) ...[
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: GenreChip(
+            genre,
+            onDeleted: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .remove(LibraryFilter(genres: {genre}));
+              context.pushNamed(
+                'games',
+                queryParameters: filter.params(),
+              );
+            },
+          ),
+        ),
+      ],
+      for (final keyword in filter.keywords) ...[
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: KeywordChip(
+            keyword,
+            onDeleted: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .remove(LibraryFilter(keywords: {keyword}));
+              context.pushNamed(
+                'games',
+                queryParameters: filter.params(),
+              );
+            },
+          ),
+        ),
+      ],
       for (final tag in filter.tags) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),

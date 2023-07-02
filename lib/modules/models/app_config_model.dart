@@ -84,6 +84,7 @@ enum GroupBy {
 enum Stacks {
   collections,
   genres,
+  tags,
   styles,
   themes,
 }

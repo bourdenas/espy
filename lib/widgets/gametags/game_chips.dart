@@ -49,6 +49,30 @@ class FranchiseChip extends EspyChip {
         );
 }
 
+class GenreChip extends EspyChip {
+  GenreChip(String keyword,
+      {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})
+      : super(
+          key: key,
+          label: keyword,
+          color: Colors.blueAccent[200]!,
+          onPressed: onPressed ?? () {},
+          onDeleted: onDeleted,
+        );
+}
+
+class KeywordChip extends EspyChip {
+  KeywordChip(String keyword,
+      {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})
+      : super(
+          key: key,
+          label: keyword,
+          color: Colors.grey,
+          onPressed: onPressed ?? () {},
+          onDeleted: onDeleted,
+        );
+}
+
 class StoreChip extends EspyChip {
   StoreChip(String store,
       {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})

@@ -12,18 +12,22 @@ import 'package:flutter/material.dart'
 class GameTagsModel extends ChangeNotifier {
   String _userId = '';
 
-  StoresManager _storesManager = StoresManager([]);
-  DevelopersManager _developersManager = DevelopersManager([]);
-  PublishersManager _publishersManager = PublishersManager([]);
-  CollectionManager _collectionsManager = CollectionManager([]);
-  FranchiseManager _franchisesManager = FranchiseManager([]);
+  LabelManager _storesManager = LabelManager([]);
+  LabelManager _developersManager = LabelManager([]);
+  LabelManager _publishersManager = LabelManager([]);
+  LabelManager _collectionsManager = LabelManager([]);
+  LabelManager _franchisesManager = LabelManager([]);
+  LabelManager _genresManager = LabelManager([]);
+  LabelManager _keywordsManager = LabelManager([]);
   UserTagManager _userTagsManager = UserTagManager('', UserTags());
 
-  StoresManager get stores => _storesManager;
-  DevelopersManager get developers => _developersManager;
-  PublishersManager get publishers => _publishersManager;
-  CollectionManager get collections => _collectionsManager;
-  FranchiseManager get franchises => _franchisesManager;
+  LabelManager get stores => _storesManager;
+  LabelManager get developers => _developersManager;
+  LabelManager get publishers => _publishersManager;
+  LabelManager get collections => _collectionsManager;
+  LabelManager get franchises => _franchisesManager;
+  LabelManager get genres => _genresManager;
+  LabelManager get keywords => _keywordsManager;
   UserTagManager get userTags => _userTagsManager;
 
   void update(
@@ -32,11 +36,19 @@ class GameTagsModel extends ChangeNotifier {
     List<LibraryEntry> wishlist,
   ) async {
     final allEntries = entries + wishlist;
-    _storesManager = StoresManager(allEntries);
-    _developersManager = DevelopersManager(allEntries);
-    _publishersManager = PublishersManager(allEntries);
-    _collectionsManager = CollectionManager(allEntries);
-    _franchisesManager = FranchiseManager(allEntries);
+    _storesManager = LabelManager(allEntries,
+        (entry) => entry.storeEntries.map((store) => store.storefront));
+    _developersManager =
+        LabelManager(allEntries, (entry) => entry.digest.developers);
+    _publishersManager =
+        LabelManager(allEntries, (entry) => entry.digest.publishers);
+    _collectionsManager =
+        LabelManager(allEntries, (entry) => entry.digest.collections);
+    _franchisesManager =
+        LabelManager(allEntries, (entry) => entry.digest.franchises);
+    _genresManager = LabelManager(allEntries, (entry) => entry.digest.genres);
+    _keywordsManager =
+        LabelManager(allEntries, (entry) => entry.digest.keywords);
 
     if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;
@@ -63,182 +75,43 @@ class GameTagsModel extends ChangeNotifier {
   }
 }
 
-class StoresManager {
-  StoresManager(List<LibraryEntry> entries) {
+class LabelManager {
+  LabelManager(Iterable<LibraryEntry> entries,
+      [Iterable<String> Function(LibraryEntry)? labelExtractor]) {
+    if (labelExtractor == null) return;
+
     for (final entry in entries) {
-      for (final store in entry.storeEntries) {
-        (_storeToGameIds[store.storefront] ??= []).add(entry.id);
+      for (final label in labelExtractor(entry)) {
+        (_labelToGameIds[label] ??= []).add(entry.id);
       }
     }
   }
 
   UnmodifiableListView<String> get all =>
-      UnmodifiableListView(_storeToGameIds.keys.toList()..sort());
-
-  Iterable<int> gameIds(String store) => _storeToGameIds[store] ?? [];
-
-  int size(String store) => _storeToGameIds[store]?.length ?? 0;
-
-  Iterable<String> filter(Iterable<String> ngrams) {
-    return all.where((store) => ngrams.every((ngram) =>
-        store.toLowerCase().split(' ').any((word) => word.startsWith(ngram))));
-  }
-
-  final Map<String, List<int>> _storeToGameIds = {};
-}
-
-class DevelopersManager {
-  DevelopersManager(List<LibraryEntry> entries) {
-    for (final entry in entries) {
-      for (final company in entry.developers) {
-        (_developerToGameIds[company] ??= []).add(entry.id);
-      }
-    }
-  }
-
-  UnmodifiableListView<String> get all =>
-      UnmodifiableListView(_developerToGameIds.keys.toList()..sort());
+      UnmodifiableListView(_labelToGameIds.keys.toList()..sort());
 
   UnmodifiableListView<String> get nonSingleton =>
-      UnmodifiableListView(_developerToGameIds.entries
+      UnmodifiableListView(_labelToGameIds.entries
           .where((entry) => entry.value.length > 1)
           .map((entry) => entry.key)
           .toList()
         ..sort());
 
-  Iterable<int> gameIds(String company) => _developerToGameIds[company] ?? [];
+  Iterable<int> gameIds(String label) => _labelToGameIds[label] ?? [];
 
-  int size(String company) => _developerToGameIds[company]?.length ?? 0;
+  int size(String label) => _labelToGameIds[label]?.length ?? 0;
 
   Iterable<String> filter(Iterable<String> ngrams) {
-    return all.where((company) => ngrams.every((ngram) => company
-        .toLowerCase()
-        .split(' ')
-        .any((word) => word.startsWith(ngram))));
+    return nonSingleton.where((label) => ngrams.every((ngram) =>
+        label.toLowerCase().split(' ').any((word) => word.startsWith(ngram))));
   }
 
   Iterable<String> filterExact(Iterable<String> ngrams) {
-    return all.where((company) => ngrams.every((ngram) =>
-        company.toLowerCase().split(' ').any((word) => word == ngram)));
+    return nonSingleton.where((label) => ngrams.every((ngram) =>
+        label.toLowerCase().split(' ').any((word) => word == ngram)));
   }
 
-  final Map<String, List<int>> _developerToGameIds = {};
-}
-
-class PublishersManager {
-  PublishersManager(List<LibraryEntry> entries) {
-    for (final entry in entries) {
-      for (final company in entry.publishers) {
-        (_publisherToGameIds[company] ??= []).add(entry.id);
-      }
-    }
-  }
-
-  UnmodifiableListView<String> get all =>
-      UnmodifiableListView(_publisherToGameIds.keys.toList()..sort());
-
-  UnmodifiableListView<String> get nonSingleton =>
-      UnmodifiableListView(_publisherToGameIds.entries
-          .where((entry) => entry.value.length > 1)
-          .map((entry) => entry.key)
-          .toList()
-        ..sort());
-
-  Iterable<int> gameIds(String company) => _publisherToGameIds[company] ?? [];
-
-  int size(String company) => _publisherToGameIds[company]?.length ?? 0;
-
-  Iterable<String> filter(Iterable<String> ngrams) {
-    return all.where((company) => ngrams.every((ngram) => company
-        .toLowerCase()
-        .split(' ')
-        .any((word) => word.startsWith(ngram))));
-  }
-
-  Iterable<String> filterExact(Iterable<String> ngrams) {
-    return all.where((company) => ngrams.every((ngram) =>
-        company.toLowerCase().split(' ').any((word) => word == ngram)));
-  }
-
-  final Map<String, List<int>> _publisherToGameIds = {};
-}
-
-class CollectionManager {
-  CollectionManager(List<LibraryEntry> entries) {
-    for (final entry in entries) {
-      for (final collection in entry.collections) {
-        (_collectionToGameIds[collection] ??= []).add(entry.id);
-      }
-    }
-  }
-
-  UnmodifiableListView<String> get all =>
-      UnmodifiableListView(_collectionToGameIds.keys.toList()..sort());
-
-  UnmodifiableListView<String> get nonSingleton =>
-      UnmodifiableListView(_collectionToGameIds.entries
-          .where((entry) => entry.value.length > 1)
-          .map((entry) => entry.key)
-          .toList()
-        ..sort());
-
-  Iterable<int> gameIds(String collection) =>
-      _collectionToGameIds[collection] ?? [];
-
-  int size(String collection) => _collectionToGameIds[collection]?.length ?? 0;
-
-  Iterable<String> filter(Iterable<String> ngrams) {
-    return nonSingleton.where((collection) => ngrams.every((ngram) => collection
-        .toLowerCase()
-        .split(' ')
-        .any((word) => word.startsWith(ngram))));
-  }
-
-  Iterable<String> filterExact(Iterable<String> ngrams) {
-    return nonSingleton.where((collection) => ngrams.every((ngram) =>
-        collection.toLowerCase().split(' ').any((word) => word == ngram)));
-  }
-
-  final Map<String, List<int>> _collectionToGameIds = {};
-}
-
-class FranchiseManager {
-  FranchiseManager(List<LibraryEntry> entries) {
-    for (final entry in entries) {
-      for (final franchise in entry.franchises) {
-        (_franchiseToGameIds[franchise] ??= []).add(entry.id);
-      }
-    }
-  }
-
-  UnmodifiableListView<String> get all =>
-      UnmodifiableListView(_franchiseToGameIds.keys.toList()..sort());
-
-  UnmodifiableListView<String> get nonSingleton =>
-      UnmodifiableListView(_franchiseToGameIds.entries
-          .where((entry) => entry.value.length > 1)
-          .map((entry) => entry.key)
-          .toList()
-        ..sort());
-
-  Iterable<int> gameIds(String franchise) =>
-      _franchiseToGameIds[franchise] ?? [];
-
-  int size(String franchise) => _franchiseToGameIds[franchise]?.length ?? 0;
-
-  Iterable<String> filter(Iterable<String> ngrams) {
-    return nonSingleton.where((franchise) => ngrams.every((ngram) => franchise
-        .toLowerCase()
-        .split(' ')
-        .any((word) => word.startsWith(ngram))));
-  }
-
-  Iterable<String> filterExact(Iterable<String> ngrams) {
-    return nonSingleton.where((franchise) => ngrams.every((ngram) =>
-        franchise.toLowerCase().split(' ').any((word) => word == ngram)));
-  }
-
-  final Map<String, List<int>> _franchiseToGameIds = {};
+  final Map<String, List<int>> _labelToGameIds = {};
 }
 
 class UserTagManager {
