@@ -6,6 +6,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// Chips used for user tag selection for a `LibraryEntry`.
 class ChoiceTags extends StatefulWidget {
   final LibraryEntry entry;
   final List<String> keywords;
