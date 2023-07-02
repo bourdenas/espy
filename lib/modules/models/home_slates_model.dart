@@ -38,6 +38,9 @@ class HomeSlatesModel extends ChangeNotifier {
         for (final collection in tagsModel.collections.nonSingleton)
           slate(collection, LibraryFilter(collections: {collection})),
       if (appConfigModel.stacks.value == Stacks.genres)
+        for (final genre in tagsModel.genres.all)
+          slate(genre, LibraryFilter(genres: {genre})),
+      if (appConfigModel.stacks.value == Stacks.tags)
         for (final tag in tagsModel.userTags.tagByPopulationInCluster('genre'))
           slate(tag.name, LibraryFilter(tags: {tag.name})),
       if (appConfigModel.stacks.value == Stacks.styles)
