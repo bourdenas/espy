@@ -1,5 +1,4 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/material.dart';
 
 /// Chips used for refining genres for a `LibraryEntry`.
@@ -13,12 +12,26 @@ class GenreChips extends StatefulWidget {
 }
 
 class _GenreChipsState extends State<GenreChips> {
-  Set<UserTag> selectedTags = {};
+  Set<String> selectedGenres = {};
   String filter = '';
 
   @override
+  void initState() {
+    super.initState();
+    selectedGenres = Set.from(widget.libraryEntry.digest.genres);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    void onSelected(bool selected, String genre) {}
+    void onSelected(bool selected, String genre) {
+      setState(() {
+        if (selected) {
+          selectedGenres.add(genre);
+        } else {
+          selectedGenres.remove(genre);
+        }
+      });
+    }
 
     return Column(
       children: [
@@ -41,6 +54,7 @@ class _GenreChipsState extends State<GenreChips> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(50),
                             boxShadow: [
+                              // Halo effect for suggesting a genre.
                               if (widget.libraryEntry.digest.genres
                                   .contains(genre))
                                 BoxShadow(
@@ -50,22 +64,11 @@ class _GenreChipsState extends State<GenreChips> {
                                 ),
                             ],
                           ),
-                          child: ChoiceChip(
-                            label: Text(
-                              genre,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                      color: selectedTags
-                                              .any((e) => e.name == genre)
-                                          ? Colors.white
-                                          : Colors.blueAccent[300]),
-                            ),
-                            selected: selectedTags.any((e) => e.name == genre),
-                            selectedColor: Colors.blueAccent[200],
-                            onSelected: (selected) =>
-                                onSelected(selected, genre),
+                          child: GenreSelection(
+                            genre: genre,
+                            selected:
+                                selectedGenres.any((name) => name == genre),
+                            onSelected: onSelected,
                           ),
                         ),
                     ],
@@ -76,6 +79,35 @@ class _GenreChipsState extends State<GenreChips> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class GenreSelection extends StatelessWidget {
+  const GenreSelection({
+    super.key,
+    required this.genre,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final String genre;
+  final bool selected;
+  final void Function(bool, String) onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Text(
+        genre,
+        style: Theme.of(context)
+            .textTheme
+            .bodyLarge!
+            .copyWith(color: selected ? Colors.white : Colors.blueAccent[300]),
+      ),
+      selected: selected,
+      selectedColor: Colors.blueAccent[200],
+      onSelected: (selected) => onSelected(selected, genre),
     );
   }
 }
