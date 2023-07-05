@@ -1,12 +1,15 @@
+import 'package:espy/utils/edit_distance.dart';
 import 'package:flutter_scatter/flutter_scatter.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/material.dart';
 
 /// Chips used for refining genres for a `LibraryEntry`.
 class GenreChips extends StatefulWidget {
-  const GenreChips(this.libraryEntry, {Key? key}) : super(key: key);
+  const GenreChips(this.libraryEntry, this.keywords, {Key? key})
+      : super(key: key);
 
   final LibraryEntry libraryEntry;
+  final List<String> keywords;
 
   @override
   State<GenreChips> createState() => _GenreChipsState();
@@ -68,17 +71,31 @@ class _GenreChipsState extends State<GenreChips>
 
     final widgets = [
       for (final label in _subgenres[genre] ?? [])
-        ChoiceChip(
-          label: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: [].any((e) => e == label)
-                    ? Colors.white
-                    : Colors.blueAccent[300]),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            boxShadow: [
+              // Halo effect for suggesting a sub-genre.
+              if (matchInDict(label, widget.keywords))
+                BoxShadow(
+                  color: Colors.blueAccent[200]!,
+                  blurRadius: 6.0,
+                  spreadRadius: 2.0,
+                ),
+            ],
           ),
-          selected: [].any((e) => e == label),
-          selectedColor: Colors.blueAccent[200],
-          onSelected: (_) => print(label),
+          child: ChoiceChip(
+            label: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: [].any((e) => e == label)
+                      ? Colors.white
+                      : Colors.blueAccent[300]),
+            ),
+            selected: [].any((e) => e == label),
+            selectedColor: Colors.blueAccent[200],
+            onSelected: (_) => print(label),
+          ),
         ),
     ];
 
@@ -261,11 +278,11 @@ const _subgenres = {
   'Sport': [],
   'Strategy': [
     '4X',
-    'Real-Time Strategy',
     'Turn-Based Strategy',
+    'Real-Time Strategy',
     'Grand Strategy',
     'Isometric Tactics',
-    'Turn-Based Tactics',
     'Real-Time Tactics',
+    'Turn-Based Tactics',
   ],
 };
