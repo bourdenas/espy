@@ -184,9 +184,11 @@ class _GenreChipsState extends State<GenreChips>
   }
 
   void toggleExpand(String? genre) {
-    print(genre);
     setState(() {
-      _expandedGenre = genre;
+      if (genre == null || (_subgenres[genre]?.isNotEmpty ?? false)) {
+        _expandedGenre = genre;
+      }
+
       if (genre != null) {
         _controller.forward();
       } else {
