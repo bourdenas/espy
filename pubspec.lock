@@ -363,6 +363,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_scatter:
+    dependency: "direct main"
+    description:
+      name: flutter_scatter
+      sha256: "9c0b72595e9c3c94607e29d845b4d32e12adbb02492bac7da1cd765856bf4ac1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   flutter_svg:
     dependency: transitive
     description:

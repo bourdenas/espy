@@ -1,3 +1,4 @@
+import 'package:flutter_scatter/flutter_scatter.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/material.dart';
 
@@ -11,28 +12,118 @@ class GenreChips extends StatefulWidget {
   State<GenreChips> createState() => _GenreChipsState();
 }
 
-class _GenreChipsState extends State<GenreChips> {
-  Set<String> selectedGenres = {};
-  String filter = '';
+class _GenreChipsState extends State<GenreChips>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scatterAnimation;
+
+  bool _subgenreOpen = false;
+  String? _expandedGenre;
+  Set<String> _selectedGenres = {};
 
   @override
   void initState() {
     super.initState();
-    selectedGenres = Set.from(widget.libraryEntry.digest.genres);
+
+    _subgenreOpen = false;
+    _controller = AnimationController(
+      value: _subgenreOpen ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
+    _scatterAnimation = CurvedAnimation(
+      curve: Curves.fastOutSlowIn,
+      reverseCurve: Curves.easeOutQuad,
+      parent: _controller,
+    );
+    _selectedGenres = Set.from(widget.libraryEntry.digest.genres);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    void onSelected(bool selected, String genre) {
-      setState(() {
-        if (selected) {
-          selectedGenres.add(genre);
-        } else {
-          selectedGenres.remove(genre);
-        }
-      });
-    }
+    return SizedBox(
+      width: 600,
+      height: 150,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          _buildTapToCloseFab(),
+          if (_expandedGenre != null) _buildScatter(),
+          if (_expandedGenre == null) _buildGenres(),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildScatter() {
+    final genre = _expandedGenre!;
+    final count = _subgenres[genre]?.length ?? 0;
+
+    final widgets = [
+      for (final label in _subgenres[genre] ?? [])
+        ChoiceChip(
+          label: Text(
+            label,
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                color: [].any((e) => e == label)
+                    ? Colors.white
+                    : Colors.blueAccent[300]),
+          ),
+          selected: [].any((e) => e == label),
+          selectedColor: Colors.blueAccent[200],
+          onSelected: (_) => print(label),
+        ),
+    ];
+
+    return Center(
+      child: Scatter(
+        delegate: EllipseScatterDelegate(
+          start: .75,
+          a: 180.0,
+          b: 60.0,
+          step: 1.0 / count,
+        ),
+        children: widgets,
+      ),
+    );
+  }
+
+  Widget _buildTapToCloseFab() {
+    return AnimatedContainer(
+      transformAlignment: Alignment.center,
+      transform: Matrix4.diagonal3Values(
+        _expandedGenre == null ? 0.7 : 1.0,
+        _expandedGenre == null ? 0.7 : 1.0,
+        1.0,
+      ),
+      duration: const Duration(milliseconds: 250),
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+      child: AnimatedOpacity(
+        opacity: _expandedGenre == null ? 0.0 : 1.0,
+        curve: const Interval(0.25, 1.0, curve: Curves.easeInOut),
+        duration: const Duration(milliseconds: 250),
+        child: FloatingActionButton(
+          mini: true,
+          backgroundColor: const Color(0x00FFFFFF),
+          onPressed: () => toggleExpand(null),
+          child: const Icon(
+            Icons.close,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGenres() {
     return Column(
       children: [
         Padding(
@@ -49,7 +140,7 @@ class _GenreChipsState extends State<GenreChips> {
                     spacing: 16.0,
                     runSpacing: 16.0,
                     children: [
-                      for (final genre in genres)
+                      for (final genre in _genres)
                         Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(50),
@@ -64,11 +155,21 @@ class _GenreChipsState extends State<GenreChips> {
                                 ),
                             ],
                           ),
-                          child: GenreSelection(
-                            genre: genre,
-                            selected:
-                                selectedGenres.any((name) => name == genre),
-                            onSelected: onSelected,
+                          child: ChoiceChip(
+                            label: Text(
+                              genre,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                      color:
+                                          _selectedGenres.any((e) => e == genre)
+                                              ? Colors.white
+                                              : Colors.blueAccent[300]),
+                            ),
+                            selected: _selectedGenres.any((e) => e == genre),
+                            selectedColor: Colors.blueAccent[200],
+                            onSelected: (_) => toggleExpand(genre),
                           ),
                         ),
                     ],
@@ -81,38 +182,21 @@ class _GenreChipsState extends State<GenreChips> {
       ],
     );
   }
-}
 
-class GenreSelection extends StatelessWidget {
-  const GenreSelection({
-    super.key,
-    required this.genre,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  final String genre;
-  final bool selected;
-  final void Function(bool, String) onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(
-        genre,
-        style: Theme.of(context)
-            .textTheme
-            .bodyLarge!
-            .copyWith(color: selected ? Colors.white : Colors.blueAccent[300]),
-      ),
-      selected: selected,
-      selectedColor: Colors.blueAccent[200],
-      onSelected: (selected) => onSelected(selected, genre),
-    );
+  void toggleExpand(String? genre) {
+    print(genre);
+    setState(() {
+      _expandedGenre = genre;
+      if (genre != null) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    });
   }
 }
 
-const genres = [
+const _genres = [
   'Adventure',
   'Arcade',
   'Card & Board Game',
@@ -125,3 +209,61 @@ const genres = [
   'Sport',
   'Strategy',
 ];
+
+const _subgenres = {
+  'Adventure': [
+    'Point-and-Click',
+    'Narrative Adventure',
+    'Puzzle',
+    'First-Person Adventure',
+    'Isometric Action',
+    'Action',
+    'Isometric Adventure',
+  ],
+  'Arcade': [
+    'Endless Runner',
+    'Fighting',
+    'Pinball',
+    'Beat\'em Up',
+    'Puzzle',
+  ],
+  'Card & Board Game': [],
+  'MOBA': [],
+  'Platformer': [
+    'Side-Scroller',
+    'Metroidvania',
+    '3D Platformer',
+    'Shooter Platformer',
+    'Puzzle Platformer',
+  ],
+  'Racing': [],
+  'RPG': [
+    'Action RPG',
+    'First-Person RPG',
+    'Isometric RPG',
+    'Turn-Based RPG',
+    'RTwP RPG',
+    'Hack & Slash',
+    'JRPG',
+  ],
+  'Shooter': [
+    'First Person Shooter',
+    '3rd Person Shooter',
+    'Top-Down Shooter',
+    'Space Shooter',
+  ],
+  'Simulator': [
+    'City Builder',
+    'Management',
+  ],
+  'Sport': [],
+  'Strategy': [
+    '4X',
+    'Real-Time Strategy',
+    'Turn-Based Strategy',
+    'Grand Strategy',
+    'Isometric Tactics',
+    'Turn-Based Tactics',
+    'Real-Time Tactics',
+  ],
+};
