@@ -30,6 +30,9 @@ class UserTags {
 
   Map<String, dynamic> toJson() {
     return {
+      'genres': [
+        for (final genre in genres) genre.toJson(),
+      ],
       'classes': [
         // ignore: no_leading_underscores_for_local_identifiers
         for (final _class in classes) _class.toJson(),

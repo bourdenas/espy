@@ -1,7 +1,10 @@
+import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/utils/edit_distance.dart';
 import 'package:flutter_scatter/flutter_scatter.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 /// Chips used for refining genres for a `LibraryEntry`.
 class GenreChips extends StatefulWidget {
@@ -58,16 +61,16 @@ class _GenreChipsState extends State<GenreChips>
         clipBehavior: Clip.none,
         children: [
           _buildTapToCloseFab(),
-          if (_expandedGenre != null) _buildScatter(),
+          if (_expandedGenre != null) _buildScatter(context),
           if (_expandedGenre == null) _buildGenres(),
         ],
       ),
     );
   }
 
-  Widget _buildScatter() {
+  Widget _buildScatter(BuildContext context) {
     final genre = _expandedGenre!;
-    final count = _subgenres[genre]?.length ?? 0;
+    final genreTags = context.watch<GameTagsModel>().genreTags;
 
     final widgets = [
       for (final label in _subgenres[genre] ?? [])
@@ -92,9 +95,15 @@ class _GenreChipsState extends State<GenreChips>
                       ? Colors.white
                       : Colors.blueAccent[300]),
             ),
-            selected: [].any((e) => e == label),
+            selected: genreTags
+                .byGameId(widget.libraryEntry.id)
+                .any((e) => e.root == genre && e.name == label),
             selectedColor: Colors.blueAccent[200],
-            onSelected: (_) => print(label),
+            onSelected: (selected) => selected
+                ? genreTags.add(
+                    Genre(root: genre, name: label), widget.libraryEntry.id)
+                : genreTags.remove(
+                    Genre(root: genre, name: label), widget.libraryEntry.id),
           ),
         ),
     ];
@@ -105,7 +114,7 @@ class _GenreChipsState extends State<GenreChips>
           start: .75,
           a: 180.0,
           b: 60.0,
-          step: 1.0 / count,
+          step: 1.0 / widgets.length,
         ),
         children: widgets,
       ),

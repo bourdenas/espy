@@ -61,7 +61,7 @@ class GenreTagManager {
 
   void _addTag(Genre genre, int gameId) {
     for (final value in _userTags.genres) {
-      if (value.name == genre.name) {
+      if (value.root == genre.root && value.name == genre.name) {
         value.gameIds.add(gameId);
         return;
       }
@@ -79,7 +79,7 @@ class GenreTagManager {
 
   void _removeTag(Genre genre, int gameId) {
     for (final value in _userTags.genres) {
-      if (value.name == genre.name) {
+      if (value.root == genre.root && value.name == genre.name) {
         value.gameIds.remove(gameId);
         return;
       }
