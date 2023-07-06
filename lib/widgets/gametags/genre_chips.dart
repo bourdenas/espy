@@ -138,7 +138,8 @@ class _GenreChipsState extends State<GenreChips>
         child: FloatingActionButton(
           mini: true,
           backgroundColor: const Color(0x00FFFFFF),
-          onPressed: () => toggleExpand(null),
+          onPressed: () =>
+              toggleExpand(context, false, null, widget.libraryEntry.id),
           child: const Icon(
             Icons.close,
             color: Colors.white,
@@ -150,6 +151,12 @@ class _GenreChipsState extends State<GenreChips>
   }
 
   Widget _buildGenres() {
+    final impliedGenres = context
+        .watch<GameTagsModel>()
+        .genreTags
+        .byGameId(widget.libraryEntry.id)
+        .map((e) => e.root);
+
     return Column(
       children: [
         Padding(
@@ -193,9 +200,15 @@ class _GenreChipsState extends State<GenreChips>
                                               ? Colors.white
                                               : Colors.blueAccent[300]),
                             ),
-                            selected: _selectedGenres.any((e) => e == genre),
+                            selected: _selectedGenres.any((e) => e == genre) ||
+                                impliedGenres.any((e) => e == genre),
                             selectedColor: Colors.blueAccent[200],
-                            onSelected: (_) => toggleExpand(genre),
+                            onSelected: (selected) => toggleExpand(
+                              context,
+                              selected,
+                              genre,
+                              widget.libraryEntry.id,
+                            ),
                           ),
                         ),
                     ],
@@ -209,10 +222,23 @@ class _GenreChipsState extends State<GenreChips>
     );
   }
 
-  void toggleExpand(String? genre) {
+  void toggleExpand(
+      BuildContext context, bool selected, String? genre, int gameId) {
     setState(() {
       if (genre == null || (_subgenres[genre]?.isNotEmpty ?? false)) {
         _expandedGenre = genre;
+      }
+
+      if (_subgenres[genre]?.isEmpty ?? false) {
+        selected
+            ? context
+                .read<GameTagsModel>()
+                .genreTags
+                .add(Genre(root: genre!, name: ''), gameId)
+            : context
+                .read<GameTagsModel>()
+                .genreTags
+                .remove(Genre(root: genre!, name: ''), gameId);
       }
 
       if (genre != null) {
