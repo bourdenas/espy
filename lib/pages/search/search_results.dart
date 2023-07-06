@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/tags/user_tag_manager.dart';
 import 'package:espy/pages/gamelist/game_grid_card.dart';
 import 'package:espy/pages/gamelist/game_list_card.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
@@ -68,7 +69,7 @@ class TagSearchResults extends StatelessWidget {
   }) : super(key: key);
 
   final Iterable<String> stores;
-  final Iterable<UserTag> userTags;
+  final Iterable<CustomUserTag> userTags;
   final Iterable<String> developers;
   final Iterable<String> publishers;
   final Iterable<String> collections;
@@ -207,8 +208,8 @@ class TagSearchResults extends StatelessWidget {
   }
 }
 
-Map<Color, List<UserTag>> groupTags(Iterable<UserTag> tags) {
-  var groups = <Color, List<UserTag>>{};
+Map<Color, List<CustomUserTag>> groupTags(Iterable<CustomUserTag> tags) {
+  var groups = <Color, List<CustomUserTag>>{};
   for (final tag in tags) {
     (groups[tag.color] ??= []).add(tag);
   }

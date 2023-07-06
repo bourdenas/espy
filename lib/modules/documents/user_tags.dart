@@ -46,7 +46,7 @@ class Genre {
   Genre({
     required this.root,
     required this.name,
-    required this.gameIds,
+    this.gameIds = const [],
   });
 
   Genre.fromJson(Map<String, dynamic> json)

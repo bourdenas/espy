@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/tags/user_tag_manager.dart';
 import 'package:flutter/material.dart';
 
 class DeveloperChip extends EspyChip {
@@ -87,7 +87,7 @@ class StoreChip extends EspyChip {
 
 class TagChip extends EspyChip {
   TagChip(
-    UserTag tag, {
+    CustomUserTag tag, {
     Key? key,
     VoidCallback? onPressed,
     VoidCallback? onDeleted,

@@ -1,6 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/tags/user_tag_manager.dart';
 import 'package:espy/utils/edit_distance.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,12 +18,12 @@ class ChoiceTags extends StatefulWidget {
 }
 
 class _ChoiceTagsState extends State<ChoiceTags> {
-  Set<UserTag> selectedTags = {};
+  Set<CustomUserTag> selectedTags = {};
   String filter = '';
 
   @override
   Widget build(BuildContext context) {
-    void onSelected(bool selected, UserTag tag) {
+    void onSelected(bool selected, CustomUserTag tag) {
       if (selected) {
         context.read<GameTagsModel>().userTags.add(tag, widget.entry.id);
       } else {
@@ -106,7 +107,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
               context
                   .read<GameTagsModel>()
                   .userTags
-                  .add(UserTag(name: text), widget.entry.id);
+                  .add(CustomUserTag(name: text), widget.entry.id);
               setState(() {
                 _textController.text = '';
                 filter = '';
