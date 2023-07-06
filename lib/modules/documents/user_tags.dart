@@ -1,7 +1,9 @@
 class UserTags {
+  List<Genre> genres;
   List<TagClass> classes;
 
   UserTags({
+    this.genres = const [],
     this.classes = const [],
   }) {
     if (classes.isEmpty) {
@@ -16,6 +18,9 @@ class UserTags {
 
   UserTags.fromJson(Map<String, dynamic> json)
       : this(
+          genres: [
+            for (final genre in json['genres'] ?? []) Genre.fromJson(genre),
+          ],
           classes: [
             // ignore: no_leading_underscores_for_local_identifiers
             for (final _class in json['classes'] ?? [])
@@ -29,6 +34,35 @@ class UserTags {
         // ignore: no_leading_underscores_for_local_identifiers
         for (final _class in classes) _class.toJson(),
       ],
+    };
+  }
+}
+
+class Genre {
+  final String root;
+  final String name;
+  final List<int> gameIds;
+
+  Genre({
+    required this.root,
+    required this.name,
+    required this.gameIds,
+  });
+
+  Genre.fromJson(Map<String, dynamic> json)
+      : this(
+          root: json['root']!,
+          name: json['name']!,
+          gameIds: [
+            for (int id in json['game_ids'] ?? []) id,
+          ],
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'root': root,
+      'name': name,
+      'game_ids': gameIds,
     };
   }
 }
