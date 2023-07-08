@@ -32,6 +32,14 @@ class GameTagsModel extends ChangeNotifier {
   GenreTagManager get genreTags => _genreTagsManager;
   UserTagManager get userTags => _userTagsManager;
 
+  List<String> get espyGenres => _genres;
+  Iterable<String> filterEspyGenres(Iterable<String> genres) => genres
+      .map((genre) => _IgdbToEspyGenres[genre])
+      .where((e) => e != null)
+      .cast<String>()
+      .toSet();
+  List<String>? espyGenreTags(String genre) => _genreTags[genre];
+
   void update(
     String userId,
     List<LibraryEntry> entries,
@@ -77,3 +85,95 @@ class GameTagsModel extends ChangeNotifier {
     });
   }
 }
+
+const _genres = [
+  'Adventure',
+  'Arcade',
+  'Card & Board Game',
+  'MOBA',
+  'Platformer',
+  'Racing',
+  'RPG',
+  'Shooter',
+  'Simulator',
+  'Sport',
+  'Strategy',
+];
+
+const Map<String, String> _IgdbToEspyGenres = {
+  'Point-and-click': 'Adventure',
+  'Adventure': 'Adventure',
+  'Pinball': 'Arcade',
+  'Arcade': 'Arcade',
+  'Fighting': 'Arcade',
+  'Card & Board Game': 'Card & Board Game',
+  'MOBA': 'MOBA',
+  'Platform': 'Platformer',
+  'Racing': 'Racing',
+  'Role-playing (RPG)': 'RPG',
+  'Shooter': 'Shooter',
+  'Simulator': 'Simulator',
+  'Sport': 'Sport',
+  'Real Time Strategy (RTS)': 'Strategy',
+  'Strategy': 'Strategy',
+  'Turn-based strategy (TBS)': 'Strategy',
+  'Tactical  ': 'Strategy',
+};
+
+const Map<String, List<String>> _genreTags = {
+  'Adventure': [
+    'Point-and-Click',
+    'Narrative Adventure',
+    'Puzzle',
+    'First-Person Adventure',
+    'Isometric Action',
+    'Action',
+    'Isometric Adventure',
+  ],
+  'Arcade': [
+    'Endless Runner',
+    'Fighting',
+    'Pinball',
+    'Beat\'em Up',
+    'Puzzle',
+  ],
+  'Card & Board Game': [],
+  'MOBA': [],
+  'Platformer': [
+    'Side-Scroller',
+    'Metroidvania',
+    '3D Platformer',
+    'Shooter Platformer',
+    'Puzzle Platformer',
+  ],
+  'Racing': [],
+  'RPG': [
+    'Action RPG',
+    'First-Person RPG',
+    'Isometric RPG',
+    'Turn-Based RPG',
+    'RTwP RPG',
+    'Hack & Slash',
+    'JRPG',
+  ],
+  'Shooter': [
+    'First Person Shooter',
+    '3rd Person Shooter',
+    'Top-Down Shooter',
+    'Space Shooter',
+  ],
+  'Simulator': [
+    'City Builder',
+    'Management',
+  ],
+  'Sport': [],
+  'Strategy': [
+    '4X',
+    'Turn-Based Strategy',
+    'Real-Time Strategy',
+    'Grand Strategy',
+    'Isometric Tactics',
+    'Real-Time Tactics',
+    'Turn-Based Tactics',
+  ],
+};

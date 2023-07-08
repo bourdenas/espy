@@ -70,10 +70,10 @@ class _GenreChipsState extends State<GenreChips>
 
   Widget _buildScatter(BuildContext context) {
     final genre = _expandedGenre!;
-    final genreTags = context.watch<GameTagsModel>().genreTags;
+    final tagsModel = context.watch<GameTagsModel>();
 
     final widgets = [
-      for (final label in _subgenres[genre] ?? [])
+      for (final label in tagsModel.espyGenreTags(genre) ?? [])
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(50),
@@ -91,20 +91,20 @@ class _GenreChipsState extends State<GenreChips>
             label: Text(
               label,
               style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                  color: genreTags
+                  color: tagsModel.genreTags
                           .byGameId(widget.libraryEntry.id)
                           .any((e) => e.root == genre && e.name == label)
                       ? Colors.white
                       : Colors.blueAccent),
             ),
-            selected: genreTags
+            selected: tagsModel.genreTags
                 .byGameId(widget.libraryEntry.id)
                 .any((e) => e.root == genre && e.name == label),
             selectedColor: Colors.blueAccent,
             onSelected: (selected) => selected
-                ? genreTags.add(
+                ? tagsModel.genreTags.add(
                     Genre(root: genre, name: label), widget.libraryEntry.id)
-                : genreTags.remove(
+                : tagsModel.genreTags.remove(
                     Genre(root: genre, name: label), widget.libraryEntry.id),
           ),
         ),
@@ -175,7 +175,8 @@ class _GenreChipsState extends State<GenreChips>
                     spacing: 16.0,
                     runSpacing: 16.0,
                     children: [
-                      for (final genre in _genres)
+                      for (final genre
+                          in context.read<GameTagsModel>().espyGenres)
                         Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(50),
@@ -226,21 +227,15 @@ class _GenreChipsState extends State<GenreChips>
 
   void toggleExpand(
       BuildContext context, bool selected, String? genre, int gameId) {
+    final tagsModel = context.read<GameTagsModel>();
     setState(() {
-      if (genre == null || (_subgenres[genre]?.isNotEmpty ?? false)) {
+      if (genre == null ||
+          (tagsModel.espyGenreTags(genre)?.isNotEmpty ?? false)) {
         _expandedGenre = genre;
-      }
-
-      if (_subgenres[genre]?.isEmpty ?? false) {
+      } else if (tagsModel.espyGenreTags(genre)?.isEmpty ?? false) {
         selected
-            ? context
-                .read<GameTagsModel>()
-                .genreTags
-                .add(Genre(root: genre!, name: ''), gameId)
-            : context
-                .read<GameTagsModel>()
-                .genreTags
-                .remove(Genre(root: genre!, name: ''), gameId);
+            ? tagsModel.genreTags.add(Genre(root: genre, name: ''), gameId)
+            : tagsModel.genreTags.remove(Genre(root: genre, name: ''), gameId);
       }
 
       if (genre != null) {
@@ -251,75 +246,3 @@ class _GenreChipsState extends State<GenreChips>
     });
   }
 }
-
-const _genres = [
-  'Adventure',
-  'Arcade',
-  'Card & Board Game',
-  'MOBA',
-  'Platformer',
-  'Racing',
-  'RPG',
-  'Shooter',
-  'Simulator',
-  'Sport',
-  'Strategy',
-];
-
-const _subgenres = {
-  'Adventure': [
-    'Point-and-Click',
-    'Narrative Adventure',
-    'Puzzle',
-    'First-Person Adventure',
-    'Isometric Action',
-    'Action',
-    'Isometric Adventure',
-  ],
-  'Arcade': [
-    'Endless Runner',
-    'Fighting',
-    'Pinball',
-    'Beat\'em Up',
-    'Puzzle',
-  ],
-  'Card & Board Game': [],
-  'MOBA': [],
-  'Platformer': [
-    'Side-Scroller',
-    'Metroidvania',
-    '3D Platformer',
-    'Shooter Platformer',
-    'Puzzle Platformer',
-  ],
-  'Racing': [],
-  'RPG': [
-    'Action RPG',
-    'First-Person RPG',
-    'Isometric RPG',
-    'Turn-Based RPG',
-    'RTwP RPG',
-    'Hack & Slash',
-    'JRPG',
-  ],
-  'Shooter': [
-    'First Person Shooter',
-    '3rd Person Shooter',
-    'Top-Down Shooter',
-    'Space Shooter',
-  ],
-  'Simulator': [
-    'City Builder',
-    'Management',
-  ],
-  'Sport': [],
-  'Strategy': [
-    '4X',
-    'Turn-Based Strategy',
-    'Real-Time Strategy',
-    'Grand Strategy',
-    'Isometric Tactics',
-    'Real-Time Tactics',
-    'Turn-Based Tactics',
-  ],
-};
