@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/utils/edit_distance.dart';
 import 'package:flutter_scatter/flutter_scatter.dart';
@@ -53,18 +54,91 @@ class _GenreChipsState extends State<GenreChips>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 600,
-      height: 150,
-      child: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          _buildTapToCloseFab(),
-          if (_expandedGenre != null) _buildScatter(context),
-          if (_expandedGenre == null) _buildGenres(),
-        ],
-      ),
+    final isMobile = AppConfigModel.isMobile(context);
+    return Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
+      children: [
+        if (_expandedGenre != null)
+          if (isMobile)
+            _buildGenreTags(context)
+          else ...[_buildTapToCloseFab(), _buildScatter(context)],
+        // if (_expandedGenre != null) _buildScatter(context),
+        if (_expandedGenre == null) _buildGenres(),
+      ],
+    );
+  }
+
+  Widget _buildGenreTags(BuildContext context) {
+    final genre = _expandedGenre!;
+    final tagsModel = context.watch<GameTagsModel>();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 350),
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 16.0,
+                    runSpacing: 16.0,
+                    children: [
+                      for (final label in tagsModel.espyGenreTags(genre) ?? [])
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            boxShadow: [
+                              // Halo effect for suggesting a genre.
+                              if (matchInDict(label, widget.keywords))
+                                const BoxShadow(
+                                  color: Colors.blueAccent,
+                                  blurRadius: 6.0,
+                                  spreadRadius: 2.0,
+                                ),
+                            ],
+                          ),
+                          child: ChoiceChip(
+                            label: Text(
+                              label,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                      color: tagsModel.genreTags
+                                              .byGameId(widget.libraryEntry.id)
+                                              .any((e) =>
+                                                  e.root == genre &&
+                                                  e.name == label)
+                                          ? Colors.white
+                                          : Colors.blueAccent),
+                            ),
+                            selected: tagsModel.genreTags
+                                .byGameId(widget.libraryEntry.id)
+                                .any((e) => e.root == genre && e.name == label),
+                            selectedColor: Colors.blueAccent,
+                            onSelected: (selected) => toggleExpand(
+                              context,
+                              selected,
+                              genre,
+                              widget.libraryEntry.id,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        _buildTapToCloseFab(),
+      ],
     );
   }
 
