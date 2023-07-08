@@ -8,33 +8,34 @@ class GenreTagManager {
 
   Iterable<Genre> byGameId(int gameId) => _gameIdToGenres[gameId] ?? [];
 
-  UnmodifiableListView<Genre> get genres => UnmodifiableListView(
-      _genreToGameIds.keys.toList()..sort((a, b) => a.name.compareTo(b.name)));
+  UnmodifiableListView<Genre> get genres => UnmodifiableListView(_genres);
 
   UnmodifiableListView<Genre> get genresByPopulation {
-    final list = _genreToGameIds.entries
-        .map((e) => MapEntry(e.key, e.value.length))
+    final list = _genres
+        .map((genre) =>
+            MapEntry(genre, _genreToGameIds[genre.encode()]?.length ?? 0))
+        .where((e) => e.value > 0)
         .toList()
       ..sort((a, b) => -a.value.compareTo(b.value));
     return UnmodifiableListView(list.map((e) => e.key));
   }
 
-  Iterable<int> gameIds(Genre genre) => _genreToGameIds[genre] ?? [];
+  Iterable<int> gameIds(String genre) => _genreToGameIds[genre] ?? [];
 
   Iterable<Genre> filter(Iterable<String> ngrams) {
-    return genres.where(
-      (genre) => ngrams.every((ngram) => genre.name
-          .toLowerCase()
-          .split(' ')
-          .any((word) => word.startsWith(ngram))),
-    );
+    return genres.where((e) => e.name.isNotEmpty).where(
+          (genre) => ngrams.every((ngram) => genre.name
+              .toLowerCase()
+              .split(' ')
+              .any((word) => word.startsWith(ngram))),
+        );
   }
 
   Iterable<Genre> filterExact(Iterable<String> ngrams) {
-    return genres.where(
-      (tag) => ngrams.every((ngram) =>
-          tag.name.toLowerCase().split(' ').any((word) => word == ngram)),
-    );
+    return genres.where((e) => e.name.isNotEmpty).where(
+          (tag) => ngrams.every((ngram) =>
+              tag.name.toLowerCase().split(' ').any((word) => word == ngram)),
+        );
   }
 
   void add(Genre genre, int gameId) async {
@@ -90,7 +91,8 @@ class GenreTagManager {
   final UserTags _userTags;
 
   final Map<int, List<Genre>> _gameIdToGenres = {};
-  final Map<Genre, List<int>> _genreToGameIds = {};
+  final Map<String, List<int>> _genreToGameIds = {};
+  final List<Genre> _genres = [];
 
   void build() {
     _gameIdToGenres.clear();
@@ -98,8 +100,13 @@ class GenreTagManager {
 
     // Build Genre index.
     for (final genre in _userTags.genres) {
+      if (genre.gameIds.isEmpty) {
+        continue;
+      }
+      final genreCopy = Genre(root: genre.root, name: genre.name);
+      _genres.add(genreCopy);
+
       for (final id in genre.gameIds) {
-        final genreCopy = Genre(root: genre.root, name: genre.name);
         final genres = _gameIdToGenres[id];
         if (genres != null) {
           genres.add(genreCopy);
@@ -107,13 +114,14 @@ class GenreTagManager {
           _gameIdToGenres[id] = [genreCopy];
         }
 
-        final gameIds = _genreToGameIds[genreCopy];
+        final gameIds = _genreToGameIds[genreCopy.encode()];
         if (gameIds != null) {
           gameIds.add(id);
         } else {
-          _genreToGameIds[genreCopy] = [id];
+          _genreToGameIds[genreCopy.encode()] = [id];
         }
       }
     }
+    _genres.sort((a, b) => a.name.compareTo(b.name));
   }
 }

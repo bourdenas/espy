@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/user_tags.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
@@ -64,6 +65,7 @@ class TagSearchResults extends StatelessWidget {
     this.collections,
     this.franchises,
     this.genres,
+    this.genresTags,
     this.keywords, {
     Key? key,
   }) : super(key: key);
@@ -75,6 +77,7 @@ class TagSearchResults extends StatelessWidget {
   final Iterable<String> collections;
   final Iterable<String> franchises;
   final Iterable<String> genres;
+  final Iterable<Genre> genresTags;
   final Iterable<String> keywords;
 
   @override
@@ -160,13 +163,28 @@ class TagSearchResults extends StatelessWidget {
           if (genres.isNotEmpty)
             _ChipResults(
               title: 'Genres',
-              color: Colors.blueAccent[200]!,
+              color: Colors.blueAccent,
               chips: genres.map(
                 (genre) => GenreChip(
                   genre,
                   onPressed: () => context.pushNamed(
                     'games',
                     queryParameters: LibraryFilter(genres: {genre}).params(),
+                  ),
+                ),
+              ),
+            ),
+          if (genresTags.isNotEmpty)
+            _ChipResults(
+              title: 'Genres',
+              color: Colors.blueAccent,
+              chips: genresTags.map(
+                (genreTag) => GenreChip(
+                  genreTag.name,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParameters:
+                        LibraryFilter(genreTags: {genreTag.encode()}).params(),
                   ),
                 ),
               ),

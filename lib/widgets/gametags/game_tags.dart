@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/user_tags.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
@@ -361,6 +362,24 @@ class GameChipsFilter extends StatelessWidget {
                   .read<LibraryFilterModel>()
                   .filter
                   .remove(LibraryFilter(genres: {genre}));
+              context.pushNamed(
+                'games',
+                queryParameters: filter.params(),
+              );
+            },
+          ),
+        ),
+      ],
+      for (final genreTag in filter.genreTags) ...[
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: GenreChip(
+            Genre.decode(genreTag).name,
+            onDeleted: () {
+              final filter = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .remove(LibraryFilter(genreTags: {genreTag}));
               context.pushNamed(
                 'games',
                 queryParameters: filter.params(),

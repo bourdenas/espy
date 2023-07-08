@@ -80,8 +80,8 @@ class _GenreChipsState extends State<GenreChips>
             boxShadow: [
               // Halo effect for suggesting a sub-genre.
               if (matchInDict(label, widget.keywords))
-                BoxShadow(
-                  color: Colors.blueAccent[200]!,
+                const BoxShadow(
+                  color: Colors.blueAccent,
                   blurRadius: 6.0,
                   spreadRadius: 2.0,
                 ),
@@ -91,14 +91,16 @@ class _GenreChipsState extends State<GenreChips>
             label: Text(
               label,
               style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                  color: [].any((e) => e == label)
+                  color: genreTags
+                          .byGameId(widget.libraryEntry.id)
+                          .any((e) => e.root == genre && e.name == label)
                       ? Colors.white
-                      : Colors.blueAccent[300]),
+                      : Colors.blueAccent),
             ),
             selected: genreTags
                 .byGameId(widget.libraryEntry.id)
                 .any((e) => e.root == genre && e.name == label),
-            selectedColor: Colors.blueAccent[200],
+            selectedColor: Colors.blueAccent,
             onSelected: (selected) => selected
                 ? genreTags.add(
                     Genre(root: genre, name: label), widget.libraryEntry.id)
@@ -181,8 +183,8 @@ class _GenreChipsState extends State<GenreChips>
                               // Halo effect for suggesting a genre.
                               if (widget.libraryEntry.digest.genres
                                   .contains(genre))
-                                BoxShadow(
-                                  color: Colors.blueAccent[200]!,
+                                const BoxShadow(
+                                  color: Colors.blueAccent,
                                   blurRadius: 6.0,
                                   spreadRadius: 2.0,
                                 ),
@@ -198,11 +200,11 @@ class _GenreChipsState extends State<GenreChips>
                                       color:
                                           _selectedGenres.any((e) => e == genre)
                                               ? Colors.white
-                                              : Colors.blueAccent[300]),
+                                              : Colors.blueAccent),
                             ),
                             selected: _selectedGenres.any((e) => e == genre) ||
                                 impliedGenres.any((e) => e == genre),
-                            selectedColor: Colors.blueAccent[200],
+                            selectedColor: Colors.blueAccent,
                             onSelected: (selected) => toggleExpand(
                               context,
                               selected,

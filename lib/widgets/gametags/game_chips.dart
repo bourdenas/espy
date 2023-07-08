@@ -55,7 +55,7 @@ class GenreChip extends EspyChip {
       : super(
           key: key,
           label: keyword,
-          color: Colors.blueAccent[200]!,
+          color: Colors.blueAccent,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );

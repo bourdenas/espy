@@ -52,6 +52,14 @@ class Genre {
     this.gameIds = const [],
   });
 
+  String encode() => '$root|$name';
+
+  static decode(String encoded) {
+    final parts = encoded.split('|');
+    assert(parts.length == 2);
+    return Genre(root: parts[0], name: parts[1]);
+  }
+
   Genre.fromJson(Map<String, dynamic> json)
       : this(
           root: json['root']!,
