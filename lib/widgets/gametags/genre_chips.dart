@@ -59,17 +59,16 @@ class _GenreChipsState extends State<GenreChips>
       alignment: Alignment.center,
       clipBehavior: Clip.none,
       children: [
+        if (_expandedGenre == null) _buildGenreChips(),
         if (_expandedGenre != null)
           if (isMobile)
-            _buildGenreTags(context)
-          else ...[_buildTapToCloseFab(), _buildScatter(context)],
-        // if (_expandedGenre != null) _buildScatter(context),
-        if (_expandedGenre == null) _buildGenres(),
+            _buildGenreTagsChips(context)
+          else ...[_buildTapToCloseFab(), _buildGenreTagsScatter(context)],
       ],
     );
   }
 
-  Widget _buildGenreTags(BuildContext context) {
+  Widget _buildGenreTagsChips(BuildContext context) {
     final genre = _expandedGenre!;
     final tagsModel = context.watch<GameTagsModel>();
 
@@ -122,12 +121,13 @@ class _GenreChipsState extends State<GenreChips>
                                 .byGameId(widget.libraryEntry.id)
                                 .any((e) => e.root == genre && e.name == label),
                             selectedColor: Colors.blueAccent,
-                            onSelected: (selected) => toggleExpand(
-                              context,
-                              selected,
-                              genre,
-                              widget.libraryEntry.id,
-                            ),
+                            onSelected: (selected) => selected
+                                ? tagsModel.genreTags.add(
+                                    Genre(root: genre, name: label),
+                                    widget.libraryEntry.id)
+                                : tagsModel.genreTags.remove(
+                                    Genre(root: genre, name: label),
+                                    widget.libraryEntry.id),
                           ),
                         ),
                     ],
@@ -142,7 +142,7 @@ class _GenreChipsState extends State<GenreChips>
     );
   }
 
-  Widget _buildScatter(BuildContext context) {
+  Widget _buildGenreTagsScatter(BuildContext context) {
     final genre = _expandedGenre!;
     final tagsModel = context.watch<GameTagsModel>();
 
@@ -226,7 +226,7 @@ class _GenreChipsState extends State<GenreChips>
     );
   }
 
-  Widget _buildGenres() {
+  Widget _buildGenreChips() {
     final impliedGenres = context
         .watch<GameTagsModel>()
         .genreTags
