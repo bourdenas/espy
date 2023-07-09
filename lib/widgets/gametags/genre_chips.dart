@@ -68,75 +68,59 @@ class _GenreChipsState extends State<GenreChips>
     );
   }
 
+  Widget _buildGenreChips() {
+    final impliedGenres = context
+        .watch<GameTagsModel>()
+        .genreTags
+        .byGameId(widget.libraryEntry.id)
+        .map((e) => e.root);
+
+    final widgets = [
+      for (final genre in context.read<GameTagsModel>().espyGenres)
+        _TagSelectionChip(
+          label: genre,
+          hasHalo: widget.libraryEntry.digest.genres.contains(genre),
+          isSelected: _selectedGenres.any((e) => e == genre) ||
+              impliedGenres.any((e) => e == genre),
+          onSelected: (selected) => toggleExpand(
+            context,
+            selected,
+            genre,
+            widget.libraryEntry.id,
+          ),
+        ),
+    ];
+
+    return Column(
+      children: [
+        _TagsWarp(children: widgets),
+      ],
+    );
+  }
+
   Widget _buildGenreTagsChips(BuildContext context) {
     final genre = _expandedGenre!;
     final tagsModel = context.watch<GameTagsModel>();
 
+    final widgets = [
+      for (final label in tagsModel.espyGenreTags(genre) ?? [])
+        _TagSelectionChip(
+          label: label,
+          hasHalo: matchInDict(label, widget.keywords),
+          isSelected: tagsModel.genreTags
+              .byGameId(widget.libraryEntry.id)
+              .any((e) => e.root == genre && e.name == label),
+          onSelected: (selected) => selected
+              ? tagsModel.genreTags
+                  .add(Genre(root: genre, name: label), widget.libraryEntry.id)
+              : tagsModel.genreTags.remove(
+                  Genre(root: genre, name: label), widget.libraryEntry.id),
+        ),
+    ];
+
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 350),
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 16.0,
-                    runSpacing: 16.0,
-                    children: [
-                      for (final label in tagsModel.espyGenreTags(genre) ?? [])
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            boxShadow: [
-                              // Halo effect for suggesting a genre.
-                              if (matchInDict(label, widget.keywords))
-                                const BoxShadow(
-                                  color: Colors.blueAccent,
-                                  blurRadius: 6.0,
-                                  spreadRadius: 2.0,
-                                ),
-                            ],
-                          ),
-                          child: ChoiceChip(
-                            label: Text(
-                              label,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                      color: tagsModel.genreTags
-                                              .byGameId(widget.libraryEntry.id)
-                                              .any((e) =>
-                                                  e.root == genre &&
-                                                  e.name == label)
-                                          ? Colors.white
-                                          : Colors.blueAccent),
-                            ),
-                            selected: tagsModel.genreTags
-                                .byGameId(widget.libraryEntry.id)
-                                .any((e) => e.root == genre && e.name == label),
-                            selectedColor: Colors.blueAccent,
-                            onSelected: (selected) => selected
-                                ? tagsModel.genreTags.add(
-                                    Genre(root: genre, name: label),
-                                    widget.libraryEntry.id)
-                                : tagsModel.genreTags.remove(
-                                    Genre(root: genre, name: label),
-                                    widget.libraryEntry.id),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        _TagsWarp(children: widgets),
         _buildTapToCloseFab(),
       ],
     );
@@ -148,51 +132,32 @@ class _GenreChipsState extends State<GenreChips>
 
     final widgets = [
       for (final label in tagsModel.espyGenreTags(genre) ?? [])
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(50),
-            boxShadow: [
-              // Halo effect for suggesting a sub-genre.
-              if (matchInDict(label, widget.keywords))
-                const BoxShadow(
-                  color: Colors.blueAccent,
-                  blurRadius: 6.0,
-                  spreadRadius: 2.0,
-                ),
-            ],
-          ),
-          child: ChoiceChip(
-            label: Text(
-              label,
-              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                  color: tagsModel.genreTags
-                          .byGameId(widget.libraryEntry.id)
-                          .any((e) => e.root == genre && e.name == label)
-                      ? Colors.white
-                      : Colors.blueAccent),
-            ),
-            selected: tagsModel.genreTags
-                .byGameId(widget.libraryEntry.id)
-                .any((e) => e.root == genre && e.name == label),
-            selectedColor: Colors.blueAccent,
-            onSelected: (selected) => selected
-                ? tagsModel.genreTags.add(
-                    Genre(root: genre, name: label), widget.libraryEntry.id)
-                : tagsModel.genreTags.remove(
-                    Genre(root: genre, name: label), widget.libraryEntry.id),
-          ),
+        _TagSelectionChip(
+          label: label,
+          hasHalo: matchInDict(label, widget.keywords),
+          isSelected: tagsModel.genreTags
+              .byGameId(widget.libraryEntry.id)
+              .any((e) => e.root == genre && e.name == label),
+          onSelected: (selected) => selected
+              ? tagsModel.genreTags
+                  .add(Genre(root: genre, name: label), widget.libraryEntry.id)
+              : tagsModel.genreTags.remove(
+                  Genre(root: genre, name: label), widget.libraryEntry.id),
         ),
     ];
 
     return Center(
-      child: Scatter(
-        delegate: EllipseScatterDelegate(
-          start: .75,
-          a: 180.0,
-          b: 60.0,
-          step: 1.0 / widgets.length,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Scatter(
+          delegate: EllipseScatterDelegate(
+            start: .75,
+            a: 180.0,
+            b: 60.0,
+            step: 1.0 / widgets.length,
+          ),
+          children: widgets,
         ),
-        children: widgets,
       ),
     );
   }
@@ -226,79 +191,6 @@ class _GenreChipsState extends State<GenreChips>
     );
   }
 
-  Widget _buildGenreChips() {
-    final impliedGenres = context
-        .watch<GameTagsModel>()
-        .genreTags
-        .byGameId(widget.libraryEntry.id)
-        .map((e) => e.root);
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 350),
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 16.0,
-                    runSpacing: 16.0,
-                    children: [
-                      for (final genre
-                          in context.read<GameTagsModel>().espyGenres)
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            boxShadow: [
-                              // Halo effect for suggesting a genre.
-                              if (widget.libraryEntry.digest.genres
-                                  .contains(genre))
-                                const BoxShadow(
-                                  color: Colors.blueAccent,
-                                  blurRadius: 6.0,
-                                  spreadRadius: 2.0,
-                                ),
-                            ],
-                          ),
-                          child: ChoiceChip(
-                            label: Text(
-                              genre,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                      color:
-                                          _selectedGenres.any((e) => e == genre)
-                                              ? Colors.white
-                                              : Colors.blueAccent),
-                            ),
-                            selected: _selectedGenres.any((e) => e == genre) ||
-                                impliedGenres.any((e) => e == genre),
-                            selectedColor: Colors.blueAccent,
-                            onSelected: (selected) => toggleExpand(
-                              context,
-                              selected,
-                              genre,
-                              widget.libraryEntry.id,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   void toggleExpand(
       BuildContext context, bool selected, String? genre, int gameId) {
     final tagsModel = context.read<GameTagsModel>();
@@ -318,5 +210,79 @@ class _GenreChipsState extends State<GenreChips>
         _controller.reverse();
       }
     });
+  }
+}
+
+class _TagsWarp extends StatelessWidget {
+  const _TagsWarp({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 350),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16.0,
+                runSpacing: 16.0,
+                children: children,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TagSelectionChip extends StatelessWidget {
+  const _TagSelectionChip({
+    required this.label,
+    this.hasHalo = false,
+    required this.isSelected,
+    required this.onSelected,
+  });
+
+  final String label;
+  final bool hasHalo;
+  final bool isSelected;
+  final void Function(bool) onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(50),
+        boxShadow: [
+          // Halo effect for suggesting a genre.
+          if (hasHalo)
+            const BoxShadow(
+              color: Colors.blueAccent,
+              blurRadius: 6.0,
+              spreadRadius: 2.0,
+            ),
+        ],
+      ),
+      child: ChoiceChip(
+        label: Text(
+          label,
+          style: Theme.of(context)
+              .textTheme
+              .bodyLarge!
+              .copyWith(color: isSelected ? Colors.white : Colors.blueAccent),
+        ),
+        selected: isSelected,
+        selectedColor: Colors.blueAccent,
+        onSelected: onSelected,
+      ),
+    );
   }
 }
