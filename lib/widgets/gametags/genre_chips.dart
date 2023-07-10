@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/user_tags.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/utils/edit_distance.dart';
+import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter_scatter/flutter_scatter.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/material.dart';
@@ -79,6 +80,7 @@ class _GenreChipsState extends State<GenreChips>
       for (final genre in context.read<GameTagsModel>().espyGenres)
         _TagSelectionChip(
           label: genre,
+          color: GenreChip.color,
           hasHalo: widget.libraryEntry.digest.genres.contains(genre),
           isSelected: _selectedGenres.any((e) => e == genre) ||
               impliedGenres.any((e) => e == genre),
@@ -106,6 +108,7 @@ class _GenreChipsState extends State<GenreChips>
       for (final label in tagsModel.espyGenreTags(genre) ?? [])
         _TagSelectionChip(
           label: label,
+          color: GenreTagChip.color,
           hasHalo: matchInDict(label, widget.keywords),
           isSelected: tagsModel.genreTags
               .byGameId(widget.libraryEntry.id)
@@ -134,6 +137,7 @@ class _GenreChipsState extends State<GenreChips>
       for (final label in tagsModel.espyGenreTags(genre) ?? [])
         _TagSelectionChip(
           label: label,
+          color: GenreTagChip.color,
           hasHalo: matchInDict(label, widget.keywords),
           isSelected: tagsModel.genreTags
               .byGameId(widget.libraryEntry.id)
@@ -246,12 +250,14 @@ class _TagsWarp extends StatelessWidget {
 class _TagSelectionChip extends StatelessWidget {
   const _TagSelectionChip({
     required this.label,
+    required this.color,
     this.hasHalo = false,
     required this.isSelected,
     required this.onSelected,
   });
 
   final String label;
+  final Color color;
   final bool hasHalo;
   final bool isSelected;
   final void Function(bool) onSelected;
@@ -264,8 +270,8 @@ class _TagSelectionChip extends StatelessWidget {
         boxShadow: [
           // Halo effect for suggesting a genre.
           if (hasHalo)
-            const BoxShadow(
-              color: Colors.blueAccent,
+            BoxShadow(
+              color: color,
               blurRadius: 6.0,
               spreadRadius: 2.0,
             ),
@@ -277,10 +283,10 @@ class _TagSelectionChip extends StatelessWidget {
           style: Theme.of(context)
               .textTheme
               .bodyLarge!
-              .copyWith(color: isSelected ? Colors.white : Colors.blueAccent),
+              .copyWith(color: isSelected ? Colors.white : color),
         ),
         selected: isSelected,
-        selectedColor: Colors.blueAccent,
+        selectedColor: color,
         onSelected: onSelected,
       ),
     );
