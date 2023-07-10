@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+/// Tags shows on GameEntry's details page.
 class GameTags extends StatelessWidget {
   final GameEntry gameEntry;
 
@@ -31,6 +32,18 @@ class _GameChipsWrap extends StatelessWidget {
   Widget build(BuildContext context) {
     final tagsModel = context.watch<GameTagsModel>();
 
+    void onChipPressed(LibraryFilter filter) {
+      if (context.canPop()) {
+        context.pop();
+      }
+      final updatedFilter =
+          context.read<LibraryFilterModel>().filter.add(filter);
+      context.pushNamed(
+        'games',
+        queryParameters: updatedFilter.params(),
+      );
+    }
+
     return Wrap(
       spacing: 8.0,
       runSpacing: 4.0,
@@ -38,121 +51,44 @@ class _GameChipsWrap extends StatelessWidget {
         for (final company in gameEntry.developers.map((e) => e.name))
           DeveloperChip(
             company,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              context.pushNamed(
-                'games',
-                queryParameters: LibraryFilter(developers: {company}).params(),
-              );
-            },
+            onPressed: () =>
+                onChipPressed(LibraryFilter(developers: {company})),
           ),
         for (final company in gameEntry.publishers.map((e) => e.name))
           PublisherChip(
             company,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              context.pushNamed(
-                'games',
-                queryParameters: LibraryFilter(publishers: {company}).params(),
-              );
-            },
+            onPressed: () =>
+                onChipPressed(LibraryFilter(publishers: {company})),
           ),
         for (final collection in gameEntry.collections.map((e) => e.name))
           CollectionChip(
             collection,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .add(LibraryFilter(collections: {collection}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onPressed: () =>
+                onChipPressed(LibraryFilter(collections: {collection})),
           ),
         for (final franchise in gameEntry.franchises.map((e) => e.name))
           FranchiseChip(
             franchise,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .add(LibraryFilter(franchises: {franchise}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
-          ),
-        for (final genre in tagsModel.filterEspyGenres(gameEntry.genres))
-          GenreChip(
-            genre,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .add(LibraryFilter(genres: {genre}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onPressed: () =>
+                onChipPressed(LibraryFilter(franchises: {franchise})),
           ),
         for (final genreTag in tagsModel.genreTags.byGameId(gameEntry.id))
-          GenreChip(
+          GenreTagChip(
             genreTag.name,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .add(LibraryFilter(genreTags: {genreTag.encode()}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onPressed: () =>
+                onChipPressed(LibraryFilter(genreTags: {genreTag.encode()})),
           ),
         for (final tag in tagsModel.userTags.byGameId(gameEntry.id))
           TagChip(
             tag,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              context.pushNamed(
-                'games',
-                queryParameters: LibraryFilter(tags: {tag.name}).params(),
-              );
-            },
-            onDeleted: () => context
-                .read<GameTagsModel>()
-                .userTags
-                .remove(tag, gameEntry.id),
-            onRightClick: () =>
-                context.read<GameTagsModel>().userTags.moveCluster(tag),
+            onPressed: () => onChipPressed(LibraryFilter(tags: {tag.name})),
           ),
       ],
     );
   }
 }
 
+/// Tags shows on a LibraryEntry's grid/list card.
 class GameCardChips extends StatelessWidget {
   final LibraryEntry libraryEntry;
   final bool includeCompanies;
@@ -169,6 +105,18 @@ class GameCardChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final tagsModel = context.watch<GameTagsModel>();
 
+    void onChipPressed(LibraryFilter filter) {
+      if (context.canPop()) {
+        context.pop();
+      }
+      final updatedFilter =
+          context.read<LibraryFilterModel>().filter.add(filter);
+      context.pushNamed(
+        'games',
+        queryParameters: updatedFilter.params(),
+      );
+    }
+
     return SizedBox(
       height: 40.0,
       child: ListView(
@@ -180,11 +128,8 @@ class GameCardChips extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: DeveloperChip(
                   company,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(developers: {company}).params(),
-                  ),
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(developers: {company})),
                 ),
               ),
             for (final company in libraryEntry.publishers)
@@ -192,11 +137,8 @@ class GameCardChips extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: PublisherChip(
                   company,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(publishers: {company}).params(),
-                  ),
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(publishers: {company})),
                 ),
               ),
           ],
@@ -206,16 +148,8 @@ class GameCardChips extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: CollectionChip(
                   collection,
-                  onPressed: () {
-                    final filter = context
-                        .read<LibraryFilterModel>()
-                        .filter
-                        .add(LibraryFilter(collections: {collection}));
-                    context.pushNamed(
-                      'games',
-                      queryParameters: filter.params(),
-                    );
-                  },
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(collections: {collection})),
                 ),
               ),
             for (final franchise in libraryEntry.franchises)
@@ -223,57 +157,18 @@ class GameCardChips extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: FranchiseChip(
                   franchise,
-                  onPressed: () {
-                    final filter = context
-                        .read<LibraryFilterModel>()
-                        .filter
-                        .add(LibraryFilter(franchises: {franchise}));
-                    context.pushNamed(
-                      'games',
-                      queryParameters: filter.params(),
-                    );
-                  },
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(franchises: {franchise})),
                 ),
               ),
           ],
-          for (final genre in libraryEntry.digest.genres)
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: GenreChip(
-                genre,
-                onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  }
-                  final filter = context
-                      .read<LibraryFilterModel>()
-                      .filter
-                      .add(LibraryFilter(genres: {genre}));
-                  context.pushNamed(
-                    'games',
-                    queryParameters: filter.params(),
-                  );
-                },
-              ),
-            ),
           for (final genreTag in tagsModel.genreTags.byGameId(libraryEntry.id))
             Padding(
               padding: const EdgeInsets.all(4.0),
-              child: GenreChip(
+              child: GenreTagChip(
                 genreTag.name,
-                onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  }
-                  final filter = context
-                      .read<LibraryFilterModel>()
-                      .filter
-                      .add(LibraryFilter(genreTags: {genreTag.encode()}));
-                  context.pushNamed(
-                    'games',
-                    queryParameters: filter.params(),
-                  );
-                },
+                onPressed: () => onChipPressed(
+                    LibraryFilter(genreTags: {genreTag.encode()})),
               ),
             ),
           for (final tag in tagsModel.userTags.byGameId(libraryEntry.id))
@@ -281,16 +176,7 @@ class GameCardChips extends StatelessWidget {
               padding: const EdgeInsets.all(4.0),
               child: TagChip(
                 tag,
-                onPressed: () => context.pushNamed(
-                  'games',
-                  queryParameters: LibraryFilter(tags: {tag.name}).params(),
-                ),
-                onDeleted: () => context
-                    .read<GameTagsModel>()
-                    .userTags
-                    .remove(tag, libraryEntry.id),
-                onRightClick: () =>
-                    context.read<GameTagsModel>().userTags.moveCluster(tag),
+                onPressed: () => onChipPressed(LibraryFilter(tags: {tag.name})),
               ),
             ),
         ],
