@@ -124,7 +124,7 @@ const Map<String, List<String>> _genreTags = {
   'Adventure': [
     'Point-and-Click',
     'Narrative Adventure',
-    'Puzzle',
+    'Puzzle Adventure',
     'First-Person Adventure',
     'Isometric Action',
     'Action',
@@ -158,8 +158,8 @@ const Map<String, List<String>> _genreTags = {
   ],
   'Shooter': [
     'First Person Shooter',
-    '3rd Person Shooter',
     'Top-Down Shooter',
+    '3rd Person Shooter',
     'Space Shooter',
   ],
   'Simulator': [

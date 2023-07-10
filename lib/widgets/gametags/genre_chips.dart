@@ -61,9 +61,9 @@ class _GenreChipsState extends State<GenreChips>
       children: [
         if (_expandedGenre == null) _buildGenreChips(),
         if (_expandedGenre != null)
-          if (isMobile)
-            _buildGenreTagsChips(context)
-          else ...[_buildTapToCloseFab(), _buildGenreTagsScatter(context)],
+          // if (isMobile)
+          _buildGenreTagsChips(context)
+        // else ...[_buildTapToCloseFab(), _buildGenreTagsScatter(context)],
       ],
     );
   }
