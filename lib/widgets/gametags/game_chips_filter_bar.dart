@@ -13,22 +13,22 @@ class GameChipsFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void onRemove(LibraryFilter filter) {
+      final updatedFilter =
+          context.read<LibraryFilterModel>().filter.remove(filter);
+      context.pushNamed(
+        'games',
+        queryParameters: updatedFilter.params(),
+      );
+    }
+
     return Row(children: [
       for (final store in filter.stores) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: StoreChip(
             store,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(stores: {store}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onDeleted: () => onRemove(LibraryFilter(stores: {store})),
           ),
         ),
       ],
@@ -37,16 +37,7 @@ class GameChipsFilterBar extends StatelessWidget {
           padding: const EdgeInsets.all(4.0),
           child: DeveloperChip(
             company,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(developers: {company}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onDeleted: () => onRemove(LibraryFilter(developers: {company})),
           ),
         ),
       ],
@@ -55,16 +46,7 @@ class GameChipsFilterBar extends StatelessWidget {
           padding: const EdgeInsets.all(4.0),
           child: PublisherChip(
             company,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(publishers: {company}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onDeleted: () => onRemove(LibraryFilter(publishers: {company})),
           ),
         ),
       ],
@@ -73,16 +55,7 @@ class GameChipsFilterBar extends StatelessWidget {
           padding: const EdgeInsets.all(4.0),
           child: CollectionChip(
             collection,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(collections: {collection}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onDeleted: () => onRemove(LibraryFilter(collections: {collection})),
           ),
         ),
       ],
@@ -91,16 +64,7 @@ class GameChipsFilterBar extends StatelessWidget {
           padding: const EdgeInsets.all(4.0),
           child: FranchiseChip(
             franchise,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(franchises: {franchise}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onDeleted: () => onRemove(LibraryFilter(franchises: {franchise})),
           ),
         ),
       ],
@@ -109,16 +73,7 @@ class GameChipsFilterBar extends StatelessWidget {
           padding: const EdgeInsets.all(4.0),
           child: GenreChip(
             genre,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(genres: {genre}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onDeleted: () => onRemove(LibraryFilter(genres: {genre})),
           ),
         ),
       ],
@@ -127,16 +82,7 @@ class GameChipsFilterBar extends StatelessWidget {
           padding: const EdgeInsets.all(4.0),
           child: GenreTagChip(
             Genre.decode(genreTag).name,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(genreTags: {genreTag}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onDeleted: () => onRemove(LibraryFilter(genreTags: {genreTag})),
           ),
         ),
       ],
@@ -145,16 +91,7 @@ class GameChipsFilterBar extends StatelessWidget {
           padding: const EdgeInsets.all(4.0),
           child: KeywordChip(
             keyword,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(keywords: {keyword}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onDeleted: () => onRemove(LibraryFilter(keywords: {keyword})),
           ),
         ),
       ],
@@ -163,16 +100,7 @@ class GameChipsFilterBar extends StatelessWidget {
           padding: const EdgeInsets.all(4.0),
           child: TagChip(
             context.read<GameTagsModel>().userTags.get(tag),
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(tags: {tag}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onDeleted: () => onRemove(LibraryFilter(tags: {tag})),
           ),
         ),
       ],
