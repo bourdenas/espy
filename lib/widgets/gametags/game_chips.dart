@@ -7,10 +7,12 @@ class DeveloperChip extends EspyChip {
       : super(
           key: key,
           label: company,
-          color: Colors.redAccent,
+          color: color,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );
+
+  static Color get color => Colors.redAccent;
 }
 
 class PublisherChip extends EspyChip {
@@ -19,10 +21,12 @@ class PublisherChip extends EspyChip {
       : super(
           key: key,
           label: company,
-          color: Colors.red[200]!,
+          color: color,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );
+
+  static Color get color => Colors.red[200]!;
 }
 
 class CollectionChip extends EspyChip {
@@ -31,10 +35,12 @@ class CollectionChip extends EspyChip {
       : super(
           key: key,
           label: collection,
-          color: Colors.indigoAccent,
+          color: color,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );
+
+  static Color get color => Colors.indigoAccent;
 }
 
 class FranchiseChip extends EspyChip {
@@ -43,10 +49,12 @@ class FranchiseChip extends EspyChip {
       : super(
           key: key,
           label: collection,
-          color: Colors.indigo[200]!,
+          color: color,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );
+
+  static Color get color => Colors.indigo[200]!;
 }
 
 class GenreChip extends EspyChip {
@@ -55,10 +63,26 @@ class GenreChip extends EspyChip {
       : super(
           key: key,
           label: keyword,
-          color: Colors.blueAccent,
+          color: color,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );
+
+  static Color get color => Colors.deepPurple[200]!;
+}
+
+class GenreTagChip extends EspyChip {
+  GenreTagChip(String keyword,
+      {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})
+      : super(
+          key: key,
+          label: keyword,
+          color: color,
+          onPressed: onPressed ?? () {},
+          onDeleted: onDeleted,
+        );
+
+  static Color get color => Colors.deepPurpleAccent;
 }
 
 class KeywordChip extends EspyChip {
@@ -67,10 +91,12 @@ class KeywordChip extends EspyChip {
       : super(
           key: key,
           label: keyword,
-          color: Colors.grey,
+          color: color,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );
+
+  static Color get color => Colors.grey;
 }
 
 class StoreChip extends EspyChip {
@@ -79,10 +105,12 @@ class StoreChip extends EspyChip {
       : super(
           key: key,
           label: store,
-          color: Colors.deepPurpleAccent,
+          color: color,
           onPressed: onPressed ?? () {},
           onDeleted: onDeleted,
         );
+
+  static Color get color => Colors.orange;
 }
 
 class TagChip extends EspyChip {
@@ -103,28 +131,30 @@ class TagChip extends EspyChip {
 }
 
 class EspyChip extends StatelessWidget {
-  final String label;
-  final Color color;
+  final String _label;
+  final Color _color;
   final VoidCallback? onPressed;
   final VoidCallback? onDeleted;
   final VoidCallback? onRightClick;
 
   const EspyChip({
     Key? key,
-    required this.label,
-    required this.color,
+    required String label,
+    required Color color,
     this.onPressed,
     this.onDeleted,
     this.onRightClick,
-  }) : super(key: key);
+  })  : _label = label,
+        _color = color,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onSecondaryTap: onRightClick,
       child: InputChip(
-        label: Text(label),
-        backgroundColor: color,
+        label: Text(_label),
+        backgroundColor: _color,
         onPressed: onPressed,
         onDeleted: onDeleted,
       ),

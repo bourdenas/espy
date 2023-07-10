@@ -89,7 +89,7 @@ class TagSearchResults extends StatelessWidget {
           if (stores.isNotEmpty)
             _ChipResults(
               title: 'Stores',
-              color: Colors.deepPurpleAccent,
+              color: StoreChip.color,
               chips: stores.map(
                 (store) => StoreChip(
                   store,
@@ -103,7 +103,7 @@ class TagSearchResults extends StatelessWidget {
           if (developers.isNotEmpty)
             _ChipResults(
               title: 'Developers',
-              color: Colors.redAccent,
+              color: DeveloperChip.color,
               chips: developers.map(
                 (company) => DeveloperChip(
                   company,
@@ -118,7 +118,7 @@ class TagSearchResults extends StatelessWidget {
           if (publishers.isNotEmpty)
             _ChipResults(
               title: 'Publishers',
-              color: Colors.red[200]!,
+              color: PublisherChip.color,
               chips: publishers.map(
                 (company) => PublisherChip(
                   company,
@@ -133,7 +133,7 @@ class TagSearchResults extends StatelessWidget {
           if (collections.isNotEmpty)
             _ChipResults(
               title: 'Collections',
-              color: Colors.indigoAccent,
+              color: CollectionChip.color,
               chips: collections.map(
                 (collection) => CollectionChip(
                   collection,
@@ -148,7 +148,7 @@ class TagSearchResults extends StatelessWidget {
           if (franchises.isNotEmpty)
             _ChipResults(
               title: 'Franchises',
-              color: Colors.indigo[200]!,
+              color: FranchiseChip.color,
               chips: franchises.map(
                 (franchise) => FranchiseChip(
                   franchise,
@@ -163,7 +163,7 @@ class TagSearchResults extends StatelessWidget {
           if (genres.isNotEmpty)
             _ChipResults(
               title: 'Genres',
-              color: Colors.blueAccent,
+              color: GenreChip.color,
               chips: genres.map(
                 (genre) => GenreChip(
                   genre,
@@ -177,9 +177,9 @@ class TagSearchResults extends StatelessWidget {
           if (genresTags.isNotEmpty)
             _ChipResults(
               title: 'Genres',
-              color: Colors.blueAccent,
+              color: GenreTagChip.color,
               chips: genresTags.map(
-                (genreTag) => GenreChip(
+                (genreTag) => GenreTagChip(
                   genreTag.name,
                   onPressed: () => context.pushNamed(
                     'games',
@@ -192,7 +192,7 @@ class TagSearchResults extends StatelessWidget {
           if (keywords.isNotEmpty)
             _ChipResults(
               title: 'Keywords',
-              color: Colors.grey,
+              color: KeywordChip.color,
               chips: keywords.map(
                 (keyword) => KeywordChip(
                   keyword,
