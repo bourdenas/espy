@@ -38,70 +38,67 @@ class StorefrontViewState extends State<StorefrontView>
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      elevation: 5,
-      child: Column(
-        children: [
-          TabBar(
+    return Column(
+      children: [
+        TabBar(
+          controller: _tabController,
+          tabs: [
+            for (final storeEntry in widget.libraryEntry.storeEntries)
+              Tab(
+                icon: SizedBox(
+                  height: 32,
+                  child: Stores.getIcon(storeEntry.storefront),
+                ),
+                iconMargin: const EdgeInsets.only(bottom: 10.0),
+              ),
+          ],
+        ),
+        SizedBox(
+          height: 120,
+          child: TabBarView(
             controller: _tabController,
-            tabs: [
+            children: [
               for (final storeEntry in widget.libraryEntry.storeEntries)
-                Tab(
-                  icon: SizedBox(
-                    height: 32,
-                    child: Stores.getIcon(storeEntry.storefront),
-                  ),
-                  iconMargin: const EdgeInsets.only(bottom: 10.0),
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: TextEditingController()
+                          ..text = storeEntry.title,
+                        readOnly: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Store Title',
+                          floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            child: const Text('Re-match'),
+                            onPressed: () => onRematch(context, storeEntry),
+                          ),
+                          ElevatedButton(
+                            child: const Text('Unmatch'),
+                            onPressed: () => onUnmatch(context, storeEntry),
+                          ),
+                          ElevatedButton(
+                            child: const Text('Delete'),
+                            onPressed: () => onDelete(context, storeEntry),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
             ],
           ),
-          SizedBox(
-            height: 120,
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                for (final storeEntry in widget.libraryEntry.storeEntries)
-                  Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          controller: TextEditingController()
-                            ..text = storeEntry.title,
-                          readOnly: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Store Title',
-                            floatingLabelBehavior: FloatingLabelBehavior.auto,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton(
-                              child: const Text('Re-match'),
-                              onPressed: () => onRematch(context, storeEntry),
-                            ),
-                            ElevatedButton(
-                              child: const Text('Unmatch'),
-                              onPressed: () => onUnmatch(context, storeEntry),
-                            ),
-                            ElevatedButton(
-                              child: const Text('Delete'),
-                              onPressed: () => onDelete(context, storeEntry),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

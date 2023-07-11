@@ -1,4 +1,3 @@
-import 'package:espy/modules/models/app_config_model.dart';
 import 'package:flutter/material.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
@@ -59,7 +58,6 @@ class _ShelveState extends State<Shelve> {
         onTap: () => setState(() => expanded = !expanded),
         child: Material(
           elevation: 10.0,
-          color: AppConfigModel.foregroundColor,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(

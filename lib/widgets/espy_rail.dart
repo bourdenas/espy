@@ -1,4 +1,3 @@
-import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -46,6 +45,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
         padding: const EdgeInsets.all(8.0),
         child: FloatingActionButton(
             heroTag: 'userPic',
+            backgroundColor: Colors.transparent,
             child: CircleAvatar(
               radius: 28,
               child: user != null
@@ -60,18 +60,20 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       destinations: _menuItems
           .map((e) => NavigationRailDestination(
                 label: Text(e.label),
-                icon: e.badgeText != null
-                    ? badges.Badge(
-                        badgeContent: e.badgeText!(context),
-                        position:
-                            badges.BadgePosition.topEnd(top: -24, end: -16),
-                        badgeStyle: badges.BadgeStyle(
-                          shape: badges.BadgeShape.square,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Icon(e.icon),
-                      )
-                    : Icon(e.icon),
+                // TODO: Badge does not look good with material3.
+                // icon: e.badgeText != null
+                //     ? badges.Badge(
+                //         badgeContent: e.badgeText!(context),
+                //         position:
+                //             badges.BadgePosition.topEnd(top: -24, end: -16),
+                //         badgeStyle: badges.BadgeStyle(
+                //           shape: badges.BadgeShape.square,
+                //           borderRadius: BorderRadius.circular(5),
+                //         ),
+                //         child: Icon(e.icon),
+                //       )
+                //     : Icon(e.icon),
+                icon: Icon(e.icon),
                 selectedIcon: Icon(e.selectedIcon),
               ))
           .toList(),

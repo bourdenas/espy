@@ -38,20 +38,17 @@ class _SearchTextFieldState extends State<SearchTextField> {
               onSubmitted: widget.onSubmitted,
               decoration: InputDecoration(
                 hintText: 'Search...',
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: Colors.white70,
-                ),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
-                  borderSide: const BorderSide(color: Colors.white),
+                  borderSide:
+                      BorderSide(color: Theme.of(context).colorScheme.outline),
                 ),
               ),
               textInputAction: TextInputAction.search,
-              cursorColor: Colors.white,
             ),
           ),
         ),

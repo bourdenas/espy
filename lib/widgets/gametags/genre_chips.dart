@@ -200,7 +200,6 @@ class _GenreChipsState extends State<GenreChips>
               toggleExpand(context, false, null, widget.libraryEntry.id),
           child: const Icon(
             Icons.close,
-            color: Colors.white,
             size: 24,
           ),
         ),

@@ -21,9 +21,7 @@ class _SettingsState extends State<Settings> {
         const SizedBox(height: 16),
         Text(
           'Settings',
-          style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: Colors.white70,
-              ),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
         storefrontCodeBoxes(context),
@@ -104,10 +102,7 @@ class _SettingsState extends State<Settings> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 0, 8),
             child: IconButton(
-              icon: const Icon(
-                Icons.link_off,
-                color: Colors.grey,
-              ),
+              icon: const Icon(Icons.link_off),
               splashRadius: 16,
               onPressed: () async =>
                   await context.read<UserDataModel>().unlink(storefrontId),
@@ -253,9 +248,7 @@ class _SettingsState extends State<Settings> {
         width: 400,
         child: Text(
           _syncLog,
-          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: Colors.white70,
-              ),
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
       ),
     );

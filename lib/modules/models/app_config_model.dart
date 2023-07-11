@@ -4,13 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// App configuration structure.
 class AppConfigModel extends ChangeNotifier {
   get theme => ThemeData.dark().copyWith(
-        // useMaterial3: true,
-        appBarTheme: AppBarTheme(backgroundColor: backgrounColor),
-        scaffoldBackgroundColor: backgrounColor,
+        useMaterial3: true,
       );
-
-  static Color get foregroundColor => const Color(0xFF0F1720);
-  static Color get backgrounColor => const Color(0xFF1B2838);
 
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width <= 800;

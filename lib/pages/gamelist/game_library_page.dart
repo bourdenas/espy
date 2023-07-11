@@ -59,10 +59,10 @@ class LibraryContent extends StatelessWidget {
       appBar: AppBar(
         leading: badges.Badge(
           badgeContent: Text('${entries.length}'),
-          badgeStyle: const badges.BadgeStyle(
+          badgeStyle: badges.BadgeStyle(
             shape: badges.BadgeShape.circle,
-            badgeColor: Colors.deepPurple,
-            padding: EdgeInsets.all(8),
+            badgeColor: Theme.of(context).colorScheme.primary,
+            padding: const EdgeInsets.all(8),
           ),
           position: badges.BadgePosition.center(),
           child: Container(),

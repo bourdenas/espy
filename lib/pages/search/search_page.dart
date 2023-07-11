@@ -103,13 +103,11 @@ class _SearchPageState extends State<SearchPage> {
         if (titleMatches.isNotEmpty)
           TileShelve(
             title: 'Title Matches',
-            color: Colors.grey,
             entries: titleMatches,
           ),
         if (_remoteGames.isNotEmpty) ...[
           TileShelve(
             title: 'Not in Library',
-            color: Colors.grey,
             entries: _remoteGames,
           ),
         ],

@@ -30,10 +30,9 @@ class GameListCard extends StatelessWidget {
           : EditEntryDialog.show(context, libraryEntry,
               gameId: libraryEntry.id),
       child: Container(
-        padding: const EdgeInsets.all(8.0),
-        margin: const EdgeInsets.only(bottom: 16.0),
+        margin: const EdgeInsets.all(4.0),
         decoration: BoxDecoration(
-          color: Colors.grey[850],
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Row(
@@ -68,6 +67,7 @@ class GameListCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 8.0),
           Text(
             libraryEntry.name,
             overflow: TextOverflow.ellipsis,
@@ -83,7 +83,7 @@ class GameListCard extends StatelessWidget {
                   vertical: 2.0,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.grey[800],
+                  color: Theme.of(context).colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(4.0),
                 ),
                 child: Text(
