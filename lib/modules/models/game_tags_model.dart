@@ -88,13 +88,13 @@ class GameTagsModel extends ChangeNotifier {
 
 const _genres = [
   'Adventure',
+  'RPG',
+  'Strategy',
   'Arcade',
   'Online',
   'Platformer',
-  'RPG',
   'Shooter',
   'Simulator',
-  'Strategy',
 ];
 
 const Map<String, String> _IgdbToEspyGenres = {
@@ -119,25 +119,25 @@ const Map<String, String> _IgdbToEspyGenres = {
 
 const Map<String, List<String>> _genreTags = {
   'Adventure': [
+    'Action',
     'Point-and-Click',
-    'Narrative Adventure',
-    'Puzzle Adventure',
     'First-Person Adventure',
     'Isometric Action',
-    'Action',
     'Isometric Adventure',
+    'Narrative Adventure',
+    'Puzzle Adventure',
   ],
   'Arcade': [
-    'Endless Runner',
     'Fighting',
     'Pinball',
     'Beat\'em Up',
     'Puzzle',
+    'Endless Runner',
     'Card & Board Game',
   ],
   'Online': [
-    'MOBA',
     'MMORPG',
+    'MOBA',
     'PvP',
   ],
   'Platformer': [
@@ -148,11 +148,11 @@ const Map<String, List<String>> _genreTags = {
     'Puzzle Platformer',
   ],
   'RPG': [
-    'Action RPG',
-    'First-Person RPG',
     'Isometric RPG',
     'Turn-Based RPG',
     'RTwP RPG',
+    'First-Person RPG',
+    'Action RPG',
     'Hack & Slash',
     'JRPG',
   ],
@@ -163,18 +163,18 @@ const Map<String, List<String>> _genreTags = {
     'Space Shooter',
   ],
   'Simulator': [
-    'City Builder',
     'Management',
+    'City Builder',
     'Racing',
     'Sport',
   ],
   'Strategy': [
-    '4X',
     'Turn-Based Strategy',
     'Real-Time Strategy',
-    'Grand Strategy',
-    'Isometric Tactics',
-    'Real-Time Tactics',
     'Turn-Based Tactics',
+    'Real-Time Tactics',
+    'Isometric Tactics',
+    'Grand Strategy',
+    '4X',
   ],
 };
