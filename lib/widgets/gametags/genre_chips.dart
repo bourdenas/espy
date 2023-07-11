@@ -80,10 +80,8 @@ class _GenreChipsState extends State<GenreChips>
     final widgets = [
       for (final genre in context.read<GameTagsModel>().espyGenres)
         badges.Badge(
-          showBadge: genreTags
-              .where((genreTag) =>
-                  genreTag.root == genre && genreTag.name.isNotEmpty)
-              .isNotEmpty,
+          showBadge:
+              genreTags.where((genreTag) => genreTag.root == genre).isNotEmpty,
           badgeContent: Text(
               '${genreTags.where((genreTag) => genreTag.root == genre).length}'),
           position: badges.BadgePosition.topEnd(top: -16, end: -8),
@@ -212,16 +210,8 @@ class _GenreChipsState extends State<GenreChips>
 
   void toggleExpand(
       BuildContext context, bool selected, String? genre, int gameId) {
-    final tagsModel = context.read<GameTagsModel>();
     setState(() {
-      if (genre == null ||
-          (tagsModel.espyGenreTags(genre)?.isNotEmpty ?? false)) {
-        _expandedGenre = genre;
-      } else if (tagsModel.espyGenreTags(genre)?.isEmpty ?? false) {
-        selected
-            ? tagsModel.genreTags.add(Genre(root: genre, name: ''), gameId)
-            : tagsModel.genreTags.remove(Genre(root: genre, name: ''), gameId);
-      }
+      _expandedGenre = genre;
 
       if (genre != null) {
         _controller.forward();
