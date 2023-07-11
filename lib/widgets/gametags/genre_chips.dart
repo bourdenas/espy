@@ -1,3 +1,4 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/documents/user_tags.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
@@ -70,25 +71,39 @@ class _GenreChipsState extends State<GenreChips>
   }
 
   Widget _buildGenreChips() {
-    final impliedGenres = context
+    final genreTags = context
         .watch<GameTagsModel>()
         .genreTags
-        .byGameId(widget.libraryEntry.id)
-        .map((e) => e.root);
+        .byGameId(widget.libraryEntry.id);
+    final impliedGenres = genreTags.map((e) => e.root);
 
     final widgets = [
       for (final genre in context.read<GameTagsModel>().espyGenres)
-        _TagSelectionChip(
-          label: genre,
-          color: GenreChip.color,
-          hasHalo: widget.libraryEntry.digest.genres.contains(genre),
-          isSelected: _selectedGenres.any((e) => e == genre) ||
-              impliedGenres.any((e) => e == genre),
-          onSelected: (selected) => toggleExpand(
-            context,
-            selected,
-            genre,
-            widget.libraryEntry.id,
+        badges.Badge(
+          showBadge: genreTags
+              .where((genreTag) =>
+                  genreTag.root == genre && genreTag.name.isNotEmpty)
+              .isNotEmpty,
+          badgeContent: Text(
+              '${genreTags.where((genreTag) => genreTag.root == genre).length}'),
+          position: badges.BadgePosition.topEnd(top: -16, end: -8),
+          badgeAnimation: const badges.BadgeAnimation.scale(),
+          badgeStyle: badges.BadgeStyle(
+            badgeColor: GenreTagChip.color,
+            shape: badges.BadgeShape.circle,
+          ),
+          child: _TagSelectionChip(
+            label: genre,
+            color: GenreChip.color,
+            hasHalo: widget.libraryEntry.digest.genres.contains(genre),
+            isSelected: _selectedGenres.any((e) => e == genre) ||
+                impliedGenres.any((e) => e == genre),
+            onSelected: (selected) => toggleExpand(
+              context,
+              selected,
+              genre,
+              widget.libraryEntry.id,
+            ),
           ),
         ),
     ];
