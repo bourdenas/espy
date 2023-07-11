@@ -6,6 +6,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
+import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -47,41 +48,49 @@ class _SearchPageState extends State<SearchPage> {
           tagsModel.collections.filter(ngrams),
           tagsModel.franchises.filter(ngrams),
           tagsModel.genres.filter(ngrams),
+          tagsModel.genreTags.filter(ngrams),
           tagsModel.keywords.filter(ngrams),
         ),
         for (final company in tagsModel.developers.filterExact(ngrams)) ...[
           TileShelve(
             title: company,
-            color: Colors.redAccent,
+            color: DeveloperChip.color,
             filter: LibraryFilter(developers: {company}),
           ),
         ],
         for (final company in tagsModel.publishers.filterExact(ngrams)) ...[
           TileShelve(
             title: company,
-            color: Colors.red[200]!,
+            color: PublisherChip.color,
             filter: LibraryFilter(publishers: {company}),
           ),
         ],
         for (final collection in tagsModel.collections.filterExact(ngrams)) ...[
           TileShelve(
             title: collection,
-            color: Colors.indigoAccent,
+            color: CollectionChip.color,
             filter: LibraryFilter(collections: {collection}),
           ),
         ],
         for (final franchise in tagsModel.franchises.filterExact(ngrams)) ...[
           TileShelve(
             title: franchise,
-            color: Colors.indigo[200]!,
+            color: FranchiseChip.color,
             filter: LibraryFilter(franchises: {franchise}),
           ),
         ],
         for (final genre in tagsModel.genres.filterExact(ngrams)) ...[
           TileShelve(
             title: genre,
-            color: Colors.blueAccent[200]!,
+            color: GenreChip.color,
             filter: LibraryFilter(genres: {genre}),
+          ),
+        ],
+        for (final genreTag in tagsModel.genreTags.filterExact(ngrams)) ...[
+          TileShelve(
+            title: genreTag.name,
+            color: GenreTagChip.color,
+            filter: LibraryFilter(genreTags: {genreTag.encode()}),
           ),
         ],
         for (final tag in tagsModel.userTags.filterExact(ngrams)) ...[

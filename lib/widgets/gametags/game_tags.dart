@@ -7,153 +7,96 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+/// Tags shows on GameEntry's details page.
 class GameTags extends StatelessWidget {
-  final GameEntry? gameEntry;
-  final LibraryEntry? libraryEntry;
+  final GameEntry gameEntry;
 
-  const GameTags({Key? key, this.gameEntry, this.libraryEntry})
-      : super(key: key);
+  const GameTags({Key? key, required this.gameEntry}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _GameChipsWrap(
-          gameEntry: gameEntry,
-          libraryEntry: libraryEntry,
-        ),
+        _GameChipsWrap(gameEntry),
       ],
     );
   }
 }
 
-extractTags(GameEntry? gameEntry, LibraryEntry? libraryEntry) {
-  return {
-    'gameId': gameEntry != null ? gameEntry.id : libraryEntry?.id ?? 0,
-    'developers': gameEntry != null
-        ? gameEntry.developers.map((e) => e.name)
-        : libraryEntry?.developers ?? [],
-    'publishers': gameEntry != null
-        ? gameEntry.publishers.map((e) => e.name)
-        : libraryEntry?.publishers ?? [],
-    'collections': gameEntry != null
-        ? gameEntry.collections.map((e) => e.name).toSet()
-        : libraryEntry?.collections ?? [],
-    'franchises': gameEntry != null
-        ? gameEntry.franchises.map((e) => e.name).toSet()
-        : libraryEntry?.franchises ?? [],
-  };
-}
-
 class _GameChipsWrap extends StatelessWidget {
-  final GameEntry? gameEntry;
-  final LibraryEntry? libraryEntry;
+  final GameEntry gameEntry;
 
-  const _GameChipsWrap({this.gameEntry, this.libraryEntry});
+  const _GameChipsWrap(this.gameEntry);
 
   @override
   Widget build(BuildContext context) {
     final tagsModel = context.watch<GameTagsModel>();
-    final tags = extractTags(gameEntry, libraryEntry);
+
+    void onChipPressed(LibraryFilter filter) {
+      if (context.canPop()) {
+        context.pop();
+      }
+      final updatedFilter =
+          context.read<LibraryFilterModel>().filter.add(filter);
+      context.pushNamed(
+        'games',
+        queryParameters: updatedFilter.params(),
+      );
+    }
 
     return Wrap(
       spacing: 8.0,
       runSpacing: 4.0,
       children: [
-        for (final company in tags['developers'])
+        for (final company in gameEntry.developers.map((e) => e.name))
           DeveloperChip(
             company,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              context.pushNamed(
-                'games',
-                queryParameters: LibraryFilter(developers: {company}).params(),
-              );
-            },
+            onPressed: () =>
+                onChipPressed(LibraryFilter(developers: {company})),
           ),
-        for (final company in tags['publishers'])
+        for (final company in gameEntry.publishers.map((e) => e.name))
           PublisherChip(
             company,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              context.pushNamed(
-                'games',
-                queryParameters: LibraryFilter(publishers: {company}).params(),
-              );
-            },
+            onPressed: () =>
+                onChipPressed(LibraryFilter(publishers: {company})),
           ),
-        for (final collection in tags['collections'])
+        for (final collection in gameEntry.collections.map((e) => e.name))
           CollectionChip(
             collection,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .add(LibraryFilter(collections: {collection}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onPressed: () =>
+                onChipPressed(LibraryFilter(collections: {collection})),
           ),
-        for (final franchise in tags['franchises'])
+        for (final franchise in gameEntry.franchises.map((e) => e.name))
           FranchiseChip(
             franchise,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .add(LibraryFilter(franchises: {franchise}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
+            onPressed: () =>
+                onChipPressed(LibraryFilter(franchises: {franchise})),
           ),
-        for (final tag in tagsModel.userTags.byGameId(tags['gameId']))
+        for (final genreTag in tagsModel.genreTags.byGameId(gameEntry.id))
+          GenreTagChip(
+            genreTag.name,
+            onPressed: () =>
+                onChipPressed(LibraryFilter(genreTags: {genreTag.encode()})),
+          ),
+        for (final tag in tagsModel.userTags.byGameId(gameEntry.id))
           TagChip(
             tag,
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              }
-              context.pushNamed(
-                'games',
-                queryParameters: LibraryFilter(tags: {tag.name}).params(),
-              );
-            },
-            onDeleted: () => context
-                .read<GameTagsModel>()
-                .userTags
-                .remove(tag, tags['gameId']),
-            onRightClick: () =>
-                context.read<GameTagsModel>().userTags.moveCluster(tag),
+            onPressed: () => onChipPressed(LibraryFilter(tags: {tag.name})),
           ),
       ],
     );
   }
 }
 
+/// Tags shows on a LibraryEntry's grid/list card.
 class GameCardChips extends StatelessWidget {
-  final LibraryEntry? libraryEntry;
-  final GameEntry? gameEntry;
+  final LibraryEntry libraryEntry;
   final bool includeCompanies;
   final bool includeCollections;
 
   const GameCardChips({
     Key? key,
-    this.libraryEntry,
-    this.gameEntry,
+    required this.libraryEntry,
     this.includeCompanies = false,
     this.includeCollections = true,
   }) : super(key: key);
@@ -161,7 +104,18 @@ class GameCardChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tagsModel = context.watch<GameTagsModel>();
-    final tags = extractTags(gameEntry, libraryEntry);
+
+    void onChipPressed(LibraryFilter filter) {
+      if (context.canPop()) {
+        context.pop();
+      }
+      final updatedFilter =
+          context.read<LibraryFilterModel>().filter.add(filter);
+      context.pushNamed(
+        'games',
+        queryParameters: updatedFilter.params(),
+      );
+    }
 
     return SizedBox(
       height: 40.0,
@@ -169,242 +123,64 @@ class GameCardChips extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         children: [
           if (includeCompanies) ...[
-            for (final company in tags['developers'])
+            for (final company in libraryEntry.developers)
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: DeveloperChip(
                   company,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(developers: {company}).params(),
-                  ),
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(developers: {company})),
                 ),
               ),
-            for (final company in tags['publishers'])
+            for (final company in libraryEntry.publishers)
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: PublisherChip(
                   company,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(publishers: {company}).params(),
-                  ),
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(publishers: {company})),
                 ),
               ),
           ],
           if (includeCollections) ...[
-            for (final collection in tags['collections'])
+            for (final collection in libraryEntry.collections)
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: CollectionChip(
                   collection,
-                  onPressed: () {
-                    final filter = context
-                        .read<LibraryFilterModel>()
-                        .filter
-                        .add(LibraryFilter(collections: {collection}));
-                    context.pushNamed(
-                      'games',
-                      queryParameters: filter.params(),
-                    );
-                  },
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(collections: {collection})),
                 ),
               ),
-            for (final franchise in tags['franchises'])
+            for (final franchise in libraryEntry.franchises)
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: FranchiseChip(
                   franchise,
-                  onPressed: () {
-                    final filter = context
-                        .read<LibraryFilterModel>()
-                        .filter
-                        .add(LibraryFilter(franchises: {franchise}));
-                    context.pushNamed(
-                      'games',
-                      queryParameters: filter.params(),
-                    );
-                  },
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(franchises: {franchise})),
                 ),
               ),
           ],
-          for (final tag in tagsModel.userTags.byGameId(tags['gameId']))
+          for (final genreTag in tagsModel.genreTags.byGameId(libraryEntry.id))
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: GenreTagChip(
+                genreTag.name,
+                onPressed: () => onChipPressed(
+                    LibraryFilter(genreTags: {genreTag.encode()})),
+              ),
+            ),
+          for (final tag in tagsModel.userTags.byGameId(libraryEntry.id))
             Padding(
               padding: const EdgeInsets.all(4.0),
               child: TagChip(
                 tag,
-                onPressed: () => context.pushNamed(
-                  'games',
-                  queryParameters: LibraryFilter(tags: {tag.name}).params(),
-                ),
-                onDeleted: () => context
-                    .read<GameTagsModel>()
-                    .userTags
-                    .remove(tag, tags['gameId']),
-                onRightClick: () =>
-                    context.read<GameTagsModel>().userTags.moveCluster(tag),
+                onPressed: () => onChipPressed(LibraryFilter(tags: {tag.name})),
               ),
             ),
         ],
       ),
     );
-  }
-}
-
-class GameChipsFilter extends StatelessWidget {
-  const GameChipsFilter(this.filter, {Key? key}) : super(key: key);
-
-  final LibraryFilter filter;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(children: [
-      for (final store in filter.stores) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: StoreChip(
-            store,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(stores: {store}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
-          ),
-        ),
-      ],
-      for (final company in filter.developers) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: DeveloperChip(
-            company,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(developers: {company}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
-          ),
-        ),
-      ],
-      for (final company in filter.publishers) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: PublisherChip(
-            company,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(publishers: {company}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
-          ),
-        ),
-      ],
-      for (final collection in filter.collections) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: CollectionChip(
-            collection,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(collections: {collection}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
-          ),
-        ),
-      ],
-      for (final franchise in filter.franchises) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: FranchiseChip(
-            franchise,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(franchises: {franchise}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
-          ),
-        ),
-      ],
-      for (final genre in filter.genres) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: GenreChip(
-            genre,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(genres: {genre}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
-          ),
-        ),
-      ],
-      for (final keyword in filter.keywords) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: KeywordChip(
-            keyword,
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(keywords: {keyword}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
-          ),
-        ),
-      ],
-      for (final tag in filter.tags) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: TagChip(
-            context.read<GameTagsModel>().userTags.get(tag),
-            onDeleted: () {
-              final filter = context
-                  .read<LibraryFilterModel>()
-                  .filter
-                  .remove(LibraryFilter(tags: {tag}));
-              context.pushNamed(
-                'games',
-                queryParameters: filter.params(),
-              );
-            },
-          ),
-        ),
-      ],
-    ]);
   }
 }

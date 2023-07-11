@@ -5,6 +5,7 @@ import 'package:espy/modules/dialogs/edit/storefront_view.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/gametags/choice_tags.dart';
+import 'package:espy/widgets/gametags/genre_chips.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 
@@ -104,6 +105,26 @@ class _EditEntryView extends StatelessWidget {
             child: ExpandablePanel(
               header: const Padding(
                 padding: EdgeInsets.all(8.0),
+                child: Text('Game Genres'),
+              ),
+              collapsed: Container(),
+              expanded: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4.0),
+                  GenreChips(libraryEntry, keywords),
+                  const SizedBox(height: 8.0),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Card(
+          child: ExpandableNotifier(
+            initialExpanded: true,
+            child: ExpandablePanel(
+              header: const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: Text('Game Tags'),
               ),
               collapsed: Container(),
@@ -126,6 +147,7 @@ class _EditEntryView extends StatelessWidget {
                   const SizedBox(height: 8.0),
                   ChoiceTags(libraryEntry, keywords),
                   const SizedBox(height: 16.0),
+                  const SizedBox(height: 8.0),
                 ],
               ),
             ),

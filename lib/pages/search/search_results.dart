@@ -1,7 +1,9 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/user_tags.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/tags/user_tag_manager.dart';
 import 'package:espy/pages/gamelist/game_grid_card.dart';
 import 'package:espy/pages/gamelist/game_list_card.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
@@ -63,17 +65,19 @@ class TagSearchResults extends StatelessWidget {
     this.collections,
     this.franchises,
     this.genres,
+    this.genresTags,
     this.keywords, {
     Key? key,
   }) : super(key: key);
 
   final Iterable<String> stores;
-  final Iterable<UserTag> userTags;
+  final Iterable<CustomUserTag> userTags;
   final Iterable<String> developers;
   final Iterable<String> publishers;
   final Iterable<String> collections;
   final Iterable<String> franchises;
   final Iterable<String> genres;
+  final Iterable<Genre> genresTags;
   final Iterable<String> keywords;
 
   @override
@@ -85,7 +89,7 @@ class TagSearchResults extends StatelessWidget {
           if (stores.isNotEmpty)
             _ChipResults(
               title: 'Stores',
-              color: Colors.deepPurpleAccent,
+              color: StoreChip.color,
               chips: stores.map(
                 (store) => StoreChip(
                   store,
@@ -99,7 +103,7 @@ class TagSearchResults extends StatelessWidget {
           if (developers.isNotEmpty)
             _ChipResults(
               title: 'Developers',
-              color: Colors.redAccent,
+              color: DeveloperChip.color,
               chips: developers.map(
                 (company) => DeveloperChip(
                   company,
@@ -114,7 +118,7 @@ class TagSearchResults extends StatelessWidget {
           if (publishers.isNotEmpty)
             _ChipResults(
               title: 'Publishers',
-              color: Colors.red[200]!,
+              color: PublisherChip.color,
               chips: publishers.map(
                 (company) => PublisherChip(
                   company,
@@ -129,7 +133,7 @@ class TagSearchResults extends StatelessWidget {
           if (collections.isNotEmpty)
             _ChipResults(
               title: 'Collections',
-              color: Colors.indigoAccent,
+              color: CollectionChip.color,
               chips: collections.map(
                 (collection) => CollectionChip(
                   collection,
@@ -144,7 +148,7 @@ class TagSearchResults extends StatelessWidget {
           if (franchises.isNotEmpty)
             _ChipResults(
               title: 'Franchises',
-              color: Colors.indigo[200]!,
+              color: FranchiseChip.color,
               chips: franchises.map(
                 (franchise) => FranchiseChip(
                   franchise,
@@ -159,7 +163,7 @@ class TagSearchResults extends StatelessWidget {
           if (genres.isNotEmpty)
             _ChipResults(
               title: 'Genres',
-              color: Colors.blueAccent[200]!,
+              color: GenreChip.color,
               chips: genres.map(
                 (genre) => GenreChip(
                   genre,
@@ -170,10 +174,25 @@ class TagSearchResults extends StatelessWidget {
                 ),
               ),
             ),
+          if (genresTags.isNotEmpty)
+            _ChipResults(
+              title: 'Genres',
+              color: GenreTagChip.color,
+              chips: genresTags.map(
+                (genreTag) => GenreTagChip(
+                  genreTag.name,
+                  onPressed: () => context.pushNamed(
+                    'games',
+                    queryParameters:
+                        LibraryFilter(genreTags: {genreTag.encode()}).params(),
+                  ),
+                ),
+              ),
+            ),
           if (keywords.isNotEmpty)
             _ChipResults(
               title: 'Keywords',
-              color: Colors.grey,
+              color: KeywordChip.color,
               chips: keywords.map(
                 (keyword) => KeywordChip(
                   keyword,
@@ -207,8 +226,8 @@ class TagSearchResults extends StatelessWidget {
   }
 }
 
-Map<Color, List<UserTag>> groupTags(Iterable<UserTag> tags) {
-  var groups = <Color, List<UserTag>>{};
+Map<Color, List<CustomUserTag>> groupTags(Iterable<CustomUserTag> tags) {
+  var groups = <Color, List<CustomUserTag>>{};
   for (final tag in tags) {
     (groups[tag.color] ??= []).add(tag);
   }

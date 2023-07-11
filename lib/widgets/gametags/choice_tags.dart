@@ -1,11 +1,12 @@
-import 'dart:math';
-
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/tags/user_tag_manager.dart';
+import 'package:espy/utils/edit_distance.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+/// Chips used for user tag selection for a `LibraryEntry`.
 class ChoiceTags extends StatefulWidget {
   final LibraryEntry entry;
   final List<String> keywords;
@@ -17,12 +18,12 @@ class ChoiceTags extends StatefulWidget {
 }
 
 class _ChoiceTagsState extends State<ChoiceTags> {
-  Set<UserTag> selectedTags = {};
+  Set<CustomUserTag> selectedTags = {};
   String filter = '';
 
   @override
   Widget build(BuildContext context) {
-    void onSelected(bool selected, UserTag tag) {
+    void onSelected(bool selected, CustomUserTag tag) {
       if (selected) {
         context.read<GameTagsModel>().userTags.add(tag, widget.entry.id);
       } else {
@@ -55,7 +56,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(50),
                             boxShadow: [
-                              if (matchKws(tag.name))
+                              if (matchInDict(tag.name, widget.keywords))
                                 BoxShadow(
                                   color: tag.color,
                                   blurRadius: 6.0,
@@ -106,7 +107,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
               context
                   .read<GameTagsModel>()
                   .userTags
-                  .add(UserTag(name: text), widget.entry.id);
+                  .add(CustomUserTag(name: text), widget.entry.id);
               setState(() {
                 _textController.text = '';
                 filter = '';
@@ -119,43 +120,4 @@ class _ChoiceTagsState extends State<ChoiceTags> {
   }
 
   final TextEditingController _textController = TextEditingController();
-
-  bool matchKws(String tag) {
-    for (final kw in widget.keywords) {
-      final distance = _editDistance(tag.toLowerCase(), kw.toLowerCase()) /
-          max(tag.length, kw.length);
-      if (distance < .3) {
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
-int _editDistance(String a, String b) {
-  if (a == b) {
-    return 0;
-  } else if (a.isEmpty) {
-    return b.length;
-  } else if (b.isEmpty) {
-    return a.length;
-  }
-
-  var v0 = List<int>.generate(b.length + 1, (i) => i, growable: false);
-  var v1 = List<int>.filled(b.length + 1, 0, growable: false);
-
-  for (var i = 0; i < a.length; ++i) {
-    v1[0] = i + 1;
-
-    for (var j = 0; j < b.length; ++j) {
-      int distance = a.codeUnitAt(i) == b.codeUnitAt(j) ? 0 : 1;
-      v1[j + 1] = min(v1[j] + 1, min(v0[j + 1] + 1, v0[j] + distance));
-    }
-
-    var vtemp = v0;
-    v0 = v1;
-    v1 = vtemp;
-  }
-
-  return v0.last;
 }
