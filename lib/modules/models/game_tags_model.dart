@@ -119,8 +119,8 @@ const Map<String, String> _IgdbToEspyGenres = {
 
 const Map<String, List<String>> _genreTags = {
   'Adventure': [
-    'Action',
     'Point-and-Click',
+    'Action',
     'First-Person Adventure',
     'Isometric Action',
     'Isometric Adventure',
@@ -132,14 +132,13 @@ const Map<String, List<String>> _genreTags = {
     'Pinball',
     'Beat\'em Up',
     'Puzzle',
+    'Tower Defense',
     'Endless Runner',
     'Card & Board Game',
   ],
   'Online': [
     'MMORPG',
     'MOBA',
-    'Battle Royale',
-    'Co-op',
     'PvP',
   ],
   'Platformer': [
@@ -163,14 +162,15 @@ const Map<String, List<String>> _genreTags = {
     'Top-Down Shooter',
     '3rd Person Shooter',
     'Space Shooter',
-    'Stealth Shooter',
-    'First Person Melee',
   ],
   'Simulator': [
-    'Management',
     'City Builder',
+    'God Game',
     'Racing',
     'Sport',
+    'Flight Simulator',
+    'Management',
+    'Survival',
   ],
   'Strategy': [
     'Turn-Based Strategy',
