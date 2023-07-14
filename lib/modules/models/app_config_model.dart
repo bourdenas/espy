@@ -19,6 +19,7 @@ class AppConfigModel extends ChangeNotifier {
 
   set seedColor(Color color) {
     _seedColor = color;
+    _saveLocalPref();
     notifyListeners();
   }
 
@@ -67,6 +68,7 @@ class AppConfigModel extends ChangeNotifier {
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
     groupBy.valueIndex = prefs.getInt('groupBy') ?? 0;
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
+    _seedColor = Color(prefs.getInt('seedColor') ?? 0);
 
     notifyListeners();
   }
@@ -77,6 +79,7 @@ class AppConfigModel extends ChangeNotifier {
     prefs.setInt('cardDecoration', cardDecoration.value.index);
     prefs.setInt('groupBy', groupBy.value.index);
     prefs.setInt('stacks', stacks.value.index);
+    prefs.setInt('seedColor', _seedColor.value);
   }
 }
 
