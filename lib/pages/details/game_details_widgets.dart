@@ -126,20 +126,26 @@ class GameEntryActionBar extends StatelessWidget {
         ])
           for (final website
               in gameEntry.websites.where((site) => site.authority == label))
-            IconButton(
-              onPressed: () async => await launchUrl(Uri.parse(website.url)),
-              icon: websiteIcon(website.authority),
-              splashRadius: 20.0,
+            SizedBox(
+              height: 42,
+              child: IconButton(
+                onPressed: () async => await launchUrl(Uri.parse(website.url)),
+                icon: websiteIcon(website.authority),
+                splashRadius: 20.0,
+              ),
             ),
         for (final label in const ['Gog', 'Steam', 'Egs'])
           for (final website
               in gameEntry.websites.where((site) => site.authority == label))
-            IconButton(
-              onPressed: () async => await launchUrl(Uri.parse(website.url)),
-              icon: websiteIcon(website.authority,
-                  disabled: libraryEntry.storeEntries.every(
-                      (entry) => entry.storefront != label.toLowerCase())),
-              splashRadius: 20.0,
+            SizedBox(
+              height: 48,
+              child: IconButton(
+                onPressed: () async => await launchUrl(Uri.parse(website.url)),
+                icon: websiteIcon(website.authority,
+                    disabled: libraryEntry.storeEntries.every(
+                        (entry) => entry.storefront != label.toLowerCase())),
+                splashRadius: 20.0,
+              ),
             ),
       ],
     );
