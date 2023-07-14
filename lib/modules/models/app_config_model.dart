@@ -3,13 +3,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// App configuration structure.
 class AppConfigModel extends ChangeNotifier {
-  get theme => ThemeData.dark().copyWith(
+  get theme => ThemeData.light().copyWith(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigoAccent),
       );
 
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width <= 800;
+  static bool isDesktop(BuildContext context) => !isMobile(context);
 
   double windowWidth = 0;
 

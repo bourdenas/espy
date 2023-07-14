@@ -7,7 +7,7 @@ import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/gamelist/game_library_page.dart';
-import 'package:espy/pages/home/espy_scaffold.dart';
+import 'package:espy/widgets/scaffold/espy_scaffold.dart';
 import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/pages/profile/login_page.dart';
 import 'package:espy/pages/profile/profile_page.dart';

@@ -3,7 +3,7 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/widgets/empty_library.dart';
+import 'package:espy/pages/home/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:espy/widgets/tiles/tile_stack.dart';

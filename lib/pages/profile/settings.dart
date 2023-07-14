@@ -16,24 +16,27 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        Text(
-          'Settings',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 16),
-        storefrontCodeBoxes(context),
-        const SizedBox(height: 16),
-        syncButton(context),
-        const SizedBox(height: 32),
-        manualEditBoxes(context),
-        const SizedBox(height: 16),
-        uploadButton(context),
-        const SizedBox(height: 32),
-        syncLog(),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          Text(
+            'Settings',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 16),
+          storefrontCodeBoxes(context),
+          const SizedBox(height: 16),
+          syncButton(context),
+          const SizedBox(height: 32),
+          manualEditBoxes(context),
+          const SizedBox(height: 16),
+          uploadButton(context),
+          const SizedBox(height: 32),
+          syncLog(),
+        ],
+      ),
     );
   }
 

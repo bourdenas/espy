@@ -4,7 +4,8 @@ import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
-import 'package:espy/widgets/espy_rail.dart';
+import 'package:espy/widgets/scaffold/espy_drawer.dart';
+import 'package:espy/widgets/scaffold/espy_rail.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -44,10 +45,13 @@ class EspyScaffold extends StatelessWidget {
         autofocus: !path.startsWith('/details'),
         child: Row(
           children: [
-            EspyNavigationRail(false, path),
+            if (AppConfigModel.isDesktop(context))
+              EspyNavigationRail(false, path),
             Expanded(
               child: Scaffold(
                 appBar: appBar(context),
+                drawer:
+                    AppConfigModel.isMobile(context) ? EspyDrawer(path) : null,
                 floatingActionButton: FloatingActionButton(
                   heroTag: 'searchButton',
                   child: const Icon(Icons.search),
