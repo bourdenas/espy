@@ -1,90 +1,72 @@
+import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
+import 'package:espy/modules/intents/add_game_intent.dart';
+import 'package:espy/modules/intents/home_intent.dart';
+import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/widgets/espy_rail.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class EspyScaffold extends StatefulWidget {
-  final void Function()? onShowMenu;
-  final Widget body;
+class EspyScaffold extends StatelessWidget {
+  const EspyScaffold({
+    Key? key,
+    required this.path,
+    required this.body,
+  }) : super(key: key);
+
   final String path;
-
-  const EspyScaffold(
-      {Key? key, required this.body, required this.path, this.onShowMenu})
-      : super(key: key);
-
-  @override
-  State<EspyScaffold> createState() => _EspyScaffoldState();
-}
-
-class _EspyScaffoldState extends State<EspyScaffold>
-    with TickerProviderStateMixin {
-  late AnimationController _colorAnimationController;
-  late Animation _colorTween;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _colorAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 0),
-    );
-    _colorTween = ColorTween(
-      begin: Colors.transparent,
-      end: Colors.black.withOpacity(1),
-    ).animate(_colorAnimationController);
-  }
-
-  @override
-  void dispose() {
-    _colorAnimationController.dispose();
-    super.dispose();
-  }
-
-  bool _scrollListener(ScrollNotification scrollInfo) {
-    if (scrollInfo.metrics.axis == Axis.vertical) {
-      _colorAnimationController.animateTo(scrollInfo.metrics.pixels / 600);
-      return true;
-    }
-    return false;
-  }
+  final Widget body;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        if (widget.onShowMenu == null) EspyNavigationRail(false, widget.path),
-        Expanded(
-          child: AnimatedBuilder(
-            animation: _colorAnimationController,
-            builder: (context, _) {
-              return Scaffold(
-                extendBodyBehindAppBar: AppConfigModel.isMobile(context),
+    return Actions(
+      actions: {
+        SearchIntent: CallbackAction<SearchIntent>(
+            onInvoke: (intent) => context.pushNamed('search')),
+        HomeIntent: CallbackAction<HomeIntent>(
+            onInvoke: (intent) => context.goNamed('home')),
+        AddGameIntent: CallbackAction<AddGameIntent>(
+            onInvoke: (intent) => MatchingDialog.show(
+                  context,
+                  onMatch: (storeEntry, gameEntry) {
+                    context
+                        .read<UserLibraryModel>()
+                        .matchEntry(storeEntry, gameEntry);
+                    context.pushNamed('details',
+                        pathParameters: {'gid': '${gameEntry.id}'});
+                  },
+                )),
+      },
+      child: Focus(
+        autofocus: !path.startsWith('/details'),
+        child: Row(
+          children: [
+            EspyNavigationRail(false, path),
+            Expanded(
+              child: Scaffold(
                 appBar: appBar(context),
                 floatingActionButton: FloatingActionButton(
                   heroTag: 'searchButton',
                   child: const Icon(Icons.search),
                   onPressed: () => context.pushNamed('search'),
                 ),
-                body: NotificationListener<ScrollNotification>(
-                  onNotification: _scrollListener,
-                  child: ScrollConfiguration(
-                    behavior: ScrollConfiguration.of(context).copyWith(
-                      dragDevices: {
-                        PointerDeviceKind.touch,
-                        PointerDeviceKind.mouse,
-                      },
-                    ),
-                    child: widget.body,
+                body: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context).copyWith(
+                    dragDevices: {
+                      PointerDeviceKind.touch,
+                      PointerDeviceKind.mouse,
+                    },
                   ),
+                  child: body,
                 ),
-              );
-            },
-          ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -92,14 +74,7 @@ class _EspyScaffoldState extends State<EspyScaffold>
     final appConfig = context.read<AppConfigModel>();
 
     return AppBar(
-      toolbarOpacity: 0.6,
-      leading: AppConfigModel.isMobile(context) && !context.canPop()
-          ? IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: widget.onShowMenu,
-              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-            )
-          : null,
+      elevation: 4,
       title: const Text(
         'espy',
         style: TextStyle(
@@ -162,8 +137,6 @@ class _EspyScaffoldState extends State<EspyScaffold>
           const SizedBox(width: 8),
         ],
       ],
-      backgroundColor: _colorTween.value,
-      elevation: 0.0,
     );
   }
 

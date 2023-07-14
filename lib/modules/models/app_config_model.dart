@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppConfigModel extends ChangeNotifier {
   get theme => ThemeData.dark().copyWith(
         useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigoAccent),
       );
 
   static bool isMobile(BuildContext context) =>
