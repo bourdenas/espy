@@ -58,10 +58,15 @@ class LibraryContent extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: badges.Badge(
-          badgeContent: Text('${entries.length}'),
+          badgeContent: Text(
+            '${entries.length}',
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onSecondary,
+                fontWeight: FontWeight.w600),
+          ),
           badgeStyle: badges.BadgeStyle(
             shape: badges.BadgeShape.circle,
-            badgeColor: Theme.of(context).colorScheme.primary,
+            badgeColor: Theme.of(context).colorScheme.secondary,
             padding: const EdgeInsets.all(8),
           ),
           position: badges.BadgePosition.center(),
