@@ -3,9 +3,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// App configuration structure.
 class AppConfigModel extends ChangeNotifier {
-  get theme => ThemeData.light().copyWith(
+  get theme => darkTheme;
+
+  get themeMode => ThemeMode.dark;
+  get lightTheme => ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigoAccent),
+        colorSchemeSeed: Colors.blueGrey,
+        brightness: Brightness.light,
+      );
+  get darkTheme => ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.blueGrey,
+        brightness: Brightness.dark,
       );
 
   static bool isMobile(BuildContext context) =>

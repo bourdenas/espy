@@ -139,11 +139,11 @@ class EspyRouter extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.active) {
             if (snapshot.hasData) {
               return MaterialApp.router(
+                theme: context.watch<AppConfigModel>().theme,
                 routeInformationProvider: _router.routeInformationProvider,
                 routeInformationParser: _router.routeInformationParser,
                 routerDelegate: _router.routerDelegate,
                 title: 'espy',
-                theme: context.watch<AppConfigModel>().theme,
                 debugShowCheckedModeBanner: false,
               );
             } else {
