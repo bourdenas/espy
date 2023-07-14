@@ -60,7 +60,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
                                 BoxShadow(
                                   color: tag.color,
                                   blurRadius: 6.0,
-                                  spreadRadius: 2.0,
+                                  spreadRadius: 6.0,
                                 ),
                             ],
                           ),
