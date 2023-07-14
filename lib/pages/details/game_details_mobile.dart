@@ -4,6 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:espy/widgets/shelve.dart';
@@ -111,45 +112,48 @@ class _GameDescription extends StatelessWidget {
         ? gameEntry.steamData!.aboutTheGame
         : gameEntry.igdbGame.summary;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Html(
-            data: description,
-            style: {
-              'html': Style(
-                fontSize: FontSize(14.0),
-                fontWeight: FontWeight.w400,
-                letterSpacing: 1.2,
-              )
-            },
-          ),
-          const SizedBox(height: 8.0),
-          if (gameEntry.genres.isNotEmpty)
-            Text(
-              'Genres: ${gameEntry.genres.join(', ')}',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12.0,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 1.2,
-              ),
+    return Container(
+      color: AppConfigModel.gameDetailsBackgroundColor,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Html(
+              data: description,
+              style: {
+                'html': Style(
+                  fontSize: FontSize(14.0),
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 1.2,
+                )
+              },
             ),
-          const SizedBox(height: 4.0),
-          if (gameEntry.keywords.isNotEmpty)
-            Text(
-              'Keywords: ${gameEntry.keywords.join(', ')}',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12.0,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 1.2,
+            const SizedBox(height: 8.0),
+            if (gameEntry.genres.isNotEmpty)
+              Text(
+                'Genres: ${gameEntry.genres.join(', ')}',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 1.2,
+                ),
               ),
-            ),
-          const SizedBox(height: 16.0),
-        ],
+            const SizedBox(height: 4.0),
+            if (gameEntry.keywords.isNotEmpty)
+              Text(
+                'Keywords: ${gameEntry.keywords.join(', ')}',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            const SizedBox(height: 16.0),
+          ],
+        ),
       ),
     );
   }

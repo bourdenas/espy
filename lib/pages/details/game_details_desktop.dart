@@ -6,6 +6,7 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/pages/details/game_image_gallery.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
@@ -36,8 +37,8 @@ class GameDetailsContentDesktop extends StatelessWidget {
       },
       child: Focus(
         autofocus: true,
-        child: Material(
-          color: const Color(0xFF1B2838),
+        child: Container(
+          color: AppConfigModel.gameDetailsBackgroundColor,
           child: CustomScrollView(
             primary: true,
             slivers: [
@@ -165,6 +166,7 @@ class GameDetailsActionBar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GameEntryActionBar(gameEntry, libraryEntry),
             const SizedBox(height: 16.0),

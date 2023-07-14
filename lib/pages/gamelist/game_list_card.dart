@@ -87,7 +87,13 @@ class GameListCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4.0),
                 ),
                 child: Text(
-                    '${DateTime.fromMillisecondsSinceEpoch(libraryEntry.releaseDate * 1000).year}'),
+                  '${DateTime.fromMillisecondsSinceEpoch(libraryEntry.releaseDate * 1000).year}',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
               ),
               const SizedBox(width: 16.0),
               const Icon(

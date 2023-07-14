@@ -17,6 +17,8 @@ class AppConfigModel extends ChangeNotifier {
         brightness: Brightness.dark,
       );
 
+  static get gameDetailsBackgroundColor => const Color(0xFF1B2838);
+
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width <= 800;
   static bool isDesktop(BuildContext context) => !isMobile(context);

@@ -60,13 +60,11 @@ class LibraryContent extends StatelessWidget {
         leading: badges.Badge(
           badgeContent: Text(
             '${entries.length}',
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.onSecondary,
-                fontWeight: FontWeight.w600),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           badgeStyle: badges.BadgeStyle(
             shape: badges.BadgeShape.circle,
-            badgeColor: Theme.of(context).colorScheme.secondary,
+            badgeColor: Theme.of(context).colorScheme.primaryContainer,
             padding: const EdgeInsets.all(8),
           ),
           position: badges.BadgePosition.center(),
