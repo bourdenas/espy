@@ -36,13 +36,16 @@ class GameDetailsContentDesktop extends StatelessWidget {
       },
       child: Focus(
         autofocus: true,
-        child: CustomScrollView(
-          primary: true,
-          slivers: [
-            GameDetailsHeader(gameEntry),
-            GameDetailsActionBar(gameEntry, libraryEntry),
-            GameDetailsBody(gameEntry: gameEntry),
-          ],
+        child: Material(
+          color: const Color(0xFF1B2838),
+          child: CustomScrollView(
+            primary: true,
+            slivers: [
+              GameDetailsHeader(gameEntry),
+              GameDetailsActionBar(gameEntry, libraryEntry),
+              GameDetailsBody(gameEntry: gameEntry),
+            ],
+          ),
         ),
       ),
     );
