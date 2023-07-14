@@ -8,14 +8,21 @@ class AppConfigModel extends ChangeNotifier {
   get themeMode => ThemeMode.dark;
   get lightTheme => ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.blueGrey,
+        colorSchemeSeed: _seedColor,
         brightness: Brightness.light,
       );
   get darkTheme => ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.blueGrey,
+        colorSchemeSeed: _seedColor,
         brightness: Brightness.dark,
       );
+
+  set seedColor(Color color) {
+    _seedColor = color;
+    notifyListeners();
+  }
+
+  Color _seedColor = Colors.blueGrey;
 
   static get gameDetailsBackgroundColor => const Color(0xFF1B2838);
 
