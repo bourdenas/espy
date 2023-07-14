@@ -78,15 +78,15 @@ class StorefrontViewState extends State<StorefrontView>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          ElevatedButton(
+                          FilledButton(
                             child: const Text('Re-match'),
                             onPressed: () => onRematch(context, storeEntry),
                           ),
-                          ElevatedButton(
+                          FilledButton(
                             child: const Text('Unmatch'),
                             onPressed: () => onUnmatch(context, storeEntry),
                           ),
-                          ElevatedButton(
+                          FilledButton(
                             child: const Text('Delete'),
                             onPressed: () => onDelete(context, storeEntry),
                           ),

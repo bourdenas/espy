@@ -122,7 +122,7 @@ class _SettingsState extends State<Settings> {
       children: [
         _syncLoading
             ? const CircularProgressIndicator()
-            : ElevatedButton(
+            : FilledButton(
                 child: const Text('Sync'),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -210,7 +210,7 @@ class _SettingsState extends State<Settings> {
       children: [
         _uploadLoading
             ? const CircularProgressIndicator()
-            : ElevatedButton(
+            : FilledButton(
                 child: const Text('Upload'),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
