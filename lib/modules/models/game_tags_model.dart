@@ -139,6 +139,8 @@ const Map<String, List<String>> _genreTags = {
   'Online': [
     'MMORPG',
     'MOBA',
+    'Battle Royale',
+    'Co-op',
     'PvP',
   ],
   'Platformer': [
@@ -162,6 +164,8 @@ const Map<String, List<String>> _genreTags = {
     'Top-Down Shooter',
     '3rd Person Shooter',
     'Space Shooter',
+    'Stealth Shooter',
+    'First Person Melee',
   ],
   'Simulator': [
     'City Builder',
