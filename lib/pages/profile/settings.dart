@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/documents/user_data.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,26 +17,30 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        Text(
-          'Settings',
-          style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: Colors.white70,
-              ),
-        ),
-        const SizedBox(height: 16),
-        storefrontCodeBoxes(context),
-        const SizedBox(height: 16),
-        syncButton(context),
-        const SizedBox(height: 32),
-        manualEditBoxes(context),
-        const SizedBox(height: 16),
-        uploadButton(context),
-        const SizedBox(height: 32),
-        syncLog(),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          Text(
+            'Settings',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 16),
+          storefrontCodeBoxes(context),
+          const SizedBox(height: 16),
+          syncButton(context),
+          const SizedBox(height: 32),
+          manualEditBoxes(context),
+          const SizedBox(height: 16),
+          uploadButton(context),
+          const SizedBox(height: 64),
+          colorSelection(context),
+          const SizedBox(height: 32),
+          syncLog(),
+          const SizedBox(height: 32),
+        ],
+      ),
     );
   }
 
@@ -104,10 +109,7 @@ class _SettingsState extends State<Settings> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 0, 8),
             child: IconButton(
-              icon: const Icon(
-                Icons.link_off,
-                color: Colors.grey,
-              ),
+              icon: const Icon(Icons.link_off),
               splashRadius: 16,
               onPressed: () async =>
                   await context.read<UserDataModel>().unlink(storefrontId),
@@ -124,7 +126,7 @@ class _SettingsState extends State<Settings> {
       children: [
         _syncLoading
             ? const CircularProgressIndicator()
-            : ElevatedButton(
+            : FilledButton(
                 child: const Text('Sync'),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -212,7 +214,7 @@ class _SettingsState extends State<Settings> {
       children: [
         _uploadLoading
             ? const CircularProgressIndicator()
-            : ElevatedButton(
+            : FilledButton(
                 child: const Text('Upload'),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -253,11 +255,85 @@ class _SettingsState extends State<Settings> {
         width: 400,
         child: Text(
           _syncLog,
-          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: Colors.white70,
-              ),
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
       ),
+    );
+  }
+
+  Widget colorSelection(BuildContext context) {
+    final appConfig = context.read<AppConfigModel>();
+
+    return Column(
+      children: [
+        Text(
+          'Theme Colour',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (final color in [
+              Colors.blueGrey,
+              Colors.indigo,
+              Colors.blue
+            ]) ...[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.circle,
+                    color: color,
+                    size: 32,
+                  ),
+                  onPressed: () => appConfig.seedColor = color,
+                ),
+              ),
+            ],
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (final color in [Colors.teal, Colors.green, Colors.amber]) ...[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.circle,
+                    color: color,
+                    size: 32,
+                  ),
+                  onPressed: () => appConfig.seedColor = color,
+                ),
+              ),
+            ],
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (final color in [
+              Colors.orange,
+              Colors.deepOrange,
+              Colors.pink
+            ]) ...[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.circle,
+                    color: color,
+                    size: 32,
+                  ),
+                  onPressed: () => appConfig.seedColor = color,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
     );
   }
 }

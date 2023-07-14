@@ -7,11 +7,11 @@ import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/gamelist/game_library_page.dart';
+import 'package:espy/widgets/scaffold/espy_scaffold.dart';
 import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/pages/profile/login_page.dart';
 import 'package:espy/pages/profile/profile_page.dart';
 import 'package:espy/pages/search/search_page.dart';
-import 'package:espy/pages/top_level_page.dart';
 import 'package:espy/pages/failed/failed_match_page.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -32,7 +32,7 @@ class EspyRouter extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
           name: 'home',
-          child: TopLevelPage(
+          child: EspyScaffold(
             body: const HomeContent(),
             path: state.path!,
           ),
@@ -44,7 +44,7 @@ class EspyRouter extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
           name: 'games',
-          child: TopLevelPage(
+          child: EspyScaffold(
             body: GameLibraryPage(
               filter: LibraryFilter.fromParams(state.queryParameters),
             ),
@@ -58,7 +58,7 @@ class EspyRouter extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           name: 'details',
           arguments: state.pathParameters['gid']!,
-          child: TopLevelPage(
+          child: EspyScaffold(
             body: GameDetailsPage(id: state.pathParameters['gid']!),
             path: state.path!,
           ),
@@ -77,7 +77,7 @@ class EspyRouter extends StatelessWidget {
         path: '/search',
         pageBuilder: (context, state) => NoTransitionPage(
           name: 'search',
-          child: TopLevelPage(
+          child: EspyScaffold(
             body: const SearchPage(),
             path: state.path!,
           ),
@@ -88,7 +88,7 @@ class EspyRouter extends StatelessWidget {
         path: '/unmatched',
         pageBuilder: (context, state) => NoTransitionPage(
           name: 'unmatched',
-          child: TopLevelPage(
+          child: EspyScaffold(
             body: const FailedMatchPage(),
             path: state.path!,
           ),
@@ -99,14 +99,14 @@ class EspyRouter extends StatelessWidget {
         path: '/profile',
         pageBuilder: (context, state) => NoTransitionPage(
           name: 'profile',
-          child: TopLevelPage(
+          child: EspyScaffold(
             body: const ProfilePage(),
             path: state.path!,
           ),
         ),
       ),
     ],
-    errorBuilder: (context, state) => const TopLevelPage(
+    errorBuilder: (context, state) => const EspyScaffold(
       body: Center(
         child: Text('Page not found :('),
       ),
@@ -139,11 +139,11 @@ class EspyRouter extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.active) {
             if (snapshot.hasData) {
               return MaterialApp.router(
+                theme: context.watch<AppConfigModel>().theme,
                 routeInformationProvider: _router.routeInformationProvider,
                 routeInformationParser: _router.routeInformationParser,
                 routerDelegate: _router.routerDelegate,
                 title: 'espy',
-                theme: context.watch<AppConfigModel>().theme,
                 debugShowCheckedModeBanner: false,
               );
             } else {
@@ -156,5 +156,3 @@ class EspyRouter extends StatelessWidget {
     );
   }
 }
-
-final RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();

@@ -28,10 +28,9 @@ class FailedMatchCard extends StatelessWidget {
       ),
       onSecondaryTap: () {},
       child: Container(
-        padding: const EdgeInsets.all(8.0),
-        margin: const EdgeInsets.only(bottom: 16.0),
+        margin: const EdgeInsets.all(4.0),
         decoration: BoxDecoration(
-          color: Colors.grey[850],
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Row(
@@ -64,7 +63,7 @@ class FailedMatchCard extends StatelessWidget {
                           vertical: 2.0,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey[800],
+                          color: Theme.of(context).colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(4.0),
                         ),
                         child: const Text('???'),

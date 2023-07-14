@@ -3,17 +3,33 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// App configuration structure.
 class AppConfigModel extends ChangeNotifier {
-  get theme => ThemeData.dark().copyWith(
-        // useMaterial3: true,
-        appBarTheme: AppBarTheme(backgroundColor: backgrounColor),
-        scaffoldBackgroundColor: backgrounColor,
+  get theme => darkTheme;
+
+  get themeMode => ThemeMode.dark;
+  get lightTheme => ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: _seedColor,
+        brightness: Brightness.light,
+      );
+  get darkTheme => ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: _seedColor,
+        brightness: Brightness.dark,
       );
 
-  static Color get foregroundColor => const Color(0xFF0F1720);
-  static Color get backgrounColor => const Color(0xFF1B2838);
+  set seedColor(Color color) {
+    _seedColor = color;
+    _saveLocalPref();
+    notifyListeners();
+  }
+
+  Color _seedColor = Colors.blueGrey;
+
+  static get gameDetailsBackgroundColor => const Color(0xFF1B2838);
 
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width <= 800;
+  static bool isDesktop(BuildContext context) => !isMobile(context);
 
   double windowWidth = 0;
 
@@ -52,6 +68,7 @@ class AppConfigModel extends ChangeNotifier {
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
     groupBy.valueIndex = prefs.getInt('groupBy') ?? 0;
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
+    _seedColor = Color(prefs.getInt('seedColor') ?? 0);
 
     notifyListeners();
   }
@@ -62,6 +79,7 @@ class AppConfigModel extends ChangeNotifier {
     prefs.setInt('cardDecoration', cardDecoration.value.index);
     prefs.setInt('groupBy', groupBy.value.index);
     prefs.setInt('stacks', stacks.value.index);
+    prefs.setInt('seedColor', _seedColor.value);
   }
 }
 

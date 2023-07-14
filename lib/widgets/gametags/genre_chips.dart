@@ -200,7 +200,6 @@ class _GenreChipsState extends State<GenreChips>
               toggleExpand(context, false, null, widget.libraryEntry.id),
           child: const Icon(
             Icons.close,
-            color: Colors.white,
             size: 24,
           ),
         ),
@@ -278,7 +277,7 @@ class _TagSelectionChip extends StatelessWidget {
             BoxShadow(
               color: color,
               blurRadius: 6.0,
-              spreadRadius: 2.0,
+              spreadRadius: 8.0,
             ),
         ],
       ),

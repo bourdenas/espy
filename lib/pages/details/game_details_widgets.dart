@@ -22,38 +22,42 @@ class GameEntryActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            releaseYear(),
-            const SizedBox(width: 8.0),
-            rating(),
-            const SizedBox(width: 16.0),
-            actionButtons(context),
-            const SizedBox(width: 16.0),
-            linkButtons(context, gameEntry, libraryEntry),
-          ],
-        ),
-      ],
+    return SizedBox(
+      height: 48,
+      child: ListView(
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        children: [
+          releaseYear(context),
+          const SizedBox(width: 8.0),
+          rating(),
+          const SizedBox(width: 16.0),
+          ...actionButtons(context),
+          const SizedBox(width: 16.0),
+          ...linkButtons(context, gameEntry, libraryEntry),
+        ],
+      ),
     );
   }
 
-  Widget releaseYear() {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        vertical: 2.0,
-        horizontal: 8.0,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.grey[800],
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: Text(
-        '${DateTime.fromMillisecondsSinceEpoch(gameEntry.igdbGame.releaseDate * 1000).year}',
-        style: const TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.w500,
+  Widget releaseYear(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: 2.0,
+          horizontal: 8.0,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Text(
+          '${DateTime.fromMillisecondsSinceEpoch(gameEntry.igdbGame.releaseDate * 1000).year}',
+          style: TextStyle(
+            fontSize: 16.0,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
         ),
       ),
     );
@@ -75,74 +79,77 @@ class GameEntryActionBar extends StatelessWidget {
     );
   }
 
-  Widget actionButtons(BuildContext context) {
+  List<Widget> actionButtons(BuildContext context) {
     final inWishlist = context.watch<WishlistModel>().contains(gameEntry.id);
 
-    return Row(
-      children: [
+    return [
+      IconButton(
+        onPressed: () => AppConfigModel.isMobile(context)
+            ? context
+                .pushNamed('edit', pathParameters: {'gid': '${gameEntry.id}'})
+            : EditEntryDialog.show(
+                context,
+                libraryEntry,
+                gameEntry: gameEntry,
+              ),
+        icon: Icon(
+          Icons.edit,
+          size: 24.0,
+          color: Theme.of(context).colorScheme.secondary,
+        ),
+        splashRadius: 20.0,
+      ),
+      if (libraryEntry.storeEntries.isEmpty)
         IconButton(
-          onPressed: () => AppConfigModel.isMobile(context)
-              ? context
-                  .pushNamed('edit', pathParameters: {'gid': '${gameEntry.id}'})
-              : EditEntryDialog.show(
-                  context,
-                  libraryEntry,
-                  gameEntry: gameEntry,
-                ),
-          icon: const Icon(
-            Icons.edit,
+          onPressed: () {
+            if (inWishlist) {
+              context.read<WishlistModel>().removeFromWishlist(gameEntry.id);
+            } else {
+              context.read<WishlistModel>().addToWishlist(libraryEntry);
+            }
+          },
+          icon: Icon(
+            inWishlist ? Icons.favorite : Icons.favorite_border_outlined,
+            color: Colors.red,
             size: 24.0,
           ),
           splashRadius: 20.0,
         ),
-        if (libraryEntry.storeEntries.isEmpty)
-          IconButton(
-            onPressed: () {
-              if (inWishlist) {
-                context.read<WishlistModel>().removeFromWishlist(gameEntry.id);
-              } else {
-                context.read<WishlistModel>().addToWishlist(libraryEntry);
-              }
-            },
-            icon: Icon(
-              inWishlist ? Icons.favorite : Icons.favorite_border_outlined,
-              color: Colors.red,
-              size: 24.0,
-            ),
-            splashRadius: 20.0,
-          ),
-      ],
-    );
+    ];
   }
 
-  Widget linkButtons(
+  List<Widget> linkButtons(
       BuildContext context, GameEntry gameEntry, LibraryEntry libraryEntry) {
-    return Row(
-      children: [
-        for (final label in const [
-          'Official',
-          'Igdb',
-          'Wikipedia',
-        ])
-          for (final website
-              in gameEntry.websites.where((site) => site.authority == label))
-            IconButton(
+    return [
+      for (final label in const [
+        'Official',
+        'Igdb',
+        'Wikipedia',
+      ])
+        for (final website
+            in gameEntry.websites.where((site) => site.authority == label))
+          SizedBox(
+            height: 42,
+            child: IconButton(
               onPressed: () async => await launchUrl(Uri.parse(website.url)),
               icon: websiteIcon(website.authority),
               splashRadius: 20.0,
             ),
-        for (final label in const ['Gog', 'Steam', 'Egs'])
-          for (final website
-              in gameEntry.websites.where((site) => site.authority == label))
-            IconButton(
+          ),
+      for (final label in const ['Gog', 'Steam', 'Egs'])
+        for (final website
+            in gameEntry.websites.where((site) => site.authority == label))
+          SizedBox(
+            height: 48,
+            child: IconButton(
               onPressed: () async => await launchUrl(Uri.parse(website.url)),
               icon: websiteIcon(website.authority,
                   disabled: libraryEntry.storeEntries.every(
                       (entry) => entry.storefront != label.toLowerCase())),
               splashRadius: 20.0,
             ),
-      ],
-    );
+          ),
+    ];
   }
 
   Widget websiteIcon(String website, {bool disabled = false}) {
