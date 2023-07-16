@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:flutter/material.dart';
 
 class SearchTextField extends StatefulWidget {
@@ -18,7 +19,11 @@ class _SearchTextFieldState extends State<SearchTextField> {
   @override
   void initState() {
     super.initState();
-    _searchFocusNode.requestFocus();
+    Future.delayed(Duration.zero, () {
+      if (AppConfigModel.isDesktop(context)) {
+        _searchFocusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -28,7 +33,6 @@ class _SearchTextFieldState extends State<SearchTextField> {
         Expanded(
           flex: 6,
           child: Focus(
-            autofocus: true,
             child: TextField(
               key: const Key('searchTextField'),
               controller: _searchController,
