@@ -106,10 +106,8 @@ enum GroupBy {
 
 enum Stacks {
   collections,
+  developers,
   genres,
-  tags,
-  styles,
-  themes,
 }
 
 class EnumOption<EnumType> {

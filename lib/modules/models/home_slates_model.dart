@@ -37,18 +37,12 @@ class HomeSlatesModel extends ChangeNotifier {
       if (appConfigModel.stacks.value == Stacks.collections)
         for (final collection in tagsModel.collections.nonSingleton)
           slate(collection, LibraryFilter(collections: {collection})),
+      if (appConfigModel.stacks.value == Stacks.developers)
+        for (final developer in tagsModel.developers.all)
+          slate(developer, LibraryFilter(developers: {developer})),
       if (appConfigModel.stacks.value == Stacks.genres)
         for (final genre in tagsModel.genreTags.all)
           slate(genre.name, LibraryFilter(genreTags: {genre.encode()})),
-      if (appConfigModel.stacks.value == Stacks.tags)
-        for (final tag in tagsModel.userTags.tagByPopulationInCluster('genre'))
-          slate(tag.name, LibraryFilter(tags: {tag.name})),
-      if (appConfigModel.stacks.value == Stacks.styles)
-        for (final tag in tagsModel.userTags.tagByPopulationInCluster('style'))
-          slate(tag.name, LibraryFilter(tags: {tag.name})),
-      if (appConfigModel.stacks.value == Stacks.themes)
-        for (final tag in tagsModel.userTags.tagByPopulationInCluster('theme'))
-          slate(tag.name, LibraryFilter(tags: {tag.name})),
     ];
 
     notifyListeners();
