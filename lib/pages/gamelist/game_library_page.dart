@@ -25,7 +25,9 @@ class _GameLibraryPageState extends State<GameLibraryPage> {
     final entries =
         context.watch<LibraryEntriesModel>().filter(widget.filter).toList();
 
-    if (!fetched) {
+    final fetchRemote = context.watch<AppConfigModel>().fetchRemote.value;
+
+    if (!fetched && fetchRemote) {
       RemoteLibraryModel.fromFilter(widget.filter).then((value) => setState(() {
             _remoteGames = value;
             fetched = true;
@@ -33,7 +35,9 @@ class _GameLibraryPageState extends State<GameLibraryPage> {
     }
 
     final Set<int> entryIds = Set.from(entries.map((e) => e.id));
-    entries.addAll(_remoteGames.where((e) => !entryIds.contains(e.id)));
+    if (fetchRemote) {
+      entries.addAll(_remoteGames.where((e) => !entryIds.contains(e.id)));
+    }
     entries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
 
     return LibraryContent(entries: entries, filter: widget.filter);
@@ -55,6 +59,7 @@ class LibraryContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appConfig = context.watch<AppConfigModel>();
     return Scaffold(
       appBar: AppBar(
         leading: badges.Badge(
@@ -70,12 +75,30 @@ class LibraryContent extends StatelessWidget {
           position: badges.BadgePosition.center(),
           child: Container(),
         ),
-        title: GameChipsFilterBar(filter),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            GameChipsFilterBar(filter),
+            Row(
+              children: [
+                Text(
+                  'Show All',
+                  style: Theme.of(context).textTheme.bodyLarge!,
+                ),
+                const SizedBox(width: 8),
+                Switch(
+                  value: appConfig.fetchRemote.value,
+                  onChanged: (selected) =>
+                      appConfig.fetchRemote.value = selected,
+                ),
+              ],
+            ),
+          ],
+        ),
         backgroundColor: Colors.black.withOpacity(0.6),
         elevation: 0.0,
       ),
-      body: context.watch<AppConfigModel>().libraryLayout.value ==
-              LibraryLayout.grid
+      body: appConfig.libraryLayout.value == LibraryLayout.grid
           ? GameGridView(entries: entries)
           : GameListView(entries: entries),
     );

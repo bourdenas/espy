@@ -33,28 +33,31 @@ class AppConfigModel extends ChangeNotifier {
 
   double windowWidth = 0;
 
-  ModalOption<LibraryLayout> libraryLayout = ModalOption<LibraryLayout>(
+  EnumOption<LibraryLayout> libraryLayout = EnumOption<LibraryLayout>(
     (index) => LibraryLayout.values[index],
     LibraryLayout.values.length,
   );
-  ModalOption<CardDecoration> cardDecoration = ModalOption<CardDecoration>(
+  EnumOption<CardDecoration> cardDecoration = EnumOption<CardDecoration>(
     (index) => CardDecoration.values[index],
     CardDecoration.values.length,
   );
-  ModalOption<GroupBy> groupBy = ModalOption<GroupBy>(
+  EnumOption<GroupBy> groupBy = EnumOption<GroupBy>(
     (index) => GroupBy.values[index],
     GroupBy.values.length,
   );
-  ModalOption<Stacks> stacks = ModalOption<Stacks>(
+  EnumOption<Stacks> stacks = EnumOption<Stacks>(
     (index) => Stacks.values[index],
     Stacks.values.length,
   );
+
+  BoolOption fetchRemote = BoolOption();
 
   AppConfigModel() {
     libraryLayout.onUpdate = _updateOptions;
     cardDecoration.onUpdate = _updateOptions;
     groupBy.onUpdate = _updateOptions;
     stacks.onUpdate = _updateOptions;
+    fetchRemote.onUpdate = _updateOptions;
   }
 
   void _updateOptions() {
@@ -68,6 +71,7 @@ class AppConfigModel extends ChangeNotifier {
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
     groupBy.valueIndex = prefs.getInt('groupBy') ?? 0;
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
+    fetchRemote.value = prefs.getBool('fetchRemote') ?? false;
     _seedColor = Color(prefs.getInt('seedColor') ?? 0);
 
     notifyListeners();
@@ -79,6 +83,7 @@ class AppConfigModel extends ChangeNotifier {
     prefs.setInt('cardDecoration', cardDecoration.value.index);
     prefs.setInt('groupBy', groupBy.value.index);
     prefs.setInt('stacks', stacks.value.index);
+    prefs.setBool('fetchRemote', fetchRemote.value);
     prefs.setInt('seedColor', _seedColor.value);
   }
 }
@@ -107,18 +112,18 @@ enum Stacks {
   themes,
 }
 
-class ModalOption<OptionEnum> {
-  final OptionEnum Function(int) _valueGetter;
-  OptionEnum _value;
+class EnumOption<EnumType> {
+  final EnumType Function(int) _valueGetter;
+  EnumType _value;
   int _valueIndex;
   final int _valuesLen;
   void Function()? onUpdate;
 
-  ModalOption(this._valueGetter, this._valuesLen)
+  EnumOption(this._valueGetter, this._valuesLen)
       : _value = _valueGetter(0),
         _valueIndex = 0;
 
-  OptionEnum get value => _value;
+  EnumType get value => _value;
 
   set valueIndex(int index) {
     _valueIndex = index % _valuesLen;
@@ -127,4 +132,18 @@ class ModalOption<OptionEnum> {
   }
 
   void nextValue() => valueIndex = _valueIndex + 1;
+}
+
+class BoolOption {
+  bool _value = false;
+  void Function()? onUpdate;
+
+  bool get value => _value;
+
+  set value(bool value) {
+    _value = value;
+    onUpdate?.call();
+  }
+
+  void nextValue() => value = !_value;
 }
