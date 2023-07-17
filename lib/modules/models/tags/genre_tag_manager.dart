@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/user_tags.dart';
 
@@ -8,22 +6,12 @@ class GenreTagManager {
 
   Iterable<Genre> byGameId(int gameId) => _gameIdToGenres[gameId] ?? [];
 
-  UnmodifiableListView<Genre> get genres => UnmodifiableListView(_genres);
-
-  UnmodifiableListView<Genre> get genresByPopulation {
-    final list = _genres
-        .map((genre) =>
-            MapEntry(genre, _genreToGameIds[genre.encode()]?.length ?? 0))
-        .where((e) => e.value > 0)
-        .toList()
-      ..sort((a, b) => -a.value.compareTo(b.value));
-    return UnmodifiableListView(list.map((e) => e.key));
-  }
+  Iterable<Genre> get all => _genres;
 
   Iterable<int> gameIds(String genre) => _genreToGameIds[genre] ?? [];
 
   Iterable<Genre> filter(Iterable<String> ngrams) {
-    return genres.where((e) => e.name.isNotEmpty).where(
+    return all.where((e) => e.name.isNotEmpty).where(
           (genre) => ngrams.every((ngram) => genre.name
               .toLowerCase()
               .split(' ')
@@ -32,7 +20,7 @@ class GenreTagManager {
   }
 
   Iterable<Genre> filterExact(Iterable<String> ngrams) {
-    return genres.where((e) => e.name.isNotEmpty).where(
+    return all.where((e) => e.name.isNotEmpty).where(
           (tag) => ngrams.every((ngram) =>
               tag.name.toLowerCase().split(' ').any((word) => word == ngram)),
         );
@@ -92,11 +80,10 @@ class GenreTagManager {
 
   final Map<int, List<Genre>> _gameIdToGenres = {};
   final Map<String, List<int>> _genreToGameIds = {};
-  final List<Genre> _genres = [];
+  List<Genre> _genres = [];
 
   void build() {
-    _gameIdToGenres.clear();
-    _genreToGameIds.clear();
+    final genreHistogram = <(Genre, int)>[];
 
     // Build Genre index.
     for (final genre in _userTags.genres) {
@@ -104,7 +91,7 @@ class GenreTagManager {
         continue;
       }
       final genreCopy = Genre(root: genre.root, name: genre.name);
-      _genres.add(genreCopy);
+      genreHistogram.add((genreCopy, genre.gameIds.length));
 
       for (final id in genre.gameIds) {
         final genres = _gameIdToGenres[id];
@@ -122,6 +109,8 @@ class GenreTagManager {
         }
       }
     }
-    _genres.sort((a, b) => a.name.compareTo(b.name));
+
+    genreHistogram.sort((a, b) => b.$2 - a.$2);
+    _genres = genreHistogram.map((e) => e.$1).toList();
   }
 }
