@@ -25,17 +25,20 @@ class _GameLibraryPageState extends State<GameLibraryPage> {
     final entries =
         context.watch<LibraryEntriesModel>().filter(widget.filter).toList();
 
-    final fetchRemote = context.watch<AppConfigModel>().fetchRemote.value;
+    final appConfig = context.watch<AppConfigModel>();
 
-    if (!fetched && fetchRemote) {
-      RemoteLibraryModel.fromFilter(widget.filter).then((value) => setState(() {
+    if (!fetched && appConfig.fetchRemote.value) {
+      RemoteLibraryModel.fromFilter(
+        widget.filter,
+        includeExpansions: appConfig.showExpansions.value,
+      ).then((value) => setState(() {
             _remoteGames = value;
             fetched = true;
           }));
     }
 
     final Set<int> entryIds = Set.from(entries.map((e) => e.id));
-    if (fetchRemote) {
+    if (appConfig.fetchRemote.value) {
       entries.addAll(_remoteGames.where((e) => !entryIds.contains(e.id)));
     }
     entries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
@@ -82,7 +85,18 @@ class LibraryContent extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'Show All',
+                  'Expansions',
+                  style: Theme.of(context).textTheme.bodyLarge!,
+                ),
+                const SizedBox(width: 8),
+                Switch(
+                  value: appConfig.showExpansions.value,
+                  onChanged: (selected) =>
+                      appConfig.showExpansions.value = selected,
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  'External',
                   style: Theme.of(context).textTheme.bodyLarge!,
                 ),
                 const SizedBox(width: 8),

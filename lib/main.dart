@@ -57,11 +57,14 @@ Future<void> main() async {
             );
         },
       ),
-      ChangeNotifierProxyProvider3<UserLibraryModel, WishlistModel,
-          GameTagsModel, LibraryEntriesModel>(
+      ChangeNotifierProxyProvider4<UserLibraryModel, WishlistModel,
+          GameTagsModel, AppConfigModel, LibraryEntriesModel>(
         create: (_) => LibraryEntriesModel(),
-        update: (_, userLibraryModel, wishlistModel, gameTagsModel, model) {
-          return model!..update(userLibraryModel, wishlistModel, gameTagsModel);
+        update: (_, userLibraryModel, wishlistModel, gameTagsModel,
+            appConfigModel, libraryEntriesModel) {
+          return libraryEntriesModel!
+            ..update(
+                userLibraryModel, wishlistModel, gameTagsModel, appConfigModel);
         },
       ),
       ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel,

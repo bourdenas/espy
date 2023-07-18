@@ -6,37 +6,44 @@ import 'package:espy/modules/models/library_filter_model.dart';
 
 /// Model that handles LibraryEntries that are outside user's library.
 class RemoteLibraryModel {
-  static Future<List<LibraryEntry>> fromFilter(LibraryFilter filter) async {
+  static Future<List<LibraryEntry>> fromFilter(
+    LibraryFilter filter, {
+    bool includeExpansions = false,
+  }) async {
     List<LibraryEntry> libraryEntries = [];
 
     if (filter.collections.isNotEmpty) {
       for (final collection in filter.collections) {
-        libraryEntries.addAll(await getCollection(collection));
+        libraryEntries
+            .addAll(await getCollection(collection, includeExpansions));
       }
     }
 
     if (filter.franchises.isNotEmpty) {
       for (final franchise in filter.franchises) {
-        libraryEntries.addAll(await getFranchise(franchise));
+        libraryEntries.addAll(await getFranchise(franchise, includeExpansions));
       }
     }
 
     if (filter.developers.isNotEmpty) {
       for (final developer in filter.developers) {
-        libraryEntries.addAll(await getDeveloper(developer));
+        libraryEntries.addAll(await getDeveloper(developer, includeExpansions));
       }
     }
 
     if (filter.publishers.isNotEmpty) {
       for (final publisher in filter.publishers) {
-        libraryEntries.addAll(await getPublisher(publisher));
+        libraryEntries.addAll(await getPublisher(publisher, includeExpansions));
       }
     }
 
     return libraryEntries;
   }
 
-  static Future<List<LibraryEntry>> getCollection(String name) async {
+  static Future<List<LibraryEntry>> getCollection(
+    String name,
+    bool includeExpansions,
+  ) async {
     Map<int, LibraryEntry> libraryEntries = {};
 
     final snapshot = await FirebaseFirestore.instance
@@ -53,7 +60,9 @@ class RemoteLibraryModel {
       for (final digest in collection.data().games) {
         if (digest.category == 'Main' ||
             digest.category == 'Remake' ||
-            digest.category == 'Remaster') {
+            digest.category == 'Remaster' ||
+            digest.category == 'StandaloneExpansion' ||
+            (includeExpansions && digest.category == 'Expansion')) {
           libraryEntries[digest.id] = LibraryEntry.fromGameDigest(digest);
         }
       }
@@ -62,7 +71,10 @@ class RemoteLibraryModel {
     return libraryEntries.values.toList();
   }
 
-  static Future<List<LibraryEntry>> getFranchise(String name) async {
+  static Future<List<LibraryEntry>> getFranchise(
+    String name,
+    bool includeExpansions,
+  ) async {
     Map<int, LibraryEntry> libraryEntries = {};
 
     final snapshot = await FirebaseFirestore.instance
@@ -79,7 +91,9 @@ class RemoteLibraryModel {
       for (final digest in franchise.data().games) {
         if (digest.category == 'Main' ||
             digest.category == 'Remake' ||
-            digest.category == 'Remaster') {
+            digest.category == 'Remaster' ||
+            digest.category == 'StandaloneExpansion' ||
+            (includeExpansions && digest.category == 'Expansion')) {
           libraryEntries[digest.id] = LibraryEntry.fromGameDigest(digest);
         }
       }
@@ -88,7 +102,10 @@ class RemoteLibraryModel {
     return libraryEntries.values.toList();
   }
 
-  static Future<List<LibraryEntry>> getDeveloper(String name) async {
+  static Future<List<LibraryEntry>> getDeveloper(
+    String name,
+    bool includeExpansions,
+  ) async {
     Map<int, LibraryEntry> libraryEntries = {};
 
     final snapshot = await FirebaseFirestore.instance
@@ -105,7 +122,9 @@ class RemoteLibraryModel {
       for (final digest in company.data().developed) {
         if (digest.category == 'Main' ||
             digest.category == 'Remake' ||
-            digest.category == 'Remaster') {
+            digest.category == 'Remaster' ||
+            digest.category == 'StandaloneExpansion' ||
+            (includeExpansions && digest.category == 'Expansion')) {
           libraryEntries[digest.id] = LibraryEntry.fromGameDigest(digest);
         }
       }
@@ -114,7 +133,10 @@ class RemoteLibraryModel {
     return libraryEntries.values.toList();
   }
 
-  static Future<List<LibraryEntry>> getPublisher(String name) async {
+  static Future<List<LibraryEntry>> getPublisher(
+    String name,
+    bool includeExpansions,
+  ) async {
     Map<int, LibraryEntry> libraryEntries = {};
 
     final snapshot = await FirebaseFirestore.instance
@@ -131,7 +153,9 @@ class RemoteLibraryModel {
       for (final digest in company.data().published) {
         if (digest.category == 'Main' ||
             digest.category == 'Remake' ||
-            digest.category == 'Remaster') {
+            digest.category == 'Remaster' ||
+            digest.category == 'StandaloneExpansion' ||
+            (includeExpansions && digest.category == 'Expansion')) {
           libraryEntries[digest.id] = LibraryEntry.fromGameDigest(digest);
         }
       }

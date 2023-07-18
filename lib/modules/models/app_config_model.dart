@@ -50,6 +50,7 @@ class AppConfigModel extends ChangeNotifier {
     Stacks.values.length,
   );
 
+  BoolOption showExpansions = BoolOption();
   BoolOption fetchRemote = BoolOption();
 
   AppConfigModel() {
@@ -57,6 +58,7 @@ class AppConfigModel extends ChangeNotifier {
     cardDecoration.onUpdate = _updateOptions;
     groupBy.onUpdate = _updateOptions;
     stacks.onUpdate = _updateOptions;
+    showExpansions.onUpdate = _updateOptions;
     fetchRemote.onUpdate = _updateOptions;
   }
 
@@ -71,6 +73,7 @@ class AppConfigModel extends ChangeNotifier {
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
     groupBy.valueIndex = prefs.getInt('groupBy') ?? 0;
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
+    showExpansions.value = prefs.getBool('showExpansions') ?? false;
     fetchRemote.value = prefs.getBool('fetchRemote') ?? false;
     _seedColor = Color(prefs.getInt('seedColor') ?? 0);
 
@@ -83,6 +86,7 @@ class AppConfigModel extends ChangeNotifier {
     prefs.setInt('cardDecoration', cardDecoration.value.index);
     prefs.setInt('groupBy', groupBy.value.index);
     prefs.setInt('stacks', stacks.value.index);
+    prefs.setBool('showExpansions', showExpansions.value);
     prefs.setBool('fetchRemote', fetchRemote.value);
     prefs.setInt('seedColor', _seedColor.value);
   }

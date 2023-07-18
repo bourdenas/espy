@@ -88,7 +88,10 @@ class LibraryFilter {
   }
 
   Iterable<LibraryEntry> filter(
-      LibraryEntriesModel entriesModel, GameTagsModel tagsModel) {
+    LibraryEntriesModel entriesModel,
+    GameTagsModel tagsModel, {
+    bool includeExpansions = false,
+  }) {
     List<Set<int>> gameIdSets = [];
 
     for (final store in stores) {
@@ -131,7 +134,8 @@ class LibraryFilter {
             e.digest.category == 'Main' ||
             e.digest.category == 'Remake' ||
             e.digest.category == 'Remaster' ||
-            e.digest.category == 'StandaloneExpansion')
+            e.digest.category == 'StandaloneExpansion' ||
+            (includeExpansions && e.digest.category == 'Expansion'))
         .where((libraryEntry) => _filterView(libraryEntry, tagsModel));
   }
 
