@@ -21,9 +21,18 @@ enum LibraryView {
   untagged,
 }
 
+enum LibraryGrouping {
+  none,
+  year,
+  genre,
+  genreTag,
+  rating,
+}
+
 class LibraryFilter {
   LibraryFilter({
     this.view = LibraryView.all,
+    this.grouping = LibraryGrouping.none,
     this.stores = const {},
     this.developers = const {},
     this.publishers = const {},
@@ -36,6 +45,7 @@ class LibraryFilter {
   });
 
   LibraryView view;
+  LibraryGrouping grouping;
 
   Set<String> stores;
   Set<String> developers;
@@ -155,6 +165,7 @@ class LibraryFilter {
   Map<String, String> params() {
     return {
       'vw': _viewEncoding,
+      if (grouping != LibraryGrouping.none) 'gp': _groupingEncoding,
       if (developers.isNotEmpty) 'dev': developers.map((c) => c).join(':'),
       if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(':'),
       if (collections.isNotEmpty) 'col': collections.map((c) => c).join(':'),
@@ -173,6 +184,8 @@ class LibraryFilter {
     params.forEach((key, value) {
       if (key == 'vw') {
         filter._view = value;
+      } else if (key == 'gp') {
+        filter._grouping = value;
       } else if (key == 'dev') {
         filter.developers = value.split(':').toSet();
       } else if (key == 'pub') {
@@ -225,6 +238,45 @@ class LibraryFilter {
       case 'unt':
         view = LibraryView.untagged;
         break;
+    }
+  }
+
+  String get _groupingEncoding {
+    switch (grouping) {
+      case LibraryGrouping.none:
+        return 'na';
+      case LibraryGrouping.year:
+        return 'yr';
+      case LibraryGrouping.genre:
+        return 'gn';
+      case LibraryGrouping.genreTag:
+        return 'gt';
+      case LibraryGrouping.rating:
+        return 'rt';
+      default:
+        return 'na';
+    }
+  }
+
+  set _grouping(String encoded) {
+    switch (encoded) {
+      case 'na':
+        grouping = LibraryGrouping.none;
+        break;
+      case 'yr':
+        grouping = LibraryGrouping.year;
+        break;
+      case 'gn':
+        grouping = LibraryGrouping.genre;
+        break;
+      case 'gt':
+        grouping = LibraryGrouping.genreTag;
+        break;
+      case 'rt':
+        grouping = LibraryGrouping.rating;
+        break;
+      default:
+        grouping = LibraryGrouping.none;
     }
   }
 }
