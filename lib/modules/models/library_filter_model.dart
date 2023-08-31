@@ -144,7 +144,7 @@ class LibraryFilter {
         ? gameIdSets.reduce((value, element) => value.intersection(element))
         : entriesModel.all;
 
-    return gameIds
+    return _sort(gameIds
         .map((id) => entriesModel.getEntryById(id))
         .where((e) => e != null)
         .map((e) => e!)
@@ -154,7 +154,19 @@ class LibraryFilter {
             e.digest.category == 'Remaster' ||
             e.digest.category == 'StandaloneExpansion' ||
             (includeExpansions && e.digest.category == 'Expansion'))
-        .where((libraryEntry) => _filterView(libraryEntry, tagsModel));
+        .where((libraryEntry) => _filterView(libraryEntry, tagsModel)));
+  }
+
+  Iterable<LibraryEntry> _sort(Iterable<LibraryEntry> entries) {
+    switch (sorting) {
+      case LibrarySorting.release:
+        return entries.toList()
+          ..sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
+      case LibrarySorting.rating:
+        return entries.toList()..sort((a, b) => -a.rating.compareTo(b.rating));
+      case LibrarySorting.title:
+        return entries.toList()..sort((a, b) => a.name.compareTo(b.name));
+    }
   }
 
   bool _filterView(LibraryEntry entry, GameTagsModel tagsModel) {

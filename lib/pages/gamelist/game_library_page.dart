@@ -41,7 +41,6 @@ class _GameLibraryPageState extends State<GameLibraryPage> {
     if (appConfig.fetchRemote.value) {
       entries.addAll(_remoteGames.where((e) => !entryIds.contains(e.id)));
     }
-    entries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
 
     return LibraryContent(entries: entries, filter: widget.filter);
   }

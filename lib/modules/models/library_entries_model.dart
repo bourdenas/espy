@@ -31,14 +31,11 @@ class LibraryEntriesModel extends ChangeNotifier {
   Iterable<int> get all => _entries.keys;
 
   Iterable<LibraryEntry> filter(LibraryFilter filter) {
-    return filter
-        .filter(
-          this,
-          _gameTagsModel,
-          includeExpansions: _appConfigModel.showExpansions.value,
-        )
-        .toList()
-      ..sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
+    return filter.filter(
+      this,
+      _gameTagsModel,
+      includeExpansions: _appConfigModel.showExpansions.value,
+    );
   }
 
   Iterable<LibraryEntry> getRecentEntries() {
