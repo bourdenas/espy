@@ -21,6 +21,12 @@ enum LibraryView {
   untagged,
 }
 
+enum LibrarySorting {
+  release,
+  rating,
+  title,
+}
+
 enum LibraryGrouping {
   none,
   year,
@@ -32,6 +38,7 @@ enum LibraryGrouping {
 class LibraryFilter {
   LibraryFilter({
     this.view = LibraryView.all,
+    this.sorting = LibrarySorting.release,
     this.grouping = LibraryGrouping.none,
     this.stores = const {},
     this.developers = const {},
@@ -45,6 +52,7 @@ class LibraryFilter {
   });
 
   LibraryView view;
+  LibrarySorting sorting;
   LibraryGrouping grouping;
 
   Set<String> stores;
@@ -165,6 +173,7 @@ class LibraryFilter {
   Map<String, String> params() {
     return {
       'vw': _viewEncoding,
+      'st': _sortingEncoding,
       if (grouping != LibraryGrouping.none) 'gp': _groupingEncoding,
       if (developers.isNotEmpty) 'dev': developers.map((c) => c).join(':'),
       if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(':'),
@@ -184,6 +193,8 @@ class LibraryFilter {
     params.forEach((key, value) {
       if (key == 'vw') {
         filter._view = value;
+      } else if (key == 'st') {
+        filter._sorting = value;
       } else if (key == 'gp') {
         filter._grouping = value;
       } else if (key == 'dev') {
@@ -238,6 +249,35 @@ class LibraryFilter {
       case 'unt':
         view = LibraryView.untagged;
         break;
+    }
+  }
+
+  String get _sortingEncoding {
+    switch (sorting) {
+      case LibrarySorting.release:
+        return 'yr';
+      case LibrarySorting.rating:
+        return 'rt';
+      case LibrarySorting.title:
+        return 'tl';
+      default:
+        return 'yr';
+    }
+  }
+
+  set _sorting(String encoded) {
+    switch (encoded) {
+      case 'yr':
+        sorting = LibrarySorting.release;
+        break;
+      case 'rt':
+        sorting = LibrarySorting.rating;
+        break;
+      case 'tl':
+        sorting = LibrarySorting.title;
+        break;
+      default:
+        sorting = LibrarySorting.release;
     }
   }
 
