@@ -46,7 +46,7 @@ class EspyRouter extends StatelessWidget {
           name: 'games',
           child: EspyScaffold(
             body: GameLibraryPage(
-              filter: LibraryFilter.fromParams(state.queryParameters),
+              filter: LibraryFilter.fromParams(state.uri.queryParameters),
             ),
             path: state.path!,
           ),
