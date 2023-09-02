@@ -10,24 +10,8 @@ import 'package:espy/widgets/gametags/game_chips_filter_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GameLibraryPage extends StatefulWidget {
-  const GameLibraryPage({Key? key, required this.filter}) : super(key: key);
-
-  final LibraryFilter filter;
-
-  @override
-  State<GameLibraryPage> createState() => _GameLibraryPageState();
-}
-
-class _GameLibraryPageState extends State<GameLibraryPage> {
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => context.read<LibraryFilterModel>().filter = widget.filter);
-  }
+class LibraryPage extends StatelessWidget {
+  const LibraryPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
