@@ -14,8 +14,6 @@ class TileShelve extends StatefulWidget {
     this.color,
     this.filter,
     this.entries,
-    this.cardWidth = 250,
-    this.cardAspectRatio = .75,
     this.expanded = true,
     this.pushNavigation = true,
   }) : super(key: key);
@@ -25,8 +23,6 @@ class TileShelve extends StatefulWidget {
   final LibraryFilter? filter;
   final Iterable<LibraryEntry>? entries;
 
-  final double cardWidth;
-  final double cardAspectRatio;
   final bool expanded;
   final bool pushNavigation;
 
@@ -51,8 +47,6 @@ class _TileShelveState extends State<TileShelve> {
         entries: widget.entries != null
             ? widget.entries!
             : context.watch<LibraryEntriesModel>().filter(widget.filter!).all,
-        cardWidth: widget.cardWidth,
-        cardAspectRatio: widget.cardAspectRatio,
         pushNavigation: widget.pushNavigation,
       ),
       color: widget.color,

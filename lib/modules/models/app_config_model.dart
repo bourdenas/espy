@@ -32,6 +32,11 @@ class AppConfigModel extends ChangeNotifier {
       MediaQuery.of(context).size.width <= 800;
   static bool isDesktop(BuildContext context) => !isMobile(context);
 
+  static const gridCardContraints =
+      LibraryCardContraints(maxCardWidth: 250, cardAspectRatio: .75);
+  static const listCardContraints =
+      LibraryCardContraints(maxCardWidth: 600, cardAspectRatio: 2.5);
+
   double windowWidth = 0;
 
   EnumOption<LibraryLayout> libraryLayout = EnumOption<LibraryLayout>(
@@ -144,4 +149,12 @@ class BoolOption {
   }
 
   void nextValue() => value = !_value;
+}
+
+class LibraryCardContraints {
+  const LibraryCardContraints(
+      {required this.maxCardWidth, required this.cardAspectRatio});
+
+  final double maxCardWidth;
+  final double cardAspectRatio;
 }

@@ -9,14 +9,10 @@ class LibraryEntriesView extends StatelessWidget {
   const LibraryEntriesView({
     Key? key,
     required this.entries,
-    this.cardWidth,
-    this.cardAspectRatio,
     this.pushNavigation = true,
   }) : super(key: key);
 
   final Iterable<LibraryEntry> entries;
-  final double? cardWidth;
-  final double? cardAspectRatio;
 
   // If true clicks on an tile will result to a push event in routing.
   // Otherwise, it will replace current page.
@@ -32,8 +28,8 @@ class LibraryEntriesView extends StatelessWidget {
 
   SliverGrid gridView(Iterable<LibraryEntry> matchedEntries) {
     return SliverGrid.extent(
-      maxCrossAxisExtent: cardWidth ?? 200,
-      childAspectRatio: cardAspectRatio ?? .75,
+      maxCrossAxisExtent: AppConfigModel.gridCardContraints.maxCardWidth,
+      childAspectRatio: AppConfigModel.gridCardContraints.cardAspectRatio,
       children: matchedEntries
           .map((e) => LibraryGridCard(
                 entry: e,
@@ -45,8 +41,8 @@ class LibraryEntriesView extends StatelessWidget {
 
   SliverGrid listView(Iterable<LibraryEntry> matchedEntries) {
     return SliverGrid.extent(
-      maxCrossAxisExtent: cardWidth ?? 600.0,
-      childAspectRatio: cardAspectRatio ?? 2.5,
+      maxCrossAxisExtent: AppConfigModel.listCardContraints.maxCardWidth,
+      childAspectRatio: AppConfigModel.listCardContraints.cardAspectRatio,
       children:
           matchedEntries.map((e) => LibraryListCard(libraryEntry: e)).toList(),
     );

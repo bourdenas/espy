@@ -3,7 +3,6 @@ import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/library/library_page.dart';
