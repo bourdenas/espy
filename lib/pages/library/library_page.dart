@@ -121,8 +121,8 @@ class LibraryContent extends StatelessWidget {
         elevation: 0.0,
       ),
       body: appConfig.libraryLayout.value == LibraryLayout.grid
-          ? GameGridView(libraryView)
-          : GameListView(libraryView),
+          ? LibraryGridView(libraryView)
+          : LibraryListView(libraryView),
     );
   }
 }

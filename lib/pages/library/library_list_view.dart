@@ -3,8 +3,8 @@ import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/library/library_list_card.dart';
 import 'package:flutter/material.dart';
 
-class GameListView extends StatelessWidget {
-  const GameListView(
+class LibraryListView extends StatelessWidget {
+  const LibraryListView(
     this.libraryView, {
     Key? key,
   }) : super(key: key);
@@ -26,7 +26,7 @@ class GameListView extends StatelessWidget {
               maxCrossAxisExtent: _maxCardWidth,
               childAspectRatio: _cardAspectRation,
               children: libraryView.all
-                  .map((e) => GameListCard(libraryEntry: e))
+                  .map((e) => LibraryListCard(libraryEntry: e))
                   .toList(),
             ),
           ],

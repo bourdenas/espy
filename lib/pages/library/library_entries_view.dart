@@ -35,7 +35,7 @@ class LibraryEntriesView extends StatelessWidget {
       maxCrossAxisExtent: cardWidth ?? 200,
       childAspectRatio: cardAspectRatio ?? .75,
       children: matchedEntries
-          .map((e) => GameGridCard(
+          .map((e) => LibraryGridCard(
                 entry: e,
                 pushNavigation: pushNavigation,
               ))
@@ -48,7 +48,7 @@ class LibraryEntriesView extends StatelessWidget {
       maxCrossAxisExtent: cardWidth ?? 600.0,
       childAspectRatio: cardAspectRatio ?? 2.5,
       children:
-          matchedEntries.map((e) => GameListCard(libraryEntry: e)).toList(),
+          matchedEntries.map((e) => LibraryListCard(libraryEntry: e)).toList(),
     );
   }
 }

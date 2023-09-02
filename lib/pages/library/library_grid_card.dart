@@ -15,8 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class GameGridCard extends StatefulWidget {
-  const GameGridCard({
+class LibraryGridCard extends StatefulWidget {
+  const LibraryGridCard({
     Key? key,
     required this.entry,
     required this.pushNavigation,
@@ -26,10 +26,10 @@ class GameGridCard extends StatefulWidget {
   final bool pushNavigation;
 
   @override
-  State<GameGridCard> createState() => _GameGridCardState();
+  State<LibraryGridCard> createState() => _LibraryGridCardState();
 }
 
-class _GameGridCardState extends State<GameGridCard>
+class _LibraryGridCardState extends State<LibraryGridCard>
     with SingleTickerProviderStateMixin {
   bool hover = false;
   late AnimationController _controller;
