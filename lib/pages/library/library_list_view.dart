@@ -1,6 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/pages/gamelist/game_list_card.dart';
+import 'package:espy/pages/library/library_list_card.dart';
 import 'package:flutter/material.dart';
 
 class GameListView extends StatelessWidget {

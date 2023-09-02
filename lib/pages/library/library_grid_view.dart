@@ -1,5 +1,5 @@
 import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/pages/gamelist/library_entries_view.dart';
+import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 

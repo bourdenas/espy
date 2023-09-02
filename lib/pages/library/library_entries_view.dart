@@ -1,7 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/pages/gamelist/game_grid_card.dart';
-import 'package:espy/pages/gamelist/game_list_card.dart';
+import 'package:espy/pages/library/library_grid_card.dart';
+import 'package:espy/pages/library/library_list_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
