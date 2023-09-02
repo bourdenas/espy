@@ -1,15 +1,15 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/gamelist/game_list_card.dart';
 import 'package:flutter/material.dart';
 
 class GameListView extends StatelessWidget {
-  const GameListView({
+  const GameListView(
+    this.libraryView, {
     Key? key,
-    required this.entries,
   }) : super(key: key);
 
-  final List<LibraryEntry> entries;
+  final LibraryView libraryView;
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +25,9 @@ class GameListView extends StatelessWidget {
             SliverGrid.extent(
               maxCrossAxisExtent: _maxCardWidth,
               childAspectRatio: _cardAspectRation,
-              children:
-                  entries.map((e) => GameListCard(libraryEntry: e)).toList(),
+              children: libraryView.all
+                  .map((e) => GameListCard(libraryEntry: e))
+                  .toList(),
             ),
           ],
         ),

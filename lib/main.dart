@@ -9,7 +9,7 @@ import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
+// import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +17,7 @@ import 'package:espy/pages/espy_app.dart'
     if (dart.library.js) 'package:espy/pages/espy_app_web.dart';
 
 Future<void> main() async {
-  usePathUrlStrategy();
+  // usePathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     // NOTE: Bug in the Firebase library. Adding the name attibute fails to connect.
@@ -29,7 +29,10 @@ Future<void> main() async {
     providers: [
       ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref()),
       ChangeNotifierProvider(create: (_) => UserDataModel()),
-      ChangeNotifierProvider(create: (_) => LibraryFilterModel()),
+      ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>(
+        create: (_) => LibraryFilterModel(),
+        update: (_, appConfig, model) => model!..update(appConfig),
+      ),
       ChangeNotifierProxyProvider<UserDataModel, UserLibraryModel>(
         create: (_) => UserLibraryModel(),
         update: (_, userDataModel, model) =>

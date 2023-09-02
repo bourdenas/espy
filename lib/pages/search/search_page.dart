@@ -27,7 +27,8 @@ class _SearchPageState extends State<SearchPage> {
 
     final titleMatches = _text.isNotEmpty
         ? gameEntriesModel
-            .filter(LibraryFilter(view: LibraryView.all))
+            .filter(LibraryFilter(view: LibraryClass.all))
+            .all
             .where((entry) => ngrams.every((term) => entry.name
                 .toLowerCase()
                 .split(' ')

@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,9 +42,9 @@ class AppConfigModel extends ChangeNotifier {
     (index) => CardDecoration.values[index],
     CardDecoration.values.length,
   );
-  EnumOption<GroupBy> groupBy = EnumOption<GroupBy>(
-    (index) => GroupBy.values[index],
-    GroupBy.values.length,
+  EnumOption<LibraryGrouping> libraryGrouping = EnumOption<LibraryGrouping>(
+    (index) => LibraryGrouping.values[index],
+    LibraryGrouping.values.length,
   );
   EnumOption<Stacks> stacks = EnumOption<Stacks>(
     (index) => Stacks.values[index],
@@ -56,7 +57,7 @@ class AppConfigModel extends ChangeNotifier {
   AppConfigModel() {
     libraryLayout.onUpdate = _updateOptions;
     cardDecoration.onUpdate = _updateOptions;
-    groupBy.onUpdate = _updateOptions;
+    libraryGrouping.onUpdate = _updateOptions;
     stacks.onUpdate = _updateOptions;
     showExpansions.onUpdate = _updateOptions;
     fetchRemote.onUpdate = _updateOptions;
@@ -71,7 +72,7 @@ class AppConfigModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     libraryLayout.valueIndex = prefs.getInt('libraryLayout') ?? 0;
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
-    groupBy.valueIndex = prefs.getInt('groupBy') ?? 0;
+    libraryGrouping.valueIndex = prefs.getInt('groupBy') ?? 0;
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
     showExpansions.value = prefs.getBool('showExpansions') ?? false;
     fetchRemote.value = prefs.getBool('fetchRemote') ?? false;
@@ -84,7 +85,7 @@ class AppConfigModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('libraryLayout', libraryLayout.value.index);
     prefs.setInt('cardDecoration', cardDecoration.value.index);
-    prefs.setInt('groupBy', groupBy.value.index);
+    prefs.setInt('groupBy', libraryGrouping.value.index);
     prefs.setInt('stacks', stacks.value.index);
     prefs.setBool('showExpansions', showExpansions.value);
     prefs.setBool('fetchRemote', fetchRemote.value);
@@ -101,11 +102,6 @@ enum CardDecoration {
   empty,
   info,
   tags,
-}
-
-enum GroupBy {
-  none,
-  year,
 }
 
 enum Stacks {

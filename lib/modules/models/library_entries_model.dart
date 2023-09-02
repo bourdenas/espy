@@ -30,7 +30,7 @@ class LibraryEntriesModel extends ChangeNotifier {
 
   Iterable<int> get all => _entries.keys;
 
-  Iterable<LibraryEntry> filter(LibraryFilter filter) {
+  LibraryView filter(LibraryFilter filter) {
     return filter.filter(
       this,
       _gameTagsModel,

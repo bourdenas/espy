@@ -15,7 +15,7 @@ class HomeHeadline extends StatelessWidget {
   Widget build(BuildContext context) {
     final entries = context
         .watch<LibraryEntriesModel>()
-        .filter(LibraryFilter(view: LibraryView.wishlist));
+        .filter(LibraryFilter(view: LibraryClass.wishlist));
 
     return FadeIn(
       duration: const Duration(milliseconds: 500),
@@ -27,7 +27,7 @@ class HomeHeadline extends StatelessWidget {
           onPageChanged: (index, reason) {},
         ),
         items: [
-          for (final entry in entries.take(8))
+          for (final entry in entries.all.take(8))
             GestureDetector(
               onTap: () => context
                   .pushNamed('details', pathParameters: {'gid': '${entry.id}'}),

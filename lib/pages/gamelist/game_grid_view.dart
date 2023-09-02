@@ -1,44 +1,34 @@
-import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/pages/search/search_results.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/pages/gamelist/library_entries_view.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class GameGridView extends StatelessWidget {
-  const GameGridView({
+  const GameGridView(
+    this.libraryView, {
     Key? key,
-    required this.entries,
   }) : super(key: key);
 
-  final List<LibraryEntry> entries;
+  final LibraryView libraryView;
 
   @override
   Widget build(BuildContext context) {
-    final groups = context.watch<AppConfigModel>().groupBy.value == GroupBy.year
-        ? groupBy(
-            entries,
-            (e) =>
-                '${DateTime.fromMillisecondsSinceEpoch(e.releaseDate * 1000).year}')
-        : {'': entries};
-    final keys = groups.keys.toList()..sort();
-
     return CustomScrollView(
       primary: true,
       shrinkWrap: true,
       slivers: [
-        if (groups.length == 1)
-          GameSearchResults(
-            entries: entries,
+        if (!libraryView.hasGroups)
+          LibraryEntriesView(
+            entries: libraryView.all,
             cardWidth: _maxCardWidth,
             cardAspectRatio: _cardAspectRation,
           )
         else ...[
-          for (final key in keys.reversed)
+          for (final (label, entries) in libraryView.groups)
             TileShelve(
-              title: key,
+              title: label,
               color: Colors.grey,
-              entries: groups[key]!,
+              entries: entries,
               cardWidth: _maxCardWidth,
               cardAspectRatio: _cardAspectRation,
             ),
@@ -49,13 +39,4 @@ class GameGridView extends StatelessWidget {
 
   static const _maxCardWidth = 250.0;
   static const _cardAspectRation = .75;
-}
-
-Map<String, List<LibraryEntry>> groupBy(
-    Iterable<LibraryEntry> entries, String Function(LibraryEntry) key) {
-  var groups = <String, List<LibraryEntry>>{};
-  for (final entry in entries) {
-    (groups[key(entry)] ??= []).add(entry);
-  }
-  return groups;
 }

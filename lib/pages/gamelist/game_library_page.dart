@@ -21,52 +21,77 @@ class GameLibraryPage extends StatefulWidget {
 
 class _GameLibraryPageState extends State<GameLibraryPage> {
   @override
-  Widget build(BuildContext context) {
-    final entries =
-        context.watch<LibraryEntriesModel>().filter(widget.filter).toList();
+  void initState() {
+    // TODO: implement initState
+    super.initState();
 
-    final appConfig = context.watch<AppConfigModel>();
-
-    if (!fetched && appConfig.fetchRemote.value) {
-      RemoteLibraryModel.fromFilter(
-        widget.filter,
-        includeExpansions: appConfig.showExpansions.value,
-      ).then((value) => setState(() {
-            _remoteGames = value;
-            fetched = true;
-          }));
-    }
-
-    final Set<int> entryIds = Set.from(entries.map((e) => e.id));
-    if (appConfig.fetchRemote.value) {
-      entries.addAll(_remoteGames.where((e) => !entryIds.contains(e.id)));
-    }
-
-    return LibraryContent(entries: entries, filter: widget.filter);
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => context.read<LibraryFilterModel>().filter = widget.filter);
   }
-
-  bool fetched = false;
-  List<LibraryEntry> _remoteGames = [];
-}
-
-class LibraryContent extends StatelessWidget {
-  const LibraryContent({
-    Key? key,
-    required this.entries,
-    required this.filter,
-  }) : super(key: key);
-
-  final List<LibraryEntry> entries;
-  final LibraryFilter filter;
 
   @override
   Widget build(BuildContext context) {
+    return const LibraryContent();
+  }
+}
+
+// class GameLibraryPage extends StatefulWidget {
+//   const GameLibraryPage({Key? key, required this.filter}) : super(key: key);
+
+//   final LibraryFilter filter;
+
+//   @override
+//   State<GameLibraryPage> createState() => _GameLibraryPageState();
+// }
+
+// class _GameLibraryPageState extends State<GameLibraryPage> {
+//   @override
+//   Widget build(BuildContext context) {
+//     final libraryView =
+//         context.watch<LibraryEntriesModel>().filter(widget.filter);
+
+//     final appConfig = context.watch<AppConfigModel>();
+
+//     if (!fetched && appConfig.fetchRemote.value) {
+//       RemoteLibraryModel.fromFilter(
+//         widget.filter,
+//         includeExpansions: appConfig.showExpansions.value,
+//       ).then((value) => setState(() {
+//             _remoteGames = value;
+//             fetched = true;
+//           }));
+//     }
+
+//     // TODO: Needs to move inside the filter / LibraryView.
+//     // final Set<int> entryIds = Set.from(libraryView.all.map((e) => e.id));
+//     // if (appConfig.fetchRemote.value) {
+//     //   entries.addAll(_remoteGames.where((e) => !entryIds.contains(e.id)));
+//     // }
+
+//     return LibraryContent(libraryView: libraryView, filter: widget.filter);
+//   }
+
+//   bool fetched = false;
+//   List<LibraryEntry> _remoteGames = [];
+// }
+
+class LibraryContent extends StatelessWidget {
+  const LibraryContent({Key? key}) : super(key: key);
+
+  // final LibraryView libraryView;
+  // final LibraryFilter filter;
+
+  @override
+  Widget build(BuildContext context) {
+    final filter = context.watch<LibraryFilterModel>().filter;
+    final libraryView = context.watch<LibraryEntriesModel>().filter(filter);
+
     final appConfig = context.watch<AppConfigModel>();
     return Scaffold(
       appBar: AppBar(
         leading: badges.Badge(
           badgeContent: Text(
-            '${entries.length}',
+            '${libraryView.length}',
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           badgeStyle: badges.BadgeStyle(
@@ -112,8 +137,8 @@ class LibraryContent extends StatelessWidget {
         elevation: 0.0,
       ),
       body: appConfig.libraryLayout.value == LibraryLayout.grid
-          ? GameGridView(entries: entries)
-          : GameListView(entries: entries),
+          ? GameGridView(libraryView)
+          : GameListView(libraryView),
     );
   }
 }
