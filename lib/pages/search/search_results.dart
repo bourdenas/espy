@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/user_tags.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/tags/user_tag_manager.dart';
+import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -44,10 +45,8 @@ class TagSearchResults extends StatelessWidget {
               chips: stores.map(
                 (store) => StoreChip(
                   store,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters: LibraryFilter(stores: {store}).params(),
-                  ),
+                  onPressed: () =>
+                      pushLibraryView(context, LibraryFilter(stores: {store})),
                 ),
               ),
             ),
@@ -58,11 +57,8 @@ class TagSearchResults extends StatelessWidget {
               chips: developers.map(
                 (company) => DeveloperChip(
                   company,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(developers: {company}).params(),
-                  ),
+                  onPressed: () => pushLibraryView(
+                      context, LibraryFilter(developers: {company})),
                 ),
               ),
             ),
@@ -73,11 +69,8 @@ class TagSearchResults extends StatelessWidget {
               chips: publishers.map(
                 (company) => PublisherChip(
                   company,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(publishers: {company}).params(),
-                  ),
+                  onPressed: () => pushLibraryView(
+                      context, LibraryFilter(publishers: {company})),
                 ),
               ),
             ),
@@ -88,11 +81,8 @@ class TagSearchResults extends StatelessWidget {
               chips: collections.map(
                 (collection) => CollectionChip(
                   collection,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(collections: {collection}).params(),
-                  ),
+                  onPressed: () => pushLibraryView(
+                      context, LibraryFilter(collections: {collection})),
                 ),
               ),
             ),
@@ -103,10 +93,9 @@ class TagSearchResults extends StatelessWidget {
               chips: franchises.map(
                 (franchise) => FranchiseChip(
                   franchise,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(franchises: {franchise}).params(),
+                  onPressed: () => pushLibraryView(
+                    context,
+                    LibraryFilter(franchises: {franchise}),
                   ),
                 ),
               ),
@@ -118,9 +107,9 @@ class TagSearchResults extends StatelessWidget {
               chips: genres.map(
                 (genre) => GenreChip(
                   genre,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters: LibraryFilter(genres: {genre}).params(),
+                  onPressed: () => pushLibraryView(
+                    context,
+                    LibraryFilter(genres: {genre}),
                   ),
                 ),
               ),
@@ -132,10 +121,9 @@ class TagSearchResults extends StatelessWidget {
               chips: genresTags.map(
                 (genreTag) => GenreTagChip(
                   genreTag.name,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(genreTags: {genreTag.encode()}).params(),
+                  onPressed: () => pushLibraryView(
+                    context,
+                    LibraryFilter(genreTags: {genreTag.encode()}),
                   ),
                 ),
               ),
@@ -147,10 +135,9 @@ class TagSearchResults extends StatelessWidget {
               chips: keywords.map(
                 (keyword) => KeywordChip(
                   keyword,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(keywords: {keyword}).params(),
+                  onPressed: () => pushLibraryView(
+                    context,
+                    LibraryFilter(keywords: {keyword}),
                   ),
                 ),
               ),
@@ -162,9 +149,9 @@ class TagSearchResults extends StatelessWidget {
               chips: group.value.map(
                 (tag) => TagChip(
                   tag,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters: LibraryFilter(tags: {tag.name}).params(),
+                  onPressed: () => pushLibraryView(
+                    context,
+                    LibraryFilter(tags: {tag.name}),
                   ),
                   onRightClick: () =>
                       context.read<GameTagsModel>().userTags.moveCluster(tag),

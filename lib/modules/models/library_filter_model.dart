@@ -5,7 +5,17 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class LibraryFilterModel extends ChangeNotifier {
-  LibraryFilter filter = LibraryFilter();
+  LibraryFilter _filter = LibraryFilter();
+
+  LibraryFilter get filter => _filter;
+
+  set filter(LibraryFilter filter) {
+    filter.view = _filter.view;
+    filter.ordering = _filter.ordering;
+    filter.grouping = _filter.grouping;
+    _filter = filter;
+    notifyListeners();
+  }
 
   void update(AppConfigModel appConfig) {
     print('updating with ${appConfig.libraryGrouping.value}');

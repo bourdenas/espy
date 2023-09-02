@@ -1,6 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:flutter/material.dart';
@@ -51,8 +52,7 @@ class _TileShelveState extends State<TileShelve> {
       ),
       color: widget.color,
       headerLink: widget.filter != null
-          ? () => context.pushNamed('games',
-              queryParameters: widget.filter!.params())
+          ? () => pushLibraryView(context, widget.filter!)
           : null,
       expanded: widget.expanded,
     );
