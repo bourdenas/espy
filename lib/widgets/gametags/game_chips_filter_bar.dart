@@ -1,9 +1,9 @@
 import 'package:espy/modules/documents/user_tags.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class GameChipsFilterBar extends StatelessWidget {
@@ -16,10 +16,7 @@ class GameChipsFilterBar extends StatelessWidget {
     void onRemove(LibraryFilter filter) {
       final updatedFilter =
           context.read<LibraryFilterModel>().filter.remove(filter);
-      context.pushNamed(
-        'games',
-        queryParameters: updatedFilter.params(),
-      );
+      updateLibraryView(context, updatedFilter);
     }
 
     return Row(children: [

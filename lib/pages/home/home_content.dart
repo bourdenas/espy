@@ -3,7 +3,6 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/pages/home/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
@@ -45,10 +44,7 @@ class HomeContent extends StatelessWidget {
               final slate = slates[index];
               return TileCarousel(
                 title: slate.title,
-                onTitleTap: () => context.pushNamed(
-                  'games',
-                  queryParameters: slate.filter.params(),
-                ),
+                onTitleTap: () => updateLibraryView(context, slate.filter),
                 tileSize: AppConfigModel.isMobile(context)
                     ? const TileSize(width: 133, height: 190)
                     : const TileSize(width: 227, height: 320),
@@ -108,7 +104,7 @@ class HomeContent extends StatelessWidget {
                   title: stack.title,
                   tileImages: stack.entries.map((libraryEntry) =>
                       '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg'),
-                  onExpand: () => pushLibraryView(context, stack.filter),
+                  onExpand: () => updateLibraryView(context, stack.filter),
                 ),
             ],
           ),

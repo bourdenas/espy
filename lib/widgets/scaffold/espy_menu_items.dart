@@ -1,5 +1,6 @@
 import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/pages/espy_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -34,14 +35,15 @@ List<MenuItem> espyMenuItems = [
     label: 'Library',
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
-    onTap: (context) => context.goNamed('games'),
+    onTap: (context) =>
+        setLibraryView(context, LibraryFilter(view: LibraryClass.all)),
   ),
   MenuItem(
     label: 'Untagged',
     icon: Icons.label_off_outlined,
     selectedIcon: Icons.label_off,
-    onTap: (context) => context.goNamed('games',
-        queryParameters: LibraryFilter(view: LibraryClass.untagged).params()),
+    onTap: (context) =>
+        setLibraryView(context, LibraryFilter(view: LibraryClass.untagged)),
   ),
   MenuItem(
     label: 'Failed',

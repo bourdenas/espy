@@ -5,7 +5,6 @@ import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class TileShelve extends StatefulWidget {
@@ -52,7 +51,7 @@ class _TileShelveState extends State<TileShelve> {
       ),
       color: widget.color,
       headerLink: widget.filter != null
-          ? () => pushLibraryView(context, widget.filter!)
+          ? () => updateLibraryView(context, widget.filter!)
           : null,
       expanded: widget.expanded,
     );

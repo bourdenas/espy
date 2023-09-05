@@ -10,6 +10,11 @@ class LibraryFilterModel extends ChangeNotifier {
   LibraryFilter get filter => _filter;
 
   set filter(LibraryFilter filter) {
+    _filter = filter;
+    notifyListeners();
+  }
+
+  void updateFilter(LibraryFilter filter) {
     filter.view = _filter.view;
     filter.ordering = _filter.ordering;
     filter.grouping = _filter.grouping;
