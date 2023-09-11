@@ -14,10 +14,13 @@ class LibraryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final filter = context.watch<LibraryFilterModel>().filter;
-    final libraryView = context.watch<LibraryEntriesModel>().filter(filter);
-
     final appConfig = context.watch<AppConfigModel>();
+    final filter = context.watch<LibraryFilterModel>().filter;
+    final libraryView = context.watch<LibraryEntriesModel>().filter(
+          filter,
+          showOutOfLib: appConfig.showOutOfLib.value,
+        );
+
     return Scaffold(
       appBar: libraryHeader(context, appConfig, libraryView, filter),
       body: libraryBody(libraryView),
@@ -88,8 +91,9 @@ class LibraryPage extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Switch(
-                value: appConfig.fetchRemote.value,
-                onChanged: (selected) => appConfig.fetchRemote.value = selected,
+                value: appConfig.showOutOfLib.value,
+                onChanged: (selected) =>
+                    appConfig.showOutOfLib.value = selected,
               ),
             ],
           ),

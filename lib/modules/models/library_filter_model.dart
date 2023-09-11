@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class LibraryFilterModel extends ChangeNotifier {
@@ -26,6 +27,10 @@ class LibraryFilterModel extends ChangeNotifier {
     print('updating with ${appConfig.libraryGrouping.value}');
     if (appConfig.libraryGrouping.value != filter.grouping) {
       filter.grouping = appConfig.libraryGrouping.value;
+      notifyListeners();
+    }
+    if (appConfig.libraryOrdering.value != filter.ordering) {
+      filter.ordering = appConfig.libraryOrdering.value;
       notifyListeners();
     }
   }
@@ -138,7 +143,8 @@ class LibraryFilter {
   LibraryView filter(
     LibraryEntriesModel entriesModel,
     GameTagsModel tagsModel, {
-    bool includeExpansions = false,
+    bool showExpansions = false,
+    bool showOutOfLib = false,
   }) {
     List<Set<int>> gameIdSets = [];
 
@@ -170,6 +176,14 @@ class LibraryFilter {
       gameIdSets.add(Set.from(tagsModel.userTags.gameIds(tag)));
     }
 
+    if (showOutOfLib) {
+      RemoteLibraryModel.fromFilter(
+        this,
+        includeExpansions: showExpansions,
+      ).then((value) =>
+          print('received remote ${value.length} games for ${this.params()}'));
+    }
+
     final gameIds = gameIdSets.isNotEmpty
         ? gameIdSets.reduce((value, element) => value.intersection(element))
         : entriesModel.all;
@@ -183,7 +197,7 @@ class LibraryFilter {
             e.digest.category == 'Remake' ||
             e.digest.category == 'Remaster' ||
             e.digest.category == 'StandaloneExpansion' ||
-            (includeExpansions && e.digest.category == 'Expansion'))
+            (showExpansions && e.digest.category == 'Expansion'))
         .where((libraryEntry) => _filterView(libraryEntry, tagsModel)))));
   }
 

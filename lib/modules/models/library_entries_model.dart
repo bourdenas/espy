@@ -30,11 +30,12 @@ class LibraryEntriesModel extends ChangeNotifier {
 
   Iterable<int> get all => _entries.keys;
 
-  LibraryView filter(LibraryFilter filter) {
+  LibraryView filter(LibraryFilter filter, {bool showOutOfLib = false}) {
     return filter.filter(
       this,
       _gameTagsModel,
-      includeExpansions: _appConfigModel.showExpansions.value,
+      showExpansions: _appConfigModel.showExpansions.value,
+      showOutOfLib: showOutOfLib,
     );
   }
 
