@@ -23,37 +23,45 @@ class RemoteLibraryModel extends ChangeNotifier {
     }
 
     print('fetching remote: ${filter.params()}');
+    List<List<LibraryEntry>> fetchedEntries = [];
 
     if (filter.collections.isNotEmpty) {
       for (final collection in filter.collections) {
-        _libraryEntries.addAll(await _getCollection(collection));
+        fetchedEntries.add(await _getCollection(collection));
       }
     }
 
     if (filter.franchises.isNotEmpty) {
       for (final franchise in filter.franchises) {
-        _libraryEntries.addAll(await _getFranchise(franchise));
+        fetchedEntries.add(await _getFranchise(franchise));
       }
     }
 
     if (filter.developers.isNotEmpty) {
       for (final developer in filter.developers) {
-        _libraryEntries.addAll(await _getDeveloper(developer));
+        fetchedEntries.add(await _getDeveloper(developer));
       }
     }
 
     if (filter.publishers.isNotEmpty) {
       for (final publisher in filter.publishers) {
-        _libraryEntries.addAll(await _getPublisher(publisher));
+        fetchedEntries.add(await _getPublisher(publisher));
       }
+    }
+
+    final idSets = fetchedEntries
+        .map((entries) => Set<int>.from(entries.map((e) => e.id)));
+    if (idSets.isNotEmpty) {
+      final intersection = idSets.reduce((a, b) => a.intersection(b));
+      _libraryEntries.addAll(fetchedEntries.first
+          .where((e) => intersection.contains(e.id))
+          .toList());
     }
 
     notifyListeners();
   }
 
   static Future<List<LibraryEntry>> _getCollection(String name) async {
-    Map<int, LibraryEntry> libraryEntries = {};
-
     final snapshot = await FirebaseFirestore.instance
         .collection('collections')
         .where('name', isEqualTo: name)
@@ -64,18 +72,16 @@ class RemoteLibraryModel extends ChangeNotifier {
         )
         .get();
 
+    final libraryEntries = <LibraryEntry>[];
     for (final collection in snapshot.docs) {
       for (final digest in collection.data().games) {
-        libraryEntries[digest.id] = LibraryEntry.fromGameDigest(digest);
+        libraryEntries.add(LibraryEntry.fromGameDigest(digest));
       }
     }
-
-    return libraryEntries.values.toList();
+    return libraryEntries;
   }
 
   static Future<List<LibraryEntry>> _getFranchise(String name) async {
-    Map<int, LibraryEntry> libraryEntries = {};
-
     final snapshot = await FirebaseFirestore.instance
         .collection('franchises')
         .where('name', isEqualTo: name)
@@ -86,18 +92,16 @@ class RemoteLibraryModel extends ChangeNotifier {
         )
         .get();
 
+    final libraryEntries = <LibraryEntry>[];
     for (final franchise in snapshot.docs) {
       for (final digest in franchise.data().games) {
-        libraryEntries[digest.id] = LibraryEntry.fromGameDigest(digest);
+        libraryEntries.add(LibraryEntry.fromGameDigest(digest));
       }
     }
-
-    return libraryEntries.values.toList();
+    return libraryEntries;
   }
 
   static Future<List<LibraryEntry>> _getDeveloper(String name) async {
-    Map<int, LibraryEntry> libraryEntries = {};
-
     final snapshot = await FirebaseFirestore.instance
         .collection('companies')
         .where('name', isEqualTo: name)
@@ -108,18 +112,16 @@ class RemoteLibraryModel extends ChangeNotifier {
         )
         .get();
 
+    final libraryEntries = <LibraryEntry>[];
     for (final company in snapshot.docs) {
       for (final digest in company.data().developed) {
-        libraryEntries[digest.id] = LibraryEntry.fromGameDigest(digest);
+        libraryEntries.add(LibraryEntry.fromGameDigest(digest));
       }
     }
-
-    return libraryEntries.values.toList();
+    return libraryEntries;
   }
 
   static Future<List<LibraryEntry>> _getPublisher(String name) async {
-    Map<int, LibraryEntry> libraryEntries = {};
-
     final snapshot = await FirebaseFirestore.instance
         .collection('companies')
         .where('name', isEqualTo: name)
@@ -130,12 +132,12 @@ class RemoteLibraryModel extends ChangeNotifier {
         )
         .get();
 
+    final libraryEntries = <LibraryEntry>[];
     for (final company in snapshot.docs) {
       for (final digest in company.data().published) {
-        libraryEntries[digest.id] = LibraryEntry.fromGameDigest(digest);
+        libraryEntries.add(LibraryEntry.fromGameDigest(digest));
       }
     }
-
-    return libraryEntries.values.toList();
+    return libraryEntries;
   }
 }
