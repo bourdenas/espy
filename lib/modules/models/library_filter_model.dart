@@ -142,6 +142,7 @@ class LibraryFilter {
 
   LibraryView filter(
     LibraryEntriesModel entriesModel,
+    RemoteLibraryModel remoteModel,
     GameTagsModel tagsModel, {
     bool showExpansions = false,
     bool showOutOfLib = false,
@@ -176,29 +177,27 @@ class LibraryFilter {
       gameIdSets.add(Set.from(tagsModel.userTags.gameIds(tag)));
     }
 
-    if (showOutOfLib) {
-      RemoteLibraryModel.fromFilter(
-        this,
-        includeExpansions: showExpansions,
-      ).then((value) =>
-          print('received remote ${value.length} games for ${this.params()}'));
-    }
-
     final gameIds = gameIdSets.isNotEmpty
         ? gameIdSets.reduce((value, element) => value.intersection(element))
         : entriesModel.all;
 
-    return LibraryView(_group(_sort(gameIds
+    final localEntries = gameIds
         .map((id) => entriesModel.getEntryById(id))
         .where((e) => e != null)
         .map((e) => e!)
-        .where((e) =>
-            e.digest.category == 'Main' ||
-            e.digest.category == 'Remake' ||
-            e.digest.category == 'Remaster' ||
-            e.digest.category == 'StandaloneExpansion' ||
-            (showExpansions && e.digest.category == 'Expansion'))
-        .where((libraryEntry) => _filterView(libraryEntry, tagsModel)))));
+        .where((e) => e.isMainGame || (showExpansions && e.isExpansion))
+        .where((libraryEntry) => _filterView(libraryEntry, tagsModel));
+
+    final remoteEntries = showOutOfLib
+        ? showExpansions
+            ? remoteModel.entriesWithExpansions
+            : remoteModel.entries
+        : <LibraryEntry>[];
+
+    return LibraryView(_group(_sort([
+      localEntries,
+      remoteEntries.where((e) => !gameIds.contains(e.id)),
+    ].expand((e) => e))));
   }
 
   List<LibraryEntry> _sort(Iterable<LibraryEntry> entries) {

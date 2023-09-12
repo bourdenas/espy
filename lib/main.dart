@@ -5,6 +5,7 @@ import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
@@ -29,10 +30,6 @@ Future<void> main() async {
     providers: [
       ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref()),
       ChangeNotifierProvider(create: (_) => UserDataModel()),
-      ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>(
-        create: (_) => LibraryFilterModel(),
-        update: (_, appConfig, model) => model!..update(appConfig),
-      ),
       ChangeNotifierProxyProvider<UserDataModel, UserLibraryModel>(
         create: (_) => UserLibraryModel(),
         update: (_, userDataModel, model) =>
@@ -60,14 +57,29 @@ Future<void> main() async {
             );
         },
       ),
-      ChangeNotifierProxyProvider4<UserLibraryModel, WishlistModel,
-          GameTagsModel, AppConfigModel, LibraryEntriesModel>(
+      ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>(
+        create: (_) => LibraryFilterModel(),
+        update: (_, appConfig, model) => model!..update(appConfig),
+      ),
+      ChangeNotifierProxyProvider2<AppConfigModel, LibraryFilterModel,
+          RemoteLibraryModel>(
+        create: (_) => RemoteLibraryModel(),
+        update: (_, appConfig, libraryFilter, model) =>
+            model!..update(appConfig, libraryFilter.filter),
+      ),
+      ChangeNotifierProxyProvider5<
+          AppConfigModel,
+          UserLibraryModel,
+          WishlistModel,
+          GameTagsModel,
+          RemoteLibraryModel,
+          LibraryEntriesModel>(
         create: (_) => LibraryEntriesModel(),
-        update: (_, userLibraryModel, wishlistModel, gameTagsModel,
-            appConfigModel, libraryEntriesModel) {
+        update: (_, appConfigModel, userLibraryModel, wishlistModel,
+            gameTagsModel, remoteLibraryModel, libraryEntriesModel) {
           return libraryEntriesModel!
-            ..update(
-                userLibraryModel, wishlistModel, gameTagsModel, appConfigModel);
+            ..update(appConfigModel, userLibraryModel, wishlistModel,
+                gameTagsModel, remoteLibraryModel);
         },
       ),
       ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel,

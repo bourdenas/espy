@@ -18,6 +18,13 @@ class LibraryEntry {
   List<String> get developers => digest.developers;
   List<String> get publishers => digest.publishers;
 
+  bool get isMainGame =>
+      digest.category == 'Main' ||
+      digest.category == 'Remake' ||
+      digest.category == 'Remaster' ||
+      digest.category == 'StandaloneExpansion';
+  bool get isExpansion => digest.category == 'Expansion';
+
   LibraryEntry({
     required this.id,
     required this.digest,

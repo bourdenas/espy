@@ -2,7 +2,6 @@ import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/gametags/game_chips_filter_bar.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
@@ -104,43 +103,3 @@ class LibraryPage extends StatelessWidget {
     );
   }
 }
-
-// class GameLibraryPage extends StatefulWidget {
-//   const GameLibraryPage({Key? key, required this.filter}) : super(key: key);
-
-//   final LibraryFilter filter;
-
-//   @override
-//   State<GameLibraryPage> createState() => _GameLibraryPageState();
-// }
-
-// class _GameLibraryPageState extends State<GameLibraryPage> {
-//   @override
-//   Widget build(BuildContext context) {
-//     final libraryView =
-//         context.watch<LibraryEntriesModel>().filter(widget.filter);
-
-//     final appConfig = context.watch<AppConfigModel>();
-
-//     if (!fetched && appConfig.fetchRemote.value) {
-//       RemoteLibraryModel.fromFilter(
-//         widget.filter,
-//         includeExpansions: appConfig.showExpansions.value,
-//       ).then((value) => setState(() {
-//             _remoteGames = value;
-//             fetched = true;
-//           }));
-//     }
-
-//     // TODO: Needs to move inside the filter / LibraryView.
-//     // final Set<int> entryIds = Set.from(libraryView.all.map((e) => e.id));
-//     // if (appConfig.fetchRemote.value) {
-//     //   entries.addAll(_remoteGames.where((e) => !entryIds.contains(e.id)));
-//     // }
-
-//     return LibraryContent(libraryView: libraryView, filter: widget.filter);
-//   }
-
-//   bool fetched = false;
-//   List<LibraryEntry> _remoteGames = [];
-// }
