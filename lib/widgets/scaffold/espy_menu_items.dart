@@ -39,13 +39,6 @@ List<MenuItem> espyMenuItems = [
         setLibraryView(context, LibraryFilter(view: LibraryClass.all)),
   ),
   MenuItem(
-    label: 'Untagged',
-    icon: Icons.label_off_outlined,
-    selectedIcon: Icons.label_off,
-    onTap: (context) =>
-        setLibraryView(context, LibraryFilter(view: LibraryClass.untagged)),
-  ),
-  MenuItem(
     label: 'Failed',
     icon: Icons.error_outline,
     selectedIcon: Icons.error,
