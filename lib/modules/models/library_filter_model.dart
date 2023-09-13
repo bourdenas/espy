@@ -11,6 +11,8 @@ class LibraryFilterModel extends ChangeNotifier {
   LibraryFilter get filter => _filter;
 
   set filter(LibraryFilter filter) {
+    filter.ordering = _filter.ordering;
+    filter.grouping = _filter.grouping;
     _filter = filter;
     notifyListeners();
   }
