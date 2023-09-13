@@ -44,7 +44,7 @@ class HomeContent extends StatelessWidget {
               final slate = slates[index];
               return TileCarousel(
                 title: slate.title,
-                onTitleTap: () => updateLibraryView(context, slate.filter),
+                onTitleTap: () => setLibraryView(context, slate.filter),
                 tileSize: AppConfigModel.isMobile(context)
                     ? const TileSize(width: 133, height: 190)
                     : const TileSize(width: 227, height: 320),
