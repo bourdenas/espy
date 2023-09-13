@@ -1,60 +1,11 @@
-import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_tags.dart';
-import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/tags/user_tag_manager.dart';
-import 'package:espy/pages/gamelist/game_grid_card.dart';
-import 'package:espy/pages/gamelist/game_list_card.dart';
+import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
-class GameSearchResults extends StatelessWidget {
-  const GameSearchResults({
-    Key? key,
-    required this.entries,
-    this.cardWidth,
-    this.cardAspectRatio,
-    this.pushNavigation = true,
-  }) : super(key: key);
-
-  final Iterable<LibraryEntry> entries;
-  final double? cardWidth;
-  final double? cardAspectRatio;
-  final bool pushNavigation;
-
-  @override
-  Widget build(BuildContext context) {
-    return context.watch<AppConfigModel>().libraryLayout.value ==
-            LibraryLayout.grid
-        ? gridView(entries)
-        : listView(entries);
-  }
-
-  SliverGrid gridView(Iterable<LibraryEntry> matchedEntries) {
-    return SliverGrid.extent(
-      maxCrossAxisExtent: cardWidth ?? 200,
-      childAspectRatio: cardAspectRatio ?? .75,
-      children: matchedEntries
-          .map((e) => GameGridCard(
-                entry: e,
-                pushNavigation: pushNavigation,
-              ))
-          .toList(),
-    );
-  }
-
-  SliverGrid listView(Iterable<LibraryEntry> matchedEntries) {
-    return SliverGrid.extent(
-      maxCrossAxisExtent: cardWidth ?? 600.0,
-      childAspectRatio: cardAspectRatio ?? 2.5,
-      children:
-          matchedEntries.map((e) => GameListCard(libraryEntry: e)).toList(),
-    );
-  }
-}
 
 class TagSearchResults extends StatelessWidget {
   const TagSearchResults(
@@ -93,10 +44,8 @@ class TagSearchResults extends StatelessWidget {
               chips: stores.map(
                 (store) => StoreChip(
                   store,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters: LibraryFilter(stores: {store}).params(),
-                  ),
+                  onPressed: () => updateLibraryView(
+                      context, LibraryFilter(stores: {store})),
                 ),
               ),
             ),
@@ -107,11 +56,8 @@ class TagSearchResults extends StatelessWidget {
               chips: developers.map(
                 (company) => DeveloperChip(
                   company,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(developers: {company}).params(),
-                  ),
+                  onPressed: () => updateLibraryView(
+                      context, LibraryFilter(developers: {company})),
                 ),
               ),
             ),
@@ -122,11 +68,8 @@ class TagSearchResults extends StatelessWidget {
               chips: publishers.map(
                 (company) => PublisherChip(
                   company,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(publishers: {company}).params(),
-                  ),
+                  onPressed: () => updateLibraryView(
+                      context, LibraryFilter(publishers: {company})),
                 ),
               ),
             ),
@@ -137,11 +80,8 @@ class TagSearchResults extends StatelessWidget {
               chips: collections.map(
                 (collection) => CollectionChip(
                   collection,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(collections: {collection}).params(),
-                  ),
+                  onPressed: () => updateLibraryView(
+                      context, LibraryFilter(collections: {collection})),
                 ),
               ),
             ),
@@ -152,10 +92,9 @@ class TagSearchResults extends StatelessWidget {
               chips: franchises.map(
                 (franchise) => FranchiseChip(
                   franchise,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(franchises: {franchise}).params(),
+                  onPressed: () => updateLibraryView(
+                    context,
+                    LibraryFilter(franchises: {franchise}),
                   ),
                 ),
               ),
@@ -167,9 +106,9 @@ class TagSearchResults extends StatelessWidget {
               chips: genres.map(
                 (genre) => GenreChip(
                   genre,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters: LibraryFilter(genres: {genre}).params(),
+                  onPressed: () => updateLibraryView(
+                    context,
+                    LibraryFilter(genres: {genre}),
                   ),
                 ),
               ),
@@ -181,10 +120,9 @@ class TagSearchResults extends StatelessWidget {
               chips: genresTags.map(
                 (genreTag) => GenreTagChip(
                   genreTag.name,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(genreTags: {genreTag.encode()}).params(),
+                  onPressed: () => updateLibraryView(
+                    context,
+                    LibraryFilter(genreTags: {genreTag.encode()}),
                   ),
                 ),
               ),
@@ -196,10 +134,9 @@ class TagSearchResults extends StatelessWidget {
               chips: keywords.map(
                 (keyword) => KeywordChip(
                   keyword,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters:
-                        LibraryFilter(keywords: {keyword}).params(),
+                  onPressed: () => updateLibraryView(
+                    context,
+                    LibraryFilter(keywords: {keyword}),
                   ),
                 ),
               ),
@@ -211,9 +148,9 @@ class TagSearchResults extends StatelessWidget {
               chips: group.value.map(
                 (tag) => TagChip(
                   tag,
-                  onPressed: () => context.pushNamed(
-                    'games',
-                    queryParameters: LibraryFilter(tags: {tag.name}).params(),
+                  onPressed: () => updateLibraryView(
+                    context,
+                    LibraryFilter(tags: {tag.name}),
                   ),
                   onRightClick: () =>
                       context.read<GameTagsModel>().userTags.moveCluster(tag),

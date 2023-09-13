@@ -1,10 +1,10 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/pages/search/search_results.dart';
+import 'package:espy/pages/espy_navigator.dart';
+import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class TileShelve extends StatefulWidget {
@@ -14,8 +14,6 @@ class TileShelve extends StatefulWidget {
     this.color,
     this.filter,
     this.entries,
-    this.cardWidth = 250,
-    this.cardAspectRatio = .75,
     this.expanded = true,
     this.pushNavigation = true,
   }) : super(key: key);
@@ -25,8 +23,6 @@ class TileShelve extends StatefulWidget {
   final LibraryFilter? filter;
   final Iterable<LibraryEntry>? entries;
 
-  final double cardWidth;
-  final double cardAspectRatio;
   final bool expanded;
   final bool pushNavigation;
 
@@ -47,18 +43,15 @@ class _TileShelveState extends State<TileShelve> {
   Widget build(BuildContext context) {
     return Shelve(
       title: widget.title,
-      expansion: GameSearchResults(
+      expansion: LibraryEntriesView(
         entries: widget.entries != null
             ? widget.entries!
-            : context.watch<LibraryEntriesModel>().filter(widget.filter!),
-        cardWidth: widget.cardWidth,
-        cardAspectRatio: widget.cardAspectRatio,
+            : context.watch<LibraryEntriesModel>().filter(widget.filter!).all,
         pushNavigation: widget.pushNavigation,
       ),
       color: widget.color,
       headerLink: widget.filter != null
-          ? () => context.pushNamed('games',
-              queryParameters: widget.filter!.params())
+          ? () => updateLibraryView(context, widget.filter!)
           : null,
       expanded: widget.expanded,
     );

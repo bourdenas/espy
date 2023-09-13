@@ -2,27 +2,31 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class LibraryEntriesModel extends ChangeNotifier {
   Map<int, LibraryEntry> _entries = {};
-  GameTagsModel _gameTagsModel = GameTagsModel();
   AppConfigModel _appConfigModel = AppConfigModel();
+  GameTagsModel _gameTagsModel = GameTagsModel();
+  RemoteLibraryModel _remoteLibraryModel = RemoteLibraryModel();
 
   void update(
+    AppConfigModel appConfigModel,
     UserLibraryModel userLibraryModel,
     WishlistModel wishlistModel,
     GameTagsModel gameTags,
-    AppConfigModel appConfigModel,
+    RemoteLibraryModel remoteLibraryModel,
   ) {
     _entries =
         Map.fromEntries(userLibraryModel.entries.map((e) => MapEntry(e.id, e)));
     _entries.addAll(
         Map.fromEntries(wishlistModel.wishlist.map((e) => MapEntry(e.id, e))));
-    _gameTagsModel = gameTags;
     _appConfigModel = appConfigModel;
+    _gameTagsModel = gameTags;
+    _remoteLibraryModel = remoteLibraryModel;
     notifyListeners();
   }
 
@@ -30,15 +34,14 @@ class LibraryEntriesModel extends ChangeNotifier {
 
   Iterable<int> get all => _entries.keys;
 
-  Iterable<LibraryEntry> filter(LibraryFilter filter) {
-    return filter
-        .filter(
-          this,
-          _gameTagsModel,
-          includeExpansions: _appConfigModel.showExpansions.value,
-        )
-        .toList()
-      ..sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
+  LibraryView filter(LibraryFilter filter, {bool showOutOfLib = false}) {
+    return filter.filter(
+      this,
+      _remoteLibraryModel,
+      _gameTagsModel,
+      showExpansions: _appConfigModel.showExpansions.value,
+      showOutOfLib: showOutOfLib,
+    );
   }
 
   Iterable<LibraryEntry> getRecentEntries() {

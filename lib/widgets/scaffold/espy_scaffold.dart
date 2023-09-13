@@ -3,6 +3,7 @@ import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/widgets/scaffold/espy_drawer.dart';
 import 'package:espy/widgets/scaffold/espy_rail.dart';
@@ -104,9 +105,10 @@ class EspyScaffold extends StatelessWidget {
           ),
           IconButton(
             key: const Key('groupByButton'),
-            icon: Icon(_groupViews[appConfig.groupBy.value.index].iconData),
+            icon: Icon(
+                _groupViews[appConfig.libraryGrouping.value.index].iconData),
             splashRadius: 20.0,
-            onPressed: () => appConfig.groupBy.nextValue(),
+            onPressed: () => appConfig.libraryGrouping.nextValue(),
           ),
           IconButton(
             key: const Key('searchButton'),
@@ -133,9 +135,9 @@ class EspyScaffold extends StatelessWidget {
           const SizedBox(width: 24),
           ToggleButtons(
             renderBorder: false,
-            isSelected: List.generate(
-                _groupViews.length, (i) => i == appConfig.groupBy.value.index),
-            onPressed: (index) => appConfig.groupBy.valueIndex = index,
+            isSelected: List.generate(_groupViews.length,
+                (i) => i == appConfig.libraryGrouping.value.index),
+            onPressed: (index) => appConfig.libraryGrouping.valueIndex = index,
             children: _groupViews.map((e) => Icon(e.iconData)).toList(),
           ),
           const SizedBox(width: 8),
@@ -156,8 +158,11 @@ class EspyScaffold extends StatelessWidget {
   ];
 
   final List<_GroupView> _groupViews = const [
-    _GroupView(GroupBy.none, Icons.block),
-    _GroupView(GroupBy.year, Icons.calendar_month),
+    _GroupView(LibraryGrouping.none, Icons.block),
+    _GroupView(LibraryGrouping.year, Icons.calendar_month),
+    _GroupView(LibraryGrouping.genre, Icons.label),
+    _GroupView(LibraryGrouping.genreTag, Icons.label_important),
+    _GroupView(LibraryGrouping.rating, Icons.star),
   ];
 }
 
@@ -176,8 +181,8 @@ class _CardsView {
 }
 
 class _GroupView {
-  final GroupBy group;
+  final LibraryGrouping grouping;
   final IconData iconData;
 
-  const _GroupView(this.group, this.iconData);
+  const _GroupView(this.grouping, this.iconData);
 }

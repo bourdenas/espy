@@ -21,7 +21,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
   final Map<String, int> _mapping = {
     '/': 0,
     '/games': 1,
-    '/unmatched': 3,
+    '/unmatched': 2,
   };
 
   @override

@@ -1,6 +1,8 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class LibraryFilterModel extends ChangeNotifier {
@@ -9,21 +11,72 @@ class LibraryFilterModel extends ChangeNotifier {
   LibraryFilter get filter => _filter;
 
   set filter(LibraryFilter filter) {
+    filter.ordering = _filter.ordering;
+    filter.grouping = _filter.grouping;
     _filter = filter;
     notifyListeners();
   }
+
+  void updateFilter(LibraryFilter filter) {
+    filter.view = _filter.view;
+    filter.ordering = _filter.ordering;
+    filter.grouping = _filter.grouping;
+    _filter = filter;
+    notifyListeners();
+  }
+
+  void update(AppConfigModel appConfig) {
+    print('updating with ${appConfig.libraryGrouping.value}');
+    if (appConfig.libraryGrouping.value != filter.grouping) {
+      filter.grouping = appConfig.libraryGrouping.value;
+      notifyListeners();
+    }
+    if (appConfig.libraryOrdering.value != filter.ordering) {
+      filter.ordering = appConfig.libraryOrdering.value;
+      notifyListeners();
+    }
+  }
 }
 
-enum LibraryView {
+enum LibraryClass {
   all,
   inLibrary,
   wishlist,
   untagged,
 }
 
+enum LibraryOrdering {
+  release,
+  rating,
+  title,
+}
+
+enum LibraryGrouping {
+  none,
+  year,
+  genre,
+  genreTag,
+  rating,
+}
+
+class LibraryView {
+  final List<(String, List<LibraryEntry>)> groups;
+
+  const LibraryView(this.groups);
+
+  // Returns a flat view of all groups in the view.
+  Iterable<LibraryEntry> get all => groups.expand((e) => e.$2);
+
+  int get length => groups.fold(0, (len, group) => len + group.$2.length);
+
+  bool get hasGroups => groups.length > 1 || groups.first.$1.isNotEmpty;
+}
+
 class LibraryFilter {
   LibraryFilter({
-    this.view = LibraryView.all,
+    this.view = LibraryClass.all,
+    this.ordering = LibraryOrdering.release,
+    this.grouping = LibraryGrouping.none,
     this.stores = const {},
     this.developers = const {},
     this.publishers = const {},
@@ -35,7 +88,9 @@ class LibraryFilter {
     this.tags = const {},
   });
 
-  LibraryView view;
+  LibraryClass view;
+  LibraryOrdering ordering;
+  LibraryGrouping grouping;
 
   Set<String> stores;
   Set<String> developers;
@@ -87,10 +142,12 @@ class LibraryFilter {
         other.tags.difference(tags).isEmpty;
   }
 
-  Iterable<LibraryEntry> filter(
+  LibraryView filter(
     LibraryEntriesModel entriesModel,
+    RemoteLibraryModel remoteModel,
     GameTagsModel tagsModel, {
-    bool includeExpansions = false,
+    bool showExpansions = false,
+    bool showOutOfLib = false,
   }) {
     List<Set<int>> gameIdSets = [];
 
@@ -126,28 +183,97 @@ class LibraryFilter {
         ? gameIdSets.reduce((value, element) => value.intersection(element))
         : entriesModel.all;
 
-    return gameIds
+    final localEntries = gameIds
         .map((id) => entriesModel.getEntryById(id))
         .where((e) => e != null)
         .map((e) => e!)
-        .where((e) =>
-            e.digest.category == 'Main' ||
-            e.digest.category == 'Remake' ||
-            e.digest.category == 'Remaster' ||
-            e.digest.category == 'StandaloneExpansion' ||
-            (includeExpansions && e.digest.category == 'Expansion'))
+        .where((e) => e.isMainGame || (showExpansions && e.isExpansion))
         .where((libraryEntry) => _filterView(libraryEntry, tagsModel));
+
+    final remoteEntries = showOutOfLib
+        ? showExpansions
+            ? remoteModel.entriesWithExpansions
+            : remoteModel.entries
+        : <LibraryEntry>[];
+
+    return LibraryView(_group(
+      _sort([
+        localEntries,
+        remoteEntries.where((e) => !gameIds.contains(e.id)),
+      ].expand((e) => e)),
+      tagsModel,
+    ));
+  }
+
+  List<LibraryEntry> _sort(Iterable<LibraryEntry> entries) {
+    switch (ordering) {
+      case LibraryOrdering.release:
+        return entries.toList()
+          ..sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
+      case LibraryOrdering.rating:
+        return entries.toList()..sort((a, b) => -a.rating.compareTo(b.rating));
+      case LibraryOrdering.title:
+        return entries.toList()..sort((a, b) => a.name.compareTo(b.name));
+    }
+  }
+
+  List<(String, List<LibraryEntry>)> _group(
+      List<LibraryEntry> entries, GameTagsModel tagsModel) {
+    switch (grouping) {
+      case LibraryGrouping.none:
+        return [('', entries)];
+      case LibraryGrouping.year:
+        return groupBy(
+          entries,
+          (e) => [
+            '${DateTime.fromMillisecondsSinceEpoch(e.releaseDate * 1000).year}'
+          ],
+          (a, b) => -a.compareTo(b),
+        );
+      case LibraryGrouping.genre:
+        return groupBy(entries, (e) => e.digest.genres);
+      case LibraryGrouping.genreTag:
+        return groupBy(entries,
+            (e) => tagsModel.genreTags.byGameId(e.id).map((e) => e.name));
+      case LibraryGrouping.rating:
+        return groupBy(
+          entries,
+          (e) => [(5 * e.digest.rating / 100.0).toStringAsFixed(1).toString()],
+          (a, b) => -a.compareTo(b),
+        );
+    }
+  }
+
+  List<(String, List<LibraryEntry>)> groupBy(Iterable<LibraryEntry> entries,
+      Iterable<String> Function(LibraryEntry) keysExtractor,
+      [int Function(String, String)? keyCompare]) {
+    var groups = <String, List<LibraryEntry>>{};
+    for (final entry in entries) {
+      final keys = keysExtractor(entry);
+      if (keys.isEmpty) {
+        (groups['🚫'] ??= []).add(entry);
+      }
+      for (final key in keys) {
+        (groups[key] ??= []).add(entry);
+      }
+    }
+
+    final keys = groups.keys.toList()..sort(keyCompare);
+    return keys
+        .map((key) => (key, groups[key]))
+        .whereType<(String, List<LibraryEntry>)>()
+        .toList();
   }
 
   bool _filterView(LibraryEntry entry, GameTagsModel tagsModel) {
     switch (view) {
-      case LibraryView.all:
+      case LibraryClass.all:
         return true;
-      case LibraryView.inLibrary:
+      case LibraryClass.inLibrary:
         return entry.storeEntries.isNotEmpty;
-      case LibraryView.wishlist:
+      case LibraryClass.wishlist:
         return entry.storeEntries.isEmpty;
-      case LibraryView.untagged:
+      case LibraryClass.untagged:
         return tagsModel.userTags.byGameId(entry.id).isEmpty;
     }
   }
@@ -155,6 +281,8 @@ class LibraryFilter {
   Map<String, String> params() {
     return {
       'vw': _viewEncoding,
+      'rd': _orderingEncoding,
+      if (grouping != LibraryGrouping.none) 'gp': _groupingEncoding,
       if (developers.isNotEmpty) 'dev': developers.map((c) => c).join(':'),
       if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(':'),
       if (collections.isNotEmpty) 'col': collections.map((c) => c).join(':'),
@@ -173,6 +301,10 @@ class LibraryFilter {
     params.forEach((key, value) {
       if (key == 'vw') {
         filter._view = value;
+      } else if (key == 'rd') {
+        filter._ordering = value;
+      } else if (key == 'gp') {
+        filter._grouping = value;
       } else if (key == 'dev') {
         filter.developers = value.split(':').toSet();
       } else if (key == 'pub') {
@@ -198,13 +330,13 @@ class LibraryFilter {
 
   String get _viewEncoding {
     switch (view) {
-      case LibraryView.all:
+      case LibraryClass.all:
         return 'all';
-      case LibraryView.inLibrary:
+      case LibraryClass.inLibrary:
         return 'lib';
-      case LibraryView.wishlist:
+      case LibraryClass.wishlist:
         return 'wsl';
-      case LibraryView.untagged:
+      case LibraryClass.untagged:
         return 'unt';
       default:
         return 'all';
@@ -214,17 +346,85 @@ class LibraryFilter {
   set _view(String encoded) {
     switch (encoded) {
       case 'all':
-        view = LibraryView.all;
+        view = LibraryClass.all;
         break;
       case 'lib':
-        view = LibraryView.inLibrary;
+        view = LibraryClass.inLibrary;
         break;
       case 'wsl':
-        view = LibraryView.wishlist;
+        view = LibraryClass.wishlist;
         break;
       case 'unt':
-        view = LibraryView.untagged;
+        view = LibraryClass.untagged;
         break;
+    }
+  }
+
+  String get _orderingEncoding {
+    switch (ordering) {
+      case LibraryOrdering.release:
+        return 'yr';
+      case LibraryOrdering.rating:
+        return 'rt';
+      case LibraryOrdering.title:
+        return 'tl';
+      default:
+        return 'yr';
+    }
+  }
+
+  set _ordering(String encoded) {
+    switch (encoded) {
+      case 'yr':
+        ordering = LibraryOrdering.release;
+        break;
+      case 'rt':
+        ordering = LibraryOrdering.rating;
+        break;
+      case 'tl':
+        ordering = LibraryOrdering.title;
+        break;
+      default:
+        ordering = LibraryOrdering.release;
+    }
+  }
+
+  String get _groupingEncoding {
+    switch (grouping) {
+      case LibraryGrouping.none:
+        return 'na';
+      case LibraryGrouping.year:
+        return 'yr';
+      case LibraryGrouping.genre:
+        return 'gn';
+      case LibraryGrouping.genreTag:
+        return 'gt';
+      case LibraryGrouping.rating:
+        return 'rt';
+      default:
+        return 'na';
+    }
+  }
+
+  set _grouping(String encoded) {
+    switch (encoded) {
+      case 'na':
+        grouping = LibraryGrouping.none;
+        break;
+      case 'yr':
+        grouping = LibraryGrouping.year;
+        break;
+      case 'gn':
+        grouping = LibraryGrouping.genre;
+        break;
+      case 'gt':
+        grouping = LibraryGrouping.genreTag;
+        break;
+      case 'rt':
+        grouping = LibraryGrouping.rating;
+        break;
+      default:
+        grouping = LibraryGrouping.none;
     }
   }
 }

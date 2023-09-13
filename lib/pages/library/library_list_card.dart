@@ -7,8 +7,8 @@ import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class GameListCard extends StatelessWidget {
-  const GameListCard({
+class LibraryListCard extends StatelessWidget {
+  const LibraryListCard({
     Key? key,
     required this.libraryEntry,
   }) : super(key: key);

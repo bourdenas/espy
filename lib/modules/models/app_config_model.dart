@@ -1,3 +1,4 @@
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,6 +32,11 @@ class AppConfigModel extends ChangeNotifier {
       MediaQuery.of(context).size.width <= 800;
   static bool isDesktop(BuildContext context) => !isMobile(context);
 
+  static const gridCardContraints =
+      LibraryCardContraints(maxCardWidth: 250, cardAspectRatio: .75);
+  static const listCardContraints =
+      LibraryCardContraints(maxCardWidth: 600, cardAspectRatio: 2.5);
+
   double windowWidth = 0;
 
   EnumOption<LibraryLayout> libraryLayout = EnumOption<LibraryLayout>(
@@ -41,9 +47,13 @@ class AppConfigModel extends ChangeNotifier {
     (index) => CardDecoration.values[index],
     CardDecoration.values.length,
   );
-  EnumOption<GroupBy> groupBy = EnumOption<GroupBy>(
-    (index) => GroupBy.values[index],
-    GroupBy.values.length,
+  EnumOption<LibraryGrouping> libraryGrouping = EnumOption<LibraryGrouping>(
+    (index) => LibraryGrouping.values[index],
+    LibraryGrouping.values.length,
+  );
+  EnumOption<LibraryOrdering> libraryOrdering = EnumOption<LibraryOrdering>(
+    (index) => LibraryOrdering.values[index],
+    LibraryOrdering.values.length,
   );
   EnumOption<Stacks> stacks = EnumOption<Stacks>(
     (index) => Stacks.values[index],
@@ -51,15 +61,15 @@ class AppConfigModel extends ChangeNotifier {
   );
 
   BoolOption showExpansions = BoolOption();
-  BoolOption fetchRemote = BoolOption();
+  BoolOption showOutOfLib = BoolOption();
 
   AppConfigModel() {
     libraryLayout.onUpdate = _updateOptions;
     cardDecoration.onUpdate = _updateOptions;
-    groupBy.onUpdate = _updateOptions;
+    libraryGrouping.onUpdate = _updateOptions;
     stacks.onUpdate = _updateOptions;
     showExpansions.onUpdate = _updateOptions;
-    fetchRemote.onUpdate = _updateOptions;
+    showOutOfLib.onUpdate = _updateOptions;
   }
 
   void _updateOptions() {
@@ -71,10 +81,10 @@ class AppConfigModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     libraryLayout.valueIndex = prefs.getInt('libraryLayout') ?? 0;
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
-    groupBy.valueIndex = prefs.getInt('groupBy') ?? 0;
+    libraryGrouping.valueIndex = prefs.getInt('groupBy') ?? 0;
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
     showExpansions.value = prefs.getBool('showExpansions') ?? false;
-    fetchRemote.value = prefs.getBool('fetchRemote') ?? false;
+    showOutOfLib.value = prefs.getBool('showOutOfLib') ?? false;
     _seedColor = Color(prefs.getInt('seedColor') ?? 0);
 
     notifyListeners();
@@ -84,10 +94,10 @@ class AppConfigModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('libraryLayout', libraryLayout.value.index);
     prefs.setInt('cardDecoration', cardDecoration.value.index);
-    prefs.setInt('groupBy', groupBy.value.index);
+    prefs.setInt('groupBy', libraryGrouping.value.index);
     prefs.setInt('stacks', stacks.value.index);
     prefs.setBool('showExpansions', showExpansions.value);
-    prefs.setBool('fetchRemote', fetchRemote.value);
+    prefs.setBool('showOutOfLib', showOutOfLib.value);
     prefs.setInt('seedColor', _seedColor.value);
   }
 }
@@ -101,11 +111,6 @@ enum CardDecoration {
   empty,
   info,
   tags,
-}
-
-enum GroupBy {
-  none,
-  year,
 }
 
 enum Stacks {
@@ -148,4 +153,12 @@ class BoolOption {
   }
 
   void nextValue() => value = !_value;
+}
+
+class LibraryCardContraints {
+  const LibraryCardContraints(
+      {required this.maxCardWidth, required this.cardAspectRatio});
+
+  final double maxCardWidth;
+  final double cardAspectRatio;
 }
