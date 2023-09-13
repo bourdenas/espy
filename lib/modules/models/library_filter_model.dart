@@ -194,10 +194,13 @@ class LibraryFilter {
             : remoteModel.entries
         : <LibraryEntry>[];
 
-    return LibraryView(_group(_sort([
-      localEntries,
-      remoteEntries.where((e) => !gameIds.contains(e.id)),
-    ].expand((e) => e))));
+    return LibraryView(_group(
+      _sort([
+        localEntries,
+        remoteEntries.where((e) => !gameIds.contains(e.id)),
+      ].expand((e) => e)),
+      tagsModel,
+    ));
   }
 
   List<LibraryEntry> _sort(Iterable<LibraryEntry> entries) {
@@ -212,32 +215,45 @@ class LibraryFilter {
     }
   }
 
-  List<(String, List<LibraryEntry>)> _group(List<LibraryEntry> entries) {
+  List<(String, List<LibraryEntry>)> _group(
+      List<LibraryEntry> entries, GameTagsModel tagsModel) {
     switch (grouping) {
       case LibraryGrouping.none:
         return [('', entries)];
       case LibraryGrouping.year:
         return groupBy(
-            entries,
-            (e) =>
-                '${DateTime.fromMillisecondsSinceEpoch(e.releaseDate * 1000).year}',
-            (a, b) => -a.compareTo(b));
+          entries,
+          (e) => [
+            '${DateTime.fromMillisecondsSinceEpoch(e.releaseDate * 1000).year}'
+          ],
+          (a, b) => -a.compareTo(b),
+        );
       case LibraryGrouping.genre:
-        return groupBy(entries, (e) => e.digest.genres[0]);
+        return groupBy(entries, (e) => e.digest.genres);
       case LibraryGrouping.genreTag:
-        return groupBy(entries, (e) => e.digest.genres[0]);
-      case LibraryGrouping.rating:
         return groupBy(entries,
-            (e) => (5 * e.digest.rating / 100.0).toStringAsFixed(1).toString());
+            (e) => tagsModel.genreTags.byGameId(e.id).map((e) => e.name));
+      case LibraryGrouping.rating:
+        return groupBy(
+          entries,
+          (e) => [(5 * e.digest.rating / 100.0).toStringAsFixed(1).toString()],
+          (a, b) => -a.compareTo(b),
+        );
     }
   }
 
-  List<(String, List<LibraryEntry>)> groupBy(
-      Iterable<LibraryEntry> entries, String Function(LibraryEntry) key,
+  List<(String, List<LibraryEntry>)> groupBy(Iterable<LibraryEntry> entries,
+      Iterable<String> Function(LibraryEntry) keysExtractor,
       [int Function(String, String)? keyCompare]) {
     var groups = <String, List<LibraryEntry>>{};
     for (final entry in entries) {
-      (groups[key(entry)] ??= []).add(entry);
+      final keys = keysExtractor(entry);
+      if (keys.isEmpty) {
+        (groups['🚫'] ??= []).add(entry);
+      }
+      for (final key in keys) {
+        (groups[key] ??= []).add(entry);
+      }
     }
 
     final keys = groups.keys.toList()..sort(keyCompare);
