@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,26 +20,37 @@ class _SettingsState extends State<Settings> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 16),
-          Text(
-            'Settings',
-            style: Theme.of(context).textTheme.titleLarge,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                const SizedBox(height: 16),
+                Text(
+                  'Settings',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                storefrontCodeBoxes(context),
+                const SizedBox(height: 16),
+                syncButton(context),
+                const SizedBox(height: 32),
+                manualEditBoxes(context),
+                const SizedBox(height: 16),
+                uploadButton(context),
+                const SizedBox(height: 64),
+                libraryStats(context),
+                const SizedBox(height: 32),
+                colorSelection(context),
+                const SizedBox(height: 32),
+                syncLog(),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          storefrontCodeBoxes(context),
-          const SizedBox(height: 16),
-          syncButton(context),
-          const SizedBox(height: 32),
-          manualEditBoxes(context),
-          const SizedBox(height: 16),
-          uploadButton(context),
-          const SizedBox(height: 64),
-          colorSelection(context),
-          const SizedBox(height: 32),
-          syncLog(),
-          const SizedBox(height: 32),
         ],
       ),
     );
@@ -241,6 +253,44 @@ class _SettingsState extends State<Settings> {
                   }
                 },
               ),
+      ],
+    );
+  }
+
+  Widget libraryStats(BuildContext context) {
+    final entries = context.watch<UserLibraryModel>().entries;
+
+    final mainCount = entries.where((e) => e.isMain).length;
+    final dlcCount = entries.where((e) => e.isDlc).length;
+    final expansionCount = entries.where((e) => e.isExpansion).length;
+    final bundleCount = entries.where((e) => e.isBundle).length;
+    final standaloneExpansionCount =
+        entries.where((e) => e.isStandaloneExpansion).length;
+    final episodeCount = entries.where((e) => e.isEpisode).length;
+    final seasonCount = entries.where((e) => e.isSeason).length;
+    final remakeCount = entries.where((e) => e.isRemake).length;
+    final remasterCount = entries.where((e) => e.isRemaster).length;
+    final versionCount = entries.where((e) => e.isVersion).length;
+    final ignoreCount = entries.where((e) => e.isIgnore).length;
+
+    return Column(
+      children: [
+        Text(
+          'Library Stats',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 8),
+        Text('Main Titles: $mainCount'),
+        Text('Expansions: $expansionCount'),
+        Text('Standalone Expansions: $standaloneExpansionCount'),
+        Text('DLC: $dlcCount'),
+        Text('Remakes: $remakeCount'),
+        Text('Remaster: $remasterCount'),
+        Text('Seasons: $seasonCount'),
+        Text('Episodes: $episodeCount'),
+        Text('Bundles: $bundleCount'),
+        Text('Versions: $versionCount'),
+        Text('Ignore: $ignoreCount'),
       ],
     );
   }

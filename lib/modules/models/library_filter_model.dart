@@ -187,7 +187,7 @@ class LibraryFilter {
         .map((id) => entriesModel.getEntryById(id))
         .where((e) => e != null)
         .map((e) => e!)
-        .where((e) => e.isMainGame || (showExpansions && e.isExpansion))
+        .where((e) => e.isStandaloneGame || (showExpansions && e.isExpansion))
         .where((libraryEntry) => _filterView(libraryEntry, tagsModel));
 
     final remoteEntries = showOutOfLib

@@ -11,9 +11,9 @@ class RemoteLibraryModel extends ChangeNotifier {
   final List<LibraryEntry> _libraryEntries = [];
 
   Iterable<LibraryEntry> get entries =>
-      _libraryEntries.where((entry) => entry.isMainGame);
-  Iterable<LibraryEntry> get entriesWithExpansions =>
-      _libraryEntries.where((entry) => entry.isMainGame || entry.isExpansion);
+      _libraryEntries.where((entry) => entry.isStandaloneGame);
+  Iterable<LibraryEntry> get entriesWithExpansions => _libraryEntries
+      .where((entry) => entry.isStandaloneGame || entry.isExpansion);
 
   Future<void> update(AppConfigModel appConfig, LibraryFilter filter) async {
     _libraryEntries.clear();

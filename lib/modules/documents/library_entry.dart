@@ -18,12 +18,23 @@ class LibraryEntry {
   List<String> get developers => digest.developers;
   List<String> get publishers => digest.publishers;
 
-  bool get isMainGame =>
+  bool get isStandaloneGame =>
       digest.category == 'Main' ||
       digest.category == 'Remake' ||
       digest.category == 'Remaster' ||
       digest.category == 'StandaloneExpansion';
+
+  bool get isMain => digest.category == 'Main';
+  bool get isDlc => digest.category == 'Dlc';
   bool get isExpansion => digest.category == 'Expansion';
+  bool get isBundle => digest.category == 'Bundle';
+  bool get isStandaloneExpansion => digest.category == 'StandaloneExpansion';
+  bool get isEpisode => digest.category == 'Episode';
+  bool get isSeason => digest.category == 'Season';
+  bool get isRemake => digest.category == 'Remake';
+  bool get isRemaster => digest.category == 'Remaster';
+  bool get isVersion => digest.category == 'Version';
+  bool get isIgnore => digest.category == 'Ignore';
 
   LibraryEntry({
     required this.id,
