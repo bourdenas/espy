@@ -82,14 +82,24 @@ class GameEntryActionBar extends StatelessWidget {
           ),
         ],
       ),
-      expansionWidgets: [
-        for (final _ in List.generate(5, (_) => null))
-          const Icon(
-            Icons.star_border,
-            color: Colors.amber,
-            size: 18.0,
+      expansionBuilder: (context, _) {
+        return Card(
+          elevation: 16,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                for (final _ in List.generate(5, (_) => null))
+                  const Icon(
+                    Icons.star_border,
+                    color: Colors.amber,
+                    size: 18.0,
+                  ),
+              ],
+            ),
           ),
-      ],
+        );
+      },
     );
   }
 

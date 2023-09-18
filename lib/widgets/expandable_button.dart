@@ -4,17 +4,17 @@ import 'package:flutter/material.dart';
 class ExpandableButton extends StatefulWidget {
   const ExpandableButton({
     super.key,
-    this.initialOpen,
+    this.initialOpen = false,
+    this.offset = const Offset(0, 0),
     required this.collapsedWidget,
-    required this.expansionWidgets,
-    required this.offset,
+    required this.expansionBuilder,
     this.closeButton,
   });
 
-  final bool? initialOpen;
+  final bool initialOpen;
   final Offset offset;
   final Widget collapsedWidget;
-  final List<Widget> expansionWidgets;
+  final Widget Function(BuildContext, Animation<double>) expansionBuilder;
   final Widget? closeButton;
 
   @override
@@ -31,7 +31,7 @@ class _ExpandableButtonState extends State<ExpandableButton>
   @override
   void initState() {
     super.initState();
-    _open = widget.initialOpen ?? false;
+    _open = widget.initialOpen;
     _controller = AnimationController(
       value: _open ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 250),
@@ -137,16 +137,6 @@ class _ExpandableButtonState extends State<ExpandableButton>
   }
 
   void expandWidget(BuildContext context) {
-    final expansion = Card(
-      elevation: 16,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: widget.expansionWidgets,
-        ),
-      ),
-    );
-
     Overlay.of(context).insert(
       OverlayEntry(
         builder: (context) {
@@ -169,7 +159,7 @@ class _ExpandableButtonState extends State<ExpandableButton>
               opacity: _expandAnimation,
               child: IgnorePointer(
                 ignoring: !_open,
-                child: expansion,
+                child: widget.expansionBuilder(context, _expandAnimation),
               ),
             ),
           );
