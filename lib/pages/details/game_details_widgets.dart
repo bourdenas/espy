@@ -5,6 +5,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
+import 'package:espy/widgets/expandable_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -30,8 +31,6 @@ class GameEntryActionBar extends StatelessWidget {
         children: [
           releaseYear(context),
           const SizedBox(width: 8.0),
-          rating(),
-          const SizedBox(width: 16.0),
           ...actionButtons(context),
           const SizedBox(width: 16.0),
           ...linkButtons(context, gameEntry, libraryEntry),
@@ -64,9 +63,10 @@ class GameEntryActionBar extends StatelessWidget {
   }
 
   Widget rating() {
-    return IconButton(
-      onPressed: () {},
-      icon: Row(
+    return ExpandableButton(
+      distance: 48,
+      collapsedWidget: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
             Icons.star,
@@ -74,11 +74,22 @@ class GameEntryActionBar extends StatelessWidget {
             size: 18.0,
           ),
           const SizedBox(width: 4.0),
-          Text(gameEntry.igdbGame.rating > 0
-              ? (5 * gameEntry.igdbGame.rating / 100.0).toStringAsFixed(1)
-              : '--'),
+          Text(
+            gameEntry.igdbGame.rating > 0
+                ? (5 * gameEntry.igdbGame.rating / 100.0).toStringAsFixed(1)
+                : '--',
+            // style: TextStyle(color: Colors.green),
+          ),
         ],
       ),
+      expansionWidgets: [
+        for (final _ in [0, 0, 0, 0, 0])
+          Icon(
+            Icons.star_border,
+            color: gameEntry.igdbGame.rating > 0 ? Colors.amber : Colors.grey,
+            size: 18.0,
+          ),
+      ],
     );
   }
 
@@ -86,6 +97,7 @@ class GameEntryActionBar extends StatelessWidget {
     final inWishlist = context.watch<WishlistModel>().contains(gameEntry.id);
 
     return [
+      rating(),
       IconButton(
         onPressed: () => AppConfigModel.isMobile(context)
             ? context
