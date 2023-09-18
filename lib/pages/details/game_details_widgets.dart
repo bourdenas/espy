@@ -82,23 +82,8 @@ class GameEntryActionBar extends StatelessWidget {
           ),
         ],
       ),
-      expansionBuilder: (context, _) {
-        return Card(
-          elevation: 16,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                for (final _ in List.generate(5, (_) => null))
-                  const Icon(
-                    Icons.star_border,
-                    color: Colors.amber,
-                    size: 18.0,
-                  ),
-              ],
-            ),
-          ),
-        );
+      expansionBuilder: (context, _, onDone) {
+        return _UserStarRating(libraryEntry, onDone);
       },
     );
   }
@@ -200,6 +185,63 @@ class GameEntryActionBar extends StatelessWidget {
       'Youtube' => Image.asset('assets/images/youtube-128.png'),
       _ => const Icon(Icons.error),
     };
+  }
+}
+
+class _UserStarRating extends StatefulWidget {
+  const _UserStarRating(
+    this.libraryEntry,
+    this.onDone, {
+    super.key,
+  });
+
+  final LibraryEntry libraryEntry;
+  final Function() onDone;
+
+  @override
+  State<_UserStarRating> createState() => _UserStarRatingState();
+}
+
+class _UserStarRatingState extends State<_UserStarRating> {
+  int selected = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 16,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            for (final i in List.generate(5, (i) => i))
+              MouseRegion(
+                onEnter: (_) {
+                  setState(() {
+                    selected = i + 1;
+                  });
+                },
+                onExit: (_) {
+                  setState(() {
+                    selected = 0;
+                  });
+                },
+                child: GestureDetector(
+                  onTap: () {
+                    widget.onDone();
+                    print(
+                        '${widget.libraryEntry.name} is a ${i + 1} star game');
+                  },
+                  child: Icon(
+                    selected > i ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 18.0,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

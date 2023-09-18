@@ -14,7 +14,8 @@ class ExpandableButton extends StatefulWidget {
   final bool initialOpen;
   final Offset offset;
   final Widget collapsedWidget;
-  final Widget Function(BuildContext, Animation<double>) expansionBuilder;
+  final Widget Function(BuildContext, Animation<double>, Function())
+      expansionBuilder;
   final Widget? closeButton;
 
   @override
@@ -159,7 +160,8 @@ class _ExpandableButtonState extends State<ExpandableButton>
               opacity: _expandAnimation,
               child: IgnorePointer(
                 ignoring: !_open,
-                child: widget.expansionBuilder(context, _expandAnimation),
+                child:
+                    widget.expansionBuilder(context, _expandAnimation, _toggle),
               ),
             ),
           );
