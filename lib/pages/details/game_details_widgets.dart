@@ -64,18 +64,21 @@ class GameEntryActionBar extends StatelessWidget {
   }
 
   Widget rating() {
-    return Row(
-      children: [
-        const Icon(
-          Icons.star,
-          color: Colors.amber,
-          size: 18.0,
-        ),
-        const SizedBox(width: 4.0),
-        Text(gameEntry.igdbGame.rating > 0
-            ? (5 * gameEntry.igdbGame.rating / 100.0).toStringAsFixed(1)
-            : '--'),
-      ],
+    return IconButton(
+      onPressed: () {},
+      icon: Row(
+        children: [
+          Icon(
+            Icons.star,
+            color: gameEntry.igdbGame.rating > 0 ? Colors.amber : Colors.grey,
+            size: 18.0,
+          ),
+          const SizedBox(width: 4.0),
+          Text(gameEntry.igdbGame.rating > 0
+              ? (5 * gameEntry.igdbGame.rating / 100.0).toStringAsFixed(1)
+              : '--'),
+        ],
+      ),
     );
   }
 
