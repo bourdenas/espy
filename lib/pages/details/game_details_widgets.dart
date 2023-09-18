@@ -64,7 +64,7 @@ class GameEntryActionBar extends StatelessWidget {
 
   Widget rating() {
     return ExpandableButton(
-      distance: 48,
+      offset: const Offset(0, 42),
       collapsedWidget: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -83,10 +83,10 @@ class GameEntryActionBar extends StatelessWidget {
         ],
       ),
       expansionWidgets: [
-        for (final _ in [0, 0, 0, 0, 0])
-          Icon(
+        for (final _ in List.generate(5, (_) => null))
+          const Icon(
             Icons.star_border,
-            color: gameEntry.igdbGame.rating > 0 ? Colors.amber : Colors.grey,
+            color: Colors.amber,
             size: 18.0,
           ),
       ],
