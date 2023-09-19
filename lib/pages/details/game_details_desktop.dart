@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
@@ -213,10 +212,9 @@ class _GameDetailsHeader extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        CachedNetworkImage(
-          imageUrl: '${Urls.imageProvider}/t_cover_big/$coverId.jpg',
-          errorWidget: (context, url, error) => const Icon(Icons.error),
-        ),
+        coverId != null && coverId.isNotEmpty
+            ? Image.network('${Urls.imageProvider}/t_cover_big/$coverId.jpg')
+            : Image.asset('assets/images/placeholder.png'),
         // Positioned(
         //   right: 0,
         //   child: FloatingActionButton(
