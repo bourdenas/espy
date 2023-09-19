@@ -16,13 +16,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class LibraryGridCard extends StatefulWidget {
-  const LibraryGridCard({
+  const LibraryGridCard(
+    this.libraryEntry, {
     Key? key,
-    required this.entry,
     required this.pushNavigation,
   }) : super(key: key);
 
-  final LibraryEntry entry;
+  final LibraryEntry libraryEntry;
   final bool pushNavigation;
 
   @override
@@ -60,26 +60,26 @@ class _LibraryGridCardState extends State<LibraryGridCard>
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
     final appConfig = context.watch<AppConfigModel>();
-    final inLibrary = widget.entry.storeEntries.isNotEmpty ||
-        context.read<LibraryEntriesModel>().inLibrary(widget.entry.id);
+    final inLibrary = widget.libraryEntry.storeEntries.isNotEmpty ||
+        context.read<LibraryEntriesModel>().inLibrary(widget.libraryEntry.id);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: InkWell(
         onTap: () => widget.pushNavigation
             ? context.pushNamed('details',
-                pathParameters: {'gid': '${widget.entry.id}'})
+                pathParameters: {'gid': '${widget.libraryEntry.id}'})
             : context.replaceNamed('details',
-                pathParameters: {'gid': '${widget.entry.id}'}),
-        onSecondaryTap: () => EditEntryDialog.show(context, widget.entry,
-            gameId: widget.entry.id),
+                pathParameters: {'gid': '${widget.libraryEntry.id}'}),
+        onSecondaryTap: () => EditEntryDialog.show(context, widget.libraryEntry,
+            gameId: widget.libraryEntry.id),
         onLongPress: () => isMobile
             ? context.pushNamed('edit',
-                pathParameters: {'gid': '${widget.entry.id}'})
+                pathParameters: {'gid': '${widget.libraryEntry.id}'})
             : EditEntryDialog.show(
                 context,
-                widget.entry,
-                gameId: widget.entry.id,
+                widget.libraryEntry,
+                gameId: widget.libraryEntry.id,
               ),
         onHover: (val) => setState(() {
           hover = val;
@@ -103,13 +103,13 @@ class _LibraryGridCardState extends State<LibraryGridCard>
 
   Widget coverImage(BuildContext context, bool showAddButton) {
     List<Widget> storeButtons = [
-      if (widget.entry.storeEntries.isEmpty &&
-          !context.read<WishlistModel>().contains(widget.entry.id))
+      if (widget.libraryEntry.storeEntries.isEmpty &&
+          !context.read<WishlistModel>().contains(widget.libraryEntry.id))
         FloatingActionButton(
           mini: true,
           backgroundColor: const Color(0x00FFFFFF),
           onPressed: () =>
-              context.read<WishlistModel>().addToWishlist(widget.entry),
+              context.read<WishlistModel>().addToWishlist(widget.libraryEntry),
           tooltip: 'wishlist',
           child: const Icon(
             Icons.favorite,
@@ -127,9 +127,10 @@ class _LibraryGridCardState extends State<LibraryGridCard>
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          widget.entry.cover != null && widget.entry.cover!.isNotEmpty
+          widget.libraryEntry.cover != null &&
+                  widget.libraryEntry.cover!.isNotEmpty
               ? Image.network(
-                  '${Urls.imageProvider}/t_cover_big/${widget.entry.cover}.jpg')
+                  '${Urls.imageProvider}/t_cover_big/${widget.libraryEntry.cover}.jpg')
               : Image.asset('assets/images/placeholder.png'),
           if (showAddButton)
             Positioned(
@@ -149,7 +150,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
   }
 
   Widget? storeButton(String storeId) {
-    return !widget.entry.storeEntries.any((e) => e.storefront == storeId)
+    return !widget.libraryEntry.storeEntries.any((e) => e.storefront == storeId)
         ? SizedBox(
             width: 32,
             child: FloatingActionButton(
@@ -159,13 +160,13 @@ class _LibraryGridCardState extends State<LibraryGridCard>
                 context.read<UserLibraryModel>().matchEntry(
                       StoreEntry(
                         id: '',
-                        title: widget.entry.name,
+                        title: widget.libraryEntry.name,
                         storefront: storeId,
                       ),
                       GameEntry(
-                        id: widget.entry.id,
-                        name: widget.entry.name,
-                        category: widget.entry.digest.category ?? '',
+                        id: widget.libraryEntry.id,
+                        name: widget.libraryEntry.name,
+                        category: widget.libraryEntry.digest.category ?? '',
                         igdbGame: const IgdbGame(id: 0, name: ''),
                       ),
                     );
@@ -184,9 +185,9 @@ class _LibraryGridCardState extends State<LibraryGridCard>
       ),
       clipBehavior: Clip.antiAlias,
       child: appConfig.cardDecoration.value == CardDecoration.tags
-          ? TagsTileBar(widget.entry)
+          ? TagsTileBar(widget.libraryEntry)
           : appConfig.cardDecoration.value == CardDecoration.info
-              ? InfoTileBar(widget.entry)
+              ? InfoTileBar(widget.libraryEntry)
               : null,
     );
   }
