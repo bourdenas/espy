@@ -5,6 +5,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
+import 'package:espy/widgets/expandable_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -30,8 +31,6 @@ class GameEntryActionBar extends StatelessWidget {
         children: [
           releaseYear(context),
           const SizedBox(width: 8.0),
-          rating(),
-          const SizedBox(width: 16.0),
           ...actionButtons(context),
           const SizedBox(width: 16.0),
           if (gameEntry != null)
@@ -66,16 +65,26 @@ class GameEntryActionBar extends StatelessWidget {
 
   Widget rating() {
     final rating = gameEntry?.igdbGame.rating ?? libraryEntry.rating;
-    return Row(
-      children: [
-        const Icon(
-          Icons.star,
-          color: Colors.amber,
-          size: 18.0,
-        ),
-        const SizedBox(width: 4.0),
-        Text(rating > 0 ? (5 * rating / 100.0).toStringAsFixed(1) : '--'),
-      ],
+    return ExpandableButton(
+      offset: const Offset(0, 42),
+      collapsedWidget: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.star,
+            color: rating > 0 ? Colors.amber : Colors.grey,
+            size: 18.0,
+          ),
+          const SizedBox(width: 4.0),
+          Text(
+            rating > 0 ? (5 * rating / 100.0).toStringAsFixed(1) : '--',
+            // style: TextStyle(color: Colors.green),
+          ),
+        ],
+      ),
+      expansionBuilder: (context, _, onDone) {
+        return _UserStarRating(libraryEntry, onDone);
+      },
     );
   }
 
@@ -83,6 +92,7 @@ class GameEntryActionBar extends StatelessWidget {
     final inWishlist = context.watch<WishlistModel>().contains(libraryEntry.id);
 
     return [
+      rating(),
       IconButton(
         onPressed: () => AppConfigModel.isMobile(context)
             ? context.pushNamed('edit',
@@ -178,6 +188,63 @@ class GameEntryActionBar extends StatelessWidget {
       'Youtube' => Image.asset('assets/images/youtube-128.png'),
       _ => const Icon(Icons.error),
     };
+  }
+}
+
+class _UserStarRating extends StatefulWidget {
+  const _UserStarRating(
+    this.libraryEntry,
+    this.onDone, {
+    super.key,
+  });
+
+  final LibraryEntry libraryEntry;
+  final Function() onDone;
+
+  @override
+  State<_UserStarRating> createState() => _UserStarRatingState();
+}
+
+class _UserStarRatingState extends State<_UserStarRating> {
+  int selected = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 16,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            for (final i in List.generate(5, (i) => i))
+              MouseRegion(
+                onEnter: (_) {
+                  setState(() {
+                    selected = i + 1;
+                  });
+                },
+                onExit: (_) {
+                  setState(() {
+                    selected = 0;
+                  });
+                },
+                child: GestureDetector(
+                  onTap: () {
+                    widget.onDone();
+                    print(
+                        '${widget.libraryEntry.name} is a ${i + 1} star game');
+                  },
+                  child: Icon(
+                    selected > i ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 18.0,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
