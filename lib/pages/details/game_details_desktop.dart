@@ -15,14 +15,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 class GameDetailsContentDesktop extends StatelessWidget {
-  const GameDetailsContentDesktop({
-    Key? key,
-    required this.libraryEntry,
-    required this.gameEntry,
-  }) : super(key: key);
+  const GameDetailsContentDesktop(this.libraryEntry, this.gameEntry, {Key? key})
+      : super(key: key);
 
   final LibraryEntry libraryEntry;
-  final GameEntry gameEntry;
+  final GameEntry? gameEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +39,9 @@ class GameDetailsContentDesktop extends StatelessWidget {
           child: CustomScrollView(
             primary: true,
             slivers: [
-              GameDetailsHeader(gameEntry),
-              GameDetailsActionBar(gameEntry, libraryEntry),
-              GameDetailsBody(gameEntry: gameEntry),
+              _GameDetailsHeader(libraryEntry, gameEntry),
+              _GameDetailsActionBar(gameEntry, libraryEntry),
+              if (gameEntry != null) _GameDetailsBody(gameEntry!),
             ],
           ),
         ),
@@ -53,11 +50,8 @@ class GameDetailsContentDesktop extends StatelessWidget {
   }
 }
 
-class GameDetailsBody extends StatelessWidget {
-  const GameDetailsBody({
-    Key? key,
-    required this.gameEntry,
-  }) : super(key: key);
+class _GameDetailsBody extends StatelessWidget {
+  const _GameDetailsBody(this.gameEntry, {Key? key}) : super(key: key);
 
   final GameEntry gameEntry;
 
@@ -153,11 +147,11 @@ class GameDescription extends StatelessWidget {
   }
 }
 
-class GameDetailsActionBar extends StatelessWidget {
-  const GameDetailsActionBar(this.gameEntry, this.libraryEntry, {Key? key})
+class _GameDetailsActionBar extends StatelessWidget {
+  const _GameDetailsActionBar(this.gameEntry, this.libraryEntry, {Key? key})
       : super(key: key);
 
-  final GameEntry gameEntry;
+  final GameEntry? gameEntry;
   final LibraryEntry libraryEntry;
 
   @override
@@ -168,9 +162,9 @@ class GameDetailsActionBar extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GameEntryActionBar(gameEntry, libraryEntry),
+            GameEntryActionBar(libraryEntry, gameEntry),
             const SizedBox(height: 16.0),
-            GameImageGallery(gameEntry: gameEntry),
+            if (gameEntry != null) GameImageGallery(gameEntry!),
             const SizedBox(height: 16.0),
           ],
         ),
@@ -179,18 +173,20 @@ class GameDetailsActionBar extends StatelessWidget {
   }
 }
 
-class GameDetailsHeader extends StatelessWidget {
-  const GameDetailsHeader(this.gameEntry, {Key? key}) : super(key: key);
+class _GameDetailsHeader extends StatelessWidget {
+  const _GameDetailsHeader(this.libraryEntry, this.gameEntry, {Key? key})
+      : super(key: key);
 
-  final GameEntry gameEntry;
+  final LibraryEntry libraryEntry;
+  final GameEntry? gameEntry;
 
   @override
   Widget build(BuildContext context) {
-    final backgroundImage = gameEntry.steamData != null &&
-            gameEntry.steamData!.backgroundImage != null
-        ? gameEntry.steamData!.backgroundImage!
-        : gameEntry.artwork.isNotEmpty
-            ? 'https://images.igdb.com/igdb/image/upload/t_720p/${gameEntry.artwork[0].imageId}.jpg'
+    final backgroundImage = gameEntry?.steamData != null &&
+            gameEntry?.steamData?.backgroundImage != null
+        ? gameEntry!.steamData!.backgroundImage!
+        : gameEntry!.artwork.isNotEmpty
+            ? 'https://images.igdb.com/igdb/image/upload/t_720p/${gameEntry!.artwork[0].imageId}.jpg'
             : '';
 
     return SliverAppBar(
@@ -219,12 +215,13 @@ class GameDetailsHeader extends StatelessWidget {
   }
 
   Stack coverImage() {
+    final coverId = gameEntry?.cover?.imageId ?? libraryEntry.cover;
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
         CachedNetworkImage(
-          imageUrl:
-              '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
+          imageUrl: '${Urls.imageProvider}/t_cover_big/$coverId.jpg',
           errorWidget: (context, url, error) => const Icon(Icons.error),
         ),
         // Positioned(
@@ -276,7 +273,7 @@ class GameDetailsHeader extends StatelessWidget {
           Row(children: [
             Expanded(
               child: Text(
-                gameEntry.name,
+                libraryEntry.name,
                 style: Theme.of(context).textTheme.displaySmall,
                 textAlign: TextAlign.center,
               ),
@@ -284,14 +281,18 @@ class GameDetailsHeader extends StatelessWidget {
             if (!kReleaseMode)
               Expanded(
                 child: Text(
-                  '${gameEntry.id}',
+                  '${libraryEntry.id}',
                   style: Theme.of(context).textTheme.headlineSmall,
                   textAlign: TextAlign.center,
                 ),
               ),
           ]),
           const Padding(padding: EdgeInsets.all(16)),
-          GameTags(gameEntry: gameEntry),
+          GameTags(
+            gameEntry != null
+                ? LibraryEntry.fromGameEntry(gameEntry!)
+                : libraryEntry,
+          ),
         ],
       ),
     );

@@ -13,25 +13,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 class GameDetailsContentMobile extends StatelessWidget {
-  const GameDetailsContentMobile({
-    Key? key,
-    required this.libraryEntry,
-    required this.gameEntry,
-  }) : super(key: key);
+  const GameDetailsContentMobile(this.libraryEntry, this.gameEntry, {Key? key})
+      : super(key: key);
 
   final LibraryEntry libraryEntry;
-  final GameEntry gameEntry;
+  final GameEntry? gameEntry;
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
       key: const Key('gameDetailsScrollView'),
       slivers: [
-        _GameDetailsHeader(gameEntry),
+        _GameDetailsHeader(libraryEntry, gameEntry),
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: GameEntryActionBar(gameEntry, libraryEntry),
+            child: GameEntryActionBar(libraryEntry, gameEntry),
           ),
         ),
         if (!kReleaseMode)
@@ -39,7 +36,7 @@ class GameDetailsContentMobile extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Text(
-                'game id: ${gameEntry.id}',
+                'game id: ${libraryEntry.id}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
@@ -48,33 +45,37 @@ class GameDetailsContentMobile extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: GameTags(
-              gameEntry: gameEntry,
+              gameEntry != null
+                  ? LibraryEntry.fromGameEntry(gameEntry!)
+                  : libraryEntry,
             ),
           ),
         ),
-        Shelve(
-          title: 'Screenshots',
-          expansion: screenshots(context),
-        ),
-        Shelve(
-          title: 'Description',
-          expansion: _GameDescription(gameEntry),
-        ),
-        if (gameEntry.parent != null)
-          RelatedGamesGroup('Base Game', [gameEntry.parent!]),
-        if (gameEntry.expansions.isNotEmpty)
-          RelatedGamesGroup('Expansions', gameEntry.expansions),
-        if (gameEntry.dlcs.isNotEmpty)
-          RelatedGamesGroup('DLCs', gameEntry.dlcs),
-        if (gameEntry.remasters.isNotEmpty)
-          RelatedGamesGroup('Remasters', gameEntry.remasters),
-        if (gameEntry.remakes.isNotEmpty)
-          RelatedGamesGroup('Remakes', gameEntry.remakes),
+        if (gameEntry != null) ...[
+          Shelve(
+            title: 'Screenshots',
+            expansion: screenshots(context, gameEntry!),
+          ),
+          Shelve(
+            title: 'Description',
+            expansion: _GameDescription(gameEntry!),
+          ),
+          if (gameEntry!.parent != null)
+            RelatedGamesGroup('Base Game', [gameEntry!.parent!]),
+          if (gameEntry!.expansions.isNotEmpty)
+            RelatedGamesGroup('Expansions', gameEntry!.expansions),
+          if (gameEntry!.dlcs.isNotEmpty)
+            RelatedGamesGroup('DLCs', gameEntry!.dlcs),
+          if (gameEntry!.remasters.isNotEmpty)
+            RelatedGamesGroup('Remasters', gameEntry!.remasters),
+          if (gameEntry!.remakes.isNotEmpty)
+            RelatedGamesGroup('Remakes', gameEntry!.remakes),
+        ]
       ],
     );
   }
 
-  Widget screenshots(BuildContext context) {
+  Widget screenshots(BuildContext context, GameEntry gameEntry) {
     return Column(
       children: [
         CarouselSlider(
@@ -160,9 +161,11 @@ class _GameDescription extends StatelessWidget {
 }
 
 class _GameDetailsHeader extends StatelessWidget {
-  const _GameDetailsHeader(this.gameEntry, {Key? key}) : super(key: key);
+  const _GameDetailsHeader(this.libraryEntry, this.gameEntry, {Key? key})
+      : super(key: key);
 
-  final GameEntry gameEntry;
+  final LibraryEntry libraryEntry;
+  final GameEntry? gameEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -189,14 +192,15 @@ class _GameDetailsHeader extends StatelessWidget {
   }
 
   Stack coverImage() {
+    final coverId = gameEntry?.cover?.imageId ?? libraryEntry.cover;
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
         FadeIn(
           duration: const Duration(milliseconds: 500),
           child: CachedNetworkImage(
-            imageUrl:
-                '${Urls.imageProvider}/t_cover_big/${gameEntry.cover?.imageId}.jpg',
+            imageUrl: '${Urls.imageProvider}/t_cover_big/$coverId.jpg',
             errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
         ),

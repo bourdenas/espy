@@ -18,13 +18,7 @@ class GameDetailsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppConfigModel.isMobile(context)
-        ? GameDetailsContentMobile(
-            libraryEntry: libraryEntry,
-            gameEntry: gameEntry,
-          )
-        : GameDetailsContentDesktop(
-            libraryEntry: libraryEntry,
-            gameEntry: gameEntry,
-          );
+        ? GameDetailsContentMobile(libraryEntry, gameEntry)
+        : GameDetailsContentDesktop(libraryEntry, gameEntry);
   }
 }
