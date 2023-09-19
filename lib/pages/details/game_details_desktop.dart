@@ -182,13 +182,6 @@ class _GameDetailsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundImage = gameEntry?.steamData != null &&
-            gameEntry?.steamData?.backgroundImage != null
-        ? gameEntry!.steamData!.backgroundImage!
-        : gameEntry!.artwork.isNotEmpty
-            ? 'https://images.igdb.com/igdb/image/upload/t_720p/${gameEntry!.artwork[0].imageId}.jpg'
-            : '';
-
     return SliverAppBar(
       leading: Container(),
       pinned: true,
@@ -196,7 +189,7 @@ class _GameDetailsHeader extends StatelessWidget {
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           children: [
-            headerImage(backgroundImage),
+            headerImage(gameEntry?.steamData?.backgroundImage ?? ''),
             Container(
               padding: const EdgeInsets.all(16),
               child: Row(
