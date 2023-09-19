@@ -27,7 +27,9 @@ class _ExpandableButtonState extends State<ExpandableButton>
   late final AnimationController _controller;
   late final Animation<double> _expandAnimation;
   final layerLink = LayerLink();
+
   bool _open = false;
+  List<OverlayEntry> overlays = [];
 
   @override
   void initState() {
@@ -57,7 +59,12 @@ class _ExpandableButtonState extends State<ExpandableButton>
       if (_open) {
         _controller.forward();
       } else {
-        _controller.reverse();
+        _controller.reverse().whenComplete(() {
+          for (final overlay in overlays) {
+            overlay.remove();
+          }
+          overlays.clear();
+        });
       }
     });
   }
@@ -138,35 +145,57 @@ class _ExpandableButtonState extends State<ExpandableButton>
   }
 
   void expandWidget(BuildContext context) {
-    Overlay.of(context).insert(
-      OverlayEntry(
-        builder: (context) {
-          return AnimatedBuilder(
-            animation: _expandAnimation,
-            builder: (context, child) {
-              return Positioned(
-                top: 200,
-                child: CompositedTransformFollower(
-                  link: layerLink,
-                  showWhenUnlinked: false,
-                  followerAnchor: Alignment.bottomCenter,
-                  targetAnchor: Alignment.bottomCenter,
-                  offset: widget.offset,
-                  child: child!,
-                ),
-              );
-            },
-            child: FadeTransition(
-              opacity: _expandAnimation,
-              child: IgnorePointer(
-                ignoring: !_open,
-                child:
-                    widget.expansionBuilder(context, _expandAnimation, _toggle),
+    overlays.add(OverlayEntry(
+      builder: (context) {
+        final size = MediaQuery.of(context).size;
+        return Positioned(
+          top: 0,
+          left: 0,
+          child: GestureDetector(
+            onTap: () => _toggle(),
+            child: SizedBox(
+              width: size.width,
+              height: size.height,
+              child: const DecoratedBox(
+                decoration: BoxDecoration(color: Colors.transparent),
               ),
             ),
-          );
-        },
-      ),
-    );
+          ),
+        );
+      },
+    ));
+
+    overlays.add(OverlayEntry(
+      builder: (context) {
+        return AnimatedBuilder(
+          animation: _expandAnimation,
+          builder: (context, child) {
+            return Positioned(
+              top: 200,
+              child: CompositedTransformFollower(
+                link: layerLink,
+                showWhenUnlinked: false,
+                followerAnchor: Alignment.bottomCenter,
+                targetAnchor: Alignment.bottomCenter,
+                offset: widget.offset,
+                child: child!,
+              ),
+            );
+          },
+          child: FadeTransition(
+            opacity: _expandAnimation,
+            child: IgnorePointer(
+              ignoring: !_open,
+              child:
+                  widget.expansionBuilder(context, _expandAnimation, _toggle),
+            ),
+          ),
+        );
+      },
+    ));
+
+    for (final overlay in overlays) {
+      Overlay.of(context).insert(overlay);
+    }
   }
 }
