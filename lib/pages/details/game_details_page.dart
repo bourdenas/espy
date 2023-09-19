@@ -25,25 +25,27 @@ class GameDetailsPage extends StatelessWidget {
           AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
         if (snapshot.hasError) {
           return Center(child: Text('Something went wrong: ${snapshot.error}'));
-        } else if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data?.data() == null) {
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            !snapshot.hasData ||
+            snapshot.data?.data() == null) {
           context
               .read<UserLibraryModel>()
               .retrieveGameEntry(int.tryParse(id) ?? 0);
 
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Retrieving game info'),
-                SizedBox(height: 16),
-                CircularProgressIndicator(),
-              ],
-            ),
-          );
+          return libraryEntry != null
+              ? GameDetailsContent(libraryEntry, null)
+              : const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Retrieving game info'),
+                      SizedBox(height: 16),
+                      CircularProgressIndicator(),
+                    ],
+                  ),
+                );
         }
 
         final jsonObj = snapshot.data!.data();
@@ -58,8 +60,8 @@ class GameDetailsPage extends StatelessWidget {
         }
 
         return GameDetailsContent(
-          libraryEntry: libraryEntry ?? LibraryEntry.fromGameEntry(gameEntry),
-          gameEntry: gameEntry,
+          libraryEntry ?? LibraryEntry.fromGameEntry(gameEntry),
+          gameEntry,
         );
       },
     );

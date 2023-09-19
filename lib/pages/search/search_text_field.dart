@@ -34,7 +34,6 @@ class _SearchTextFieldState extends State<SearchTextField> {
           flex: 6,
           child: Focus(
             child: TextField(
-              key: const Key('searchTextField'),
               controller: _searchController,
               focusNode: _searchFocusNode,
               autofocus: true,

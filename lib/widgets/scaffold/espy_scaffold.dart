@@ -90,28 +90,24 @@ class EspyScaffold extends StatelessWidget {
       actions: [
         if (AppConfigModel.isMobile(context)) ...[
           IconButton(
-            key: const Key('layoutButton'),
             icon: Icon(
                 _libraryViews[appConfig.libraryLayout.value.index].iconData),
             splashRadius: 20.0,
             onPressed: () => appConfig.libraryLayout.nextValue(),
           ),
           IconButton(
-            key: const Key('cardInfoButton'),
             icon:
                 Icon(_cardViews[appConfig.cardDecoration.value.index].iconData),
             splashRadius: 20.0,
             onPressed: () => appConfig.cardDecoration.nextValue(),
           ),
           IconButton(
-            key: const Key('groupByButton'),
             icon: Icon(
                 _groupViews[appConfig.libraryGrouping.value.index].iconData),
             splashRadius: 20.0,
             onPressed: () => appConfig.libraryGrouping.nextValue(),
           ),
           IconButton(
-            key: const Key('searchButton'),
             icon: const Icon(Icons.search),
             splashRadius: 20.0,
             onPressed: () => context.pushNamed('search'),

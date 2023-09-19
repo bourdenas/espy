@@ -18,7 +18,6 @@ class FailedMatchListView extends StatelessWidget {
         duration: const Duration(milliseconds: 500),
         child: ListView.builder(
           primary: true,
-          key: const Key('failedListView'),
           itemCount: unmatchedEntries.length,
           itemBuilder: (context, index) {
             return FailedMatchCard(

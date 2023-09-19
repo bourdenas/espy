@@ -1,4 +1,3 @@
-import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
@@ -10,24 +9,9 @@ import 'package:provider/provider.dart';
 
 /// Tags shows on GameEntry's details page.
 class GameTags extends StatelessWidget {
-  final GameEntry gameEntry;
+  const GameTags(this.libraryEntry, {super.key});
 
-  const GameTags({Key? key, required this.gameEntry}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _GameChipsWrap(gameEntry),
-      ],
-    );
-  }
-}
-
-class _GameChipsWrap extends StatelessWidget {
-  final GameEntry gameEntry;
-
-  const _GameChipsWrap(this.gameEntry);
+  final LibraryEntry libraryEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -42,45 +26,50 @@ class _GameChipsWrap extends StatelessWidget {
       updateLibraryView(context, updatedFilter);
     }
 
-    return Wrap(
-      spacing: 8.0,
-      runSpacing: 4.0,
+    return Column(
       children: [
-        for (final company in gameEntry.developers.map((e) => e.name))
-          DeveloperChip(
-            company,
-            onPressed: () =>
-                onChipPressed(LibraryFilter(developers: {company})),
-          ),
-        for (final company in gameEntry.publishers.map((e) => e.name))
-          PublisherChip(
-            company,
-            onPressed: () =>
-                onChipPressed(LibraryFilter(publishers: {company})),
-          ),
-        for (final collection in gameEntry.collections.map((e) => e.name))
-          CollectionChip(
-            collection,
-            onPressed: () =>
-                onChipPressed(LibraryFilter(collections: {collection})),
-          ),
-        for (final franchise in gameEntry.franchises.map((e) => e.name))
-          FranchiseChip(
-            franchise,
-            onPressed: () =>
-                onChipPressed(LibraryFilter(franchises: {franchise})),
-          ),
-        for (final genreTag in tagsModel.genreTags.byGameId(gameEntry.id))
-          GenreTagChip(
-            genreTag.name,
-            onPressed: () =>
-                onChipPressed(LibraryFilter(genreTags: {genreTag.encode()})),
-          ),
-        for (final tag in tagsModel.userTags.byGameId(gameEntry.id))
-          TagChip(
-            tag,
-            onPressed: () => onChipPressed(LibraryFilter(tags: {tag.name})),
-          ),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 4.0,
+          children: [
+            for (final company in libraryEntry.developers)
+              DeveloperChip(
+                company,
+                onPressed: () =>
+                    onChipPressed(LibraryFilter(developers: {company})),
+              ),
+            for (final company in libraryEntry.publishers)
+              PublisherChip(
+                company,
+                onPressed: () =>
+                    onChipPressed(LibraryFilter(publishers: {company})),
+              ),
+            for (final collection in libraryEntry.collections)
+              CollectionChip(
+                collection,
+                onPressed: () =>
+                    onChipPressed(LibraryFilter(collections: {collection})),
+              ),
+            for (final franchise in libraryEntry.franchises)
+              FranchiseChip(
+                franchise,
+                onPressed: () =>
+                    onChipPressed(LibraryFilter(franchises: {franchise})),
+              ),
+            for (final genreTag
+                in tagsModel.genreTags.byGameId(libraryEntry.id))
+              GenreTagChip(
+                genreTag.name,
+                onPressed: () => onChipPressed(
+                    LibraryFilter(genreTags: {genreTag.encode()})),
+              ),
+            for (final tag in tagsModel.userTags.byGameId(libraryEntry.id))
+              TagChip(
+                tag,
+                onPressed: () => onChipPressed(LibraryFilter(tags: {tag.name})),
+              ),
+          ],
+        ),
       ],
     );
   }

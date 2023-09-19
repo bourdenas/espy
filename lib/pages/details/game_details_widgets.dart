@@ -12,13 +12,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 class GameEntryActionBar extends StatelessWidget {
   const GameEntryActionBar(
-    this.gameEntry,
-    this.libraryEntry, {
+    this.libraryEntry,
+    this.gameEntry, {
     Key? key,
   }) : super(key: key);
 
   final LibraryEntry libraryEntry;
-  final GameEntry gameEntry;
+  final GameEntry? gameEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,8 @@ class GameEntryActionBar extends StatelessWidget {
           const SizedBox(width: 16.0),
           ...actionButtons(context),
           const SizedBox(width: 16.0),
-          ...linkButtons(context, gameEntry, libraryEntry),
+          if (gameEntry != null)
+            ...linkButtons(context, libraryEntry, gameEntry!),
         ],
       ),
     );
@@ -52,7 +53,7 @@ class GameEntryActionBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: Text(
-          '${DateTime.fromMillisecondsSinceEpoch(gameEntry.igdbGame.releaseDate * 1000).year}',
+          '${DateTime.fromMillisecondsSinceEpoch(libraryEntry.releaseDate * 1000).year}',
           style: TextStyle(
             fontSize: 16.0,
             fontWeight: FontWeight.w500,
@@ -64,6 +65,7 @@ class GameEntryActionBar extends StatelessWidget {
   }
 
   Widget rating() {
+    final rating = gameEntry?.igdbGame.rating ?? libraryEntry.rating;
     return Row(
       children: [
         const Icon(
@@ -72,21 +74,19 @@ class GameEntryActionBar extends StatelessWidget {
           size: 18.0,
         ),
         const SizedBox(width: 4.0),
-        Text(gameEntry.igdbGame.rating > 0
-            ? (5 * gameEntry.igdbGame.rating / 100.0).toStringAsFixed(1)
-            : '--'),
+        Text(rating > 0 ? (5 * rating / 100.0).toStringAsFixed(1) : '--'),
       ],
     );
   }
 
   List<Widget> actionButtons(BuildContext context) {
-    final inWishlist = context.watch<WishlistModel>().contains(gameEntry.id);
+    final inWishlist = context.watch<WishlistModel>().contains(libraryEntry.id);
 
     return [
       IconButton(
         onPressed: () => AppConfigModel.isMobile(context)
-            ? context
-                .pushNamed('edit', pathParameters: {'gid': '${gameEntry.id}'})
+            ? context.pushNamed('edit',
+                pathParameters: {'gid': '${libraryEntry.id}'})
             : EditEntryDialog.show(
                 context,
                 libraryEntry,
@@ -103,7 +103,7 @@ class GameEntryActionBar extends StatelessWidget {
         IconButton(
           onPressed: () {
             if (inWishlist) {
-              context.read<WishlistModel>().removeFromWishlist(gameEntry.id);
+              context.read<WishlistModel>().removeFromWishlist(libraryEntry.id);
             } else {
               context.read<WishlistModel>().addToWishlist(libraryEntry);
             }
@@ -119,7 +119,10 @@ class GameEntryActionBar extends StatelessWidget {
   }
 
   List<Widget> linkButtons(
-      BuildContext context, GameEntry gameEntry, LibraryEntry libraryEntry) {
+    BuildContext context,
+    LibraryEntry libraryEntry,
+    GameEntry gameEntry,
+  ) {
     return [
       for (final label in const [
         'Official',
