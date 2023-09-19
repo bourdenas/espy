@@ -22,7 +22,6 @@ class GameDetailsContentMobile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
-      key: const Key('gameDetailsScrollView'),
       slivers: [
         _GameDetailsHeader(libraryEntry, gameEntry),
         SliverToBoxAdapter(
