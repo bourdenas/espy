@@ -38,7 +38,7 @@ class LibraryPage extends StatelessWidget {
         else ...[
           for (final (label, entries) in libraryView.groups)
             TileShelve(
-              title: label,
+              title: '$label (${entries.length})',
               color: Colors.grey,
               entries: entries,
             ),
