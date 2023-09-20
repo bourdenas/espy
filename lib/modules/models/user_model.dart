@@ -9,14 +9,14 @@ import 'package:flutter/foundation.dart' show ChangeNotifier, kDebugMode;
 import 'package:http/http.dart' as http;
 
 /// Model that handles user profile data.
-class UserDataModel extends ChangeNotifier {
+class UserModel extends ChangeNotifier {
   get userData => _userData;
 
   String get userId => _userData?.uid ?? '';
   String get gogAuthCode => _userData?.keys?.gogAuthCode ?? '';
   String get steamUserId => _userData?.keys?.steamUserId ?? '';
 
-  UserDataModel() {
+  UserModel() {
     _userId = FirebaseAuth.instance.currentUser?.uid;
     _fetchUserData();
   }
