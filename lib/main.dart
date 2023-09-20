@@ -6,6 +6,7 @@ import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/remote_library_model.dart';
+import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
@@ -55,6 +56,12 @@ Future<void> main() async {
               libraryModel.entries,
               wishlistModel.wishlist,
             );
+        },
+      ),
+      ChangeNotifierProxyProvider<UserModel, UserDataModel>(
+        create: (_) => UserDataModel(),
+        update: (_, userModel, userDataModel) {
+          return userDataModel!..update(userModel.userId);
         },
       ),
       ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>(

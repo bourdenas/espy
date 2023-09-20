@@ -3,6 +3,7 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:espy/widgets/expandable_button.dart';
@@ -231,8 +232,9 @@ class _UserStarRatingState extends State<_UserStarRating> {
                 child: GestureDetector(
                   onTap: () {
                     widget.onDone();
-                    print(
-                        '${widget.libraryEntry.name} is a ${i + 1} star game');
+                    context
+                        .read<UserDataModel>()
+                        .updateRating(widget.libraryEntry.id, i + 1);
                   },
                   child: Icon(
                     selected > i ? Icons.star : Icons.star_border,

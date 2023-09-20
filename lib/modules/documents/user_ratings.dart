@@ -1,22 +1,23 @@
 class UserRatings {
-  Map<int, int> ratings;
+  Map<int, int> ratings = {};
 
   UserRatings({
-    this.ratings = const {},
+    required this.ratings,
   });
 
   UserRatings.fromJson(Map<String, dynamic> json)
       : this(
           ratings: {}..addEntries([
               for (final genre in json['ratings'] ?? [])
-                MapEntry(genre[0], genre[1])
+                MapEntry(genre['id'], genre['rt'])
             ]),
         );
 
   Map<String, dynamic> toJson() {
     return {
       'ratings': [
-        for (final rating in ratings.entries) [rating.key, rating.value],
+        for (final rating in ratings.entries)
+          {'id': rating.key, 'rt': rating.value},
       ],
     };
   }
