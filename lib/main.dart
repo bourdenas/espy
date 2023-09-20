@@ -29,81 +29,168 @@ Future<void> main() async {
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref()),
-      ChangeNotifierProvider(create: (_) => UserModel()),
-      ChangeNotifierProxyProvider<UserModel, UserLibraryModel>(
-        create: (_) => UserLibraryModel(),
-        update: (_, userDataModel, model) =>
-            model!..update(userDataModel.userData),
-      ),
-      ChangeNotifierProxyProvider<UserModel, FailedModel>(
-        create: (_) => FailedModel(),
-        update: (_, userDataModel, model) =>
-            model!..update(userDataModel.userData),
-      ),
-      ChangeNotifierProxyProvider<UserModel, WishlistModel>(
-        create: (_) => WishlistModel(),
-        update: (_, userDataModel, model) =>
-            model!..update(userDataModel.userData),
-      ),
-      ChangeNotifierProxyProvider2<UserLibraryModel, WishlistModel,
-          GameTagsModel>(
-        create: (_) => GameTagsModel(),
-        update: (_, libraryModel, wishlistModel, model) {
-          return model!
-            ..update(
-              libraryModel.userId,
-              libraryModel.entries,
-              wishlistModel.wishlist,
-            );
-        },
-      ),
-      ChangeNotifierProxyProvider<UserModel, UserDataModel>(
-        create: (_) => UserDataModel(),
-        update: (_, userModel, userDataModel) {
-          return userDataModel!..update(userModel.userId);
-        },
-      ),
-      ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>(
-        create: (_) => LibraryFilterModel(),
-        update: (_, appConfig, model) => model!..update(appConfig),
-      ),
-      ChangeNotifierProxyProvider2<AppConfigModel, LibraryFilterModel,
-          RemoteLibraryModel>(
-        create: (_) => RemoteLibraryModel(),
-        update: (_, appConfig, libraryFilter, model) =>
-            model!..update(appConfig, libraryFilter.filter),
-      ),
-      ChangeNotifierProxyProvider5<
-          AppConfigModel,
-          UserLibraryModel,
-          WishlistModel,
-          GameTagsModel,
-          RemoteLibraryModel,
-          LibraryEntriesModel>(
-        create: (_) => LibraryEntriesModel(),
-        update: (_, appConfigModel, userLibraryModel, wishlistModel,
-            gameTagsModel, remoteLibraryModel, libraryEntriesModel) {
-          return libraryEntriesModel!
-            ..update(appConfigModel, userLibraryModel, wishlistModel,
-                gameTagsModel, remoteLibraryModel);
-        },
-      ),
-      ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel,
-          GameTagsModel, AppConfigModel, HomeSlatesModel>(
-        create: (_) => HomeSlatesModel(),
-        update: (_, gameEntriesModel, wishlistModel, gameTagsModel,
-            appConfigModel, model) {
-          return model!
-            ..update(
-              gameEntriesModel,
-              wishlistModel,
-              gameTagsModel,
-              appConfigModel,
-            );
-        },
-      ),
+      appConfigProvider(),
+      userProvider(),
+      userLibraryProvider(),
+      failedMatchesProvider(),
+      wishlistProvider(),
+      gameTagsProvider(),
+      userDataProvider(),
+      libraryFilterProvider(),
+      remoteLibraryProvider(),
+      libraryEntriesProvider(),
+      homeSlatesProvider(),
     ],
     child: const EspyApp(),
   ));
+}
+
+ChangeNotifierProvider<AppConfigModel> appConfigProvider() =>
+    ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref());
+
+ChangeNotifierProvider<UserModel> userProvider() =>
+    ChangeNotifierProvider(create: (_) => UserModel());
+
+ChangeNotifierProxyProvider<UserModel, UserLibraryModel> userLibraryProvider() {
+  return ChangeNotifierProxyProvider<UserModel, UserLibraryModel>(
+    create: (_) => UserLibraryModel(),
+    update: (
+      _,
+      userModel,
+      userLibraryModel,
+    ) =>
+        userLibraryModel!..update(userModel.userData),
+  );
+}
+
+ChangeNotifierProxyProvider<UserModel, FailedModel> failedMatchesProvider() {
+  return ChangeNotifierProxyProvider<UserModel, FailedModel>(
+    create: (_) => FailedModel(),
+    update: (
+      _,
+      userModel,
+      failedModel,
+    ) =>
+        failedModel!..update(userModel.userData),
+  );
+}
+
+ChangeNotifierProxyProvider<UserModel, WishlistModel> wishlistProvider() {
+  return ChangeNotifierProxyProvider<UserModel, WishlistModel>(
+    create: (_) => WishlistModel(),
+    update: (
+      _,
+      userModel,
+      wishlistModel,
+    ) =>
+        wishlistModel!..update(userModel.userData),
+  );
+}
+
+ChangeNotifierProxyProvider2<UserLibraryModel, WishlistModel, GameTagsModel>
+    gameTagsProvider() {
+  return ChangeNotifierProxyProvider2<UserLibraryModel, WishlistModel,
+      GameTagsModel>(
+    create: (_) => GameTagsModel(),
+    update: (
+      _,
+      libraryModel,
+      wishlistModel,
+      gameTagsModel,
+    ) {
+      return gameTagsModel!
+        ..update(
+          libraryModel.userId,
+          libraryModel.entries,
+          wishlistModel.wishlist,
+        );
+    },
+  );
+}
+
+ChangeNotifierProxyProvider<UserModel, UserDataModel> userDataProvider() {
+  return ChangeNotifierProxyProvider<UserModel, UserDataModel>(
+    create: (_) => UserDataModel(),
+    update: (
+      _,
+      userModel,
+      userDataModel,
+    ) {
+      return userDataModel!..update(userModel.userId);
+    },
+  );
+}
+
+ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>
+    libraryFilterProvider() {
+  return ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>(
+    create: (_) => LibraryFilterModel(),
+    update: (_, appConfig, libraryFilterModel) =>
+        libraryFilterModel!..update(appConfig),
+  );
+}
+
+ChangeNotifierProxyProvider2<AppConfigModel, LibraryFilterModel,
+    RemoteLibraryModel> remoteLibraryProvider() {
+  return ChangeNotifierProxyProvider2<AppConfigModel, LibraryFilterModel,
+      RemoteLibraryModel>(
+    create: (_) => RemoteLibraryModel(),
+    update: (
+      _,
+      appConfig,
+      libraryFilter,
+      remoteLibraryModel,
+    ) =>
+        remoteLibraryModel!..update(appConfig, libraryFilter.filter),
+  );
+}
+
+ChangeNotifierProxyProvider5<
+    AppConfigModel,
+    UserLibraryModel,
+    WishlistModel,
+    GameTagsModel,
+    RemoteLibraryModel,
+    LibraryEntriesModel> libraryEntriesProvider() {
+  return ChangeNotifierProxyProvider5<AppConfigModel, UserLibraryModel,
+      WishlistModel, GameTagsModel, RemoteLibraryModel, LibraryEntriesModel>(
+    create: (_) => LibraryEntriesModel(),
+    update: (
+      _,
+      appConfigModel,
+      userLibraryModel,
+      wishlistModel,
+      gameTagsModel,
+      remoteLibraryModel,
+      libraryEntriesModel,
+    ) {
+      return libraryEntriesModel!
+        ..update(appConfigModel, userLibraryModel, wishlistModel, gameTagsModel,
+            remoteLibraryModel);
+    },
+  );
+}
+
+ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel, GameTagsModel,
+    AppConfigModel, HomeSlatesModel> homeSlatesProvider() {
+  return ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel,
+      GameTagsModel, AppConfigModel, HomeSlatesModel>(
+    create: (_) => HomeSlatesModel(),
+    update: (
+      _,
+      gameEntriesModel,
+      wishlistModel,
+      gameTagsModel,
+      appConfigModel,
+      homeSlatesModel,
+    ) {
+      return homeSlatesModel!
+        ..update(
+          gameEntriesModel,
+          wishlistModel,
+          gameTagsModel,
+          appConfigModel,
+        );
+    },
+  );
 }
