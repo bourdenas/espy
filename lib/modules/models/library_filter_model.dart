@@ -223,7 +223,7 @@ class LibraryFilter {
       case LibraryGrouping.none:
         return [('', entries)];
       case LibraryGrouping.year:
-        return groupBy(
+        return _groupBy(
           entries,
           (e) => [
             '${DateTime.fromMillisecondsSinceEpoch(e.releaseDate * 1000).year}'
@@ -231,12 +231,17 @@ class LibraryFilter {
           (a, b) => -a.compareTo(b),
         );
       case LibraryGrouping.genre:
-        return groupBy(entries, (e) => e.digest.genres);
+        return _groupBy(
+          entries,
+          (e) => e.digest.genres,
+        );
       case LibraryGrouping.genreTag:
-        return groupBy(entries,
-            (e) => tagsModel.genreTags.byGameId(e.id).map((e) => e.name));
+        return _groupBy(
+          entries,
+          (e) => tagsModel.genreTags.byGameId(e.id).map((e) => e.name),
+        );
       case LibraryGrouping.rating:
-        return groupBy(
+        return _groupBy(
           entries,
           (e) => [(5 * e.digest.rating / 100.0).toStringAsFixed(1).toString()],
           (a, b) => -a.compareTo(b),
@@ -244,7 +249,7 @@ class LibraryFilter {
     }
   }
 
-  List<(String, List<LibraryEntry>)> groupBy(Iterable<LibraryEntry> entries,
+  List<(String, List<LibraryEntry>)> _groupBy(Iterable<LibraryEntry> entries,
       Iterable<String> Function(LibraryEntry) keysExtractor,
       [int Function(String, String)? keyCompare]) {
     var groups = <String, List<LibraryEntry>>{};
@@ -258,11 +263,16 @@ class LibraryFilter {
       }
     }
 
-    final keys = groups.keys.toList()..sort(keyCompare);
-    return keys
-        .map((key) => (key, groups[key]))
-        .whereType<(String, List<LibraryEntry>)>()
-        .toList();
+    if (keyCompare != null) {
+      final keys = groups.keys.toList()..sort(keyCompare);
+      return keys
+          .map((key) => (key, groups[key]))
+          .whereType<(String, List<LibraryEntry>)>()
+          .toList();
+    } else {
+      return groups.entries.map((e) => (e.key, e.value)).toList()
+        ..sort((a, b) => -a.$2.length.compareTo(b.$2.length));
+    }
   }
 
   bool _filterView(LibraryEntry entry, GameTagsModel tagsModel) {
