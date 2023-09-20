@@ -3,6 +3,7 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:espy/widgets/expandable_button.dart';
@@ -63,8 +64,11 @@ class GameEntryActionBar extends StatelessWidget {
     );
   }
 
-  Widget rating() {
-    final rating = gameEntry?.igdbGame.rating ?? libraryEntry.rating;
+  Widget rating(BuildContext context) {
+    final userRating = context.watch<UserDataModel>().rating(libraryEntry.id);
+    final rating = userRating > 0
+        ? userRating * 20
+        : gameEntry?.igdbGame.rating ?? libraryEntry.rating;
     return ExpandableButton(
       offset: const Offset(0, 42),
       collapsedWidget: Row(
@@ -77,13 +81,13 @@ class GameEntryActionBar extends StatelessWidget {
           ),
           const SizedBox(width: 4.0),
           Text(
-            rating > 0 ? (5 * rating / 100.0).toStringAsFixed(1) : '--',
-            // style: TextStyle(color: Colors.green),
+            rating > 0 ? (rating / 20.0).toStringAsFixed(1) : '--',
+            style: userRating > 0 ? const TextStyle(color: Colors.green) : null,
           ),
         ],
       ),
       expansionBuilder: (context, _, onDone) {
-        return _UserStarRating(libraryEntry, onDone);
+        return _UserStarRating(libraryEntry, userRating, onDone);
       },
     );
   }
@@ -92,7 +96,7 @@ class GameEntryActionBar extends StatelessWidget {
     final inWishlist = context.watch<WishlistModel>().contains(libraryEntry.id);
 
     return [
-      rating(),
+      rating(context),
       IconButton(
         onPressed: () => AppConfigModel.isMobile(context)
             ? context.pushNamed('edit',
@@ -194,11 +198,12 @@ class GameEntryActionBar extends StatelessWidget {
 class _UserStarRating extends StatefulWidget {
   const _UserStarRating(
     this.libraryEntry,
-    this.onDone, {
-    super.key,
-  });
+    this.userRating,
+    this.onDone,
+  );
 
   final LibraryEntry libraryEntry;
+  final int userRating;
   final Function() onDone;
 
   @override
@@ -207,6 +212,13 @@ class _UserStarRating extends StatefulWidget {
 
 class _UserStarRatingState extends State<_UserStarRating> {
   int selected = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    selected = widget.userRating;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -225,14 +237,15 @@ class _UserStarRatingState extends State<_UserStarRating> {
                 },
                 onExit: (_) {
                   setState(() {
-                    selected = 0;
+                    selected = widget.userRating;
                   });
                 },
                 child: GestureDetector(
                   onTap: () {
                     widget.onDone();
-                    print(
-                        '${widget.libraryEntry.name} is a ${i + 1} star game');
+                    context.read<UserDataModel>().updateRating(
+                        widget.libraryEntry.id,
+                        i + 1 != widget.userRating ? i + 1 : 0);
                   },
                   child: Icon(
                     selected > i ? Icons.star : Icons.star_border,

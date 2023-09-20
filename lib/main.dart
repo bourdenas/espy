@@ -7,6 +7,7 @@ import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -29,18 +30,18 @@ Future<void> main() async {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref()),
-      ChangeNotifierProvider(create: (_) => UserDataModel()),
-      ChangeNotifierProxyProvider<UserDataModel, UserLibraryModel>(
+      ChangeNotifierProvider(create: (_) => UserModel()),
+      ChangeNotifierProxyProvider<UserModel, UserLibraryModel>(
         create: (_) => UserLibraryModel(),
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
-      ChangeNotifierProxyProvider<UserDataModel, FailedModel>(
+      ChangeNotifierProxyProvider<UserModel, FailedModel>(
         create: (_) => FailedModel(),
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
       ),
-      ChangeNotifierProxyProvider<UserDataModel, WishlistModel>(
+      ChangeNotifierProxyProvider<UserModel, WishlistModel>(
         create: (_) => WishlistModel(),
         update: (_, userDataModel, model) =>
             model!..update(userDataModel.userData),
@@ -55,6 +56,12 @@ Future<void> main() async {
               libraryModel.entries,
               wishlistModel.wishlist,
             );
+        },
+      ),
+      ChangeNotifierProxyProvider<UserModel, UserDataModel>(
+        create: (_) => UserDataModel(),
+        update: (_, userModel, userDataModel) {
+          return userDataModel!..update(userModel.userId);
         },
       ),
       ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>(

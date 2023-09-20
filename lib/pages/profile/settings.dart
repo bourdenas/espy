@@ -1,7 +1,7 @@
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/user_data_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -62,7 +62,7 @@ class _SettingsState extends State<Settings> {
   final _egsTextController = TextEditingController();
 
   Widget storefrontCodeBoxes(BuildContext context) {
-    final user = context.watch<UserDataModel>();
+    final user = context.watch<UserModel>();
 
     return Form(
       key: _formKey,
@@ -124,7 +124,7 @@ class _SettingsState extends State<Settings> {
               icon: const Icon(Icons.link_off),
               splashRadius: 16,
               onPressed: () async =>
-                  await context.read<UserDataModel>().unlink(storefrontId),
+                  await context.read<UserModel>().unlink(storefrontId),
             ),
           ),
         ],
@@ -153,9 +153,9 @@ class _SettingsState extends State<Settings> {
                       egsAuthCode: _egsTextController.text,
                     );
 
-                    await context.read<UserDataModel>().setUserKeys(keys);
+                    await context.read<UserModel>().setUserKeys(keys);
                     final response =
-                        await context.read<UserDataModel>().syncLibrary(keys);
+                        await context.read<UserModel>().syncLibrary(keys);
 
                     setState(() {
                       _syncLog = response;
@@ -242,9 +242,8 @@ class _SettingsState extends State<Settings> {
                                 id: '', title: line, storefront: 'egs'))
                             .toList());
 
-                    final response = await context
-                        .read<UserDataModel>()
-                        .uploadLibrary(titles);
+                    final response =
+                        await context.read<UserModel>().uploadLibrary(titles);
 
                     setState(() {
                       _syncLog = response;
