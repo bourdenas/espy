@@ -8,7 +8,11 @@ class UserDataModel extends ChangeNotifier {
 
   int rating(int gameId) => _ratings.ratings[gameId] ?? 0;
   void updateRating(int gameId, int rating) async {
-    _ratings.ratings[gameId] = rating;
+    if (rating != 0) {
+      _ratings.ratings[gameId] = rating;
+    } else {
+      _ratings.ratings.remove(gameId);
+    }
 
     FirebaseFirestore.instance
         .collection('users')
