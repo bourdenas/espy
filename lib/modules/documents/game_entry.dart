@@ -45,6 +45,8 @@ class GameEntry {
           )
           .toList();
 
+  List<Movie> get movieData => steamData != null ? steamData!.movies : [];
+
   const GameEntry({
     required this.id,
     required this.name,

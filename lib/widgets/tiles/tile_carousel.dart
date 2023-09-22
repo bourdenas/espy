@@ -172,7 +172,7 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: GestureDetector(
         onTap: data.onTap,
@@ -183,12 +183,14 @@ class _Tile extends StatelessWidget {
           child: Stack(
             children: [
               if (data.image != null)
-                CachedNetworkImage(
-                  fit: BoxFit.cover,
-                  imageUrl: data.image!,
-                  placeholder: (context, url) => Container(),
-                  errorWidget: (context, url, error) =>
-                      const Center(child: Icon(Icons.error_outline)),
+                Center(
+                  child: CachedNetworkImage(
+                    fit: BoxFit.cover,
+                    imageUrl: data.image!,
+                    placeholder: (context, url) => Container(),
+                    errorWidget: (context, url, error) =>
+                        const Center(child: Icon(Icons.error_outline)),
+                  ),
                 )
               else
                 SizedBox(

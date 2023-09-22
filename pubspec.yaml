@@ -33,6 +33,7 @@ dependencies:
   shimmer: ^3.0.0
   sliver_tools: ^0.2.0
   url_launcher: ^6.1.10
+  video_player: ^2.7.2
   webview_flutter: ^4.2.3
 
 dev_dependencies:
