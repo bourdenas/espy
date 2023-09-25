@@ -52,9 +52,9 @@ class SteamData {
             for (final screenshot in json['screenshots'] ?? [])
               Screenshot.fromJson(screenshot),
           ],
-          // movies: [
-          //   for (final movie in json['movies'] ?? []) Movie.fromJson(movie),
-          // ],
+          movies: [
+            for (final movie in json['movies'] ?? []) Movie.fromJson(movie),
+          ],
         );
 
   Map<String, dynamic> toJson() {
