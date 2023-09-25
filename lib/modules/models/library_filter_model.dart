@@ -172,9 +172,10 @@ class LibraryFilter {
     for (final genreTag in genreTags) {
       gameIdSets.add(Set.from(tagsModel.genreTags.gameIds(genreTag)));
     }
-    for (final keyword in keywords) {
-      gameIdSets.add(Set.from(tagsModel.keywords.gameIds(keyword)));
-    }
+    // NOTE: Remove keywords until quality is handled.
+    // for (final keyword in keywords) {
+    //   gameIdSets.add(Set.from(tagsModel.keywords.gameIds(keyword)));
+    // }
     for (final tag in tags) {
       gameIdSets.add(Set.from(tagsModel.userTags.gameIds(tag)));
     }

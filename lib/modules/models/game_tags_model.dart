@@ -18,7 +18,6 @@ class GameTagsModel extends ChangeNotifier {
   LabelManager _collectionsManager = LabelManager([]);
   LabelManager _franchisesManager = LabelManager([]);
   LabelManager _genresManager = LabelManager([]);
-  LabelManager _keywordsManager = LabelManager([]);
   GenreTagManager _genreTagsManager = GenreTagManager('', UserTags());
   UserTagManager _userTagsManager = UserTagManager('', UserTags());
 
@@ -28,7 +27,6 @@ class GameTagsModel extends ChangeNotifier {
   LabelManager get collections => _collectionsManager;
   LabelManager get franchises => _franchisesManager;
   LabelManager get genres => _genresManager;
-  LabelManager get keywords => _keywordsManager;
   GenreTagManager get genreTags => _genreTagsManager;
   UserTagManager get userTags => _userTagsManager;
 
@@ -57,8 +55,6 @@ class GameTagsModel extends ChangeNotifier {
     _franchisesManager =
         LabelManager(allEntries, (entry) => entry.digest.franchises);
     _genresManager = LabelManager(allEntries, (entry) => entry.digest.genres);
-    _keywordsManager =
-        LabelManager(allEntries, (entry) => entry.digest.keywords);
 
     if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;

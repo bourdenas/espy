@@ -16,8 +16,7 @@ class TagSearchResults extends StatelessWidget {
     this.collections,
     this.franchises,
     this.genres,
-    this.genresTags,
-    this.keywords, {
+    this.genresTags, {
     Key? key,
   }) : super(key: key);
 
@@ -29,7 +28,6 @@ class TagSearchResults extends StatelessWidget {
   final Iterable<String> franchises;
   final Iterable<String> genres;
   final Iterable<Genre> genresTags;
-  final Iterable<String> keywords;
 
   @override
   Widget build(BuildContext context) {
@@ -123,20 +121,6 @@ class TagSearchResults extends StatelessWidget {
                   onPressed: () => updateLibraryView(
                     context,
                     LibraryFilter(genreTags: {genreTag.encode()}),
-                  ),
-                ),
-              ),
-            ),
-          if (keywords.isNotEmpty)
-            _ChipResults(
-              title: 'Keywords',
-              color: KeywordChip.color,
-              chips: keywords.map(
-                (keyword) => KeywordChip(
-                  keyword,
-                  onPressed: () => updateLibraryView(
-                    context,
-                    LibraryFilter(keywords: {keyword}),
                   ),
                 ),
               ),
