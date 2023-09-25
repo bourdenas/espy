@@ -93,4 +93,24 @@ class GameDigest {
       if (genres.isNotEmpty) 'genres': genres,
     };
   }
+
+  bool hasDiff(GameDigest other) {
+    return id == other.id &&
+        (name != other.name ||
+            category != other.category ||
+            cover != other.cover ||
+            releaseDate != other.releaseDate ||
+            rating != other.rating ||
+            !_match(collections, other.collections) ||
+            !_match(franchises, other.franchises) ||
+            !_match(developers, other.developers) ||
+            !_match(publishers, other.publishers));
+  }
+}
+
+bool _match(Iterable<String> left, Iterable<String> right) {
+  Set<String> a = Set.from(left);
+  Set<String> b = Set.from(right);
+
+  return a.intersection(b).length == a.length;
 }
