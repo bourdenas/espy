@@ -182,4 +182,22 @@ class UserLibraryModel extends ChangeNotifier {
 
     return true;
   }
+
+  Future<bool> updateEntry(LibraryEntry libraryEntry) async {
+    final response = await http.post(
+      Uri.parse('${Urls.espyBackend}/library/$userId/update'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'game_id': libraryEntry.id,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      return false;
+    }
+
+    return true;
+  }
 }

@@ -26,7 +26,6 @@ class LibraryFilterModel extends ChangeNotifier {
   }
 
   void update(AppConfigModel appConfig) {
-    print('updating with ${appConfig.libraryGrouping.value}');
     if (appConfig.libraryGrouping.value != filter.grouping) {
       filter.grouping = appConfig.libraryGrouping.value;
       notifyListeners();

@@ -4,6 +4,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,45 +27,46 @@ class GameDetailsPage extends StatelessWidget {
           return Center(child: Text('Something went wrong: ${snapshot.error}'));
         }
 
-        if (snapshot.connectionState == ConnectionState.waiting ||
-            !snapshot.hasData ||
-            snapshot.data?.data() == null) {
-          // If GameEntry is not found in Firebase this will force retrieval
-          // from IGDB. Because it's a streaming connection with Firebase when
-          // the document is created the page will update automatically.
-          context
-              .read<UserLibraryModel>()
-              .retrieveGameEntry(int.tryParse(id) ?? 0);
-
-          return libraryEntry != null
-              ? GameDetailsContent(libraryEntry, null)
-              : retrieveIndicator();
-        }
-
-        final jsonObj = snapshot.data!.data();
         GameEntry? gameEntry;
-        try {
-          gameEntry = GameEntry.fromJson(jsonObj!);
-        } catch (_) {
-          // Failures to parse a game document is typically because the document
-          // format changed and the entry was not updated in the Firebase. This
-          // will force a new retrieval from IGDB and produce a document with
-          // the updated format.
-          context
-              .read<UserLibraryModel>()
-              .retrieveGameEntry(int.tryParse(id) ?? 0);
-          return retrieveIndicator();
-        }
+        if (snapshot.connectionState == ConnectionState.active) {
+          if (!snapshot.hasData || snapshot.data?.data() == null) {
+            // If GameEntry is not found in Firebase this will force retrieval
+            // from IGDB. Because it's a streaming connection with Firebase when
+            // the document is created the page will update automatically.
+            context
+                .read<UserLibraryModel>()
+                .retrieveGameEntry(int.tryParse(id) ?? 0);
 
-        final gameEntrySummary = LibraryEntry.fromGameEntry(gameEntry);
-        if (libraryEntry?.digest.hasDiff(gameEntrySummary.digest) ?? false) {
-          print('lib: ${libraryEntry?.digest.toJson().toString()}');
-          print('sum: ${gameEntrySummary.digest.toJson().toString()}');
-          // TODO: update library entry.
+            return libraryEntry != null
+                ? GameDetailsContent(libraryEntry, null)
+                : retrieveIndicator();
+          }
+
+          final jsonObj = snapshot.data!.data();
+          try {
+            gameEntry = GameEntry.fromJson(jsonObj!);
+          } catch (_) {
+            if (kDebugMode) {
+              print('Failed to parse GameEntry with id=$id.');
+            }
+            // Failures to parse a game document is typically because the document
+            // format changed and the entry was not updated in the Firebase. This
+            // will force a new retrieval from IGDB and produce a document with
+            // the updated format.
+            context
+                .read<UserLibraryModel>()
+                .retrieveGameEntry(int.tryParse(id) ?? 0);
+            return retrieveIndicator();
+          }
+
+          final gameEntrySummary = LibraryEntry.fromGameEntry(gameEntry);
+          if (libraryEntry?.digest.hasDiff(gameEntrySummary.digest) ?? false) {
+            context.read<UserLibraryModel>().updateEntry(libraryEntry!);
+          }
         }
 
         return GameDetailsContent(
-          libraryEntry ?? gameEntrySummary,
+          libraryEntry ?? LibraryEntry.fromGameEntry(gameEntry!),
           gameEntry,
         );
       },
