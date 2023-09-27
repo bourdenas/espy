@@ -7,6 +7,8 @@ class GameEntry {
   final int id;
   final String name;
   final String category;
+  final String status;
+  final int? releaseDate;
 
   final List<String> genres;
   final List<String> keywords;
@@ -51,6 +53,8 @@ class GameEntry {
     required this.id,
     required this.name,
     required this.category,
+    this.status = 'Released',
+    this.releaseDate,
     this.genres = const [],
     this.keywords = const [],
     this.parent,
@@ -75,6 +79,8 @@ class GameEntry {
           id: json['id']!,
           name: json['name']!,
           category: json['category']!,
+          status: json['status']!,
+          releaseDate: json['release_date'],
           genres: [
             for (final genre in json['genres'] ?? []) genre,
           ],
@@ -140,6 +146,8 @@ class GameEntry {
       'id': id,
       'name': name,
       'category': category,
+      'status': status,
+      if (releaseDate != null) 'release_date': releaseDate,
       if (genres.isNotEmpty) 'genres': genres,
       if (keywords.isNotEmpty) 'keywords': keywords,
       if (parent != null) 'parent': parent!.toJson(),

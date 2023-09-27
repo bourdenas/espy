@@ -36,7 +36,7 @@ class GameDigest {
           name: gameEntry.name,
           category: gameEntry.category,
           cover: gameEntry.cover?.imageId,
-          releaseDate: gameEntry.igdbGame.releaseDate,
+          releaseDate: gameEntry.releaseDate ?? gameEntry.igdbGame.releaseDate,
           rating: gameEntry.igdbGame.rating,
           collections: [
             for (final collection in gameEntry.collections) collection.name
