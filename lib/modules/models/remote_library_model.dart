@@ -22,7 +22,6 @@ class RemoteLibraryModel extends ChangeNotifier {
       return;
     }
 
-    print('fetching remote: ${filter.params()}');
     List<List<LibraryEntry>> fetchedEntries = [];
 
     if (filter.collections.isNotEmpty) {

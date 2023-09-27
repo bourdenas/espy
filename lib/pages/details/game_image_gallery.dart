@@ -11,8 +11,6 @@ class GameImageGallery extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('movies: ${gameEntry.movieData.length}');
-
     return TileCarousel(
       tiles: [
         ...gameEntry.movieData.map((e) => TileData(
