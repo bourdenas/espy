@@ -32,21 +32,12 @@ class HomeSlatesModel extends ChangeNotifier {
     _slates = [
       slate('Library', LibraryFilter(view: LibraryClass.inLibrary)),
       slate('Wishlist', LibraryFilter(view: LibraryClass.wishlist)),
-      slate('Recent', LibraryFilter(), gameEntries.getRecentEntries()),
+      slate('Recently Added in Library', LibraryFilter(),
+          gameEntries.getRecentEntries()),
       slate(
           'Most Anticipated',
           LibraryFilter(),
           frontpage.mostAnticipated
-              .map((digest) => LibraryEntry.fromGameDigest(digest))),
-      slate(
-          'Upcoming',
-          LibraryFilter(),
-          frontpage.upcoming
-              .map((digest) => LibraryEntry.fromGameDigest(digest))),
-      slate(
-          'Recent',
-          LibraryFilter(),
-          frontpage.recent
               .map((digest) => LibraryEntry.fromGameDigest(digest))),
       slate(
           'Popular',
@@ -57,6 +48,16 @@ class HomeSlatesModel extends ChangeNotifier {
           'Critically Acclaimed',
           LibraryFilter(),
           frontpage.criticallyAcclaimed
+              .map((digest) => LibraryEntry.fromGameDigest(digest))),
+      slate(
+          'Upcoming Releases',
+          LibraryFilter(),
+          frontpage.upcoming
+              .map((digest) => LibraryEntry.fromGameDigest(digest))),
+      slate(
+          'Recent Releases',
+          LibraryFilter(),
+          frontpage.recent
               .map((digest) => LibraryEntry.fromGameDigest(digest))),
     ];
 

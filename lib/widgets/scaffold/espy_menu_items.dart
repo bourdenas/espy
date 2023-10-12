@@ -32,6 +32,12 @@ List<MenuItem> espyMenuItems = [
     onTap: (context) => context.goNamed('home'),
   ),
   MenuItem(
+    label: 'Browse',
+    icon: Icons.bookmark,
+    selectedIcon: Icons.home,
+    onTap: (context) => context.goNamed('browse'),
+  ),
+  MenuItem(
     label: 'Library',
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
