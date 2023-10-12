@@ -19,10 +19,7 @@ class LibraryEntry {
   List<String> get publishers => digest.publishers;
 
   bool get isStandaloneGame =>
-      digest.category == 'Main' ||
-      digest.category == 'Remake' ||
-      digest.category == 'Remaster' ||
-      digest.category == 'StandaloneExpansion';
+      isMain || isRemake || isRemaster || isStandaloneExpansion;
 
   bool get isMain => digest.category == 'Main';
   bool get isDlc => digest.category == 'Dlc';

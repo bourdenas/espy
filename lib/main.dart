@@ -1,6 +1,7 @@
 import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/failed_model.dart';
+import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
@@ -30,6 +31,7 @@ Future<void> main() async {
   runApp(MultiProvider(
     providers: [
       appConfigProvider(),
+      frontpageProvider(),
       userProvider(),
       userLibraryProvider(),
       failedMatchesProvider(),
@@ -47,6 +49,9 @@ Future<void> main() async {
 
 ChangeNotifierProvider<AppConfigModel> appConfigProvider() =>
     ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref());
+
+ChangeNotifierProvider<FrontpageModel> frontpageProvider() =>
+    ChangeNotifierProvider(create: (_) => FrontpageModel()..load());
 
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
@@ -171,13 +176,14 @@ ChangeNotifierProxyProvider5<
   );
 }
 
-ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel, GameTagsModel,
-    AppConfigModel, HomeSlatesModel> homeSlatesProvider() {
-  return ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel,
-      GameTagsModel, AppConfigModel, HomeSlatesModel>(
+ChangeNotifierProxyProvider5<FrontpageModel, LibraryEntriesModel, WishlistModel,
+    GameTagsModel, AppConfigModel, HomeSlatesModel> homeSlatesProvider() {
+  return ChangeNotifierProxyProvider5<FrontpageModel, LibraryEntriesModel,
+      WishlistModel, GameTagsModel, AppConfigModel, HomeSlatesModel>(
     create: (_) => HomeSlatesModel(),
     update: (
       _,
+      frontpageModel,
       gameEntriesModel,
       wishlistModel,
       gameTagsModel,
@@ -186,6 +192,7 @@ ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel, GameTagsModel,
     ) {
       return homeSlatesModel!
         ..update(
+          frontpageModel,
           gameEntriesModel,
           wishlistModel,
           gameTagsModel,

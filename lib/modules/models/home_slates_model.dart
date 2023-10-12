@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
@@ -14,6 +15,7 @@ class HomeSlatesModel extends ChangeNotifier {
   List<SlateInfo> get stacks => _stacks;
 
   void update(
+    FrontpageModel frontpage,
     LibraryEntriesModel gameEntries,
     WishlistModel wishlistModel,
     GameTagsModel tagsModel,
@@ -30,7 +32,33 @@ class HomeSlatesModel extends ChangeNotifier {
     _slates = [
       slate('Library', LibraryFilter(view: LibraryClass.inLibrary)),
       slate('Wishlist', LibraryFilter(view: LibraryClass.wishlist)),
-      slate('Recent', LibraryFilter(), gameEntries.getRecentEntries()),
+      slate('Recently Added in Library', LibraryFilter(),
+          gameEntries.getRecentEntries()),
+      slate(
+          'Most Anticipated',
+          LibraryFilter(),
+          frontpage.mostAnticipated
+              .map((digest) => LibraryEntry.fromGameDigest(digest))),
+      slate(
+          'Popular',
+          LibraryFilter(),
+          frontpage.popular
+              .map((digest) => LibraryEntry.fromGameDigest(digest))),
+      slate(
+          'Critically Acclaimed',
+          LibraryFilter(),
+          frontpage.criticallyAcclaimed
+              .map((digest) => LibraryEntry.fromGameDigest(digest))),
+      slate(
+          'Upcoming Releases',
+          LibraryFilter(),
+          frontpage.upcoming
+              .map((digest) => LibraryEntry.fromGameDigest(digest))),
+      slate(
+          'Recent Releases',
+          LibraryFilter(),
+          frontpage.recent
+              .map((digest) => LibraryEntry.fromGameDigest(digest))),
     ];
 
     _stacks = [
