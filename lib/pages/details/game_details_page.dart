@@ -65,8 +65,11 @@ class GameDetailsPage extends StatelessWidget {
           }
         }
 
+        if (libraryEntry == null && gameEntry == null) {
+          return retrieveIndicator();
+        }
+
         return GameDetailsContent(
-          // TODO: It is possible that both libraryEntry and gameEntry are null.
           libraryEntry ?? LibraryEntry.fromGameEntry(gameEntry!),
           gameEntry,
         );
