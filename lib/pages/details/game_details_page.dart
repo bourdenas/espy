@@ -66,6 +66,7 @@ class GameDetailsPage extends StatelessWidget {
         }
 
         return GameDetailsContent(
+          // TODO: It is possible that both libraryEntry and gameEntry are null.
           libraryEntry ?? LibraryEntry.fromGameEntry(gameEntry!),
           gameEntry,
         );

@@ -4,7 +4,7 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class FrontpageModel extends ChangeNotifier {
-  late Frontpage _frontpage;
+  Frontpage _frontpage = const Frontpage();
 
   List<GameDigest> get upcoming => _frontpage.upcoming;
   List<GameDigest> get mostAnticipated => _frontpage.mostAnticipated;
@@ -22,6 +22,7 @@ class FrontpageModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<Frontpage> snapshot) {
+      print('read frontpage');
       _frontpage = snapshot.data() ?? const Frontpage();
 
       notifyListeners();

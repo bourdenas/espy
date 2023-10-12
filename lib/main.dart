@@ -176,13 +176,14 @@ ChangeNotifierProxyProvider5<
   );
 }
 
-ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel, GameTagsModel,
-    AppConfigModel, HomeSlatesModel> homeSlatesProvider() {
-  return ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel,
-      GameTagsModel, AppConfigModel, HomeSlatesModel>(
+ChangeNotifierProxyProvider5<FrontpageModel, LibraryEntriesModel, WishlistModel,
+    GameTagsModel, AppConfigModel, HomeSlatesModel> homeSlatesProvider() {
+  return ChangeNotifierProxyProvider5<FrontpageModel, LibraryEntriesModel,
+      WishlistModel, GameTagsModel, AppConfigModel, HomeSlatesModel>(
     create: (_) => HomeSlatesModel(),
     update: (
       _,
+      frontpageModel,
       gameEntriesModel,
       wishlistModel,
       gameTagsModel,
@@ -191,6 +192,7 @@ ChangeNotifierProxyProvider4<LibraryEntriesModel, WishlistModel, GameTagsModel,
     ) {
       return homeSlatesModel!
         ..update(
+          frontpageModel,
           gameEntriesModel,
           wishlistModel,
           gameTagsModel,
