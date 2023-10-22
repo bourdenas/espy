@@ -9,6 +9,7 @@ import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:espy/widgets/expandable_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -53,7 +54,8 @@ class GameEntryActionBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: Text(
-          '${DateTime.fromMillisecondsSinceEpoch(libraryEntry.releaseDate * 1000).year}',
+          DateFormat('yMMM').format(DateTime.fromMillisecondsSinceEpoch(
+              libraryEntry.releaseDate * 1000)),
           style: TextStyle(
             fontSize: 16.0,
             fontWeight: FontWeight.w500,

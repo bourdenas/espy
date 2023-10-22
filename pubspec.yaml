@@ -29,6 +29,7 @@ dependencies:
   flutterfire_ui: ^0.4.3
   go_router: ^11.1.4
   google_sign_in: ^5.4.4
+  intl: ^0.18.1
   provider: ^6.0.5
   shared_preferences: ^2.2.2
   shimmer: ^3.0.0
