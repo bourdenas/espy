@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/game_entry.dart';
+import 'package:intl/intl.dart';
 
 class GameDigest {
   final int id;
@@ -15,6 +16,9 @@ class GameDigest {
   final List<String> developers;
   final List<String> publishers;
   final List<String> genres;
+
+  String formatReleaseDate([String format = 'yMMM']) => DateFormat(format)
+      .format(DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000));
 
   GameDigest({
     required this.id,

@@ -7,6 +7,7 @@ import 'package:espy/pages/browse/browse_page.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/library/library_page.dart';
+import 'package:espy/pages/timeline/timeline_page.dart';
 import 'package:espy/widgets/scaffold/espy_scaffold.dart';
 import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/pages/profile/login_page.dart';
@@ -34,6 +35,18 @@ class EspyRouter extends StatelessWidget {
           name: 'home',
           child: EspyScaffold(
             body: const HomeContent(),
+            path: state.path!,
+          ),
+        ),
+      ),
+      GoRoute(
+        name: 'timeline',
+        path: '/timeline',
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          name: 'timeline',
+          child: EspyScaffold(
+            body: const TimelinePage(),
             path: state.path!,
           ),
         ),

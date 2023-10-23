@@ -90,8 +90,7 @@ class LibraryListCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4.0),
                 ),
                 child: Text(
-                  DateFormat('yMMM').format(DateTime.fromMillisecondsSinceEpoch(
-                      libraryEntry.releaseDate * 1000)),
+                  libraryEntry.digest.formatReleaseDate(),
                   style: TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.w500,
