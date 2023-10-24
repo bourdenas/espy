@@ -22,19 +22,17 @@ class TimelinePageState extends State<TimelinePage> {
       body: SafeArea(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: Center(
-            child: Column(
-              children: [
-                Expanded(
-                  child: TimelineCarousel(
-                    tileSize: AppConfigModel.isMobile(context)
-                        ? const TileSize(width: 133, height: 190)
-                        : const TileSize(width: 227, height: 320),
-                  ),
+          body: Column(
+            children: [
+              Expanded(
+                child: TimelineCarousel(
+                  tileSize: AppConfigModel.isMobile(context)
+                      ? const TileSize(width: 133, height: 190)
+                      : const TileSize(width: 227, height: 320),
                 ),
-                const SizedBox(height: 8),
-              ],
-            ),
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
         ),
       ),

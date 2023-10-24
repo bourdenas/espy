@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
@@ -70,6 +72,8 @@ class _TileCarouselState extends State<TimelineCarousel> {
   final ScrollController _scrollController = ScrollController();
 }
 
+final _random = Random();
+
 class _TimelineEntry extends StatelessWidget {
   const _TimelineEntry({
     Key? key,
@@ -98,7 +102,7 @@ class _TimelineEntry extends StatelessWidget {
           alignment: Alignment.topCenter,
           children: [
             if (games.isNotEmpty) ...[
-              _connection(context, maxSize.width + 64),
+              _connection(context, maxSize.width + 16),
               _releaseEvent(context),
             ] else
               _connection(context, 32),
@@ -112,29 +116,44 @@ class _TimelineEntry extends StatelessWidget {
     );
   }
 
+  double rand(int min, int max) => (min + _random.nextInt(max - min)) as double;
+
   Widget _releaseEvent(BuildContext context) {
-    return Row(
-      children: [
-        for (final game in games.take(1))
-          ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-            child: GestureDetector(
-              onTap: () => context
-                  .pushNamed('details', pathParameters: {'gid': '${game.id}'}),
-              child: Center(
-                child: CachedNetworkImage(
-                  fit: BoxFit.cover,
-                  imageUrl:
-                      '${Urls.imageProvider}/t_cover_big/${game.cover}.jpg',
-                  placeholder: (context, url) =>
-                      const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) =>
-                      const Center(child: Icon(Icons.error_outline)),
-                ),
-              ),
+    return SizedBox(
+      width: maxSize.width,
+      height: maxSize.height,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          for (final game in games)
+            Transform.translate(
+              offset: Offset(rand(-46, 46), rand(-128, 128)),
+              child: _gameCover(context, game, games.length),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _gameCover(BuildContext context, GameDigest game, int sizef) {
+    return SizedBox(
+      width: maxSize.width * (1 - min(.2 * (sizef - 1), .7)),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+        child: GestureDetector(
+          onTap: () => context
+              .pushNamed('details', pathParameters: {'gid': '${game.id}'}),
+          child: Center(
+            child: CachedNetworkImage(
+              fit: BoxFit.cover,
+              imageUrl: '${Urls.imageProvider}/t_cover_big/${game.cover}.jpg',
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) =>
+                  const Center(child: Icon(Icons.error_outline)),
             ),
           ),
-      ],
+        ),
+      ),
     );
   }
 
