@@ -36,6 +36,8 @@ class _TileCarouselState extends State<TimelineCarousel> {
     final now = DateTime.now();
     now.add(const Duration(days: 1));
 
+    final gamesByDate = context.watch<FrontpageModel>().gamesByDate;
+
     return Column(
       children: [
         FadeIn(
@@ -53,7 +55,7 @@ class _TileCarouselState extends State<TimelineCarousel> {
 
                 return _TimelineEntry(
                   date: now.add(Duration(days: index)),
-                  games: context.read<FrontpageModel>().gamesByDate(date),
+                  games: gamesByDate(date),
                   maxSize: widget.tileSize,
                   showMonth: index == 0,
                 );
@@ -92,7 +94,28 @@ class _TimelineEntry extends StatelessWidget {
               ? Text(DateFormat('MMM').format(date))
               : null,
         ),
-        for (final game in games)
+        Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            if (games.isNotEmpty) ...[
+              _connection(context, maxSize.width + 64),
+              _releaseEvent(context),
+            ] else
+              _connection(context, 32),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: (games.isNotEmpty) ? Text('${date.day}') : null,
+        ),
+      ],
+    );
+  }
+
+  Widget _releaseEvent(BuildContext context) {
+    return Row(
+      children: [
+        for (final game in games.take(1))
           ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(8.0)),
             child: GestureDetector(
@@ -111,16 +134,20 @@ class _TimelineEntry extends StatelessWidget {
               ),
             ),
           ),
-        if (games.isEmpty)
-          SizedBox(
-            height: maxSize.height,
-            child: const Center(child: Icon(Icons.linear_scale_outlined)),
-          ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: (games.isNotEmpty) ? Text('${date.day}') : null,
-        ),
       ],
+    );
+  }
+
+  Widget _connection(BuildContext context, double width) {
+    return SizedBox(
+      height: maxSize.height,
+      child: Center(
+        child: Container(
+          height: 5,
+          width: width,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
     );
   }
 }

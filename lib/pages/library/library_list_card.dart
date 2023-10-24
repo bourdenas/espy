@@ -6,7 +6,6 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 class LibraryListCard extends StatelessWidget {
   const LibraryListCard({
