@@ -9,6 +9,7 @@ class GameDigest {
   final String? cover;
 
   final int releaseDate;
+  final int popularity;
   final double rating;
 
   final List<String> collections;
@@ -26,6 +27,7 @@ class GameDigest {
     this.category,
     this.cover,
     this.releaseDate = 0,
+    this.popularity = 0,
     this.rating = 0,
     this.collections = const [],
     this.franchises = const [],
@@ -41,6 +43,7 @@ class GameDigest {
           category: gameEntry.category,
           cover: gameEntry.cover?.imageId,
           releaseDate: gameEntry.releaseDate ?? gameEntry.igdbGame.releaseDate,
+          popularity: gameEntry.popularity,
           rating: gameEntry.igdbGame.rating,
           collections: [
             for (final collection in gameEntry.collections) collection.name
@@ -64,6 +67,7 @@ class GameDigest {
           category: json['category'] ?? '',
           cover: json['cover'],
           releaseDate: json['release_date'] ?? 0,
+          popularity: json['popularity'] ?? 0,
           rating: json['rating'] ?? 0,
           collections: [
             for (final collection in json['collections'] ?? []) collection,
@@ -89,6 +93,7 @@ class GameDigest {
       'category': category,
       if (cover != null) 'cover': cover,
       'release_date': releaseDate,
+      if (popularity > 0) 'popularity': popularity,
       if (rating != 0) 'rating': rating,
       if (collections.isNotEmpty) 'collections': collections,
       if (franchises.isNotEmpty) 'franchises': franchises,
@@ -104,6 +109,7 @@ class GameDigest {
             category != other.category ||
             cover != other.cover ||
             releaseDate != other.releaseDate ||
+            popularity != other.popularity ||
             rating != other.rating ||
             !_match(collections, other.collections) ||
             !_match(franchises, other.franchises) ||
