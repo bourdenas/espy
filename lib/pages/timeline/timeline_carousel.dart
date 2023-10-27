@@ -72,8 +72,6 @@ class _TileCarouselState extends State<TimelineCarousel> {
   final ScrollController _scrollController = ScrollController();
 }
 
-final _random = Random();
-
 class _TimelineEntry extends StatelessWidget {
   const _TimelineEntry({
     Key? key,
@@ -90,6 +88,10 @@ class _TimelineEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    games.sort(
+      (a, b) => -a.popularity.compareTo(b.popularity),
+    );
+
     return Column(
       children: [
         SizedBox(
@@ -116,7 +118,24 @@ class _TimelineEntry extends StatelessWidget {
     );
   }
 
-  double rand(int min, int max) => (min + _random.nextInt(max - min)) as double;
+  Offset _offset(int index, double pop) {
+    final coverWidth = maxSize.width * pop;
+    final coverHeight = maxSize.height * pop;
+
+    if (games.length == 1) {
+      return const Offset(0, 0);
+    } else if (games.length == 2) {
+      return index == 0
+          ? Offset(-((maxSize.width - coverWidth) / 2),
+              -((maxSize.height - coverHeight) / 2))
+          : Offset((maxSize.width - coverWidth) / 2,
+              ((maxSize.height - coverHeight) / 2));
+    }
+
+    double progress = (index as double) / games.length;
+    return Offset(((maxSize.width - coverWidth) / 2) * sin(progress * 2 * pi),
+        -((maxSize.height - coverHeight) / 2) * cos(progress * 2 * pi));
+  }
 
   Widget _releaseEvent(BuildContext context) {
     return SizedBox(
@@ -125,19 +144,24 @@ class _TimelineEntry extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          for (final game in games)
+          for (final (index, game) in games.indexed)
             Transform.translate(
-              offset: Offset(rand(-46, 46), rand(-128, 128)),
-              child: _gameCover(context, game, games.length),
+              offset: _offset(index,
+                  context.read<FrontpageModel>().normalizePopularity(game)),
+              child: _gameCover(
+                  context,
+                  game,
+                  maxSize.width *
+                      context.read<FrontpageModel>().normalizePopularity(game)),
             ),
         ],
       ),
     );
   }
 
-  Widget _gameCover(BuildContext context, GameDigest game, int sizef) {
+  Widget _gameCover(BuildContext context, GameDigest game, double width) {
     return SizedBox(
-      width: maxSize.width * (1 - min(.2 * (sizef - 1), .7)),
+      width: width,
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(8.0)),
         child: GestureDetector(

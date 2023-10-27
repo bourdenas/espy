@@ -4,7 +4,6 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/utils/edit_distance.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
-import 'package:flutter_scatter/flutter_scatter.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -139,43 +138,6 @@ class _GenreChipsState extends State<GenreChips>
         _TagsWarp(children: widgets),
         _buildTapToCloseFab(),
       ],
-    );
-  }
-
-  Widget _buildGenreTagsScatter(BuildContext context) {
-    final genre = _expandedGenre!;
-    final tagsModel = context.watch<GameTagsModel>();
-
-    final widgets = [
-      for (final label in tagsModel.espyGenreTags(genre) ?? [])
-        _TagSelectionChip(
-          label: label,
-          color: GenreTagChip.color,
-          hasHalo: matchInDict(label, widget.keywords),
-          isSelected: tagsModel.genreTags
-              .byGameId(widget.libraryEntry.id)
-              .any((e) => e.root == genre && e.name == label),
-          onSelected: (selected) => selected
-              ? tagsModel.genreTags
-                  .add(Genre(root: genre, name: label), widget.libraryEntry.id)
-              : tagsModel.genreTags.remove(
-                  Genre(root: genre, name: label), widget.libraryEntry.id),
-        ),
-    ];
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Scatter(
-          delegate: EllipseScatterDelegate(
-            start: .75,
-            a: 180.0,
-            b: 60.0,
-            step: 1.0 / widgets.length,
-          ),
-          children: widgets,
-        ),
-      ),
     );
   }
 
