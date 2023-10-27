@@ -35,10 +35,13 @@ class TimelineCarousel extends StatefulWidget {
 class _TileCarouselState extends State<TimelineCarousel> {
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    now.add(const Duration(days: 1));
-
+    final start = DateTime.now().subtract(const Duration(days: 6 * 30));
     final gamesByDate = context.watch<FrontpageModel>().gamesByDate;
+
+    setState(() {
+      _scrollController.animateTo(2000,
+          duration: const Duration(microseconds: 250), curve: Curves.bounceIn);
+    });
 
     return Column(
       children: [
@@ -52,11 +55,11 @@ class _TileCarouselState extends State<TimelineCarousel> {
               // padding: const EdgeInsets.symmetric(horizontal: 16.0),
               // itemCount: widget.tiles.length,
               itemBuilder: (context, index) {
-                final date =
-                    DateFormat('yMMMd').format(now.add(Duration(days: index)));
+                final date = DateFormat('yMMMd')
+                    .format(start.add(Duration(days: index)));
 
                 return _TimelineEntry(
-                  date: now.add(Duration(days: index)),
+                  date: start.add(Duration(days: index)),
                   games: gamesByDate(date),
                   maxSize: widget.tileSize,
                   showMonth: index == 0,

@@ -18,10 +18,15 @@ class FrontpageModel extends ChangeNotifier {
   final Map<String, List<GameDigest>> _gamesByDate = {};
 
   double normalizePopularity(GameDigest game) {
-    return max(.33333, log(game.popularity) / log(_maxPopularity));
+    final maxPop = DateTime.now().isBefore(
+            DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000))
+        ? _maxPopularityFuture
+        : _maxPopularityPast;
+    return max(.33333, log(game.popularity) / log(maxPop));
   }
 
-  int _maxPopularity = 0;
+  int _maxPopularityPast = 0;
+  int _maxPopularityFuture = 0;
 
   Future<void> load() async {
     FirebaseFirestore.instance
@@ -35,10 +40,21 @@ class FrontpageModel extends ChangeNotifier {
         .listen((DocumentSnapshot<Frontpage> snapshot) {
       _frontpage = snapshot.data() ?? const Frontpage();
       _gamesByDate.clear();
-      _maxPopularity = 0;
+      _maxPopularityPast = _maxPopularityFuture = 0;
 
       for (final game in mostAnticipated) {
-        _maxPopularity = max(_maxPopularity, game.popularity);
+        _maxPopularityFuture = max(_maxPopularityFuture, game.popularity);
+
+        final date = game.formatReleaseDate('yMMMd');
+        if (_gamesByDate.containsKey(date)) {
+          _gamesByDate[date]?.add(game);
+        } else {
+          _gamesByDate[date] = [game];
+        }
+      }
+
+      for (final game in popular) {
+        _maxPopularityPast = max(_maxPopularityPast, game.popularity);
 
         final date = game.formatReleaseDate('yMMMd');
         if (_gamesByDate.containsKey(date)) {
