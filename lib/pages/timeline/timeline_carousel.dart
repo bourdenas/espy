@@ -57,7 +57,7 @@ class _TileCarouselState extends State<TimelineCarousel> {
         FadeIn(
           duration: const Duration(milliseconds: 500),
           child: SizedBox(
-            height: widget.tileSize.height * 1.3,
+            height: widget.tileSize.height * 1.4,
             child: ListView.builder(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
@@ -157,7 +157,18 @@ class _TimelineEntry extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.all(16),
-          child: (games.isNotEmpty) ? Text('${date.day}') : null,
+          child: (games.isNotEmpty)
+              ? IconButton.filled(
+                  icon: Text(
+                    '${date.day}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  onPressed: () {},
+                )
+              : null,
         ),
       ],
     );
@@ -177,7 +188,7 @@ class _TimelineEntry extends StatelessWidget {
               ((maxSize.height - coverHeight) / 2));
     }
 
-    double progress = (index as double) / games.length;
+    double progress = (index as double) / min(games.length, 5);
     return Offset(((maxSize.width - coverWidth) / 2) * sin(progress * 2 * pi),
         -((maxSize.height - coverHeight) / 2) * cos(progress * 2 * pi));
   }
@@ -189,7 +200,7 @@ class _TimelineEntry extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          for (final (index, game) in games.indexed)
+          for (final (index, game) in games.indexed.take(5))
             Transform.translate(
               offset: _offset(index,
                   context.read<FrontpageModel>().normalizePopularity(game)),
@@ -199,7 +210,7 @@ class _TimelineEntry extends StatelessWidget {
                   maxSize.width *
                       context.read<FrontpageModel>().normalizePopularity(game)),
             ),
-        ],
+        ].reversed.toList(),
       ),
     );
   }

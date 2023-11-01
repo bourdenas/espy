@@ -22,7 +22,7 @@ class FrontpageModel extends ChangeNotifier {
             DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000))
         ? _maxPopularityFuture
         : _maxPopularityPast;
-    return max(.33333, log(game.popularity) / log(maxPop));
+    return max(.5, log(game.popularity) / log(maxPop));
   }
 
   int _maxPopularityPast = 0;
