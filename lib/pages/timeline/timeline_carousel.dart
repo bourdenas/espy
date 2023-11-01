@@ -6,6 +6,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -35,12 +36,20 @@ class TimelineCarousel extends StatefulWidget {
 class _TileCarouselState extends State<TimelineCarousel> {
   @override
   Widget build(BuildContext context) {
+    final today = DateFormat('yMMMd').format(DateTime.now());
     final start = DateTime.now().subtract(const Duration(days: 6 * 30));
     final gamesByDate = context.watch<FrontpageModel>().gamesByDate;
 
-    setState(() {
-      _scrollController.animateTo(2000,
-          duration: const Duration(microseconds: 250), curve: Curves.bounceIn);
+    var pixelsToToday = -300.0;
+    for (var i = 0; i < 6 * 30; ++i) {
+      final date = DateFormat('yMMMd').format(start.add(Duration(days: i)));
+      pixelsToToday +=
+          gamesByDate(date).isNotEmpty ? widget.tileSize.width + 16 : 32;
+    }
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(pixelsToToday,
+          duration: const Duration(microseconds: 100), curve: Curves.bounceIn);
     });
 
     return Column(
@@ -48,15 +57,48 @@ class _TileCarouselState extends State<TimelineCarousel> {
         FadeIn(
           duration: const Duration(milliseconds: 500),
           child: SizedBox(
-            height: widget.tileSize.height * 3,
+            height: widget.tileSize.height * 1.3,
             child: ListView.builder(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
-              // padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              // itemCount: widget.tiles.length,
               itemBuilder: (context, index) {
                 final date = DateFormat('yMMMd')
                     .format(start.add(Duration(days: index)));
+
+                if (date == today) {
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        left: -16,
+                        child: Column(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text('today'),
+                            ),
+                            SizedBox(
+                              height: widget.tileSize.height * 1.2,
+                              child: Center(
+                                child: Container(
+                                  width: 3,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _TimelineEntry(
+                        date: start.add(Duration(days: index)),
+                        games: gamesByDate(date),
+                        maxSize: widget.tileSize,
+                        showMonth: index == 0,
+                      ),
+                    ],
+                  );
+                }
 
                 return _TimelineEntry(
                   date: start.add(Duration(days: index)),
