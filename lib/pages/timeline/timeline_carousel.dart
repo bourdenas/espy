@@ -166,7 +166,11 @@ class _TimelineEntry extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    context.pushNamed('releases', pathParameters: {
+                      'date': DateFormat('yMMMd').format(date)
+                    });
+                  },
                 )
               : null,
         ),
