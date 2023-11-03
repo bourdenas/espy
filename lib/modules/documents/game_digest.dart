@@ -20,6 +20,8 @@ class GameDigest {
 
   String formatReleaseDate([String format = 'yMMM']) => DateFormat(format)
       .format(DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000));
+  DateTime get release =>
+      DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000);
 
   GameDigest({
     required this.id,

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,7 +18,8 @@ class FrontpageModel extends ChangeNotifier {
   List<GameDigest> gamesByDate(String date) => _gamesByDate[date] ?? [];
   final Map<String, List<GameDigest>> _gamesByDate = {};
 
-  Map<String, List<GameDigest>> get games => _gamesByDate;
+  List<(DateTime, List<GameDigest>)> get games => _games;
+  final List<(DateTime, List<GameDigest>)> _games = [];
 
   double normalizePopularity(GameDigest game) {
     final maxPop = DateTime.now().isBefore(
@@ -48,23 +50,21 @@ class FrontpageModel extends ChangeNotifier {
         _maxPopularityFuture = max(_maxPopularityFuture, game.popularity);
 
         final date = game.formatReleaseDate('yMMMd');
-        if (_gamesByDate.containsKey(date)) {
-          _gamesByDate[date]?.add(game);
-        } else {
-          _gamesByDate[date] = [game];
-        }
+        _gamesByDate.putIfAbsent(date, () => []).add(game);
       }
 
       for (final game in popular) {
         _maxPopularityPast = max(_maxPopularityPast, game.popularity);
 
         final date = game.formatReleaseDate('yMMMd');
-        if (_gamesByDate.containsKey(date)) {
-          _gamesByDate[date]?.add(game);
-        } else {
-          _gamesByDate[date] = [game];
-        }
+        _gamesByDate.putIfAbsent(date, () => []).add(game);
       }
+
+      SplayTreeMap<DateTime, List<GameDigest>> games = SplayTreeMap();
+      for (final game in [recent, upcoming].expand((e) => e)) {
+        games.putIfAbsent(game.release, () => []).add(game);
+      }
+      _games.addAll(games.entries.map((e) => (e.key, e.value)));
 
       notifyListeners();
     });
