@@ -168,7 +168,7 @@ class _TimelineEntry extends StatelessWidget {
                   ),
                   onPressed: () {
                     context.pushNamed('releases', pathParameters: {
-                      'date': DateFormat('yMMMd').format(date)
+                      'date': '${date.millisecondsSinceEpoch}',
                     });
                   },
                 )

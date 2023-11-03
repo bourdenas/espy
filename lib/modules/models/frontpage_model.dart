@@ -17,6 +17,8 @@ class FrontpageModel extends ChangeNotifier {
   List<GameDigest> gamesByDate(String date) => _gamesByDate[date] ?? [];
   final Map<String, List<GameDigest>> _gamesByDate = {};
 
+  Map<String, List<GameDigest>> get games => _gamesByDate;
+
   double normalizePopularity(GameDigest game) {
     final maxPop = DateTime.now().isBefore(
             DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000))
