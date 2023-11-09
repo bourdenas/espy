@@ -1,5 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/frontpage_model.dart';
+import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/widgets/flat_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
