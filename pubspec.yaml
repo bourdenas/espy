@@ -25,6 +25,7 @@ dependencies:
   firebase_core: ^2.17.0
   fl_chart: ^0.64.0
   flutter_html: ^3.0.0-beta.2
+  flutter_json_view: ^1.1.3
   flutter_lints: ^2.0.3
   flutterfire_ui: ^0.4.3
   go_router: ^11.1.4
