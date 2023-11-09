@@ -68,27 +68,75 @@ class GameEntryActionBar extends StatelessWidget {
     final userRating = context.watch<UserDataModel>().rating(libraryEntry.id);
     final rating = userRating > 0
         ? userRating * 20
-        : gameEntry?.igdbGame.rating ?? libraryEntry.rating;
-    return ExpandableButton(
-      offset: const Offset(0, 42),
-      collapsedWidget: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.star,
-            color: rating > 0 ? Colors.amber : Colors.grey,
-            size: 18.0,
+        : gameEntry?.steamData?.metacritic?.score ?? libraryEntry.rating;
+    final score = gameEntry?.score ?? 0;
+    final popularity = gameEntry?.popularity ?? 0;
+
+    return Row(
+      children: [
+        ExpandableButton(
+          offset: const Offset(0, 42),
+          collapsedWidget: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.star,
+                color: rating > 0 ? Colors.amber : Colors.grey,
+                size: 18.0,
+              ),
+              const SizedBox(width: 4.0),
+              Text(
+                rating > 0 ? (rating / 20.0).toStringAsFixed(1) : '--',
+                style: userRating > 0
+                    ? const TextStyle(color: Colors.green)
+                    : null,
+              ),
+            ],
           ),
-          const SizedBox(width: 4.0),
-          Text(
-            rating > 0 ? (rating / 20.0).toStringAsFixed(1) : '--',
-            style: userRating > 0 ? const TextStyle(color: Colors.green) : null,
-          ),
-        ],
-      ),
-      expansionBuilder: (context, _, onDone) {
-        return _UserStarRating(libraryEntry, userRating, onDone);
-      },
+          expansionBuilder: (context, _, onDone) {
+            return _UserStarRating(libraryEntry, userRating, onDone);
+          },
+        ),
+        const SizedBox(width: 4),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              score > 60 ? Icons.thumb_up : Icons.thumb_down,
+              color: switch (score) {
+                0 => Colors.grey,
+                (int score) when score > 80 => Colors.green,
+                (int score) when score > 60 => Colors.orange,
+                int() => Colors.red,
+              },
+              size: 18.0,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              score > 0 ? score.toString() : '--',
+              style:
+                  userRating > 0 ? const TextStyle(color: Colors.green) : null,
+            ),
+          ],
+        ),
+        const SizedBox(width: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.people,
+              color: popularity > 0 ? Colors.blueAccent : Colors.grey,
+              size: 18.0,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              popularity > 0 ? popularity.toString() : '--',
+              style:
+                  userRating > 0 ? const TextStyle(color: Colors.green) : null,
+            ),
+          ],
+        ),
+      ],
     );
   }
 
