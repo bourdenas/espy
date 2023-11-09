@@ -107,6 +107,16 @@ class LibraryListCard extends StatelessWidget {
               Text(
                 rating > 0 ? (rating / 20.0).toStringAsFixed(1) : '--',
               ),
+              const SizedBox(width: 16.0),
+              const Icon(
+                Icons.people,
+                color: Colors.amber,
+                size: 18.0,
+              ),
+              const SizedBox(width: 4.0),
+              Text(
+                libraryEntry.digest.popularity.toString(),
+              ),
             ],
           ),
           const SizedBox(height: 16.0),
