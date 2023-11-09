@@ -46,7 +46,9 @@ class GameDigest {
           cover: gameEntry.cover?.imageId,
           releaseDate: gameEntry.releaseDate ?? gameEntry.igdbGame.releaseDate,
           popularity: gameEntry.popularity,
-          rating: gameEntry.igdbGame.rating,
+          rating: gameEntry.score > 0
+              ? gameEntry.score as double
+              : gameEntry.igdbGame.rating,
           collections: [
             for (final collection in gameEntry.collections) collection.name
           ],

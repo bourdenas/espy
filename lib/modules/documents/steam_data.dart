@@ -11,6 +11,9 @@ class SteamData {
   final List<String> developers;
   final List<String> publishers;
 
+  final SteamScore? score;
+  final Metacritic? metacritic;
+
   final List<Genre> genres;
   final List<Screenshot> screenshots;
   final List<Movie> movies;
@@ -25,6 +28,8 @@ class SteamData {
     this.backgroundImage = '',
     this.developers = const [],
     this.publishers = const [],
+    this.score,
+    this.metacritic,
     this.genres = const [],
     this.screenshots = const [],
     this.movies = const [],
@@ -45,6 +50,11 @@ class SteamData {
           publishers: [
             for (final publisher in json['publishers'] ?? []) publisher,
           ],
+          score:
+              json['score'] != null ? SteamScore.fromJson(json['score']) : null,
+          metacritic: json['metacritic'] != null
+              ? Metacritic.fromJson(json['metacritic'])
+              : null,
           genres: [
             for (final genre in json['genres'] ?? []) Genre.fromJson(genre),
           ],
@@ -68,6 +78,8 @@ class SteamData {
       if (backgroundImage != null) 'background_raw': backgroundImage,
       if (developers.isNotEmpty) 'developers': developers,
       if (publishers.isNotEmpty) 'publishers': publishers,
+      if (score != null) 'score': score!.toJson(),
+      if (metacritic != null) 'metacritic': metacritic!.toJson(),
       if (genres.isNotEmpty)
         'genres': [
           for (final genre in genres) genre.toJson(),
@@ -103,6 +115,56 @@ class Genre {
     return {
       'id': id,
       'name': name,
+    };
+  }
+}
+
+class SteamScore {
+  final int reviewScore;
+  final int totalReviews;
+  final String reviewScoreDescription;
+
+  const SteamScore({
+    required this.reviewScore,
+    required this.totalReviews,
+    required this.reviewScoreDescription,
+  });
+
+  SteamScore.fromJson(Map<String, dynamic> json)
+      : this(
+          reviewScore: json['review_score'] ?? 0,
+          totalReviews: json['total_reviews'] ?? 0,
+          reviewScoreDescription: json['review_score_desc'] ?? '',
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'review_score': reviewScore,
+      'total_reviews': totalReviews,
+      'review_score_desc': reviewScoreDescription,
+    };
+  }
+}
+
+class Metacritic {
+  final int score;
+  final String url;
+
+  const Metacritic({
+    required this.score,
+    required this.url,
+  });
+
+  Metacritic.fromJson(Map<String, dynamic> json)
+      : this(
+          score: json['score'] ?? '',
+          url: json['url'] ?? '',
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'score': score,
+      'url': url,
     };
   }
 }

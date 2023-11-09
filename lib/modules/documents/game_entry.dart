@@ -10,6 +10,7 @@ class GameEntry {
   final String status;
   final int? releaseDate;
   final int popularity;
+  final int score;
 
   final List<String> genres;
   final List<String> keywords;
@@ -57,6 +58,7 @@ class GameEntry {
     this.status = 'Released',
     this.releaseDate,
     this.popularity = 0,
+    this.score = 0,
     this.genres = const [],
     this.keywords = const [],
     this.parent,
@@ -84,6 +86,7 @@ class GameEntry {
           status: json['status']!,
           releaseDate: json['release_date'],
           popularity: json['popularity'] ?? 0,
+          score: json['score'] ?? 0,
           genres: [
             for (final genre in json['genres'] ?? []) genre,
           ],
@@ -152,6 +155,7 @@ class GameEntry {
       'status': status,
       if (releaseDate != null) 'release_date': releaseDate,
       if (popularity > 0) 'popularity': popularity,
+      if (score > 0) 'score': score,
       if (genres.isNotEmpty) 'genres': genres,
       if (keywords.isNotEmpty) 'keywords': keywords,
       if (parent != null) 'parent': parent!.toJson(),
