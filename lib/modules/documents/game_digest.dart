@@ -9,8 +9,9 @@ class GameDigest {
   final String? cover;
 
   final int releaseDate;
+  final int score;
+  final int thumbs;
   final int popularity;
-  final double rating;
 
   final List<String> collections;
   final List<String> franchises;
@@ -29,8 +30,9 @@ class GameDigest {
     this.category,
     this.cover,
     this.releaseDate = 0,
+    this.score = 0,
+    this.thumbs = 0,
     this.popularity = 0,
-    this.rating = 0,
     this.collections = const [],
     this.franchises = const [],
     this.developers = const [],
@@ -45,10 +47,9 @@ class GameDigest {
           category: gameEntry.category,
           cover: gameEntry.cover?.imageId,
           releaseDate: gameEntry.releaseDate ?? gameEntry.igdbGame.releaseDate,
+          score: gameEntry.score,
+          thumbs: gameEntry.thumbs,
           popularity: gameEntry.popularity,
-          rating: gameEntry.score > 0
-              ? gameEntry.score as double
-              : gameEntry.igdbGame.rating,
           collections: [
             for (final collection in gameEntry.collections) collection.name
           ],
@@ -71,8 +72,9 @@ class GameDigest {
           category: json['category'] ?? '',
           cover: json['cover'],
           releaseDate: json['release_date'] ?? 0,
+          score: json['score'] ?? 0,
+          thumbs: json['thumbs'] ?? 0,
           popularity: json['popularity'] ?? 0,
-          rating: json['rating'] ?? 0,
           collections: [
             for (final collection in json['collections'] ?? []) collection,
           ],
@@ -97,8 +99,9 @@ class GameDigest {
       'category': category,
       if (cover != null) 'cover': cover,
       'release_date': releaseDate,
-      if (popularity > 0) 'popularity': popularity,
-      if (rating != 0) 'rating': rating,
+      if (score != 0) 'score': score,
+      if (thumbs != 0) 'thumbs': thumbs,
+      if (popularity != 0) 'popularity': popularity,
       if (collections.isNotEmpty) 'collections': collections,
       if (franchises.isNotEmpty) 'franchises': franchises,
       if (developers.isNotEmpty) 'developers': developers,
@@ -113,8 +116,9 @@ class GameDigest {
             category != other.category ||
             cover != other.cover ||
             releaseDate != other.releaseDate ||
+            score != other.score ||
+            thumbs != other.thumbs ||
             popularity != other.popularity ||
-            rating != other.rating ||
             !_match(collections, other.collections) ||
             !_match(franchises, other.franchises) ||
             !_match(developers, other.developers) ||

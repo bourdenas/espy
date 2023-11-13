@@ -12,7 +12,9 @@ class LibraryEntry {
   String get name => digest.name;
   String? get cover => digest.cover;
   int get releaseDate => digest.releaseDate;
-  double get rating => digest.rating;
+  int get score => digest.score;
+  int get thumbs => digest.thumbs;
+  int get popularity => digest.popularity;
   List<String> get collections => digest.collections;
   List<String> get franchises => digest.franchises;
   List<String> get developers => digest.developers;

@@ -19,22 +19,22 @@ class GamePulse extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userRating = context.watch<UserDataModel>().rating(libraryEntry.id);
-    final rating = userRating > 0
+    final score = userRating > 0
         ? userRating * 20
-        : gameEntry?.steamData?.metacritic?.score ?? libraryEntry.rating;
-    final score = gameEntry?.score ?? libraryEntry.rating as int;
-    final popularity = gameEntry?.popularity ?? libraryEntry.digest.popularity;
+        : gameEntry?.score ?? libraryEntry.score;
+    final thumbs = gameEntry?.thumbs ?? libraryEntry.thumbs;
+    final popularity = gameEntry?.popularity ?? libraryEntry.popularity;
 
     return Row(
       children: [
-        criticsScore(rating, userRating),
-        if (score > 0) usersScore(score),
+        criticsScore(score, userRating),
+        if (thumbs > 0) usersScore(thumbs),
         if (popularity > 0) popScore(popularity),
       ],
     );
   }
 
-  Widget criticsScore(num rating, int userRating) {
+  Widget criticsScore(int score, int userRating) {
     return ExpandableButton(
       offset: const Offset(0, 42),
       collapsedWidget: Row(
@@ -42,12 +42,12 @@ class GamePulse extends StatelessWidget {
         children: [
           Icon(
             Icons.star,
-            color: rating > 0 ? Colors.amber : Colors.grey,
+            color: score > 0 ? Colors.amber : Colors.grey,
             size: 18.0,
           ),
           const SizedBox(width: 4.0),
           Text(
-            rating > 0 ? (rating / 20.0).toStringAsFixed(1) : '--',
+            score > 0 ? (score / 20.0).toStringAsFixed(1) : '--',
             style: userRating > 0 ? const TextStyle(color: Colors.green) : null,
           ),
         ],
@@ -58,14 +58,14 @@ class GamePulse extends StatelessWidget {
     );
   }
 
-  Widget usersScore(int score) {
+  Widget usersScore(int thumbs) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(width: 4),
         Icon(
-          score > 60 ? Icons.thumb_up : Icons.thumb_down,
-          color: switch (score) {
+          thumbs > 60 ? Icons.thumb_up : Icons.thumb_down,
+          color: switch (thumbs) {
             0 => Colors.grey,
             (int score) when score > 80 => Colors.green,
             (int score) when score > 60 => Colors.orange,
@@ -74,7 +74,7 @@ class GamePulse extends StatelessWidget {
           size: 18.0,
         ),
         const SizedBox(width: 4),
-        Text(score > 0 ? '$score%' : '--'),
+        Text(thumbs > 0 ? '$thumbs%' : '--'),
       ],
     );
   }
