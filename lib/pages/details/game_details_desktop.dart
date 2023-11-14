@@ -264,26 +264,26 @@ class _GameDetailsHeader extends StatelessWidget {
         children: [
           Row(children: [
             Expanded(
-              child: Text(
-                libraryEntry.name,
-                style: Theme.of(context).textTheme.displaySmall,
-                textAlign: TextAlign.center,
+              child: GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => DebugDialog(gameEntry: gameEntry!),
+                  );
+                },
+                child: Text(
+                  libraryEntry.name,
+                  style: Theme.of(context).textTheme.displaySmall,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
             if (!kReleaseMode)
               Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => DebugDialog(gameEntry: gameEntry!),
-                    );
-                  },
-                  child: Text(
-                    '${libraryEntry.id}',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                    textAlign: TextAlign.center,
-                  ),
+                child: Text(
+                  '${libraryEntry.id}',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
                 ),
               ),
           ]),
