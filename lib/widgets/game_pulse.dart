@@ -3,7 +3,6 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/widgets/expandable_button.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class GamePulse extends StatelessWidget {
@@ -28,7 +27,7 @@ class GamePulse extends StatelessWidget {
     return Row(
       children: [
         criticsScore(score, userRating),
-        if (thumbs > 0) usersScore(thumbs),
+        if (thumbs > 0) usersScore(thumbs, popularity),
         if (popularity > 0) popScore(popularity),
       ],
     );
@@ -58,17 +57,23 @@ class GamePulse extends StatelessWidget {
     );
   }
 
-  Widget usersScore(int thumbs) {
+  Widget usersScore(int thumbs, int popularity) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(width: 4),
         Icon(
-          thumbs > 60 ? Icons.thumb_up : Icons.thumb_down,
+          thumbs >= 80
+              ? Icons.thumb_up
+              : thumbs >= 60
+                  ? Icons.thumbs_up_down
+                  : Icons.thumb_down,
           color: switch (thumbs) {
             0 => Colors.grey,
-            (int score) when score > 80 => Colors.green,
-            (int score) when score > 60 => Colors.orange,
+            (int score) when score >= 80 && popularity > 1000 => Colors.green,
+            (int score) when score >= 80 => Colors.green[200],
+            (int score) when score >= 60 && popularity > 1000 => Colors.orange,
+            (int score) when score >= 60 => Colors.orange[200],
             int() => Colors.red,
           },
           size: 18.0,
@@ -80,8 +85,6 @@ class GamePulse extends StatelessWidget {
   }
 
   Widget popScore(int popularity) {
-    final formatter = NumberFormat('###,###');
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -92,7 +95,9 @@ class GamePulse extends StatelessWidget {
           size: 18.0,
         ),
         const SizedBox(width: 4),
-        Text(popularity > 0 ? formatter.format(popularity) : '--'),
+        Text(popularity >= 1000
+            ? '${popularity ~/ 1000}K'
+            : popularity.toString()),
       ],
     );
   }
