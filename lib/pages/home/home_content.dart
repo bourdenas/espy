@@ -6,13 +6,14 @@ import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/pages/home/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
+import 'package:espy/pages/timeline/timeline_carousel.dart' as tm;
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class HomeContent extends StatelessWidget {
-  const HomeContent({Key? key}) : super(key: key);
+  const HomeContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +65,21 @@ class HomeContent extends StatelessWidget {
               );
             },
             childCount: slates.length,
+          ),
+        ),
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 32.0),
+        ),
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              tm.TimelineCarousel(
+                tileSize: AppConfigModel.isMobile(context)
+                    ? const tm.TileSize(width: 133, height: 190)
+                    : const tm.TileSize(width: 227, height: 320),
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
         ),
         const SliverToBoxAdapter(

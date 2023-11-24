@@ -25,9 +25,9 @@ class TimelineCarousel extends StatefulWidget {
   final TileSize tileSize;
 
   const TimelineCarousel({
-    Key? key,
+    super.key,
     this.tileSize = const TileSize(width: 227.0, height: 320.0),
-  }) : super(key: key);
+  });
 
   @override
   State<TimelineCarousel> createState() => _TileCarouselState();
