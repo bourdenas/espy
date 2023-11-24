@@ -45,16 +45,12 @@ class FrontpageModel extends ChangeNotifier {
 
       for (final game in upcoming) {
         _maxPopularityFuture = max(_maxPopularityFuture, game.popularity);
-
-        final date = game.formatReleaseDate('yMMMd');
-        _gamesByDate.putIfAbsent(date, () => []).add(game);
+        _gamesByDate.putIfAbsent(game.releaseDay, () => []).add(game);
       }
 
       for (final game in recent) {
         _maxPopularityPast = max(_maxPopularityPast, game.popularity);
-
-        final date = game.formatReleaseDate('yMMMd');
-        _gamesByDate.putIfAbsent(date, () => []).add(game);
+        _gamesByDate.putIfAbsent(game.releaseDay, () => []).add(game);
       }
 
       SplayTreeMap<DateTime, List<GameDigest>> games = SplayTreeMap();

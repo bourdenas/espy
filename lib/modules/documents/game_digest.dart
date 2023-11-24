@@ -19,8 +19,8 @@ class GameDigest {
   final List<String> publishers;
   final List<String> genres;
 
-  String formatReleaseDate([String format = 'yMMM']) =>
-      DateFormat(format).format(release);
+  String get releaseDay => DateFormat('yMMMd').format(release);
+  String get releaseMonth => DateFormat('yMMM').format(release);
   DateTime get release =>
       DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000);
 

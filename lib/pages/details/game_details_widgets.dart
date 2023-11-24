@@ -52,7 +52,7 @@ class GameEntryActionBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: Text(
-          libraryEntry.digest.formatReleaseDate('yMMMd'),
+          libraryEntry.digest.releaseDay,
           style: TextStyle(
             fontSize: 16.0,
             fontWeight: FontWeight.w500,
