@@ -32,6 +32,12 @@ List<MenuItem> espyMenuItems = [
     onTap: (context) => context.goNamed('home'),
   ),
   MenuItem(
+    label: 'Timeline',
+    icon: Icons.timeline_outlined,
+    selectedIcon: Icons.timeline,
+    onTap: (context) => context.goNamed('timeline'),
+  ),
+  MenuItem(
     label: 'Browse',
     icon: Icons.bookmark,
     selectedIcon: Icons.home,

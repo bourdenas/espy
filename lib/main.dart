@@ -1,18 +1,19 @@
 import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/failed_model.dart';
-import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/remote_library_model.dart';
+import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
-import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:firebase_core/firebase_core.dart';
-// import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,6 +28,12 @@ Future<void> main() async {
     // name: 'espy',
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  FirebaseUIAuth.configureProviders([
+    GoogleProvider(
+        clientId:
+            '478783154654-gq2jbr76gn0eggo0i71ak51bu9l3q7q5.apps.googleusercontent.com'),
+  ]);
 
   runApp(MultiProvider(
     providers: [

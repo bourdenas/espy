@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/game_entry.dart';
+import 'package:intl/intl.dart';
 
 class GameDigest {
   final int id;
@@ -8,7 +9,9 @@ class GameDigest {
   final String? cover;
 
   final int releaseDate;
-  final double rating;
+  final int score;
+  final int thumbs;
+  final int popularity;
 
   final List<String> collections;
   final List<String> franchises;
@@ -16,13 +19,20 @@ class GameDigest {
   final List<String> publishers;
   final List<String> genres;
 
+  String formatReleaseDate([String format = 'yMMM']) =>
+      DateFormat(format).format(release);
+  DateTime get release =>
+      DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000);
+
   GameDigest({
     required this.id,
     required this.name,
     this.category,
     this.cover,
     this.releaseDate = 0,
-    this.rating = 0,
+    this.score = 0,
+    this.thumbs = 0,
+    this.popularity = 0,
     this.collections = const [],
     this.franchises = const [],
     this.developers = const [],
@@ -37,7 +47,9 @@ class GameDigest {
           category: gameEntry.category,
           cover: gameEntry.cover?.imageId,
           releaseDate: gameEntry.releaseDate ?? gameEntry.igdbGame.releaseDate,
-          rating: gameEntry.igdbGame.rating,
+          score: gameEntry.score,
+          thumbs: gameEntry.thumbs,
+          popularity: gameEntry.popularity,
           collections: [
             for (final collection in gameEntry.collections) collection.name
           ],
@@ -60,7 +72,9 @@ class GameDigest {
           category: json['category'] ?? '',
           cover: json['cover'],
           releaseDate: json['release_date'] ?? 0,
-          rating: json['rating'] ?? 0,
+          score: json['score'] ?? 0,
+          thumbs: json['thumbs'] ?? 0,
+          popularity: json['popularity'] ?? 0,
           collections: [
             for (final collection in json['collections'] ?? []) collection,
           ],
@@ -85,7 +99,9 @@ class GameDigest {
       'category': category,
       if (cover != null) 'cover': cover,
       'release_date': releaseDate,
-      if (rating != 0) 'rating': rating,
+      if (score != 0) 'score': score,
+      if (thumbs != 0) 'thumbs': thumbs,
+      if (popularity != 0) 'popularity': popularity,
       if (collections.isNotEmpty) 'collections': collections,
       if (franchises.isNotEmpty) 'franchises': franchises,
       if (developers.isNotEmpty) 'developers': developers,
@@ -100,7 +116,9 @@ class GameDigest {
             category != other.category ||
             cover != other.cover ||
             releaseDate != other.releaseDate ||
-            rating != other.rating ||
+            score != other.score ||
+            thumbs != other.thumbs ||
+            popularity != other.popularity ||
             !_match(collections, other.collections) ||
             !_match(franchises, other.franchises) ||
             !_match(developers, other.developers) ||

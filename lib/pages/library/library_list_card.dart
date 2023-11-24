@@ -3,10 +3,10 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/widgets/game_pulse.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 class LibraryListCard extends StatelessWidget {
   const LibraryListCard({
@@ -62,8 +62,6 @@ class LibraryListCard extends StatelessWidget {
   }
 
   Widget cardInfo(BuildContext context) {
-    final rating = libraryEntry.rating;
-
     return Flexible(
       flex: 1,
       fit: FlexFit.tight,
@@ -90,8 +88,7 @@ class LibraryListCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4.0),
                 ),
                 child: Text(
-                  DateFormat('yMMM').format(DateTime.fromMillisecondsSinceEpoch(
-                      libraryEntry.releaseDate * 1000)),
+                  libraryEntry.digest.formatReleaseDate(),
                   style: TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.w500,
@@ -100,15 +97,7 @@ class LibraryListCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16.0),
-              const Icon(
-                Icons.star,
-                color: Colors.amber,
-                size: 18.0,
-              ),
-              const SizedBox(width: 4.0),
-              Text(
-                rating > 0 ? (rating / 20.0).toStringAsFixed(1) : '--',
-              ),
+              GamePulse(libraryEntry, null),
             ],
           ),
           const SizedBox(height: 16.0),

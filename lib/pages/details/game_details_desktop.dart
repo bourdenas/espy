@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/dialogs/debug_dialog.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
@@ -263,10 +264,18 @@ class _GameDetailsHeader extends StatelessWidget {
         children: [
           Row(children: [
             Expanded(
-              child: Text(
-                libraryEntry.name,
-                style: Theme.of(context).textTheme.displaySmall,
-                textAlign: TextAlign.center,
+              child: GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => DebugDialog(gameEntry: gameEntry!),
+                  );
+                },
+                child: Text(
+                  libraryEntry.name,
+                  style: Theme.of(context).textTheme.displaySmall,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
             if (!kReleaseMode)
