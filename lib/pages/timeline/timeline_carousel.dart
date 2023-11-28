@@ -6,10 +6,10 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class TileSize {
   const TileSize({
@@ -21,110 +21,64 @@ class TileSize {
   final double height;
 }
 
-class TimelineCarousel extends StatefulWidget {
+class TimelineCarousel extends StatelessWidget {
   final TileSize tileSize;
 
   const TimelineCarousel({
-    Key? key,
+    super.key,
     this.tileSize = const TileSize(width: 227.0, height: 320.0),
-  }) : super(key: key);
+  });
 
-  @override
-  State<TimelineCarousel> createState() => _TileCarouselState();
-}
-
-class _TileCarouselState extends State<TimelineCarousel> {
   @override
   Widget build(BuildContext context) {
-    final today = DateFormat('yMMMd').format(DateTime.now());
-    final start = DateTime.now().subtract(const Duration(days: 6 * 30));
-    final gamesByDate = context.watch<FrontpageModel>().gamesByDate;
+    final shelves = context.watch<FrontpageModel>().games;
 
-    var pixelsToToday = -300.0;
-    for (var i = 0; i < 6 * 30; ++i) {
-      final date = DateFormat('yMMMd').format(start.add(Duration(days: i)));
-      pixelsToToday +=
-          gamesByDate(date).isNotEmpty ? widget.tileSize.width + 16 : 32;
+    var startIndex = 0;
+    final today = DateTime.now();
+    for (final (release, _) in shelves) {
+      if (release.compareTo(today) > 0) {
+        break;
+      }
+      ++startIndex;
     }
 
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _scrollController.animateTo(pixelsToToday,
-          duration: const Duration(microseconds: 100), curve: Curves.bounceIn);
-    });
-
-    return Column(
-      children: [
-        FadeIn(
-          duration: const Duration(milliseconds: 500),
-          child: SizedBox(
-            height: widget.tileSize.height * 1.4,
-            child: ListView.builder(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                final date = DateFormat('yMMMd')
-                    .format(start.add(Duration(days: index)));
-
-                if (date == today) {
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned(
-                        left: -16,
-                        child: Column(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 4.0),
-                              child: Text('today'),
-                            ),
-                            SizedBox(
-                              height: widget.tileSize.height * 1.2,
-                              child: Center(
-                                child: Container(
-                                  width: 3,
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      _TimelineEntry(
-                        date: start.add(Duration(days: index)),
-                        games: gamesByDate(date),
-                        maxSize: widget.tileSize,
+    return startIndex == 0
+        ? const Column()
+        : FadeIn(
+            duration: const Duration(milliseconds: 500),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: tileSize.height * 1.5,
+                  child: ScrollablePositionedList.builder(
+                    itemCount: shelves.length,
+                    initialScrollIndex:
+                        startIndex > 1 ? startIndex - 2 : startIndex,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      final (date, games) = shelves[index];
+                      return _TimelineEntry(
+                        date: date,
+                        games: games,
+                        maxSize: tileSize,
                         showMonth: index == 0,
-                      ),
-                    ],
-                  );
-                }
-
-                return _TimelineEntry(
-                  date: start.add(Duration(days: index)),
-                  games: gamesByDate(date),
-                  maxSize: widget.tileSize,
-                  showMonth: index == 0,
-                );
-              },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-        ),
-      ],
-    );
+          );
   }
-
-  final ScrollController _scrollController = ScrollController();
 }
 
 class _TimelineEntry extends StatelessWidget {
   const _TimelineEntry({
-    Key? key,
     required this.date,
     required this.games,
     required this.maxSize,
     this.showMonth = false,
-  }) : super(key: key);
+  });
 
   final DateTime date;
   final List<GameDigest> games;
@@ -158,11 +112,11 @@ class _TimelineEntry extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(16),
           child: (games.isNotEmpty)
-              ? IconButton.filled(
+              ? IconButton.outlined(
                   icon: Text(
                     '${date.day}',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSecondary,
+                      color: Theme.of(context).colorScheme.onBackground,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
