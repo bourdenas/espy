@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class TimelineShelves extends StatelessWidget {
-  const TimelineShelves({Key? key, this.date}) : super(key: key);
+  const TimelineShelves({super.key, this.date});
 
   final String? date;
 
