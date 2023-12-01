@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/scores.dart';
 import 'package:intl/intl.dart';
 
 class GameDigest {
@@ -9,9 +10,7 @@ class GameDigest {
   final String? cover;
 
   final int releaseDate;
-  final int score;
-  final int thumbs;
-  final int popularity;
+  final Scores scores;
 
   final List<String> collections;
   final List<String> franchises;
@@ -30,9 +29,7 @@ class GameDigest {
     this.category,
     this.cover,
     this.releaseDate = 0,
-    this.score = 0,
-    this.thumbs = 0,
-    this.popularity = 0,
+    this.scores = const Scores(),
     this.collections = const [],
     this.franchises = const [],
     this.developers = const [],
@@ -47,9 +44,7 @@ class GameDigest {
           category: gameEntry.category,
           cover: gameEntry.cover?.imageId,
           releaseDate: gameEntry.releaseDate ?? gameEntry.igdbGame.releaseDate,
-          score: gameEntry.score,
-          thumbs: gameEntry.thumbs,
-          popularity: gameEntry.popularity,
+          scores: gameEntry.scores,
           collections: [
             for (final collection in gameEntry.collections) collection.name
           ],
@@ -72,9 +67,9 @@ class GameDigest {
           category: json['category'] ?? '',
           cover: json['cover'],
           releaseDate: json['release_date'] ?? 0,
-          score: json['score'] ?? 0,
-          thumbs: json['thumbs'] ?? 0,
-          popularity: json['popularity'] ?? 0,
+          scores: json.containsKey('scores')
+              ? Scores.fromJson(json['scores'])
+              : const Scores(),
           collections: [
             for (final collection in json['collections'] ?? []) collection,
           ],
@@ -88,7 +83,7 @@ class GameDigest {
             for (final company in json['publishers'] ?? []) company,
           ],
           genres: [
-            for (final genre in json['genres'] ?? []) genre,
+            for (final genre in json['espy_genres'] ?? []) genre,
           ],
         );
 
@@ -99,14 +94,12 @@ class GameDigest {
       'category': category,
       if (cover != null) 'cover': cover,
       'release_date': releaseDate,
-      if (score != 0) 'score': score,
-      if (thumbs != 0) 'thumbs': thumbs,
-      if (popularity != 0) 'popularity': popularity,
+      'scores': scores.toJson(),
       if (collections.isNotEmpty) 'collections': collections,
       if (franchises.isNotEmpty) 'franchises': franchises,
       if (developers.isNotEmpty) 'developers': developers,
       if (publishers.isNotEmpty) 'publishers': publishers,
-      if (genres.isNotEmpty) 'genres': genres,
+      if (genres.isNotEmpty) 'espy_genres': genres,
     };
   }
 
@@ -116,9 +109,7 @@ class GameDigest {
             category != other.category ||
             cover != other.cover ||
             releaseDate != other.releaseDate ||
-            score != other.score ||
-            thumbs != other.thumbs ||
-            popularity != other.popularity ||
+            scores != other.scores ||
             !_match(collections, other.collections) ||
             !_match(franchises, other.franchises) ||
             !_match(developers, other.developers) ||

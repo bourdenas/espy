@@ -1,6 +1,7 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/igdb_game.dart';
+import 'package:espy/modules/documents/scores.dart';
 import 'package:espy/modules/documents/steam_data.dart';
 
 class GameEntry {
@@ -9,9 +10,7 @@ class GameEntry {
   final String category;
   final String status;
   final int? releaseDate;
-  final int score;
-  final int thumbs;
-  final int popularity;
+  final Scores scores;
 
   final List<String> genres;
   final List<String> keywords;
@@ -58,9 +57,7 @@ class GameEntry {
     required this.category,
     this.status = 'Released',
     this.releaseDate,
-    this.score = 0,
-    this.thumbs = 0,
-    this.popularity = 0,
+    this.scores = const Scores(),
     this.genres = const [],
     this.keywords = const [],
     this.parent,
@@ -87,11 +84,11 @@ class GameEntry {
           category: json['category']!,
           status: json['status']!,
           releaseDate: json['release_date'],
-          score: json['score'] ?? 0,
-          thumbs: json['thumbs'] ?? 0,
-          popularity: json['popularity'] ?? 0,
+          scores: json.containsKey('scores')
+              ? Scores.fromJson(json['scores'])
+              : const Scores(),
           genres: [
-            for (final genre in json['genres'] ?? []) genre,
+            for (final genre in json['espy_genres'] ?? []) genre,
           ],
           keywords: [
             for (final kw in json['keywords'] ?? []) kw,
@@ -157,10 +154,8 @@ class GameEntry {
       'category': category,
       'status': status,
       if (releaseDate != null) 'release_date': releaseDate,
-      if (score != 0) 'score': score,
-      if (thumbs != 0) 'thumbs': thumbs,
-      if (popularity != 0) 'popularity': popularity,
-      if (genres.isNotEmpty) 'genres': genres,
+      'scores': scores.toJson(),
+      if (genres.isNotEmpty) 'espy_genres': genres,
       if (keywords.isNotEmpty) 'keywords': keywords,
       if (parent != null) 'parent': parent!.toJson(),
       if (expansions.isNotEmpty)

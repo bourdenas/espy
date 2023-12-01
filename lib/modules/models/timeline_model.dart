@@ -16,11 +16,12 @@ class FrontpageModel extends ChangeNotifier {
   final List<(DateTime, List<GameDigest>)> _games = [];
 
   double normalizePopularity(GameDigest game) {
-    final maxPop = DateTime.now().isBefore(
+    var maxPop = DateTime.now().isBefore(
             DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000))
         ? _maxPopularityFuture
         : _maxPopularityPast;
-    return max(.5, log(game.popularity) / log(maxPop));
+    maxPop = maxPop > 0 ? maxPop : 1;
+    return max(.5, log(game.scores.popularity ?? 0) / log(maxPop));
   }
 
   int _maxPopularityPast = 0;
@@ -41,11 +42,13 @@ class FrontpageModel extends ChangeNotifier {
 
       Map<String, List<GameDigest>> games = {};
       for (final game in recent) {
-        _maxPopularityPast = max(_maxPopularityPast, game.popularity);
+        _maxPopularityPast =
+            max(_maxPopularityPast, game.scores.popularity ?? 0);
         games.putIfAbsent(game.releaseDay, () => []).add(game);
       }
       for (final game in upcoming) {
-        _maxPopularityFuture = max(_maxPopularityFuture, game.popularity);
+        _maxPopularityFuture =
+            max(_maxPopularityFuture, game.scores.popularity ?? 0);
         games.putIfAbsent(game.releaseDay, () => []).add(game);
       }
 

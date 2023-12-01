@@ -9,8 +9,8 @@ class GamePulse extends StatelessWidget {
   const GamePulse(
     this.libraryEntry,
     this.gameEntry, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;
@@ -18,22 +18,23 @@ class GamePulse extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userRating = context.watch<UserDataModel>().rating(libraryEntry.id);
-    final score = userRating > 0
+    final tier = gameEntry?.scores.tier ?? libraryEntry.tier;
+    final thumbs = gameEntry?.scores.thumbs ?? libraryEntry.thumbs;
+    final popularity = gameEntry?.scores.popularity ?? libraryEntry.popularity;
+    final metacritic = userRating > 0
         ? userRating * 20
-        : gameEntry?.score ?? libraryEntry.score;
-    final thumbs = gameEntry?.thumbs ?? libraryEntry.thumbs;
-    final popularity = gameEntry?.popularity ?? libraryEntry.popularity;
+        : gameEntry?.scores.metacritic ?? libraryEntry.metacritic;
 
     return Row(
       children: [
-        criticsScore(score, userRating),
-        if (thumbs > 0) usersScore(thumbs, popularity),
+        criticsScore(metacritic, userRating),
+        if (thumbs > 0) steamScore(tier, thumbs),
         if (popularity > 0) popScore(popularity),
       ],
     );
   }
 
-  Widget criticsScore(int score, int userRating) {
+  Widget criticsScore(int metacritic, int userRating) {
     return ExpandableButton(
       offset: const Offset(0, 42),
       collapsedWidget: Row(
@@ -41,12 +42,12 @@ class GamePulse extends StatelessWidget {
         children: [
           Icon(
             Icons.star,
-            color: score > 0 ? Colors.amber : Colors.grey,
+            color: metacritic > 0 ? Colors.amber : Colors.grey,
             size: 18.0,
           ),
           const SizedBox(width: 4.0),
           Text(
-            score > 0 ? (score / 20.0).toStringAsFixed(1) : '--',
+            metacritic > 0 ? (metacritic / 20.0).toStringAsFixed(1) : '--',
             style: userRating > 0 ? const TextStyle(color: Colors.green) : null,
           ),
         ],
@@ -57,24 +58,28 @@ class GamePulse extends StatelessWidget {
     );
   }
 
-  Widget usersScore(int thumbs, int popularity) {
+  Widget steamScore(int tier, int thumbs) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(width: 4),
         Icon(
-          thumbs >= 80
-              ? Icons.thumb_up
-              : thumbs >= 60
-                  ? Icons.thumbs_up_down
-                  : Icons.thumb_down,
-          color: switch (thumbs) {
-            0 => Colors.grey,
-            (int score) when score >= 80 && popularity > 1000 => Colors.green,
-            (int score) when score >= 80 => Colors.green[200],
-            (int score) when score >= 60 && popularity > 1000 => Colors.orange,
-            (int score) when score >= 60 => Colors.orange[200],
-            int() => Colors.red,
+          switch (tier) {
+            9 || 8 || 7 => Icons.thumb_up,
+            6 || 5 || 4 => Icons.thumbs_up_down,
+            3 || 2 || 1 => Icons.thumb_down,
+            _ => Icons.question_mark,
+          },
+          color: switch (tier) {
+            9 => Colors.green,
+            8 => Colors.green[200],
+            6 => Colors.green[200],
+            5 => Colors.orange,
+            4 => Colors.red[200],
+            3 => Colors.red[200],
+            2 => Colors.red,
+            1 => Colors.red[800],
+            _ => Colors.white70,
           },
           size: 18.0,
         ),

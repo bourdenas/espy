@@ -88,7 +88,7 @@ class _TimelineEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     games.sort(
-      (a, b) => -a.popularity.compareTo(b.popularity),
+      (a, b) => -(a.scores.popularity ?? 0).compareTo(b.scores.popularity ?? 0),
     );
 
     return Column(

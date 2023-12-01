@@ -211,7 +211,8 @@ class LibraryFilter {
         return entries.toList()
           ..sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
       case LibraryOrdering.rating:
-        return entries.toList()..sort((a, b) => -a.score.compareTo(b.score));
+        return entries.toList()
+          ..sort((a, b) => -a.metacritic.compareTo(b.metacritic));
       case LibraryOrdering.title:
         return entries.toList()..sort((a, b) => a.name.compareTo(b.name));
     }
@@ -243,7 +244,7 @@ class LibraryFilter {
       case LibraryGrouping.rating:
         return _groupBy(
           entries,
-          (e) => [e.digest.score.toString()],
+          (e) => [e.digest.scores.tier.toString()],
           (a, b) => -a.compareTo(b),
         );
     }
