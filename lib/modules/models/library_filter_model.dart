@@ -244,9 +244,33 @@ class LibraryFilter {
       case LibraryGrouping.rating:
         return _groupBy(
           entries,
-          (e) => [e.digest.scores.tier.toString()],
-          (a, b) => -a.compareTo(b),
+          (e) => [tierDescription(e.digest.scores.tier)],
+          (a, b) => -tierDescriptions
+              .indexOf(a)
+              .compareTo(tierDescriptions.indexOf(b)),
         );
+    }
+  }
+
+  static const tierDescriptions = [
+    '?',
+    'Awful',
+    'Very Bad',
+    'Bad',
+    'Not Good',
+    'Meah...',
+    'Ok',
+    'Very Good',
+    'Great',
+    'Excellent',
+  ];
+
+  String tierDescription(int? tier) {
+    switch (tier) {
+      case (int tier) when (tier > 0 && tier < 10):
+        return tierDescriptions[tier];
+      default:
+        return '?';
     }
   }
 

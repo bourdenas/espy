@@ -66,16 +66,17 @@ class GamePulse extends StatelessWidget {
         Icon(
           switch (tier) {
             9 || 8 || 7 => Icons.thumb_up,
-            6 || 5 || 4 => Icons.thumbs_up_down,
-            3 || 2 || 1 => Icons.thumb_down,
+            6 || 5 => Icons.thumbs_up_down,
+            4 || 3 || 2 || 1 => Icons.thumb_down,
             _ => Icons.question_mark,
           },
           color: switch (tier) {
             9 => Colors.green,
             8 => Colors.green[200],
-            6 => Colors.green[200],
+            7 => Colors.yellow,
+            6 => Colors.yellow,
             5 => Colors.orange,
-            4 => Colors.red[200],
+            4 => Colors.orange,
             3 => Colors.red[200],
             2 => Colors.red,
             1 => Colors.red[800],
