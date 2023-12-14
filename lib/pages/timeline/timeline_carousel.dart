@@ -31,7 +31,7 @@ class TimelineCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shelves = context.watch<FrontpageModel>().games;
+    final shelves = context.watch<TimelineModel>().games;
 
     var startIndex = 0;
     final today = DateTime.now();
@@ -161,12 +161,12 @@ class _TimelineEntry extends StatelessWidget {
           for (final (index, game) in games.indexed.take(5))
             Transform.translate(
               offset: _offset(index,
-                  context.read<FrontpageModel>().normalizePopularity(game)),
+                  context.read<TimelineModel>().normalizePopularity(game)),
               child: _gameCover(
                   context,
                   game,
                   maxSize.width *
-                      context.read<FrontpageModel>().normalizePopularity(game)),
+                      context.read<TimelineModel>().normalizePopularity(game)),
             ),
         ].reversed.toList(),
       ),

@@ -15,7 +15,7 @@ class HomeSlatesModel extends ChangeNotifier {
   List<SlateInfo> get stacks => _stacks;
 
   void update(
-    FrontpageModel frontpage,
+    TimelineModel frontpage,
     LibraryEntriesModel gameEntries,
     WishlistModel wishlistModel,
     GameTagsModel tagsModel,

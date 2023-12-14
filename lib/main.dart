@@ -57,8 +57,8 @@ Future<void> main() async {
 ChangeNotifierProvider<AppConfigModel> appConfigProvider() =>
     ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref());
 
-ChangeNotifierProvider<FrontpageModel> frontpageProvider() =>
-    ChangeNotifierProvider(create: (_) => FrontpageModel()..load());
+ChangeNotifierProvider<TimelineModel> frontpageProvider() =>
+    ChangeNotifierProvider(create: (_) => TimelineModel()..load());
 
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
@@ -183,9 +183,9 @@ ChangeNotifierProxyProvider5<
   );
 }
 
-ChangeNotifierProxyProvider5<FrontpageModel, LibraryEntriesModel, WishlistModel,
+ChangeNotifierProxyProvider5<TimelineModel, LibraryEntriesModel, WishlistModel,
     GameTagsModel, AppConfigModel, HomeSlatesModel> homeSlatesProvider() {
-  return ChangeNotifierProxyProvider5<FrontpageModel, LibraryEntriesModel,
+  return ChangeNotifierProxyProvider5<TimelineModel, LibraryEntriesModel,
       WishlistModel, GameTagsModel, AppConfigModel, HomeSlatesModel>(
     create: (_) => HomeSlatesModel(),
     update: (

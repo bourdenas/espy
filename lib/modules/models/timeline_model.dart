@@ -6,7 +6,7 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:intl/intl.dart';
 
-class FrontpageModel extends ChangeNotifier {
+class TimelineModel extends ChangeNotifier {
   Timeline _frontpage = const Timeline();
 
   List<GameDigest> get upcoming => _frontpage.upcoming;
@@ -26,6 +26,26 @@ class FrontpageModel extends ChangeNotifier {
 
   int _maxPopularityPast = 0;
   int _maxPopularityFuture = 0;
+
+  Future<List<(DateTime, GameDigest)>> gamesIn(String year) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('espy')
+        .doc(year)
+        .withConverter<Timeline>(
+          fromFirestore: (snapshot, _) => Timeline.fromJson(snapshot.data()!),
+          toFirestore: (entry, _) => {},
+        )
+        .get();
+
+    final timeline = doc.data() ?? const Timeline();
+
+    List<(DateTime, GameDigest)> games = [];
+    for (final game in [timeline.recent, timeline.upcoming].expand((e) => e)) {
+      games.add((game.release, game));
+    }
+
+    return games;
+  }
 
   Future<void> load() async {
     FirebaseFirestore.instance

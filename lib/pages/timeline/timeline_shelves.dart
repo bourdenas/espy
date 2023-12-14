@@ -15,7 +15,7 @@ class TimelineShelves extends StatelessWidget {
   Widget build(BuildContext context) {
     final start = DateTime.fromMillisecondsSinceEpoch(int.parse(date!))
         .subtract(const Duration(days: 1));
-    final shelves = context.read<FrontpageModel>().games;
+    final shelves = context.read<TimelineModel>().games;
 
     var startIndex = 0;
     for (final (release, _) in shelves) {
