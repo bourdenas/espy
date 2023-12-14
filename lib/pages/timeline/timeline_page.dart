@@ -1,39 +1,64 @@
-import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/pages/timeline/timeline_carousel.dart';
+import 'package:espy/pages/timeline/timeline_view.dart';
 import 'package:flutter/material.dart';
 
 class TimelinePage extends StatefulWidget {
-  const TimelinePage({Key? key}) : super(key: key);
+  const TimelinePage({super.key, required this.year});
+
+  final String year;
 
   @override
   TimelinePageState createState() => TimelinePageState();
 }
 
 class TimelinePageState extends State<TimelinePage> {
+  late String selectedYear;
+
+  @override
+  void initState() {
+    super.initState();
+
+    selectedYear = widget.year;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text('Release Timeline'),
-        backgroundColor: Colors.black.withOpacity(0.6),
-        elevation: 0.0,
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            yearBar(context),
+            Expanded(child: TimelineView(year: selectedYear)),
+          ],
+        ),
       ),
-      body: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Column(
-            children: [
-              Expanded(
-                child: TimelineCarousel(
-                  tileSize: AppConfigModel.isMobile(context)
-                      ? const TileSize(width: 133, height: 190)
-                      : const TileSize(width: 227, height: 320),
-                ),
+    );
+  }
+
+  SizedBox yearBar(BuildContext context) {
+    return SizedBox(
+      width: 64,
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            for (final year in List.generate(44, (i) => '${2023 - i}'))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: selectedYear == year
+                    ? IconButton.filled(
+                        icon: Text(year),
+                        onPressed: () {},
+                      )
+                    : IconButton.outlined(
+                        icon: Text(year),
+                        onPressed: () => setState(() {
+                          selectedYear = year;
+                        }),
+                      ),
               ),
-              const SizedBox(height: 8),
-            ],
-          ),
+          ],
         ),
       ),
     );
