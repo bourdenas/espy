@@ -18,7 +18,7 @@ class GamePulse extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userRating = context.watch<UserDataModel>().rating(libraryEntry.id);
-    final tier = gameEntry?.scores.tier ?? libraryEntry.tier;
+    final tier = gameEntry?.scores.espyTier ?? libraryEntry.scores.espyTier;
     final thumbs = gameEntry?.scores.thumbs ?? libraryEntry.thumbs;
     final popularity = gameEntry?.scores.popularity ?? libraryEntry.popularity;
     final metacritic = userRating > 0
@@ -28,7 +28,7 @@ class GamePulse extends StatelessWidget {
     return Row(
       children: [
         criticsScore(metacritic, userRating),
-        if (thumbs > 0) steamScore(tier, thumbs),
+        if (thumbs > 0) userScore(tier, thumbs),
         if (popularity > 0) popScore(popularity),
       ],
     );
@@ -58,28 +58,33 @@ class GamePulse extends StatelessWidget {
     );
   }
 
-  Widget steamScore(int tier, int thumbs) {
+  Widget userScore(String tier, int thumbs) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(width: 4),
         Icon(
           switch (tier) {
-            9 || 8 || 7 => Icons.thumb_up,
-            6 || 5 => Icons.thumbs_up_down,
-            4 || 3 || 2 || 1 => Icons.thumb_down,
+            'Masterpiece' ||
+            'Excellent' ||
+            'Great' ||
+            'VeryGood' ||
+            'Ok' =>
+              Icons.thumb_up,
+            'Mixed' => Icons.thumbs_up_down,
+            'Flop' || 'NotGood' || 'Bad' => Icons.thumb_down,
             _ => Icons.question_mark,
           },
           color: switch (tier) {
-            9 => Colors.green,
-            8 => Colors.green[200],
-            7 => Colors.yellow,
-            6 => Colors.yellow,
-            5 => Colors.orange,
-            4 => Colors.orange,
-            3 => Colors.red[200],
-            2 => Colors.red,
-            1 => Colors.red[800],
+            'Masterpiece' => Colors.purple,
+            'Excellent' => Colors.green,
+            'Great' => Colors.green[200],
+            'VeryGood' => Colors.lime,
+            'Ok' => Colors.yellow,
+            'Mixed' => Colors.orange,
+            'Flop' => Colors.red,
+            'NotGood' => Colors.orange,
+            'Bad' => Colors.red,
             _ => Colors.white70,
           },
           size: 18.0,

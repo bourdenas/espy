@@ -244,8 +244,8 @@ class LibraryFilter {
       case LibraryGrouping.rating:
         return _groupBy(
           entries,
-          (e) => [tierDescription(e.digest.scores.tier)],
-          (a, b) => -tierDescriptions
+          (e) => [e.digest.scores.espyTier],
+          (a, b) => tierDescriptions
               .indexOf(a)
               .compareTo(tierDescriptions.indexOf(b)),
         );
@@ -253,16 +253,16 @@ class LibraryFilter {
   }
 
   static const tierDescriptions = [
-    '?',
-    'Awful',
-    'Very Bad',
-    'Bad',
-    'Not Good',
-    'Meah...',
-    'Ok',
-    'Very Good',
-    'Great',
+    'Masterpiece',
     'Excellent',
+    'Great',
+    'VeryGood',
+    'Ok',
+    'Mixed',
+    'Flop',
+    'NotGood',
+    'Bad',
+    'Unknown',
   ];
 
   String tierDescription(int? tier) {

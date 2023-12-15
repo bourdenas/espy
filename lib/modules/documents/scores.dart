@@ -4,7 +4,7 @@ class Scores {
   final int? popularity;
   final int? metacritic;
 
-  final String? espyTier;
+  final String espyTier;
   final String? thumbsTier;
   final String? popularityTier;
   final String? criticsTier;
@@ -14,7 +14,7 @@ class Scores {
     this.thumbs,
     this.popularity,
     this.metacritic,
-    this.espyTier,
+    this.espyTier = 'Unknown',
     this.thumbsTier,
     this.popularityTier,
     this.criticsTier,
@@ -26,7 +26,7 @@ class Scores {
           thumbs: json['thumbs'],
           popularity: json['popularity'],
           metacritic: json['metacritic'],
-          espyTier: json['espy_tier'],
+          espyTier: json['espy_tier'] ?? 'Unknown',
           thumbsTier: json['thumbs_tier'],
           popularityTier: json['pop_tier'],
           criticsTier: json['critics_tier'],
@@ -38,7 +38,7 @@ class Scores {
       if (thumbs != null) 'thumbs': thumbs,
       if (popularity != null) 'popularity': popularity,
       if (metacritic != null) 'metacritic': metacritic,
-      if (espyTier != null) 'espy_tier': espyTier,
+      'espy_tier': espyTier,
       if (thumbsTier != null) 'thumbs_tier': thumbsTier,
       if (popularityTier != null) 'pop_tier': popularityTier,
       if (criticsTier != null) 'critics_tier': criticsTier,
