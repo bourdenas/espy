@@ -1,7 +1,9 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
+import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -44,35 +46,41 @@ class TimelineView extends StatelessWidget {
                 ? IndicatorStyle.dot
                 : IndicatorStyle.outlined,
         nodePositionBuilder: (context, index) => isMobile ? .2 : .06,
-        contentsBuilder: (context, index) => Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: TileCarousel(
-            tileSize: isMobile
-                ? const TileSize(width: 133, height: 190)
-                : const TileSize(width: 227, height: 320),
-            tiles: games
-                .where((e) => e.$1.month == (index + 1))
-                .map((e) => e.$2)
-                .where((digest) =>
-                    yearNum < 2006 ||
-                    (digest.scores.popularityTier != 'Niche' &&
-                        digest.scores.popularityTier != 'Fringe'))
-                .map((digest) => TileData(
-                      image:
-                          '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg',
-                      onTap: () => context.pushNamed('details',
-                          pathParameters: {'gid': '${digest.id}'}),
-                    ))
-                .toList(),
-          ),
-        ),
+        contentsBuilder: (context, index) {
+          final digests = games
+              .where((e) => e.$1.month == (index + 1))
+              .map((e) => e.$2)
+              .where((digest) =>
+                  yearNum < 2006 ||
+                  (digest.scores.popularityTier != 'Niche' &&
+                      digest.scores.popularityTier != 'Fringe'))
+              .toList()
+            ..sort((a, b) =>
+                -(a.scores.popularity?.compareTo(b.scores.popularity ?? 0) ??
+                    1));
+          return Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: TileCarousel(
+              tileSize: isMobile
+                  ? const TileSize(width: 133, height: 190)
+                  : const TileSize(width: 227, height: 320),
+              tiles: digests
+                  .map((digest) => TileData(
+                        image:
+                            '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg',
+                        onTap: () => context.pushNamed('details',
+                            pathParameters: {'gid': '${digest.id}'}),
+                      ))
+                  .toList(),
+            ),
+          );
+        },
         oppositeContentsBuilder: (context, index) => Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: IconButton.outlined(
-            icon: Text(months[index]),
-            onPressed: () {},
-          ),
-        ),
+            padding: const EdgeInsets.all(24.0),
+            child: IconButton.outlined(
+              icon: Text(months[index]),
+              onPressed: () {},
+            )),
       ),
     );
   }

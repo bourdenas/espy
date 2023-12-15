@@ -7,10 +7,10 @@ import 'package:provider/provider.dart';
 
 class LibraryEntriesView extends StatelessWidget {
   const LibraryEntriesView({
-    Key? key,
+    super.key,
     required this.entries,
     this.pushNavigation = true,
-  }) : super(key: key);
+  });
 
   final Iterable<LibraryEntry> entries;
 
