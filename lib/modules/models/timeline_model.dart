@@ -59,6 +59,7 @@ class TimelineModel extends ChangeNotifier {
         .listen((DocumentSnapshot<Timeline> snapshot) {
       _frontpage = snapshot.data() ?? const Timeline();
       _maxPopularityPast = _maxPopularityFuture = 0;
+      _games.clear();
 
       Map<String, List<GameDigest>> games = {};
       for (final game in recent) {

@@ -10,9 +10,9 @@ import 'package:go_router/go_router.dart';
 
 class LibraryListCard extends StatelessWidget {
   const LibraryListCard({
-    Key? key,
+    super.key,
     required this.libraryEntry,
-  }) : super(key: key);
+  });
 
   final LibraryEntry libraryEntry;
 

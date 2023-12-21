@@ -15,8 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 class GameDetailsContentDesktop extends StatelessWidget {
-  const GameDetailsContentDesktop(this.libraryEntry, this.gameEntry, {Key? key})
-      : super(key: key);
+  const GameDetailsContentDesktop(this.libraryEntry, this.gameEntry,
+      {super.key});
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;
