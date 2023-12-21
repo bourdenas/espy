@@ -28,6 +28,11 @@ class TimelineModel extends ChangeNotifier {
   int _maxPopularityFuture = 0;
 
   Future<List<(DateTime, GameDigest)>> gamesIn(String year) async {
+    final cache = _gamesInYear[year];
+    if (cache != null) {
+      return cache;
+    }
+
     final doc = await FirebaseFirestore.instance
         .collection('espy')
         .doc(year)
@@ -43,9 +48,12 @@ class TimelineModel extends ChangeNotifier {
     for (final game in [timeline.recent, timeline.upcoming].expand((e) => e)) {
       games.add((game.release, game));
     }
+    _gamesInYear[year] = games;
 
     return games;
   }
+
+  Map<String, List<(DateTime, GameDigest)>> _gamesInYear = {};
 
   Future<void> load() async {
     FirebaseFirestore.instance
