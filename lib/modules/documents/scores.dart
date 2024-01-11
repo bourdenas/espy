@@ -44,4 +44,15 @@ class Scores {
       if (criticsTier != null) 'critics_tier': criticsTier,
     };
   }
+
+  bool hasDiff(Scores other) {
+    return tier != other.tier ||
+        thumbs != other.thumbs ||
+        popularity != other.popularity ||
+        metacritic != other.metacritic ||
+        espyTier != other.espyTier ||
+        thumbsTier != other.thumbsTier ||
+        popularityTier != other.popularityTier ||
+        criticsTier != other.criticsTier;
+  }
 }

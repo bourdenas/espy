@@ -109,7 +109,7 @@ class GameDigest {
             category != other.category ||
             cover != other.cover ||
             releaseDate != other.releaseDate ||
-            scores != other.scores ||
+            scores.hasDiff(other.scores) ||
             !_match(collections, other.collections) ||
             !_match(franchises, other.franchises) ||
             !_match(developers, other.developers) ||
