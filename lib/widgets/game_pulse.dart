@@ -47,7 +47,7 @@ class GamePulse extends StatelessWidget {
           ),
           const SizedBox(width: 4.0),
           Text(
-            metacritic > 0 ? (metacritic / 20.0).toStringAsFixed(1) : '--',
+            metacritic > 0 ? (metacritic / 10.0).toStringAsFixed(1) : '--',
             style: userRating > 0 ? const TextStyle(color: Colors.green) : null,
           ),
         ],
