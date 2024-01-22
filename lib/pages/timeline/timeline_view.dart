@@ -9,6 +9,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines/timelines.dart';
 
+/// This is an example of a timeline but it is not used atm.
+/// It should be repurposed as a timeline view.
 class TimelineView extends StatelessWidget {
   const TimelineView({super.key, required this.year});
 
@@ -31,7 +33,7 @@ class TimelineView extends StatelessWidget {
     );
   }
 
-  Timeline timeline(
+  Widget timeline(
       String today, List<(DateTime, GameDigest)> games, bool isMobile) {
     final yearNum = int.parse(year);
 

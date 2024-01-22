@@ -53,7 +53,7 @@ class TimelineModel extends ChangeNotifier {
     return games;
   }
 
-  Map<String, List<(DateTime, GameDigest)>> _gamesInYear = {};
+  final Map<String, List<(DateTime, GameDigest)>> _gamesInYear = {};
 
   Future<void> load() async {
     FirebaseFirestore.instance
