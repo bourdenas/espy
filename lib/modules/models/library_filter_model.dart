@@ -68,7 +68,8 @@ class LibraryView {
 
   int get length => groups.fold(0, (len, group) => len + group.$2.length);
 
-  bool get hasGroups => groups.length > 1 || groups.first.$1.isNotEmpty;
+  bool get hasGroups =>
+      groups.length > 1 || (groups.isNotEmpty && groups.first.$1.isNotEmpty);
 }
 
 class LibraryFilter {
