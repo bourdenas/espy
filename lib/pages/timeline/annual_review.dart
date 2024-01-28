@@ -55,8 +55,15 @@ class AnnualReview extends StatelessWidget {
     releases.sort((left, right) =>
         -left.scores.metacritic!.compareTo(right.scores.metacritic!));
 
-    final rest =
-        digests.where((digest) => digest.scores.metacritic == null).toList();
+    final earlyAccess =
+        digests.where((digest) => digest.status == 'EarlyAccess').toList();
+    earlyAccess.sort((left, right) =>
+        -(left.scores.popularity ?? 0).compareTo(right.scores.popularity ?? 0));
+
+    final rest = digests
+        .where((digest) =>
+            digest.scores.metacritic == null && digest.status == 'Released')
+        .toList();
     rest.sort((left, right) =>
         -(left.scores.popularity ?? 0).compareTo(right.scores.popularity ?? 0));
 
@@ -64,6 +71,7 @@ class AnnualReview extends StatelessWidget {
       if (popular.isNotEmpty) ('Most popular', popular),
       ('Release Highlights', highlights),
       ('Releases', releases),
+      ('Early Access', earlyAccess),
       ('Rest', rest),
     ];
 
