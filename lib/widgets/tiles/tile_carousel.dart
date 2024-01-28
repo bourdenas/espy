@@ -29,12 +29,12 @@ class TileCarousel extends StatefulWidget {
   final TileSize tileSize;
 
   const TileCarousel({
-    Key? key,
+    super.key,
     this.title,
     this.onTitleTap,
     required this.tiles,
     this.tileSize = const TileSize(width: 227.0, height: 320.0),
-  }) : super(key: key);
+  });
 
   @override
   State<TileCarousel> createState() => _TileCarouselState();

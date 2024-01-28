@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/scores.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 
 class LibraryEntry {
@@ -12,6 +13,7 @@ class LibraryEntry {
   String get name => digest.name;
   String? get cover => digest.cover;
   int get releaseDate => digest.releaseDate;
+  Scores get scores => digest.scores;
   int get tier => digest.scores.tier ?? 0;
   int get thumbs => digest.scores.thumbs ?? 0;
   int get popularity => digest.scores.popularity ?? 0;

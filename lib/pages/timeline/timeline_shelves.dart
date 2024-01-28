@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class TimelineShelves extends StatelessWidget {
-  const TimelineShelves({Key? key, this.date}) : super(key: key);
+  const TimelineShelves({super.key, this.date});
 
   final String? date;
 
@@ -15,7 +15,7 @@ class TimelineShelves extends StatelessWidget {
   Widget build(BuildContext context) {
     final start = DateTime.fromMillisecondsSinceEpoch(int.parse(date!))
         .subtract(const Duration(days: 1));
-    final shelves = context.read<FrontpageModel>().games;
+    final shelves = context.read<TimelineModel>().games;
 
     var startIndex = 0;
     for (final (release, _) in shelves) {

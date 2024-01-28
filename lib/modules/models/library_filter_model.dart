@@ -244,35 +244,31 @@ class LibraryFilter {
       case LibraryGrouping.rating:
         return _groupBy(
           entries,
-          (e) => [tierDescription(e.digest.scores.tier)],
-          (a, b) => -tierDescriptions
-              .indexOf(a)
-              .compareTo(tierDescriptions.indexOf(b)),
+          (e) => [
+            switch (e.digest.scores.metacritic) {
+              int x when x >= 95 => 'Masterpiece',
+              int x when x >= 90 => 'Excellent',
+              int x when x >= 80 => 'Great',
+              int x when x >= 70 => 'Good',
+              int x when x >= 60 => 'Mixed',
+              int() => 'Bad',
+              null => 'Unknown',
+            }
+          ],
+          (a, b) => ratingTitles.indexOf(a).compareTo(ratingTitles.indexOf(b)),
         );
     }
   }
 
-  static const tierDescriptions = [
-    '?',
-    'Awful',
-    'Very Bad',
-    'Bad',
-    'Not Good',
-    'Meah...',
-    'Ok',
-    'Very Good',
-    'Great',
+  static const ratingTitles = [
+    'Masterpiece',
     'Excellent',
+    'Great',
+    'Good',
+    'Mixed',
+    'Bad',
+    'Unknown',
   ];
-
-  String tierDescription(int? tier) {
-    switch (tier) {
-      case (int tier) when (tier > 0 && tier < 10):
-        return tierDescriptions[tier];
-      default:
-        return '?';
-    }
-  }
 
   List<(String, List<LibraryEntry>)> _groupBy(Iterable<LibraryEntry> entries,
       Iterable<String> Function(LibraryEntry) keysExtractor,

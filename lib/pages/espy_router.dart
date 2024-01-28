@@ -47,7 +47,7 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'timeline',
           child: EspyScaffold(
-            body: const TimelinePage(),
+            body: const TimelinePage(year: '2023'),
             path: state.path!,
           ),
         ),

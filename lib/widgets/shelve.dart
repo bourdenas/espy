@@ -3,13 +3,13 @@ import 'package:sliver_tools/sliver_tools.dart';
 
 class Shelve extends StatefulWidget {
   const Shelve({
-    Key? key,
+    super.key,
     required this.title,
     required this.expansion,
     this.color,
     this.headerLink,
     this.expanded = true,
-  }) : super(key: key);
+  });
 
   final String title;
   final Widget expansion;

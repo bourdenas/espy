@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LibraryPage extends StatelessWidget {
-  const LibraryPage({Key? key}) : super(key: key);
+  const LibraryPage({super.key});
 
   @override
   Widget build(BuildContext context) {

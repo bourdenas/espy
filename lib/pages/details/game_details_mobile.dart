@@ -13,8 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 class GameDetailsContentMobile extends StatelessWidget {
-  const GameDetailsContentMobile(this.libraryEntry, this.gameEntry, {Key? key})
-      : super(key: key);
+  const GameDetailsContentMobile(this.libraryEntry, this.gameEntry,
+      {super.key});
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;
