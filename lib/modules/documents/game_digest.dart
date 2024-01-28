@@ -7,6 +7,7 @@ class GameDigest {
   final String name;
 
   final String? category;
+  final String? status;
   final String? cover;
 
   final int releaseDate;
@@ -27,6 +28,7 @@ class GameDigest {
     required this.id,
     required this.name,
     this.category,
+    this.status,
     this.cover,
     this.releaseDate = 0,
     this.scores = const Scores(),
@@ -42,6 +44,7 @@ class GameDigest {
           id: gameEntry.id,
           name: gameEntry.name,
           category: gameEntry.category,
+          status: gameEntry.status,
           cover: gameEntry.cover?.imageId,
           releaseDate: gameEntry.releaseDate ?? gameEntry.igdbGame.releaseDate,
           scores: gameEntry.scores,
@@ -65,6 +68,7 @@ class GameDigest {
           id: json['id']!,
           name: json['name']!,
           category: json['category'] ?? '',
+          status: json['status'] ?? '',
           cover: json['cover'],
           releaseDate: json['release_date'] ?? 0,
           scores: json.containsKey('scores')
@@ -92,6 +96,7 @@ class GameDigest {
       'id': id,
       'name': name,
       'category': category,
+      'status': status,
       if (cover != null) 'cover': cover,
       'release_date': releaseDate,
       'scores': scores.toJson(),
@@ -107,6 +112,7 @@ class GameDigest {
     return id == other.id &&
         (name != other.name ||
             category != other.category ||
+            status != other.status ||
             cover != other.cover ||
             releaseDate != other.releaseDate ||
             scores.hasDiff(other.scores) ||
