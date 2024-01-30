@@ -12,52 +12,32 @@ import 'package:timelines/timelines.dart';
 /// This is an example of a timeline but it is not used atm.
 /// It should be repurposed as a timeline view.
 class TimelineView extends StatelessWidget {
-  const TimelineView({super.key, required this.year});
+  const TimelineView({super.key, this.year});
 
-  final String year;
+  final String? year;
 
   @override
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
     final today = DateFormat('d MMM').format(DateTime.now());
+    final games = context.read<TimelineModel>().games;
 
-    return FutureBuilder(
-      future: context.watch<TimelineModel>().gamesIn(year),
-      builder: (BuildContext context,
-          AsyncSnapshot<List<(DateTime, GameDigest)>> snapshot) {
-        return snapshot.connectionState == ConnectionState.done &&
-                snapshot.hasData
-            ? timeline(today, snapshot.data!, isMobile)
-            : Container();
-      },
-    );
+    return timeline(context, today, games, isMobile);
   }
 
-  Widget timeline(
-      String today, List<(DateTime, GameDigest)> games, bool isMobile) {
-    final yearNum = int.parse(year);
-
+  Widget timeline(BuildContext context, String today,
+      List<(DateTime, List<GameDigest>)> games, bool isMobile) {
     return Timeline.tileBuilder(
       builder: TimelineTileBuilder.connectedFromStyle(
-        itemCount: 12,
+        itemCount: games.length,
         connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
         indicatorStyleBuilder: (context, index) =>
             today == DateFormat('d MMM').format(games[index].$1)
                 ? IndicatorStyle.dot
-                : IndicatorStyle.outlined,
+                : IndicatorStyle.container,
         nodePositionBuilder: (context, index) => isMobile ? .2 : .06,
         contentsBuilder: (context, index) {
-          final digests = games
-              .where((e) => e.$1.month == (index + 1))
-              .map((e) => e.$2)
-              .where((digest) =>
-                  yearNum < 2006 ||
-                  (digest.scores.popularityTier != 'Niche' &&
-                      digest.scores.popularityTier != 'Fringe'))
-              .toList()
-            ..sort((a, b) =>
-                -(a.scores.popularity?.compareTo(b.scores.popularity ?? 0) ??
-                    1));
+          final digests = games[index].$2;
           return Padding(
             padding: const EdgeInsets.all(24.0),
             child: TileCarousel(
@@ -78,25 +58,10 @@ class TimelineView extends StatelessWidget {
         oppositeContentsBuilder: (context, index) => Padding(
             padding: const EdgeInsets.all(24.0),
             child: IconButton.outlined(
-              icon: Text(months[index]),
+              icon: Text(DateFormat('d MMM').format(games[index].$1)),
               onPressed: () {},
             )),
       ),
     );
   }
 }
-
-const months = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec'
-];
