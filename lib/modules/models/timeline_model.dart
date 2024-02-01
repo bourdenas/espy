@@ -12,8 +12,8 @@ class TimelineModel extends ChangeNotifier {
   List<GameDigest> get upcoming => _frontpage.upcoming;
   List<GameDigest> get recent => _frontpage.recent;
 
-  List<(DateTime, List<GameDigest>)> get games => _games;
-  final List<(DateTime, List<GameDigest>)> _games = [];
+  List<ReleaseDay> get releases => _releases;
+  final List<ReleaseDay> _releases = [];
 
   double highlightScore(GameDigest game) {
     final isReleased = DateTime.now()
@@ -21,8 +21,12 @@ class TimelineModel extends ChangeNotifier {
     var maxScore = isReleased ? _maxScorePast : _maxScoreFuture;
     maxScore = maxScore > 0 ? maxScore : 1;
     return isReleased
-        ? max(.5, (game.scores.metacritic ?? 0) / maxScore)
+        ? max(.5, scale(game.scores.metacritic ?? 0))
         : max(.5, log(game.scores.popularity ?? 0) / log(maxScore));
+  }
+
+  double scale(int score) {
+    return ((score / 10) + 1) * .1;
   }
 
   int _maxScorePast = 0;
@@ -68,7 +72,7 @@ class TimelineModel extends ChangeNotifier {
         .listen((DocumentSnapshot<Timeline> snapshot) {
       _frontpage = snapshot.data() ?? const Timeline();
       _maxScorePast = _maxScoreFuture = 0;
-      _games.clear();
+      _releases.clear();
 
       Map<String, List<GameDigest>> games = {};
       for (final game in recent) {
@@ -80,11 +84,32 @@ class TimelineModel extends ChangeNotifier {
         games.putIfAbsent(game.releaseDay, () => []).add(game);
       }
 
-      _games.addAll(games.entries
-          .map((e) => (DateFormat('yMMMd').parse(e.key), e.value)));
-      _games.sort((a, b) => a.$1.compareTo(b.$1));
+      _releases.addAll(games.entries
+          .map((e) => ReleaseDay(DateFormat('yMMMd').parse(e.key), e.value)));
+      _releases.sort((a, b) => -a.date.compareTo(b.date));
 
       notifyListeners();
     });
+  }
+}
+
+class ReleaseDay {
+  ReleaseDay(this._date, this._games);
+
+  final DateTime _date;
+  final List<GameDigest> _games;
+
+  DateTime get date => _date;
+  Iterable<GameDigest> get games {
+    return _games
+      ..sort(
+        (a, b) {
+          final criticOrdering =
+              (a.scores.metacritic ?? 0).compareTo(b.scores.metacritic ?? 0);
+          return criticOrdering == 0 && (a.scores.metacritic ?? 0) == 0
+              ? -(a.scores.popularity ?? 0).compareTo(b.scores.popularity ?? 0)
+              : -criticOrdering;
+        },
+      );
   }
 }

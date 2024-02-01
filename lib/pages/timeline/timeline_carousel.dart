@@ -31,12 +31,12 @@ class TimelineCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shelves = context.watch<TimelineModel>().games;
+    final releases = context.watch<TimelineModel>().releases;
 
     var startIndex = 0;
     final today = DateTime.now();
-    for (final (release, _) in shelves) {
-      if (release.compareTo(today) > 0) {
+    for (final release in releases) {
+      if (release.date.compareTo(today) < 0) {
         break;
       }
       ++startIndex;
@@ -51,15 +51,15 @@ class TimelineCarousel extends StatelessWidget {
                 SizedBox(
                   height: tileSize.height * 1.5,
                   child: ScrollablePositionedList.builder(
-                    itemCount: shelves.length,
+                    itemCount: releases.length,
                     initialScrollIndex:
                         startIndex > 1 ? startIndex - 2 : startIndex,
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context, index) {
-                      final (date, games) = shelves[index];
+                      final release = releases[index];
                       return _TimelineEntry(
-                        date: date,
-                        games: games,
+                        date: release.date,
+                        games: release.games,
                         maxSize: tileSize,
                         showMonth: index == 0,
                       );
@@ -81,16 +81,12 @@ class _TimelineEntry extends StatelessWidget {
   });
 
   final DateTime date;
-  final List<GameDigest> games;
+  final Iterable<GameDigest> games;
   final TileSize maxSize;
   final bool showMonth;
 
   @override
   Widget build(BuildContext context) {
-    games.sort(
-      (a, b) => -(a.scores.popularity ?? 0).compareTo(b.scores.popularity ?? 0),
-    );
-
     return Column(
       children: [
         SizedBox(

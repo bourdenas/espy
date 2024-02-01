@@ -1,5 +1,4 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
@@ -20,34 +19,34 @@ class TimelineView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
     final today = DateFormat('d MMM').format(DateTime.now());
-    final games = context.read<TimelineModel>().games.reversed.toList();
+    final games = context.read<TimelineModel>().releases;
 
-    return timeline(context, today, games, isMobile);
+    return timeline(context, today, games.toList(), isMobile);
   }
 
-  Widget timeline(BuildContext context, String today,
-      List<(DateTime, List<GameDigest>)> games, bool isMobile) {
-    int todayIndex = 0;
-    for (var i = 0; i < games.length; ++i) {
-      if (games[i].$1.millisecondsSinceEpoch <=
-          DateTime.now().millisecondsSinceEpoch) {
-        todayIndex = i;
+  Widget timeline(BuildContext context, String today, List<ReleaseDay> releases,
+      bool isMobile) {
+    int startIndex = 0;
+    final now = DateTime.now();
+    for (final release in releases) {
+      if (release.date.compareTo(now) < 0) {
         break;
       }
+      ++startIndex;
     }
 
     return Timeline.tileBuilder(
-      controller: ScrollController(initialScrollOffset: todayIndex * 360),
+      controller: ScrollController(initialScrollOffset: startIndex * 360),
       builder: TimelineTileBuilder.connectedFromStyle(
-        itemCount: games.length,
+        itemCount: releases.length,
         connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
         indicatorStyleBuilder: (context, index) =>
-            today == DateFormat('d MMM').format(games[index].$1)
+            today == DateFormat('d MMM').format(releases[index].date)
                 ? IndicatorStyle.dot
                 : IndicatorStyle.outlined,
         nodePositionBuilder: (context, index) => isMobile ? .2 : .06,
         contentsBuilder: (context, index) {
-          final digests = games[index].$2;
+          final digests = releases[index].games;
           return Padding(
             padding: const EdgeInsets.all(24.0),
             child: TileCarousel(
@@ -71,7 +70,7 @@ class TimelineView extends StatelessWidget {
         oppositeContentsBuilder: (context, index) => Padding(
             padding: const EdgeInsets.all(24.0),
             child: IconButton.outlined(
-              icon: Text(DateFormat('d MMM').format(games[index].$1)),
+              icon: Text(DateFormat('d MMM').format(releases[index].date)),
               onPressed: () {},
             )),
       ),
