@@ -20,21 +20,31 @@ class TimelineView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
     final today = DateFormat('d MMM').format(DateTime.now());
-    final games = context.read<TimelineModel>().games;
+    final games = context.read<TimelineModel>().games.reversed.toList();
 
     return timeline(context, today, games, isMobile);
   }
 
   Widget timeline(BuildContext context, String today,
       List<(DateTime, List<GameDigest>)> games, bool isMobile) {
+    int todayIndex = 0;
+    for (var i = 0; i < games.length; ++i) {
+      if (games[i].$1.millisecondsSinceEpoch <=
+          DateTime.now().millisecondsSinceEpoch) {
+        todayIndex = i;
+        break;
+      }
+    }
+
     return Timeline.tileBuilder(
+      controller: ScrollController(initialScrollOffset: todayIndex * 360),
       builder: TimelineTileBuilder.connectedFromStyle(
         itemCount: games.length,
         connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
         indicatorStyleBuilder: (context, index) =>
             today == DateFormat('d MMM').format(games[index].$1)
                 ? IndicatorStyle.dot
-                : IndicatorStyle.container,
+                : IndicatorStyle.outlined,
         nodePositionBuilder: (context, index) => isMobile ? .2 : .06,
         contentsBuilder: (context, index) {
           final digests = games[index].$2;
@@ -46,6 +56,9 @@ class TimelineView extends StatelessWidget {
                   : const TileSize(width: 227, height: 320),
               tiles: digests
                   .map((digest) => TileData(
+                        scale: context
+                            .read<TimelineModel>()
+                            .highlightScore(digest),
                         image:
                             '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg',
                         onTap: () => context.pushNamed('details',

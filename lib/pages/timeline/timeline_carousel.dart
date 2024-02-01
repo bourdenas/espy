@@ -160,13 +160,13 @@ class _TimelineEntry extends StatelessWidget {
         children: [
           for (final (index, game) in games.indexed.take(5))
             Transform.translate(
-              offset: _offset(index,
-                  context.read<TimelineModel>().normalizePopularity(game)),
+              offset: _offset(
+                  index, context.read<TimelineModel>().highlightScore(game)),
               child: _gameCover(
                   context,
                   game,
                   maxSize.width *
-                      context.read<TimelineModel>().normalizePopularity(game)),
+                      context.read<TimelineModel>().highlightScore(game)),
             ),
         ].reversed.toList(),
       ),

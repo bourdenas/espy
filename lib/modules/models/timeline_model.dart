@@ -15,17 +15,18 @@ class TimelineModel extends ChangeNotifier {
   List<(DateTime, List<GameDigest>)> get games => _games;
   final List<(DateTime, List<GameDigest>)> _games = [];
 
-  double normalizePopularity(GameDigest game) {
-    var maxPop = DateTime.now().isBefore(
-            DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000))
-        ? _maxPopularityFuture
-        : _maxPopularityPast;
-    maxPop = maxPop > 0 ? maxPop : 1;
-    return max(.5, log(game.scores.popularity ?? 0) / log(maxPop));
+  double highlightScore(GameDigest game) {
+    final isReleased = DateTime.now()
+        .isAfter(DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000));
+    var maxScore = isReleased ? _maxScorePast : _maxScoreFuture;
+    maxScore = maxScore > 0 ? maxScore : 1;
+    return isReleased
+        ? max(.5, (game.scores.metacritic ?? 0) / maxScore)
+        : max(.5, log(game.scores.popularity ?? 0) / log(maxScore));
   }
 
-  int _maxPopularityPast = 0;
-  int _maxPopularityFuture = 0;
+  int _maxScorePast = 0;
+  int _maxScoreFuture = 0;
 
   Future<List<(DateTime, GameDigest)>> gamesIn(String year) async {
     final cache = _gamesInYear[year];
@@ -66,18 +67,16 @@ class TimelineModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<Timeline> snapshot) {
       _frontpage = snapshot.data() ?? const Timeline();
-      _maxPopularityPast = _maxPopularityFuture = 0;
+      _maxScorePast = _maxScoreFuture = 0;
       _games.clear();
 
       Map<String, List<GameDigest>> games = {};
       for (final game in recent) {
-        _maxPopularityPast =
-            max(_maxPopularityPast, game.scores.popularity ?? 0);
+        _maxScorePast = max(_maxScorePast, game.scores.metacritic ?? 0);
         games.putIfAbsent(game.releaseDay, () => []).add(game);
       }
       for (final game in upcoming) {
-        _maxPopularityFuture =
-            max(_maxPopularityFuture, game.scores.popularity ?? 0);
+        _maxScoreFuture = max(_maxScoreFuture, game.scores.popularity ?? 0);
         games.putIfAbsent(game.releaseDay, () => []).add(game);
       }
 
