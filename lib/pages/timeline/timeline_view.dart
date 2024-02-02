@@ -31,22 +31,33 @@ class TimelineView extends StatelessWidget {
         ? DateTime.fromMillisecondsSinceEpoch(int.parse(scrollToDate!))
         : DateTime.now();
     for (final release in releases) {
-      if (release.date.compareTo(scrollTo) < 0) {
+      if (release.date.compareTo(scrollTo) <= 0) {
         break;
       }
       ++startIndex;
     }
 
+    const tileSize = 370.0;
     return Timeline.tileBuilder(
-      controller: ScrollController(initialScrollOffset: startIndex * 360),
-      builder: TimelineTileBuilder.connectedFromStyle(
+      controller: ScrollController(initialScrollOffset: startIndex * tileSize),
+      builder: TimelineTileBuilder.connected(
         itemCount: releases.length,
-        connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
-        indicatorStyleBuilder: (context, index) =>
-            today == DateFormat('d MMM').format(releases[index].date)
-                ? IndicatorStyle.dot
-                : IndicatorStyle.outlined,
-        nodePositionBuilder: (context, index) => isMobile ? .2 : .06,
+        connectorBuilder: (context, index, connectionType) =>
+            const SolidLineConnector(),
+        indicatorBuilder: (context, index) => SizedBox(
+          width: 64,
+          child: today == DateFormat('d MMM').format(releases[index].date)
+              ? IconButton.filled(
+                  icon: Text(DateFormat('d MMM').format(releases[index].date)),
+                  onPressed: () {},
+                )
+              : IconButton.outlined(
+                  icon: Text(DateFormat('d MMM').format(releases[index].date)),
+                  onPressed: () {},
+                ),
+        ),
+        itemExtent: tileSize,
+        nodePositionBuilder: (context, index) => isMobile ? .2 : 0,
         contentsBuilder: (context, index) {
           final digests = releases[index].games;
           return Padding(
@@ -69,12 +80,12 @@ class TimelineView extends StatelessWidget {
             ),
           );
         },
-        oppositeContentsBuilder: (context, index) => Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: IconButton.outlined(
-              icon: Text(DateFormat('d MMM').format(releases[index].date)),
-              onPressed: () {},
-            )),
+        // oppositeContentsBuilder: (context, index) => Padding(
+        //     padding: const EdgeInsets.all(24.0),
+        //     child: IconButton.outlined(
+        //       icon: Text(DateFormat('d MMM').format(releases[index].date)),
+        //       onPressed: () {},
+        //     )),
       ),
     );
   }
