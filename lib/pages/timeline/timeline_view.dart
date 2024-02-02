@@ -11,9 +11,9 @@ import 'package:timelines/timelines.dart';
 /// This is an example of a timeline but it is not used atm.
 /// It should be repurposed as a timeline view.
 class TimelineView extends StatelessWidget {
-  const TimelineView({super.key, this.year});
+  const TimelineView({super.key, this.scrollToDate});
 
-  final String? year;
+  final String? scrollToDate;
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +27,11 @@ class TimelineView extends StatelessWidget {
   Widget timeline(BuildContext context, String today, List<ReleaseDay> releases,
       bool isMobile) {
     int startIndex = 0;
-    final now = DateTime.now();
+    final scrollTo = scrollToDate != null
+        ? DateTime.fromMillisecondsSinceEpoch(int.parse(scrollToDate!))
+        : DateTime.now();
     for (final release in releases) {
-      if (release.date.compareTo(now) < 0) {
+      if (release.date.compareTo(scrollTo) < 0) {
         break;
       }
       ++startIndex;

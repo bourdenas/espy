@@ -32,8 +32,8 @@ class HomeSlatesModel extends ChangeNotifier {
     _slates = [
       slate('Library', LibraryFilter(view: LibraryClass.inLibrary)),
       slate('Wishlist', LibraryFilter(view: LibraryClass.wishlist)),
-      slate('Recently Added in Library', LibraryFilter(),
-          gameEntries.getRecentEntries().take(20)),
+      // slate('Recently Added in Library', LibraryFilter(),
+      //     gameEntries.getRecentEntries().take(20)),
     ];
 
     _stacks = [

@@ -8,7 +8,6 @@ import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/library/library_page.dart';
 import 'package:espy/pages/timeline/timeline_page.dart';
-import 'package:espy/pages/timeline/timeline_shelves.dart';
 import 'package:espy/pages/timeline/timeline_view.dart';
 import 'package:espy/widgets/scaffold/espy_scaffold.dart';
 import 'package:espy/pages/home/home_content.dart';
@@ -85,7 +84,9 @@ class EspyRouter extends StatelessWidget {
           name: 'releases',
           child: EspyScaffold(
             // body: TimelineShelves(date: state.pathParameters['date']!),
-            body: TimelineView(),
+            body: TimelineView(
+              scrollToDate: state.pathParameters['date'],
+            ),
             path: state.path!,
           ),
         ),
