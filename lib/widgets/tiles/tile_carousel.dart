@@ -4,10 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class TileData {
-  const TileData({this.title, this.image, this.onTap, this.onLongTap});
+  const TileData({
+    this.title,
+    this.image,
+    this.scale = 1,
+    this.onTap,
+    this.onLongTap,
+  });
 
   final String? title;
   final String? image;
+  final double scale;
   final VoidCallback? onTap;
   final VoidCallback? onLongTap;
 }
@@ -82,12 +89,10 @@ class _TileCarouselState extends State<TileCarousel> {
 
 class _CarouselHeader extends StatelessWidget {
   const _CarouselHeader({
-    Key? key,
     required this.titleText,
     this.onTitleTap,
     required ScrollController scrollController,
-  })  : _scrollController = scrollController,
-        super(key: key);
+  }) : _scrollController = scrollController;
 
   final String titleText;
   final VoidCallback? onTitleTap;
@@ -162,10 +167,9 @@ class _CarouselHeader extends StatelessWidget {
 
 class _Tile extends StatelessWidget {
   const _Tile({
-    Key? key,
     required this.data,
     required this.tileSize,
-  }) : super(key: key);
+  });
 
   final TileData data;
   final TileSize tileSize;
@@ -184,12 +188,15 @@ class _Tile extends StatelessWidget {
             children: [
               if (data.image != null)
                 Center(
-                  child: CachedNetworkImage(
-                    fit: BoxFit.cover,
-                    imageUrl: data.image!,
-                    placeholder: (context, url) => Container(),
-                    errorWidget: (context, url, error) =>
-                        const Center(child: Icon(Icons.error_outline)),
+                  child: SizedBox(
+                    width: tileSize.width * data.scale,
+                    child: CachedNetworkImage(
+                      fit: BoxFit.cover,
+                      imageUrl: data.image!,
+                      placeholder: (context, url) => Container(),
+                      errorWidget: (context, url, error) =>
+                          const Center(child: Icon(Icons.error_outline)),
+                    ),
                   ),
                 )
               else
@@ -221,10 +228,7 @@ class _Tile extends StatelessWidget {
 }
 
 class _PlaceholderShimmer extends StatelessWidget {
-  const _PlaceholderShimmer(
-    this.tileSize, {
-    Key? key,
-  }) : super(key: key);
+  const _PlaceholderShimmer(this.tileSize);
 
   final TileSize tileSize;
 

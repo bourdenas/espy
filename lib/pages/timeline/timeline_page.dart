@@ -1,5 +1,4 @@
 import 'package:espy/pages/timeline/annual_review.dart';
-import 'package:espy/pages/timeline/timeline_view.dart';
 import 'package:flutter/material.dart';
 
 class TimelinePage extends StatefulWidget {
@@ -30,7 +29,6 @@ class TimelinePageState extends State<TimelinePage> {
           children: [
             yearBar(context),
             Expanded(child: AnnualReview(year: selectedYear)),
-            // Expanded(child: TimelineView(year: selectedYear)),
           ],
         ),
       ),

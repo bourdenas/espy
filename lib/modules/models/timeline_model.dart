@@ -12,20 +12,43 @@ class TimelineModel extends ChangeNotifier {
   List<GameDigest> get upcoming => _frontpage.upcoming;
   List<GameDigest> get recent => _frontpage.recent;
 
-  List<(DateTime, List<GameDigest>)> get games => _games;
-  final List<(DateTime, List<GameDigest>)> _games = [];
+  List<ReleaseDay> get releases => _releases;
+  final List<ReleaseDay> _releases = [];
 
-  double normalizePopularity(GameDigest game) {
-    var maxPop = DateTime.now().isBefore(
-            DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000))
-        ? _maxPopularityFuture
-        : _maxPopularityPast;
-    maxPop = maxPop > 0 ? maxPop : 1;
-    return max(.5, log(game.scores.popularity ?? 0) / log(maxPop));
+  double highlightScore(GameDigest game) {
+    final isReleased = DateTime.now()
+        .isAfter(DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000));
+    var maxScore = isReleased ? _maxScorePast : _maxScoreFuture;
+    maxScore = maxScore > 0 ? maxScore : 1;
+    return isReleased
+        ? scale(game.scores.metacritic)
+        : scaleFuture(game.scores.popularity);
   }
 
-  int _maxPopularityPast = 0;
-  int _maxPopularityFuture = 0;
+  double scale(int? score) {
+    return switch (score) {
+      int x when x >= 95 => 1,
+      int x when x >= 90 => .9,
+      int x when x >= 80 => .8,
+      int x when x >= 70 => .7,
+      int x when x >= 60 => .6,
+      _ => .5,
+    };
+  }
+
+  double scaleFuture(int? popularity) {
+    return switch (popularity) {
+      int x when x >= 100 => 1,
+      int x when x >= 50 => .9,
+      int x when x >= 30 => .8,
+      int x when x >= 10 => .7,
+      int x when x >= 3 => .6,
+      _ => .5,
+    };
+  }
+
+  int _maxScorePast = 0;
+  int _maxScoreFuture = 0;
 
   Future<List<(DateTime, GameDigest)>> gamesIn(String year) async {
     final cache = _gamesInYear[year];
@@ -66,26 +89,45 @@ class TimelineModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<Timeline> snapshot) {
       _frontpage = snapshot.data() ?? const Timeline();
-      _maxPopularityPast = _maxPopularityFuture = 0;
-      _games.clear();
+      _maxScorePast = _maxScoreFuture = 0;
+      _releases.clear();
 
       Map<String, List<GameDigest>> games = {};
       for (final game in recent) {
-        _maxPopularityPast =
-            max(_maxPopularityPast, game.scores.popularity ?? 0);
+        _maxScorePast = max(_maxScorePast, game.scores.metacritic ?? 0);
         games.putIfAbsent(game.releaseDay, () => []).add(game);
       }
       for (final game in upcoming) {
-        _maxPopularityFuture =
-            max(_maxPopularityFuture, game.scores.popularity ?? 0);
+        _maxScoreFuture = max(_maxScoreFuture, game.scores.popularity ?? 0);
         games.putIfAbsent(game.releaseDay, () => []).add(game);
       }
 
-      _games.addAll(games.entries
-          .map((e) => (DateFormat('yMMMd').parse(e.key), e.value)));
-      _games.sort((a, b) => a.$1.compareTo(b.$1));
+      _releases.addAll(games.entries
+          .map((e) => ReleaseDay(DateFormat('yMMMd').parse(e.key), e.value)));
+      _releases.sort((a, b) => -a.date.compareTo(b.date));
 
       notifyListeners();
     });
+  }
+}
+
+class ReleaseDay {
+  ReleaseDay(this._date, this._games);
+
+  final DateTime _date;
+  final List<GameDigest> _games;
+
+  DateTime get date => _date;
+  Iterable<GameDigest> get games {
+    return _games
+      ..sort(
+        (a, b) {
+          final criticOrdering =
+              (a.scores.metacritic ?? 0).compareTo(b.scores.metacritic ?? 0);
+          return criticOrdering == 0 && (a.scores.metacritic ?? 0) == 0
+              ? -(a.scores.popularity ?? 0).compareTo(b.scores.popularity ?? 0)
+              : -criticOrdering;
+        },
+      );
   }
 }

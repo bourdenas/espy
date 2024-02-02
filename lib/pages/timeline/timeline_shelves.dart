@@ -15,25 +15,26 @@ class TimelineShelves extends StatelessWidget {
   Widget build(BuildContext context) {
     final start = DateTime.fromMillisecondsSinceEpoch(int.parse(date!))
         .subtract(const Duration(days: 1));
-    final shelves = context.read<TimelineModel>().games;
+    final releases = context.read<TimelineModel>().releases;
 
     var startIndex = 0;
-    for (final (release, _) in shelves) {
-      if (release.compareTo(start) > 0) {
+    for (final release in releases) {
+      if (release.date.compareTo(start) > 0) {
         break;
       }
       ++startIndex;
     }
 
     return ScrollablePositionedList.builder(
-      itemCount: shelves.length,
+      itemCount: releases.length,
       initialScrollIndex: startIndex,
       itemBuilder: (context, index) {
-        final (date, games) = shelves[index];
+        final release = releases[index];
         return FlatShelve(
-          title: DateFormat.yMMMd().format(date),
+          title: DateFormat.yMMMd().format(release.date),
           color: Theme.of(context).colorScheme.onPrimaryContainer,
-          entries: games.map((digest) => LibraryEntry.fromGameDigest(digest)),
+          entries: release.games
+              .map((digest) => LibraryEntry.fromGameDigest(digest)),
         );
       },
     );
