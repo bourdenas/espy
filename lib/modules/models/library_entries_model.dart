@@ -8,7 +8,8 @@ import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class LibraryEntriesModel extends ChangeNotifier {
-  Map<int, LibraryEntry> _entries = {};
+  Map<int, LibraryEntry> _library = {};
+  Map<int, LibraryEntry> _wishlist = {};
   AppConfigModel _appConfigModel = AppConfigModel();
   GameTagsModel _gameTagsModel = GameTagsModel();
   RemoteLibraryModel _remoteLibraryModel = RemoteLibraryModel();
@@ -20,19 +21,26 @@ class LibraryEntriesModel extends ChangeNotifier {
     GameTagsModel gameTags,
     RemoteLibraryModel remoteLibraryModel,
   ) {
-    _entries =
+    _library =
         Map.fromEntries(userLibraryModel.entries.map((e) => MapEntry(e.id, e)));
-    _entries.addAll(
-        Map.fromEntries(wishlistModel.wishlist.map((e) => MapEntry(e.id, e))));
+    _wishlist =
+        Map.fromEntries(wishlistModel.wishlist.map((e) => MapEntry(e.id, e)));
     _appConfigModel = appConfigModel;
     _gameTagsModel = gameTags;
     _remoteLibraryModel = remoteLibraryModel;
     notifyListeners();
   }
 
-  bool get isNotEmpty => _entries.isNotEmpty;
+  bool get isNotEmpty => _library.isNotEmpty;
 
-  Iterable<int> get all => _entries.keys;
+  Iterable<LibraryEntry> get library => _library.values;
+  Iterable<LibraryEntry> get wishlist => _wishlist.values;
+  Iterable<LibraryEntry> get all =>
+      [_library.values, _wishlist.values].expand((e) => e);
+
+  Iterable<int> get libraryIds => _library.keys;
+  Iterable<int> get wishlistIds => _wishlist.keys;
+  Iterable<int> get allIds => [_library.keys, _wishlist.keys].expand((e) => e);
 
   LibraryView filter(LibraryFilter filter, {bool showOutOfLib = false}) {
     return filter.filter(
@@ -45,7 +53,7 @@ class LibraryEntriesModel extends ChangeNotifier {
   }
 
   Iterable<LibraryEntry> getRecentEntries() {
-    return _entries.values.toList()
+    return _library.values.toList()
       ..sort((a, b) => -a.addedDate.compareTo(b.addedDate));
   }
 
@@ -55,14 +63,14 @@ class LibraryEntriesModel extends ChangeNotifier {
       return null;
     }
 
-    return _entries[gameId];
+    return _library[gameId];
   }
 
   LibraryEntry? getEntryById(int id) {
-    return _entries[id];
+    return _library[id] ?? _wishlist[id];
   }
 
   bool inLibrary(int id) {
-    return _entries[id]?.storeEntries.isNotEmpty ?? false;
+    return _library[id] != null;
   }
 }

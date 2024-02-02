@@ -74,7 +74,7 @@ class LibraryView {
 
 class LibraryFilter {
   LibraryFilter({
-    this.view = LibraryClass.all,
+    this.view = LibraryClass.inLibrary,
     this.ordering = LibraryOrdering.release,
     this.grouping = LibraryGrouping.none,
     this.stores = const {},
@@ -180,16 +180,24 @@ class LibraryFilter {
       gameIdSets.add(Set.from(tagsModel.userTags.gameIds(tag)));
     }
 
-    final gameIds = gameIdSets.isNotEmpty
-        ? gameIdSets.reduce((value, element) => value.intersection(element))
-        : entriesModel.all;
+    if (gameIdSets.isEmpty) {
+      final entries = switch (view) {
+        LibraryClass.all => entriesModel.all,
+        LibraryClass.inLibrary => entriesModel.library,
+        LibraryClass.wishlist => entriesModel.wishlist,
+        _ => entriesModel.all,
+      };
+      return LibraryView(_group(_sort(entries), tagsModel));
+    }
+
+    final gameIds =
+        gameIdSets.reduce((value, element) => value.intersection(element));
 
     final localEntries = gameIds
         .map((id) => entriesModel.getEntryById(id))
         .where((e) => e != null)
         .map((e) => e!)
-        .where((e) => e.isStandaloneGame || (showExpansions && e.isExpansion))
-        .where((libraryEntry) => _filterView(libraryEntry, tagsModel));
+        .where((e) => e.isStandaloneGame || (showExpansions && e.isExpansion));
 
     final remoteEntries = showOutOfLib
         ? showExpansions
