@@ -187,7 +187,10 @@ class LibraryFilter {
         LibraryClass.wishlist => entriesModel.wishlist,
         _ => entriesModel.all,
       };
-      return LibraryView(_group(_sort(entries), tagsModel));
+      return LibraryView(_group(
+          _sort(entries.where(
+              (e) => e.isStandaloneGame || (showExpansions && e.isExpansion))),
+          tagsModel));
     }
 
     final gameIds =
