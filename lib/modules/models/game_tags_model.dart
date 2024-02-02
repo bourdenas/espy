@@ -43,7 +43,7 @@ class GameTagsModel extends ChangeNotifier {
     List<LibraryEntry> entries,
     List<LibraryEntry> wishlist,
   ) async {
-    final allEntries = entries + wishlist;
+    final allEntries = entries;
     _storesManager = LabelManager(allEntries,
         (entry) => entry.storeEntries.map((store) => store.storefront));
     _developersManager =
