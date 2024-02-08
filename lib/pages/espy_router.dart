@@ -83,7 +83,6 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'releases',
           child: EspyScaffold(
-            // body: TimelineShelves(date: state.pathParameters['date']!),
             body: TimelineView(
               scrollToLabel: state.pathParameters['label'],
               year: state.pathParameters['year'],
