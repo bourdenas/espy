@@ -6,6 +6,7 @@ class IgdbGame {
   final String storyline;
   final int releaseDate;
   final double rating;
+  final String url;
 
   const IgdbGame({
     required this.id,
@@ -14,6 +15,7 @@ class IgdbGame {
     this.storyline = '',
     this.releaseDate = 0,
     this.rating = 0.0,
+    this.url = '',
   });
 
   IgdbGame.fromJson(Map<String, dynamic> json)
@@ -24,16 +26,8 @@ class IgdbGame {
           storyline: json['storyline'] ?? '',
           releaseDate: json['first_release_date'] ?? 0,
           rating: json['aggregated_rating'] ?? 0,
+          url: json['url'] ?? '',
         );
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      if (summary.isNotEmpty) 'summary': summary,
-      if (storyline.isNotEmpty) 'storyline': storyline,
-      if (releaseDate > 0) 'first_release_date': releaseDate,
-      if (rating > 0.0) 'aggregated_rating': rating,
-    };
-  }
+  Map<String, dynamic> toJson() => {};
 }

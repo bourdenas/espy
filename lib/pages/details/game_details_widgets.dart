@@ -15,8 +15,8 @@ class GameEntryActionBar extends StatelessWidget {
   const GameEntryActionBar(
     this.libraryEntry,
     this.gameEntry, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;
@@ -124,6 +124,15 @@ class GameEntryActionBar extends StatelessWidget {
               splashRadius: 20.0,
             ),
           ),
+      SizedBox(
+        height: 42,
+        child: IconButton(
+          onPressed: () async => await launchUrl(Uri.parse(
+              'https://www.metacritic.com/game/${gameEntry.igdbGame.url.split("/").last}')),
+          icon: websiteIcon('Metacritic'),
+          splashRadius: 20.0,
+        ),
+      ),
       for (final label in const ['Gog', 'Steam', 'Egs'])
         for (final website
             in gameEntry.websites.where((site) => site.authority == label))
@@ -145,6 +154,7 @@ class GameEntryActionBar extends StatelessWidget {
       'Official' => const Icon(Icons.web),
       'Wikipedia' => Image.asset('assets/images/wikipedia-128.png'),
       'Igdb' => Image.asset('assets/images/igdb-128.png'),
+      'Metacritic' => Image.asset('assets/images/metacritic-128.png'),
       'Gog' => Image.asset(
           'assets/images/gog-128.png',
           color: disabled ? Colors.grey[800]!.withOpacity(.8) : Colors.white,
@@ -167,8 +177,7 @@ class GameEntryActionBar extends StatelessWidget {
 }
 
 class RelatedGamesGroup extends StatelessWidget {
-  const RelatedGamesGroup(this.title, this.gameDigests, {Key? key})
-      : super(key: key);
+  const RelatedGamesGroup(this.title, this.gameDigests, {super.key});
 
   final String title;
   final List<GameDigest> gameDigests;
