@@ -7,7 +7,6 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -33,14 +32,15 @@ class TimelineCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final releases = context.watch<TimelineModel>().releases;
 
-    var startIndex = 0;
-    final today = DateTime.now();
-    for (final release in releases) {
-      if (release.date.compareTo(today) < 0) {
-        break;
-      }
-      ++startIndex;
-    }
+    // var startIndex = 0;
+    var startIndex = 2;
+    // final today = DateTime.now();
+    // for (final release in releases) {
+    //   if (release.date.compareTo(today) < 0) {
+    //     break;
+    //   }
+    //   ++startIndex;
+    // }
 
     return startIndex == 0
         ? const Column()
@@ -58,7 +58,8 @@ class TimelineCarousel extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final release = releases[index];
                       return _TimelineEntry(
-                        date: release.date,
+                        label: release.label,
+                        year: release.year,
                         games: release.games,
                         maxSize: tileSize,
                         showMonth: index == 0,
@@ -74,13 +75,15 @@ class TimelineCarousel extends StatelessWidget {
 
 class _TimelineEntry extends StatelessWidget {
   const _TimelineEntry({
-    required this.date,
+    required this.label,
+    required this.year,
     required this.games,
     required this.maxSize,
     this.showMonth = false,
   });
 
-  final DateTime date;
+  final String label;
+  final String year;
   final Iterable<GameDigest> games;
   final TileSize maxSize;
   final bool showMonth;
@@ -89,11 +92,12 @@ class _TimelineEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
+        const SizedBox(
           height: 32,
-          child: (showMonth || date.day == 1)
-              ? Text(DateFormat('MMM').format(date))
-              : null,
+          child: null,
+          // child: (showMonth || date.day == 1)
+          //     ? Text(DateFormat('MMM').format(date))
+          //     : null,
         ),
         Stack(
           alignment: Alignment.topCenter,
@@ -110,7 +114,7 @@ class _TimelineEntry extends StatelessWidget {
           child: (games.isNotEmpty)
               ? IconButton.outlined(
                   icon: Text(
-                    '${date.day}',
+                    label,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onBackground,
                       fontWeight: FontWeight.w500,
@@ -118,7 +122,8 @@ class _TimelineEntry extends StatelessWidget {
                   ),
                   onPressed: () {
                     context.pushNamed('releases', pathParameters: {
-                      'date': '${date.millisecondsSinceEpoch}',
+                      'label': label,
+                      'year': year,
                     });
                   },
                 )
