@@ -32,15 +32,14 @@ class TimelineCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final releases = context.watch<TimelineModel>().releases;
 
-    // var startIndex = 0;
-    var startIndex = 2;
-    // final today = DateTime.now();
-    // for (final release in releases) {
-    //   if (release.date.compareTo(today) < 0) {
-    //     break;
-    //   }
-    //   ++startIndex;
-    // }
+    var startIndex = 0;
+    final today = DateTime.now().millisecondsSinceEpoch / 1000;
+    for (final release in releases) {
+      if (release.games.first.releaseDate <= today) {
+        break;
+      }
+      ++startIndex;
+    }
 
     return startIndex == 0
         ? const Column()
