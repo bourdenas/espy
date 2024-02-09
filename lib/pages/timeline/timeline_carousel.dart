@@ -5,20 +5,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/timeline_model.dart';
+import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-
-class TileSize {
-  const TileSize({
-    required this.width,
-    required this.height,
-  });
-
-  final double width;
-  final double height;
-}
+import 'package:timelines/timelines.dart';
 
 class TimelineCarousel extends StatelessWidget {
   final TileSize tileSize;
@@ -31,11 +23,12 @@ class TimelineCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final releases = context.watch<TimelineModel>().releases;
+    final today = DateFormat('d MMM').format(DateTime.now());
 
     var startIndex = 0;
-    final today = DateTime.now().millisecondsSinceEpoch / 1000;
+    final now = DateTime.now().millisecondsSinceEpoch / 1000;
     for (final release in releases) {
-      if (release.games.first.releaseDate <= today) {
+      if (release.games.first.releaseDate <= now) {
         break;
       }
       ++startIndex;
@@ -49,21 +42,49 @@ class TimelineCarousel extends StatelessWidget {
               children: [
                 SizedBox(
                   height: tileSize.height * 1.5,
-                  child: ScrollablePositionedList.builder(
-                    itemCount: releases.length,
-                    initialScrollIndex:
-                        startIndex > 1 ? startIndex - 2 : startIndex,
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (context, index) {
-                      final release = releases[index];
-                      return _TimelineEntry(
-                        label: release.label,
-                        year: release.year,
-                        games: release.games,
-                        maxSize: tileSize,
-                        showMonth: index == 0,
-                      );
-                    },
+                  child: Timeline.tileBuilder(
+                    controller: ScrollController(
+                        initialScrollOffset: (startIndex - 2) * tileSize.width),
+                    theme: TimelineThemeData(
+                      direction: Axis.horizontal,
+                      connectorTheme: const ConnectorThemeData(
+                        space: 30.0,
+                        thickness: 5.0,
+                      ),
+                    ),
+                    shrinkWrap: true,
+                    builder: TimelineTileBuilder.connected(
+                      contentsAlign: ContentsAlign.reverse,
+                      itemCount: releases.length,
+                      connectorBuilder: (context, index, connectionType) =>
+                          const SolidLineConnector(),
+                      indicatorBuilder: (context, index) {
+                        expand() => context.pushNamed(
+                              'releases',
+                              pathParameters: {
+                                'label': releases[index].label,
+                                'year': releases[index].year,
+                              },
+                            );
+                        return SizedBox(
+                          width: 64,
+                          child: today == releases[index].label
+                              ? IconButton.filled(
+                                  icon: Text(releases[index].label),
+                                  onPressed: expand,
+                                )
+                              : IconButton.outlined(
+                                  icon: Text(releases[index].label),
+                                  onPressed: expand,
+                                ),
+                        );
+                      },
+                      itemExtent: tileSize.width,
+                      nodePositionBuilder: (context, index) => .85,
+                      contentsBuilder: (context, index) => ReleaseStack(
+                          releases[index].games,
+                          maxSize: tileSize),
+                    ),
                   ),
                 ),
               ],
@@ -72,100 +93,48 @@ class TimelineCarousel extends StatelessWidget {
   }
 }
 
-class _TimelineEntry extends StatelessWidget {
-  const _TimelineEntry({
-    required this.label,
-    required this.year,
-    required this.games,
-    required this.maxSize,
-    this.showMonth = false,
-  });
+class ReleaseStack extends StatefulWidget {
+  const ReleaseStack(this.games, {super.key, required this.maxSize});
 
-  final String label;
-  final String year;
   final Iterable<GameDigest> games;
   final TileSize maxSize;
-  final bool showMonth;
+
+  @override
+  State<ReleaseStack> createState() => _ReleaseStackState();
+}
+
+class _ReleaseStackState extends State<ReleaseStack>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(
-          height: 32,
-          child: null,
-          // child: (showMonth || date.day == 1)
-          //     ? Text(DateFormat('MMM').format(date))
-          //     : null,
-        ),
-        Stack(
-          alignment: Alignment.topCenter,
-          children: [
-            if (games.isNotEmpty) ...[
-              _connection(context, maxSize.width + 16),
-              _releaseEvent(context),
-            ] else
-              _connection(context, 32),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: (games.isNotEmpty)
-              ? IconButton.outlined(
-                  icon: Text(
-                    label,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onBackground,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  onPressed: () {
-                    context.pushNamed('releases', pathParameters: {
-                      'label': label,
-                      'year': year,
-                    });
-                  },
-                )
-              : null,
-        ),
-      ],
-    );
-  }
-
-  Offset _offset(int index, double pop) {
-    final coverWidth = maxSize.width * pop;
-    final coverHeight = maxSize.height * pop;
-
-    if (games.length == 1) {
-      return const Offset(0, 0);
-    } else if (games.length == 2) {
-      return index == 0
-          ? Offset(-((maxSize.width - coverWidth) / 2),
-              -((maxSize.height - coverHeight) / 2))
-          : Offset((maxSize.width - coverWidth) / 2,
-              ((maxSize.height - coverHeight) / 2));
-    }
-
-    double progress = (index as double) / min(games.length, 5);
-    return Offset(((maxSize.width - coverWidth) / 2) * sin(progress * 2 * pi),
-        -((maxSize.height - coverHeight) / 2) * cos(progress * 2 * pi));
-  }
-
-  Widget _releaseEvent(BuildContext context) {
     return SizedBox(
-      width: maxSize.width,
-      height: maxSize.height,
+      width: widget.maxSize.width,
+      height: widget.maxSize.height,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          for (final (index, game) in games.indexed.take(5))
+          for (final (index, game) in widget.games.indexed.take(5))
             Transform.translate(
               offset: _offset(
                   index, context.read<TimelineModel>().highlightScore(game)),
               child: _gameCover(
                   context,
                   game,
-                  maxSize.width *
+                  widget.maxSize.width *
                       context.read<TimelineModel>().highlightScore(game)),
             ),
         ].reversed.toList(),
@@ -195,16 +164,23 @@ class _TimelineEntry extends StatelessWidget {
     );
   }
 
-  Widget _connection(BuildContext context, double width) {
-    return SizedBox(
-      height: maxSize.height,
-      child: Center(
-        child: Container(
-          height: 5,
-          width: width,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-      ),
-    );
+  Offset _offset(int index, double pop) {
+    final coverWidth = widget.maxSize.width * pop;
+    final coverHeight = widget.maxSize.height * pop;
+
+    if (widget.games.length == 1) {
+      return const Offset(0, 0);
+    } else if (widget.games.length == 2) {
+      return index == 0
+          ? Offset(-((widget.maxSize.width - coverWidth) / 2),
+              -((widget.maxSize.height - coverHeight) / 2))
+          : Offset((widget.maxSize.width - coverWidth) / 2,
+              ((widget.maxSize.height - coverHeight) / 2));
+    }
+
+    double progress = (index as double) / min(widget.games.length, 5);
+    return Offset(
+        ((widget.maxSize.width - coverWidth) / 2) * sin(progress * 2 * pi),
+        -((widget.maxSize.height - coverHeight) / 2) * cos(progress * 2 * pi));
   }
 }
