@@ -41,18 +41,20 @@ class TimelineView extends StatelessWidget {
         itemCount: releases.length,
         connectorBuilder: (context, index, connectionType) =>
             const SolidLineConnector(),
-        indicatorBuilder: (context, index) => SizedBox(
-          width: 64,
-          child: today == releases[index].label
-              ? IconButton.filled(
-                  icon: Text(releases[index].label),
-                  onPressed: () {},
-                )
-              : IconButton.outlined(
-                  icon: Text(releases[index].label),
-                  onPressed: () {},
-                ),
-        ),
+        indicatorBuilder: (context, index) {
+          return SizedBox(
+            width: 64,
+            child: today == releases[index].label
+                ? IconButton.filled(
+                    icon: Text(releases[index].label),
+                    onPressed: () {},
+                  )
+                : IconButton.outlined(
+                    icon: Text(releases[index].label),
+                    onPressed: () {},
+                  ),
+          );
+        },
         itemExtent: tileSize,
         nodePositionBuilder: (context, index) => isMobile ? .2 : 0,
         contentsBuilder: (context, index) {
