@@ -13,31 +13,27 @@ class TimelineModel extends ChangeNotifier {
         .isAfter(DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000));
 
     return isReleased
-        ? scale(game.scores.metacritic)
-        : scaleFuture(game.scores.popularity);
+        ? _scale(game.scores.espyScore)
+        : _scaleFuture(game.scores.popularity);
   }
 
-  double scale(int? score) {
-    return switch (score) {
-      int x when x >= 95 => 1,
-      int x when x >= 90 => .9,
-      int x when x >= 80 => .8,
-      int x when x >= 70 => .7,
-      int x when x >= 60 => .6,
-      _ => .5,
-    };
-  }
+  double _scale(int? score) => switch (score) {
+        int x when x >= 95 => 1,
+        int x when x >= 90 => .9,
+        int x when x >= 80 => .8,
+        int x when x >= 70 => .7,
+        int x when x >= 60 => .6,
+        _ => .5,
+      };
 
-  double scaleFuture(int? popularity) {
-    return switch (popularity) {
-      int x when x >= 100 => 1,
-      int x when x >= 50 => .9,
-      int x when x >= 30 => .8,
-      int x when x >= 10 => .7,
-      int x when x >= 3 => .6,
-      _ => .5,
-    };
-  }
+  double _scaleFuture(int? popularity) => switch (popularity) {
+        int x when x >= 100 => 1,
+        int x when x >= 50 => .9,
+        int x when x >= 30 => .8,
+        int x when x >= 10 => .7,
+        int x when x >= 3 => .6,
+        _ => .5,
+      };
 
   Future<AnnualReviewDoc> gamesIn(String year) async {
     final cache = _annualReviews[year];
