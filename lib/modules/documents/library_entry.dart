@@ -14,7 +14,6 @@ class LibraryEntry {
   String? get cover => digest.cover;
   int get releaseDate => digest.releaseDate;
   Scores get scores => digest.scores;
-  int get tier => digest.scores.tier ?? 0;
   int get thumbs => digest.scores.thumbs ?? 0;
   int get popularity => digest.scores.popularity ?? 0;
   int get metacritic => digest.scores.metacritic ?? 0;

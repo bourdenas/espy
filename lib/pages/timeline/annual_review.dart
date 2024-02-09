@@ -1,5 +1,5 @@
-import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/timeline.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
@@ -19,8 +19,7 @@ class AnnualReview extends StatelessWidget {
 
     return FutureBuilder(
       future: context.watch<TimelineModel>().gamesIn(year),
-      builder: (BuildContext context,
-          AsyncSnapshot<List<(DateTime, GameDigest)>> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<AnnualReviewDoc> snapshot) {
         return snapshot.connectionState == ConnectionState.done &&
                 snapshot.hasData
             ? timeline(today, snapshot.data!, isMobile)
@@ -29,50 +28,12 @@ class AnnualReview extends StatelessWidget {
     );
   }
 
-  Widget timeline(
-      String today, List<(DateTime, GameDigest)> games, bool isMobile) {
-    final digests = games.map((tupl) => tupl.$2).toList();
-
-    final popular = digests
-        .where((digest) =>
-            digest.scores.popularity != null &&
-            digest.scores.popularity! >= 100000)
-        .toList();
-    popular.sort((left, right) =>
-        -left.scores.popularity!.compareTo(right.scores.popularity!));
-
-    final highlights = digests
-        .where((digest) =>
-            digest.scores.metacritic != null && digest.scores.metacritic! >= 80)
-        .toList();
-    highlights.sort((left, right) =>
-        -left.scores.metacritic!.compareTo(right.scores.metacritic!));
-
-    final releases = digests
-        .where((digest) =>
-            digest.scores.metacritic != null && digest.scores.metacritic! < 80)
-        .toList();
-    releases.sort((left, right) =>
-        -left.scores.metacritic!.compareTo(right.scores.metacritic!));
-
-    final earlyAccess =
-        digests.where((digest) => digest.status == 'EarlyAccess').toList();
-    earlyAccess.sort((left, right) =>
-        -(left.scores.popularity ?? 0).compareTo(right.scores.popularity ?? 0));
-
-    final rest = digests
-        .where((digest) =>
-            digest.scores.metacritic == null && digest.status == 'Released')
-        .toList();
-    rest.sort((left, right) =>
-        -(left.scores.popularity ?? 0).compareTo(right.scores.popularity ?? 0));
-
+  Widget timeline(String today, AnnualReviewDoc review, bool isMobile) {
     final groups = [
-      if (popular.isNotEmpty) ('Most popular', popular),
-      ('Release Highlights', highlights),
-      ('Releases', releases),
-      ('Early Access', earlyAccess),
-      ('Rest', rest),
+      ('Releases', review.releases),
+      if (review.indies.isNotEmpty) ('Indies', review.indies),
+      if (review.earlyAccess.isNotEmpty) ('Early Access', review.earlyAccess),
+      if (review.debug.isNotEmpty) ('Debug', review.debug),
     ];
 
     return CustomScrollView(

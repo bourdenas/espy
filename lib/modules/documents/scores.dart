@@ -1,58 +1,43 @@
 class Scores {
-  final int? tier;
   final int? thumbs;
   final int? popularity;
   final int? metacritic;
+  final int? espyScore;
 
-  final String espyTier;
-  final String? thumbsTier;
-  final String? popularityTier;
-  final String? criticsTier;
+  final String? espyTier;
 
   const Scores({
-    this.tier,
     this.thumbs,
     this.popularity,
     this.metacritic,
-    this.espyTier = 'Unknown',
-    this.thumbsTier,
-    this.popularityTier,
-    this.criticsTier,
+    this.espyScore,
+    this.espyTier,
   });
 
   Scores.fromJson(Map<String, dynamic> json)
       : this(
-          tier: json['tier'],
           thumbs: json['thumbs'],
           popularity: json['popularity'],
           metacritic: json['metacritic'],
-          espyTier: json['espy_tier'] ?? 'Unknown',
-          thumbsTier: json['thumbs_tier'],
-          popularityTier: json['pop_tier'],
-          criticsTier: json['critics_tier'],
+          espyScore: json['espy_score'],
+          espyTier: json['espy_tier'],
         );
 
   Map<String, dynamic> toJson() {
     return {
-      if (tier != null) 'tier': tier,
       if (thumbs != null) 'thumbs': thumbs,
       if (popularity != null) 'popularity': popularity,
       if (metacritic != null) 'metacritic': metacritic,
-      'espy_tier': espyTier,
-      if (thumbsTier != null) 'thumbs_tier': thumbsTier,
-      if (popularityTier != null) 'pop_tier': popularityTier,
-      if (criticsTier != null) 'critics_tier': criticsTier,
+      if (espyScore != null) 'espy_score': espyScore,
+      if (espyTier != null) 'espy_tier': espyTier,
     };
   }
 
   bool hasDiff(Scores other) {
-    return tier != other.tier ||
-        thumbs != other.thumbs ||
+    return thumbs != other.thumbs ||
         popularity != other.popularity ||
         metacritic != other.metacritic ||
-        espyTier != other.espyTier ||
-        thumbsTier != other.thumbsTier ||
-        popularityTier != other.popularityTier ||
-        criticsTier != other.criticsTier;
+        espyScore != other.espyScore ||
+        espyTier != other.espyTier;
   }
 }

@@ -18,7 +18,6 @@ class GamePulse extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userRating = context.watch<UserDataModel>().rating(libraryEntry.id);
-    final tier = gameEntry?.scores.espyTier ?? libraryEntry.scores.espyTier;
     final thumbs = gameEntry?.scores.thumbs ?? libraryEntry.thumbs;
     final popularity = gameEntry?.scores.popularity ?? libraryEntry.popularity;
     final metacritic = userRating > 0
@@ -28,7 +27,7 @@ class GamePulse extends StatelessWidget {
     return Row(
       children: [
         criticsScore(metacritic, userRating),
-        if (thumbs > 0) userScore(tier, thumbs),
+        if (thumbs > 0) userScore(thumbs, popularity),
         if (popularity > 0) popScore(popularity),
       ],
     );
@@ -58,34 +57,23 @@ class GamePulse extends StatelessWidget {
     );
   }
 
-  Widget userScore(String tier, int thumbs) {
+  Widget userScore(int thumbs, int popularity) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(width: 4),
         Icon(
-          switch (tier) {
-            'Masterpiece' ||
-            'Excellent' ||
-            'Great' ||
-            'VeryGood' ||
-            'Ok' =>
-              Icons.thumb_up,
-            'Mixed' => Icons.thumbs_up_down,
-            'Flop' || 'NotGood' || 'Bad' => Icons.thumb_down,
-            _ => Icons.question_mark,
+          switch (thumbs) {
+            int x when x >= 70 => Icons.thumb_up,
+            int x when x >= 60 => Icons.thumbs_up_down,
+            _ => Icons.thumb_down,
           },
-          color: switch (tier) {
-            'Masterpiece' => Colors.purple,
-            'Excellent' => Colors.green,
-            'Great' => Colors.green[200],
-            'VeryGood' => Colors.lime,
-            'Ok' => Colors.yellow,
-            'Mixed' => Colors.orange,
-            'Flop' => Colors.red,
-            'NotGood' => Colors.orange,
-            'Bad' => Colors.red,
-            _ => Colors.white70,
+          color: switch (thumbs) {
+            int x when x >= 70 =>
+              popularity >= 5000 ? Colors.green : Colors.green[200],
+            int x when x >= 60 =>
+              popularity >= 5000 ? Colors.orange : Colors.yellow,
+            _ => popularity >= 5000 ? Colors.red : Colors.red[200],
           },
           size: 18.0,
         ),

@@ -6,7 +6,7 @@ import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/pages/home/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
-import 'package:espy/pages/timeline/timeline_carousel.dart' as tm;
+import 'package:espy/pages/timeline/timeline_carousel.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -73,10 +73,10 @@ class HomeContent extends StatelessWidget {
         SliverToBoxAdapter(
           child: Column(
             children: [
-              tm.TimelineCarousel(
+              TimelineCarousel(
                 tileSize: AppConfigModel.isMobile(context)
-                    ? const tm.TileSize(width: 133, height: 190)
-                    : const tm.TileSize(width: 227, height: 320),
+                    ? const TileSize(width: 133, height: 190)
+                    : const TileSize(width: 227, height: 320),
               ),
               const SizedBox(height: 8),
             ],

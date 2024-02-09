@@ -1,4 +1,5 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/timeline.dart' show ReleaseEvent;
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
@@ -8,12 +9,11 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines/timelines.dart';
 
-/// This is an example of a timeline but it is not used atm.
-/// It should be repurposed as a timeline view.
 class TimelineView extends StatelessWidget {
-  const TimelineView({super.key, this.scrollToDate});
+  const TimelineView({super.key, this.scrollToLabel, this.year});
 
-  final String? scrollToDate;
+  final String? scrollToLabel;
+  final String? year;
 
   @override
   Widget build(BuildContext context) {
@@ -21,17 +21,14 @@ class TimelineView extends StatelessWidget {
     final today = DateFormat('d MMM').format(DateTime.now());
     final games = context.read<TimelineModel>().releases;
 
-    return timeline(context, today, games.toList(), isMobile);
+    return timeline(context, today, games, isMobile);
   }
 
-  Widget timeline(BuildContext context, String today, List<ReleaseDay> releases,
-      bool isMobile) {
+  Widget timeline(BuildContext context, String today,
+      List<ReleaseEvent> releases, bool isMobile) {
     int startIndex = 0;
-    final scrollTo = scrollToDate != null
-        ? DateTime.fromMillisecondsSinceEpoch(int.parse(scrollToDate!))
-        : DateTime.now();
     for (final release in releases) {
-      if (release.date.compareTo(scrollTo) <= 0) {
+      if (release.label == scrollToLabel && release.year == year) {
         break;
       }
       ++startIndex;
@@ -44,18 +41,20 @@ class TimelineView extends StatelessWidget {
         itemCount: releases.length,
         connectorBuilder: (context, index, connectionType) =>
             const SolidLineConnector(),
-        indicatorBuilder: (context, index) => SizedBox(
-          width: 64,
-          child: today == DateFormat('d MMM').format(releases[index].date)
-              ? IconButton.filled(
-                  icon: Text(DateFormat('d MMM').format(releases[index].date)),
-                  onPressed: () {},
-                )
-              : IconButton.outlined(
-                  icon: Text(DateFormat('d MMM').format(releases[index].date)),
-                  onPressed: () {},
-                ),
-        ),
+        indicatorBuilder: (context, index) {
+          return SizedBox(
+            width: 64,
+            child: today == releases[index].label
+                ? IconButton.filled(
+                    icon: Text(releases[index].label),
+                    onPressed: () {},
+                  )
+                : IconButton.outlined(
+                    icon: Text(releases[index].label),
+                    onPressed: () {},
+                  ),
+          );
+        },
         itemExtent: tileSize,
         nodePositionBuilder: (context, index) => isMobile ? .2 : 0,
         contentsBuilder: (context, index) {
