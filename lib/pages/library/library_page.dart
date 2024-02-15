@@ -1,7 +1,8 @@
 import 'package:badges/badges.dart' as badges;
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/gametags/game_chips_filter_bar.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
@@ -15,28 +16,27 @@ class LibraryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final appConfig = context.watch<AppConfigModel>();
     final filter = context.watch<LibraryFilterModel>().filter;
-    final libraryView = context.watch<LibraryEntriesModel>().filter(
-          filter,
-          showOutOfLib: appConfig.showOutOfLib.value,
-        );
+    final libraryViewModel = context.watch<LibraryViewModel>();
 
     return Scaffold(
-      appBar: libraryHeader(context, appConfig, libraryView, filter),
-      body: libraryBody(libraryView),
+      appBar:
+          libraryHeader(context, appConfig, libraryViewModel.length, filter),
+      body: libraryBody(appConfig, libraryViewModel),
     );
   }
 
-  CustomScrollView libraryBody(LibraryView libraryView) {
+  CustomScrollView libraryBody(
+      AppConfigModel appConfig, LibraryViewModel libraryViewModel) {
     return CustomScrollView(
       primary: true,
       shrinkWrap: true,
       slivers: [
-        if (!libraryView.hasGroups)
+        if (appConfig.libraryGrouping.value == LibraryGrouping.none)
           LibraryEntriesView(
-            entries: libraryView.all,
+            entries: libraryViewModel.entries,
           )
         else ...[
-          for (final (label, entries) in libraryView.groups)
+          for (final (label, entries) in libraryViewModel.groups)
             TileShelve(
               title: '$label (${entries.length})',
               color: Colors.grey,
@@ -50,13 +50,13 @@ class LibraryPage extends StatelessWidget {
   AppBar libraryHeader(
     BuildContext context,
     AppConfigModel appConfig,
-    LibraryView libraryView,
+    int libraryViewLength,
     LibraryFilter filter,
   ) {
     return AppBar(
       leading: badges.Badge(
         badgeContent: Text(
-          '${libraryView.length}',
+          '$libraryViewLength',
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         badgeStyle: badges.BadgeStyle(

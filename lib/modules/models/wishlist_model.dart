@@ -11,15 +11,26 @@ import 'package:http/http.dart' as http;
 
 class WishlistModel extends ChangeNotifier {
   String _userId = '';
+
+  // The user wishlist.
   Library _wishlist = const Library();
 
-  UnmodifiableListView<LibraryEntry> get wishlist =>
-      UnmodifiableListView(_wishlist.entries.reversed);
+  // User library indexed by game id.
+  HashMap<int, LibraryEntry> _gamesById = HashMap();
+
+  Iterable<LibraryEntry> get entries => _wishlist.entries.reversed;
+  HashMap<int, LibraryEntry> get gamesById => _gamesById;
+
+  void _setWishlist(Library wishlist) {
+    _wishlist = wishlist;
+    _gamesById =
+        HashMap.fromEntries(_wishlist.entries.map((e) => MapEntry(e.id, e)));
+  }
 
   void update(UserData? userData) async {
     if (userData == null) {
       _userId = '';
-      _wishlist = const Library();
+      _setWishlist(const Library());
       return;
     }
 
@@ -28,17 +39,23 @@ class WishlistModel extends ChangeNotifier {
     }
 
     _userId = userData.uid;
-    _loadRecent(_userId);
+    _loadWishlist(_userId);
   }
 
-  bool contains(int gameId) {
-    for (final entry in _wishlist.entries) {
-      if (entry.id == gameId) return true;
+  bool contains(int id) => _gamesById[id] != null;
+
+  LibraryEntry? getEntryById(int id) => _gamesById[id];
+
+  LibraryEntry? getEntryByStringId(String id) {
+    final gameId = int.tryParse(id);
+    if (gameId == null) {
+      return null;
     }
-    return false;
+
+    return getEntryById(gameId);
   }
 
-  Future<void> _loadRecent(String userId) async {
+  Future<void> _loadWishlist(String userId) async {
     FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -50,7 +67,7 @@ class WishlistModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<Library> snapshot) {
-      _wishlist = snapshot.data() ?? const Library();
+      _setWishlist(snapshot.data() ?? const Library());
 
       notifyListeners();
     });

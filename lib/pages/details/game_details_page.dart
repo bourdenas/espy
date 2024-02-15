@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
 import 'package:flutter/foundation.dart';
@@ -9,14 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class GameDetailsPage extends StatelessWidget {
-  const GameDetailsPage({Key? key, required this.id}) : super(key: key);
+  const GameDetailsPage({super.key, required this.id});
 
   final String id;
 
   @override
   Widget build(BuildContext context) {
     final libraryEntry =
-        context.read<LibraryEntriesModel>().getEntryByStringId(id);
+        context.read<UserLibraryModel>().getEntryByStringId(id);
 
     return StreamBuilder(
       stream:

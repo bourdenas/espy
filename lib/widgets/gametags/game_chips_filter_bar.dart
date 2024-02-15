@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
@@ -7,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class GameChipsFilterBar extends StatelessWidget {
-  const GameChipsFilterBar(this.filter, {Key? key}) : super(key: key);
+  const GameChipsFilterBar(this.filter, {super.key});
 
   final LibraryFilter filter;
 

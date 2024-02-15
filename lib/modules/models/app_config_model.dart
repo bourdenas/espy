@@ -1,4 +1,3 @@
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -117,6 +116,27 @@ enum Stacks {
   collections,
   developers,
   genres,
+}
+
+enum LibraryClass {
+  all,
+  inLibrary,
+  wishlist,
+  untagged,
+}
+
+enum LibraryOrdering {
+  release,
+  rating,
+  title,
+}
+
+enum LibraryGrouping {
+  none,
+  year,
+  genre,
+  genreTag,
+  rating,
 }
 
 class EnumOption<EnumType> {

@@ -1,4 +1,4 @@
-import 'package:espy/modules/models/library_entries_model.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/edit/edit_entry_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +11,7 @@ class EditEntryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final libraryEntry =
-        context.read<LibraryEntriesModel>().getEntryByStringId(id);
+        context.read<UserLibraryModel>().getEntryByStringId(id);
 
     return Scaffold(
         appBar: AppBar(),

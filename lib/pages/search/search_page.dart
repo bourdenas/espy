@@ -1,9 +1,8 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
@@ -12,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({Key? key}) : super(key: key);
+  const SearchPage({super.key});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -22,13 +21,11 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final ngrams = _text.toLowerCase().split(' ');
-    final gameEntriesModel = context.watch<LibraryEntriesModel>();
+    final libraryModel = context.watch<UserLibraryModel>();
     final tagsModel = context.watch<GameTagsModel>();
 
     final titleMatches = _text.isNotEmpty
-        ? gameEntriesModel
-            .filter(LibraryFilter(view: LibraryClass.all))
-            .all
+        ? libraryModel.entries
             .where((entry) => ngrams.every((term) => entry.name
                 .toLowerCase()
                 .split(' ')
@@ -54,50 +51,57 @@ class _SearchPageState extends State<SearchPage> {
         for (final company in tagsModel.developers.filterExact(ngrams)) ...[
           TileShelve(
             title: company,
-            color: DeveloperChip.color,
+            entries: tagsModel.developers.games(company),
             filter: LibraryFilter(developers: {company}),
+            color: DeveloperChip.color,
           ),
         ],
         for (final company in tagsModel.publishers.filterExact(ngrams)) ...[
           TileShelve(
             title: company,
-            color: PublisherChip.color,
+            entries: tagsModel.publishers.games(company),
             filter: LibraryFilter(publishers: {company}),
+            color: PublisherChip.color,
           ),
         ],
         for (final collection in tagsModel.collections.filterExact(ngrams)) ...[
           TileShelve(
             title: collection,
-            color: CollectionChip.color,
+            entries: tagsModel.collections.games(collection),
             filter: LibraryFilter(collections: {collection}),
+            color: CollectionChip.color,
           ),
         ],
         for (final franchise in tagsModel.franchises.filterExact(ngrams)) ...[
           TileShelve(
             title: franchise,
-            color: FranchiseChip.color,
+            entries: tagsModel.franchises.games(franchise),
             filter: LibraryFilter(franchises: {franchise}),
+            color: FranchiseChip.color,
           ),
         ],
         for (final genre in tagsModel.genres.filterExact(ngrams)) ...[
           TileShelve(
             title: genre,
-            color: GenreChip.color,
+            entries: tagsModel.genres.games(genre),
             filter: LibraryFilter(genres: {genre}),
+            color: GenreChip.color,
           ),
         ],
         for (final genreTag in tagsModel.genreTags.filterExact(ngrams)) ...[
           TileShelve(
             title: genreTag.name,
-            color: GenreTagChip.color,
+            entries: tagsModel.genreTags.games(genreTag.name),
             filter: LibraryFilter(genreTags: {genreTag.encode()}),
+            color: GenreTagChip.color,
           ),
         ],
         for (final tag in tagsModel.userTags.filterExact(ngrams)) ...[
           TileShelve(
             title: tag.name,
-            color: Colors.blueGrey,
+            entries: tagsModel.genreTags.games(tag.name),
             filter: LibraryFilter(tags: {tag.name}),
+            color: Colors.blueGrey,
           ),
         ],
         if (titleMatches.isNotEmpty)
@@ -147,7 +151,7 @@ class _SearchPageState extends State<SearchPage> {
                 _remoteGames = remoteGames
                     .where((gameEntry) =>
                         context
-                            .read<LibraryEntriesModel>()
+                            .read<UserLibraryModel>()
                             .getEntryById(gameEntry.id) ==
                         null)
                     .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))

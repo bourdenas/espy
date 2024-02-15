@@ -3,7 +3,6 @@ import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/widgets/scaffold/espy_drawer.dart';
 import 'package:espy/widgets/scaffold/espy_rail.dart';
@@ -14,10 +13,10 @@ import 'package:provider/provider.dart';
 
 class EspyScaffold extends StatelessWidget {
   const EspyScaffold({
-    Key? key,
+    super.key,
     required this.path,
     required this.body,
-  }) : super(key: key);
+  });
 
   final String path;
   final Widget body;

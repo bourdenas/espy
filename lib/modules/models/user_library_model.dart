@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,15 +14,41 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Model that handles interactions with remote library data store.
 class UserLibraryModel extends ChangeNotifier {
-  Library _library = const Library();
   String userId = '';
 
-  List<LibraryEntry> get entries => _library.entries;
+  // The user library.
+  Library _library = const Library();
+
+  // User library indexed by game id.
+  HashMap<int, LibraryEntry> _gamesById = HashMap();
+
+  bool get isNotEmpty => _library.entries.isNotEmpty;
+  Iterable<LibraryEntry> get entries => _library.entries;
+  HashMap<int, LibraryEntry> get gamesById => _gamesById;
+
+  void _setLibrary(Library library) {
+    _library = library;
+    _gamesById =
+        HashMap.fromEntries(_library.entries.map((e) => MapEntry(e.id, e)));
+  }
+
+  bool contains(int id) => _gamesById[id] != null;
+
+  LibraryEntry? getEntryById(int id) => _gamesById[id];
+
+  LibraryEntry? getEntryByStringId(String id) {
+    final gameId = int.tryParse(id);
+    if (gameId == null) {
+      return null;
+    }
+
+    return getEntryById(gameId);
+  }
 
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
-      _library = const Library();
+      _setLibrary(const Library());
       notifyListeners();
       return;
     }
@@ -40,8 +67,8 @@ class UserLibraryModel extends ChangeNotifier {
     final encodedLibrary = prefs.getString('${userId}_library');
     if (encodedLibrary != null) {
       try {
-        _library = Library.fromJson(
-            jsonDecode(encodedLibrary) as Map<String, dynamic>);
+        _setLibrary(Library.fromJson(
+            jsonDecode(encodedLibrary) as Map<String, dynamic>));
         notifyListeners();
       } catch (_) {}
     }
@@ -66,7 +93,7 @@ class UserLibraryModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<Library> snapshot) {
-      _library = snapshot.data() ?? const Library();
+      _setLibrary(snapshot.data() ?? const Library());
       notifyListeners();
       _saveLocally();
     });

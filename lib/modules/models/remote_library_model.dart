@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 /// Model that handles LibraryEntries that are outside user's library.

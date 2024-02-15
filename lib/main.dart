@@ -3,8 +3,8 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
@@ -63,6 +63,9 @@ ChangeNotifierProvider<TimelineModel> frontpageProvider() =>
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
 
+ChangeNotifierProvider<LibraryFilterModel> libraryFilterProvider() =>
+    ChangeNotifierProvider(create: (_) => LibraryFilterModel());
+
 ChangeNotifierProxyProvider<UserModel, UserLibraryModel> userLibraryProvider() {
   return ChangeNotifierProxyProvider<UserModel, UserLibraryModel>(
     create: (_) => UserLibraryModel(),
@@ -113,8 +116,8 @@ ChangeNotifierProxyProvider2<UserLibraryModel, WishlistModel, GameTagsModel>
       return gameTagsModel!
         ..update(
           libraryModel.userId,
-          libraryModel.entries,
-          wishlistModel.wishlist,
+          libraryModel,
+          wishlistModel,
         );
     },
   );
@@ -133,15 +136,6 @@ ChangeNotifierProxyProvider<UserModel, UserDataModel> userDataProvider() {
   );
 }
 
-ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>
-    libraryFilterProvider() {
-  return ChangeNotifierProxyProvider<AppConfigModel, LibraryFilterModel>(
-    create: (_) => LibraryFilterModel(),
-    update: (_, appConfig, libraryFilterModel) =>
-        libraryFilterModel!..update(appConfig),
-  );
-}
-
 ChangeNotifierProxyProvider2<AppConfigModel, LibraryFilterModel,
     RemoteLibraryModel> remoteLibraryProvider() {
   return ChangeNotifierProxyProvider2<AppConfigModel, LibraryFilterModel,
@@ -157,53 +151,67 @@ ChangeNotifierProxyProvider2<AppConfigModel, LibraryFilterModel,
   );
 }
 
-ChangeNotifierProxyProvider5<
+ChangeNotifierProxyProvider6<
     AppConfigModel,
+    GameTagsModel,
     UserLibraryModel,
     WishlistModel,
-    GameTagsModel,
     RemoteLibraryModel,
-    LibraryEntriesModel> libraryEntriesProvider() {
-  return ChangeNotifierProxyProvider5<AppConfigModel, UserLibraryModel,
-      WishlistModel, GameTagsModel, RemoteLibraryModel, LibraryEntriesModel>(
-    create: (_) => LibraryEntriesModel(),
+    LibraryFilterModel,
+    LibraryViewModel> libraryEntriesProvider() {
+  return ChangeNotifierProxyProvider6<
+      AppConfigModel,
+      GameTagsModel,
+      UserLibraryModel,
+      WishlistModel,
+      RemoteLibraryModel,
+      LibraryFilterModel,
+      LibraryViewModel>(
+    create: (_) => LibraryViewModel(),
     update: (
       _,
       appConfigModel,
+      gameTagsModel,
       userLibraryModel,
       wishlistModel,
-      gameTagsModel,
       remoteLibraryModel,
-      libraryEntriesModel,
+      libraryFilterModel,
+      libraryViewModel,
     ) {
-      return libraryEntriesModel!
-        ..update(appConfigModel, userLibraryModel, wishlistModel, gameTagsModel,
-            remoteLibraryModel);
+      return libraryViewModel!
+        ..update(
+          appConfigModel,
+          gameTagsModel,
+          userLibraryModel,
+          wishlistModel,
+          remoteLibraryModel,
+          libraryFilterModel,
+        );
     },
   );
 }
 
-ChangeNotifierProxyProvider5<TimelineModel, LibraryEntriesModel, WishlistModel,
-    GameTagsModel, AppConfigModel, HomeSlatesModel> homeSlatesProvider() {
-  return ChangeNotifierProxyProvider5<TimelineModel, LibraryEntriesModel,
-      WishlistModel, GameTagsModel, AppConfigModel, HomeSlatesModel>(
+ChangeNotifierProxyProvider5<AppConfigModel, TimelineModel, UserLibraryModel,
+    WishlistModel, GameTagsModel, HomeSlatesModel> homeSlatesProvider() {
+  return ChangeNotifierProxyProvider5<AppConfigModel, TimelineModel,
+      UserLibraryModel, WishlistModel, GameTagsModel, HomeSlatesModel>(
     create: (_) => HomeSlatesModel(),
     update: (
       _,
-      frontpageModel,
-      gameEntriesModel,
+      appConfigModel,
+      timelineModel,
+      libraryModel,
       wishlistModel,
       gameTagsModel,
-      appConfigModel,
       homeSlatesModel,
     ) {
       return homeSlatesModel!
         ..update(
-          frontpageModel,
-          gameEntriesModel,
+          appConfigModel,
+          timelineModel,
+          libraryModel,
           wishlistModel,
           gameTagsModel,
-          appConfigModel,
         );
     },
   );

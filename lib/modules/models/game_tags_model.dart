@@ -4,6 +4,8 @@ import 'package:espy/modules/documents/user_tags.dart';
 import 'package:espy/modules/models/tags/genre_tag_manager.dart';
 import 'package:espy/modules/models/tags/label_manager.dart';
 import 'package:espy/modules/models/tags/user_tag_manager.dart';
+import 'package:espy/modules/models/user_library_model.dart';
+import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:flutter/material.dart' show ChangeNotifier;
 
 /// Index of tags extracted from user's library.
@@ -12,14 +14,14 @@ import 'package:flutter/material.dart' show ChangeNotifier;
 class GameTagsModel extends ChangeNotifier {
   String _userId = '';
 
-  LabelManager _storesManager = LabelManager([]);
-  LabelManager _developersManager = LabelManager([]);
-  LabelManager _publishersManager = LabelManager([]);
-  LabelManager _collectionsManager = LabelManager([]);
-  LabelManager _franchisesManager = LabelManager([]);
-  LabelManager _genresManager = LabelManager([]);
-  GenreTagManager _genreTagsManager = GenreTagManager('', UserTags());
-  UserTagManager _userTagsManager = UserTagManager('', UserTags());
+  late LabelManager _storesManager;
+  late LabelManager _developersManager;
+  late LabelManager _publishersManager;
+  late LabelManager _collectionsManager;
+  late LabelManager _franchisesManager;
+  late LabelManager _genresManager;
+  late GenreTagManager _genreTagsManager;
+  late UserTagManager _userTagsManager;
 
   LabelManager get stores => _storesManager;
   LabelManager get developers => _developersManager;
@@ -38,23 +40,52 @@ class GameTagsModel extends ChangeNotifier {
       .toSet();
   List<String>? espyGenreTags(String genre) => _genreTags[genre];
 
+  late UserLibraryModel _libraryModel;
+  late WishlistModel _wishlistModel;
+
+  LibraryEntry? getEntryById(int id) =>
+      _libraryModel.getEntryById(id) ?? _wishlistModel.getEntryById(id);
+
   void update(
     String userId,
-    List<LibraryEntry> entries,
-    List<LibraryEntry> wishlist,
+    UserLibraryModel libraryModel,
+    WishlistModel wishlistModel,
   ) async {
-    final allEntries = entries;
-    _storesManager = LabelManager(allEntries,
-        (entry) => entry.storeEntries.map((store) => store.storefront));
-    _developersManager =
-        LabelManager(allEntries, (entry) => entry.digest.developers);
-    _publishersManager =
-        LabelManager(allEntries, (entry) => entry.digest.publishers);
-    _collectionsManager =
-        LabelManager(allEntries, (entry) => entry.digest.collections);
-    _franchisesManager =
-        LabelManager(allEntries, (entry) => entry.digest.franchises);
-    _genresManager = LabelManager(allEntries, (entry) => entry.digest.genres);
+    _libraryModel = libraryModel;
+    _wishlistModel = wishlistModel;
+
+    final allEntries =
+        [libraryModel.entries, wishlistModel.entries].expand((e) => e);
+    _storesManager = LabelManager(
+      allEntries,
+      (entry) => entry.storeEntries.map((store) => store.storefront),
+      getEntryById,
+    );
+    _developersManager = LabelManager(
+      allEntries,
+      (entry) => entry.digest.developers,
+      getEntryById,
+    );
+    _publishersManager = LabelManager(
+      allEntries,
+      (entry) => entry.digest.publishers,
+      getEntryById,
+    );
+    _collectionsManager = LabelManager(
+      allEntries,
+      (entry) => entry.digest.collections,
+      getEntryById,
+    );
+    _franchisesManager = LabelManager(
+      allEntries,
+      (entry) => entry.digest.franchises,
+      getEntryById,
+    );
+    _genresManager = LabelManager(
+      allEntries,
+      (entry) => entry.digest.genres,
+      getEntryById,
+    );
 
     if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;
@@ -75,8 +106,10 @@ class GameTagsModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<UserTags> snapshot) {
       final userTags = snapshot.data() ?? UserTags();
-      _genreTagsManager = GenreTagManager(_userId, userTags)..build();
-      _userTagsManager = UserTagManager(_userId, userTags)..build();
+      _genreTagsManager = GenreTagManager(_userId, userTags, getEntryById)
+        ..build();
+      _userTagsManager = UserTagManager(_userId, userTags, getEntryById)
+        ..build();
       notifyListeners();
     });
   }

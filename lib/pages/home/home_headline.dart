@@ -2,20 +2,17 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/models/library_entries_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class HomeHeadline extends StatelessWidget {
-  const HomeHeadline({Key? key}) : super(key: key);
+  const HomeHeadline({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final entries = context
-        .watch<LibraryEntriesModel>()
-        .filter(LibraryFilter(view: LibraryClass.wishlist));
+    final entries = context.watch<WishlistModel>().entries;
 
     return FadeIn(
       duration: const Duration(milliseconds: 500),
@@ -27,7 +24,7 @@ class HomeHeadline extends StatelessWidget {
           onPageChanged: (index, reason) {},
         ),
         items: [
-          for (final entry in entries.all.take(8))
+          for (final entry in entries.take(16))
             GestureDetector(
               onTap: () => context
                   .pushNamed('details', pathParameters: {'gid': '${entry.id}'}),
