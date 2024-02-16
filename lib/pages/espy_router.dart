@@ -26,7 +26,7 @@ import 'package:provider/provider.dart';
 class EspyRouter extends StatelessWidget {
   final _router = GoRouter(
     observers: [
-      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance)
+      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
     ],
     routes: [
       GoRoute(

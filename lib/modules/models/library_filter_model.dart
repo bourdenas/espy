@@ -17,4 +17,9 @@ class LibraryFilterModel extends ChangeNotifier {
     _filterStack.add(filter);
     notifyListeners();
   }
+
+  void pop() {
+    _filterStack.removeLast();
+    notifyListeners();
+  }
 }
