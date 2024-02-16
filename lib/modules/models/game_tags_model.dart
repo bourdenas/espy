@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/tags/genre_tag_manager.dart';
 import 'package:espy/modules/models/tags/label_manager.dart';
 import 'package:espy/modules/models/tags/user_tag_manager.dart';
-import 'package:espy/modules/models/user_library_model.dart';
-import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:flutter/material.dart' show ChangeNotifier;
 
 /// Index of tags extracted from user's library.
@@ -40,50 +39,42 @@ class GameTagsModel extends ChangeNotifier {
       .toSet();
   List<String>? espyGenreTags(String genre) => _genreTags[genre];
 
-  late UserLibraryModel _libraryModel;
-  late WishlistModel _wishlistModel;
-
-  LibraryEntry? getEntryById(int id) =>
-      _libraryModel.getEntryById(id) ?? _wishlistModel.getEntryById(id);
-
   void update(
     String userId,
-    UserLibraryModel libraryModel,
-    WishlistModel wishlistModel,
+    LibraryIndexModel indexModel,
   ) async {
-    _libraryModel = libraryModel;
-    _wishlistModel = wishlistModel;
+    _indexModel = indexModel;
 
-    final entries = libraryModel.entries;
+    final entries = indexModel.entries;
     _storesManager = LabelManager(
       entries,
       (entry) => entry.storeEntries.map((store) => store.storefront),
-      getEntryById,
+      _getEntryById,
     );
     _developersManager = LabelManager(
       entries,
       (entry) => entry.digest.developers,
-      getEntryById,
+      _getEntryById,
     );
     _publishersManager = LabelManager(
       entries,
       (entry) => entry.digest.publishers,
-      getEntryById,
+      _getEntryById,
     );
     _collectionsManager = LabelManager(
       entries,
       (entry) => entry.digest.collections,
-      getEntryById,
+      _getEntryById,
     );
     _franchisesManager = LabelManager(
       entries,
       (entry) => entry.digest.franchises,
-      getEntryById,
+      _getEntryById,
     );
     _genresManager = LabelManager(
       entries,
       (entry) => entry.digest.genres,
-      getEntryById,
+      _getEntryById,
     );
 
     if (userId.isNotEmpty && _userId != userId) {
@@ -105,13 +96,16 @@ class GameTagsModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<UserTags> snapshot) {
       final userTags = snapshot.data() ?? UserTags();
-      _genreTagsManager = GenreTagManager(_userId, userTags, getEntryById)
+      _genreTagsManager = GenreTagManager(_userId, userTags, _getEntryById)
         ..build();
-      _userTagsManager = UserTagManager(_userId, userTags, getEntryById)
+      _userTagsManager = UserTagManager(_userId, userTags, _getEntryById)
         ..build();
       notifyListeners();
     });
   }
+
+  late LibraryIndexModel _indexModel;
+  LibraryEntry? _getEntryById(int id) => _indexModel.getEntryById(id);
 }
 
 const _genres = [

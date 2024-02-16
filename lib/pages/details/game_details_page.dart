@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
 import 'package:flutter/foundation.dart';
@@ -15,7 +16,7 @@ class GameDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final libraryEntry =
-        context.read<UserLibraryModel>().getEntryByStringId(id);
+        context.read<LibraryIndexModel>().getEntryByStringId(id);
 
     return StreamBuilder(
       stream:

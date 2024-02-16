@@ -6,6 +6,7 @@ import 'package:espy/modules/documents/igdb_game.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/expandable_fab.dart';
@@ -60,7 +61,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
     final isMobile = AppConfigModel.isMobile(context);
     final appConfig = context.watch<AppConfigModel>();
     final inLibrary = widget.libraryEntry.storeEntries.isNotEmpty ||
-        context.read<UserLibraryModel>().contains(widget.libraryEntry.id);
+        context.read<LibraryIndexModel>().contains(widget.libraryEntry.id);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),

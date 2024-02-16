@@ -4,6 +4,7 @@ import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/remote_library_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
@@ -41,6 +42,7 @@ Future<void> main() async {
       frontpageProvider(),
       userProvider(),
       userLibraryProvider(),
+      libraryIndexProvider(),
       failedMatchesProvider(),
       wishlistProvider(),
       gameTagsProvider(),
@@ -78,6 +80,19 @@ ChangeNotifierProxyProvider<UserModel, UserLibraryModel> userLibraryProvider() {
   );
 }
 
+ChangeNotifierProxyProvider<UserLibraryModel, LibraryIndexModel>
+    libraryIndexProvider() {
+  return ChangeNotifierProxyProvider<UserLibraryModel, LibraryIndexModel>(
+    create: (_) => LibraryIndexModel(),
+    update: (
+      _,
+      libraryModel,
+      libraryIndexModel,
+    ) =>
+        libraryIndexModel!..update(libraryModel.all),
+  );
+}
+
 ChangeNotifierProxyProvider<UserModel, FailedModel> failedMatchesProvider() {
   return ChangeNotifierProxyProvider<UserModel, FailedModel>(
     create: (_) => FailedModel(),
@@ -102,22 +117,21 @@ ChangeNotifierProxyProvider<UserModel, WishlistModel> wishlistProvider() {
   );
 }
 
-ChangeNotifierProxyProvider2<UserLibraryModel, WishlistModel, GameTagsModel>
+ChangeNotifierProxyProvider2<UserModel, LibraryIndexModel, GameTagsModel>
     gameTagsProvider() {
-  return ChangeNotifierProxyProvider2<UserLibraryModel, WishlistModel,
+  return ChangeNotifierProxyProvider2<UserModel, LibraryIndexModel,
       GameTagsModel>(
     create: (_) => GameTagsModel(),
     update: (
       _,
-      libraryModel,
-      wishlistModel,
+      userModel,
+      libraryIndexModel,
       gameTagsModel,
     ) {
       return gameTagsModel!
         ..update(
-          libraryModel.userId,
-          libraryModel,
-          wishlistModel,
+          userModel.userId,
+          libraryIndexModel,
         );
     },
   );
@@ -136,9 +150,9 @@ ChangeNotifierProxyProvider<UserModel, UserDataModel> userDataProvider() {
   );
 }
 
-ChangeNotifierProxyProvider3<AppConfigModel, UserLibraryModel,
+ChangeNotifierProxyProvider3<AppConfigModel, LibraryIndexModel,
     LibraryFilterModel, RemoteLibraryModel> remoteLibraryProvider() {
-  return ChangeNotifierProxyProvider3<AppConfigModel, UserLibraryModel,
+  return ChangeNotifierProxyProvider3<AppConfigModel, LibraryIndexModel,
       LibraryFilterModel, RemoteLibraryModel>(
     create: (_) => RemoteLibraryModel(),
     update: (
@@ -153,19 +167,17 @@ ChangeNotifierProxyProvider3<AppConfigModel, UserLibraryModel,
   );
 }
 
-ChangeNotifierProxyProvider6<
+ChangeNotifierProxyProvider5<
     AppConfigModel,
     GameTagsModel,
-    UserLibraryModel,
-    WishlistModel,
+    LibraryIndexModel,
     RemoteLibraryModel,
     LibraryFilterModel,
     LibraryViewModel> libraryEntriesProvider() {
-  return ChangeNotifierProxyProvider6<
+  return ChangeNotifierProxyProvider5<
       AppConfigModel,
       GameTagsModel,
-      UserLibraryModel,
-      WishlistModel,
+      LibraryIndexModel,
       RemoteLibraryModel,
       LibraryFilterModel,
       LibraryViewModel>(
@@ -174,8 +186,7 @@ ChangeNotifierProxyProvider6<
       _,
       appConfigModel,
       gameTagsModel,
-      userLibraryModel,
-      wishlistModel,
+      libraryIndexModel,
       remoteLibraryModel,
       libraryFilterModel,
       libraryViewModel,
@@ -184,8 +195,7 @@ ChangeNotifierProxyProvider6<
         ..update(
           appConfigModel,
           gameTagsModel,
-          userLibraryModel,
-          wishlistModel,
+          libraryIndexModel,
           remoteLibraryModel,
           libraryFilterModel,
         );

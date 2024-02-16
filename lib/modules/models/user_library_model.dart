@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,37 +18,15 @@ class UserLibraryModel extends ChangeNotifier {
   // The user library.
   Library _library = const Library();
 
-  // User library indexed by game id.
-  HashMap<int, LibraryEntry> _gamesById = HashMap();
-
   bool get isNotEmpty => _library.entries.isNotEmpty;
+  Iterable<LibraryEntry> get all => _library.entries;
   Iterable<LibraryEntry> get entries =>
       _library.entries.where((e) => e.isStandaloneGame || e.isExpansion);
-  HashMap<int, LibraryEntry> get gamesById => _gamesById;
-
-  void _setLibrary(Library library) {
-    _library = library;
-    _gamesById =
-        HashMap.fromEntries(_library.entries.map((e) => MapEntry(e.id, e)));
-  }
-
-  bool contains(int id) => _gamesById[id] != null;
-
-  LibraryEntry? getEntryById(int id) => _gamesById[id];
-
-  LibraryEntry? getEntryByStringId(String id) {
-    final gameId = int.tryParse(id);
-    if (gameId == null) {
-      return null;
-    }
-
-    return getEntryById(gameId);
-  }
 
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
-      _setLibrary(const Library());
+      _library = const Library();
       notifyListeners();
       return;
     }
@@ -68,8 +45,8 @@ class UserLibraryModel extends ChangeNotifier {
     final encodedLibrary = prefs.getString('${userId}_library');
     if (encodedLibrary != null) {
       try {
-        _setLibrary(Library.fromJson(
-            jsonDecode(encodedLibrary) as Map<String, dynamic>));
+        _library = Library.fromJson(
+            jsonDecode(encodedLibrary) as Map<String, dynamic>);
         notifyListeners();
       } catch (_) {}
     }
@@ -94,7 +71,7 @@ class UserLibraryModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<Library> snapshot) {
-      _setLibrary(snapshot.data() ?? const Library());
+      _library = snapshot.data() ?? const Library();
       notifyListeners();
       _saveLocally();
     });

@@ -4,7 +4,7 @@ import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/user_library_model.dart';
+import 'package:espy/modules/models/library_index_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 /// Model that handles LibraryEntries that are outside user's library.
@@ -18,7 +18,7 @@ class RemoteLibraryModel extends ChangeNotifier {
 
   Future<void> update(
     AppConfigModel appConfig,
-    UserLibraryModel libraryModel,
+    LibraryIndexModel libraryIndexModel,
     LibraryFilter filter,
   ) async {
     _libraryEntries.clear();
@@ -59,7 +59,7 @@ class RemoteLibraryModel extends ChangeNotifier {
       final intersection = idSets.reduce((a, b) => a.intersection(b));
       _libraryEntries.addAll(fetchedEntries.first
           .where((e) => intersection.contains(e.id))
-          .where((e) => libraryModel.getEntryById(e.id) == null)
+          .where((e) => libraryIndexModel.getEntryById(e.id) == null)
           .toList());
     }
 

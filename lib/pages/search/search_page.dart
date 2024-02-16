@@ -1,6 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/pages/search/search_results.dart';
@@ -151,7 +152,7 @@ class _SearchPageState extends State<SearchPage> {
                 _remoteGames = remoteGames
                     .where((gameEntry) =>
                         context
-                            .read<UserLibraryModel>()
+                            .read<LibraryIndexModel>()
                             .getEntryById(gameEntry.id) ==
                         null)
                     .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))
