@@ -154,7 +154,6 @@ class _ReleaseStackState extends State<ReleaseStack>
             child: CachedNetworkImage(
               fit: BoxFit.cover,
               imageUrl: '${Urls.imageProvider}/t_cover_big/${game.cover}.jpg',
-              // placeholder: (context, url) => const CircularProgressIndicator(),
               errorWidget: (context, url, error) =>
                   const Center(child: Icon(Icons.error_outline)),
             ),
