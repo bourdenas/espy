@@ -23,7 +23,8 @@ class UserLibraryModel extends ChangeNotifier {
   HashMap<int, LibraryEntry> _gamesById = HashMap();
 
   bool get isNotEmpty => _library.entries.isNotEmpty;
-  Iterable<LibraryEntry> get entries => _library.entries;
+  Iterable<LibraryEntry> get entries =>
+      _library.entries.where((e) => e.isStandaloneGame || e.isExpansion);
   HashMap<int, LibraryEntry> get gamesById => _gamesById;
 
   void _setLibrary(Library library) {
