@@ -32,10 +32,10 @@ List<MenuItem> espyMenuItems = [
     onTap: (context) => context.goNamed('home'),
   ),
   MenuItem(
-    label: 'Timeline',
-    icon: Icons.timeline_outlined,
-    selectedIcon: Icons.timeline,
-    onTap: (context) => context.goNamed('timeline'),
+    label: 'Library',
+    icon: Icons.games_outlined,
+    selectedIcon: Icons.games,
+    onTap: (context) => setLibraryView(context, LibraryFilter()),
   ),
   MenuItem(
     label: 'Browse',
@@ -44,10 +44,10 @@ List<MenuItem> espyMenuItems = [
     onTap: (context) => context.goNamed('browse'),
   ),
   MenuItem(
-    label: 'Library',
-    icon: Icons.games_outlined,
-    selectedIcon: Icons.games,
-    onTap: (context) => setLibraryView(context, LibraryFilter()),
+    label: 'Timeline',
+    icon: Icons.timeline_outlined,
+    selectedIcon: Icons.timeline,
+    onTap: (context) => context.goNamed('timeline'),
   ),
   MenuItem(
     label: 'Failed',
