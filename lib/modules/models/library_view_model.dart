@@ -19,8 +19,10 @@ class LibraryViewModel extends ChangeNotifier {
 
   int get length => _view.length;
   Iterable<LibraryEntry> get entries => _view.entries;
-  List<(String, List<LibraryEntry>)> get groups =>
-      _view.group(_appConfigModel.libraryGrouping.value);
+  List<(String, List<LibraryEntry>)> get groups => _view.group(
+        _appConfigModel.libraryGrouping.value,
+        _gameTagsModel.genreTags.byGameId,
+      );
 
   void update(
     AppConfigModel appConfigModel,

@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/user_tags.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 
 class LibraryView {
@@ -29,7 +30,10 @@ class LibraryView {
     }
   }
 
-  List<(String, List<LibraryEntry>)> group(LibraryGrouping grouping) {
+  List<(String, List<LibraryEntry>)> group(
+    LibraryGrouping grouping,
+    Iterable<Genre> Function(int) genreTagsIndex,
+  ) {
     switch (grouping) {
       case LibraryGrouping.none:
         return [('', _libraryEntries)];
@@ -49,8 +53,7 @@ class LibraryView {
       case LibraryGrouping.genreTag:
         return _groupBy(
           _libraryEntries,
-          // TODO: Fix user genre tag grouping.
-          (e) => e.digest.genres,
+          (e) => genreTagsIndex(e.id).map((e) => e.name),
         );
       case LibraryGrouping.rating:
         return _groupBy(
