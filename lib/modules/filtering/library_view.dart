@@ -1,8 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 
-/// NOTE: THIS MIGHT NEED TO BE PART OF THE LibraryViewModel instead.
-/// Represents a view of the library after a LibraryFilter is applied.
 class LibraryView {
   LibraryView(this._libraryEntries);
 
@@ -43,7 +41,7 @@ class LibraryView {
       case LibraryGrouping.genre:
         return _groupBy(
           _libraryEntries,
-          (e) => e.digest.genres,
+          (e) => e.digest.genres.toSet(),
         );
       case LibraryGrouping.genreTag:
         return _groupBy(
