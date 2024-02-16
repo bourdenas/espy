@@ -3,6 +3,7 @@ import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/browse/browse_page.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
@@ -72,6 +73,20 @@ class EspyRouter extends StatelessWidget {
           name: 'games',
           child: EspyScaffold(
             body: const LibraryPage(),
+            path: state.path!,
+          ),
+        ),
+      ),
+      GoRoute(
+        name: 'wishlist',
+        path: '/wishlist',
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          name: 'games',
+          child: EspyScaffold(
+            body: LibraryPage(
+              entries: context.watch<WishlistModel>().entries,
+            ),
             path: state.path!,
           ),
         ),

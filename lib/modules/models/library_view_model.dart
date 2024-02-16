@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/filtering/library_view.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
@@ -22,8 +23,23 @@ class LibraryViewModel extends ChangeNotifier {
         _gameTagsModel.genreTags.byGameId,
       );
 
-  void updateCustomView(List<LibraryEntry> entries) {
-    notifyListeners();
+  LibraryViewModel();
+
+  LibraryViewModel.custom(
+    AppConfigModel appConfigModel,
+    Iterable<LibraryEntry> entries,
+    LibraryFilter filter,
+  ) {
+    _appConfigModel = appConfigModel;
+    _libraryIndexModel = LibraryIndexModel()..update(entries);
+    _gameTagsModel = GameTagsModel()..update('', _libraryIndexModel);
+
+    _view = filter.isNotEmpty
+        ? filter.apply(_gameTagsModel, _getEntryById)
+        : LibraryView(entries.toList());
+    if (!_appConfigModel.showExpansions.value) {
+      _view.removeExpansions();
+    }
   }
 
   void update(

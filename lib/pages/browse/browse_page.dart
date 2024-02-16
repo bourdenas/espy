@@ -1,7 +1,6 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/pages/home/home_headline.dart';
 import 'package:espy/widgets/tiles/tile_stack.dart';
 import 'package:flutter/material.dart';
@@ -60,7 +59,7 @@ class BrowsePage extends StatelessWidget {
                   title: stack.title,
                   tileImages: stack.entries.map((libraryEntry) =>
                       '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg'),
-                  onExpand: () => updateLibraryView(context, stack.filter),
+                  onExpand: () => stack.onTap(context),
                 ),
             ],
           ),

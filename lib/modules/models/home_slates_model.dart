@@ -5,7 +5,9 @@ import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
-import 'package:flutter/foundation.dart' show ChangeNotifier;
+import 'package:espy/pages/espy_navigator.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeSlatesModel extends ChangeNotifier {
   List<SlateInfo> _slates = [];
@@ -22,8 +24,10 @@ class HomeSlatesModel extends ChangeNotifier {
     GameTagsModel tagsModel,
   ) {
     _slates = [
-      SlateInfo('Library', libraryModel.entries.take(16), LibraryFilter()),
-      SlateInfo('Wishlist', wishlistModel.entries.take(16), LibraryFilter()),
+      SlateInfo('Library', libraryModel.entries.take(16),
+          (context) => setLibraryView(context, LibraryFilter())),
+      SlateInfo('Wishlist', wishlistModel.entries.take(16),
+          (context) => context.goNamed('wishlist')),
     ];
 
     _stacks = [
@@ -32,21 +36,24 @@ class HomeSlatesModel extends ChangeNotifier {
           SlateInfo(
             collection,
             tagsModel.collections.games(collection),
-            LibraryFilter(collections: {collection}),
+            (context) => setLibraryView(
+                context, LibraryFilter(collections: {collection})),
           ),
       if (appConfigModel.stacks.value == Stacks.developers)
         for (final developer in tagsModel.developers.all)
           SlateInfo(
             developer,
             tagsModel.developers.games(developer),
-            LibraryFilter(developers: {developer}),
+            (context) =>
+                setLibraryView(context, LibraryFilter(developers: {developer})),
           ),
       if (appConfigModel.stacks.value == Stacks.genres)
         for (final genre in tagsModel.genreTags.all)
           SlateInfo(
             genre.name,
             tagsModel.genreTags.games(genre.name),
-            LibraryFilter(genreTags: {genre.encode()}),
+            (context) => setLibraryView(
+                context, LibraryFilter(genreTags: {genre.encode()})),
           ),
     ];
 
@@ -58,10 +65,10 @@ class SlateInfo {
   SlateInfo(
     this.title,
     this.entries,
-    this.filter,
+    this.onTap,
   );
 
   String title;
   Iterable<LibraryEntry> entries = [];
-  LibraryFilter filter;
+  void Function(BuildContext) onTap;
 }

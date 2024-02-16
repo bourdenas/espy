@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,22 +14,14 @@ class WishlistModel extends ChangeNotifier {
   // The user wishlist.
   Library _wishlist = const Library();
 
-  // User library indexed by game id.
-  HashMap<int, LibraryEntry> _gamesById = HashMap();
+  Iterable<LibraryEntry> get entries => _wishlist.entries;
 
-  Iterable<LibraryEntry> get entries => _wishlist.entries.reversed;
-  HashMap<int, LibraryEntry> get gamesById => _gamesById;
-
-  void _setWishlist(Library wishlist) {
-    _wishlist = wishlist;
-    _gamesById =
-        HashMap.fromEntries(_wishlist.entries.map((e) => MapEntry(e.id, e)));
-  }
+  bool contains(int id) => entries.any((e) => e.id == id);
 
   void update(UserData? userData) async {
     if (userData == null) {
       _userId = '';
-      _setWishlist(const Library());
+      _wishlist = const Library();
       return;
     }
 
@@ -40,19 +31,6 @@ class WishlistModel extends ChangeNotifier {
 
     _userId = userData.uid;
     _loadWishlist(_userId);
-  }
-
-  bool contains(int id) => _gamesById[id] != null;
-
-  LibraryEntry? getEntryById(int id) => _gamesById[id];
-
-  LibraryEntry? getEntryByStringId(String id) {
-    final gameId = int.tryParse(id);
-    if (gameId == null) {
-      return null;
-    }
-
-    return getEntryById(gameId);
   }
 
   Future<void> _loadWishlist(String userId) async {
@@ -67,7 +45,7 @@ class WishlistModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<Library> snapshot) {
-      _setWishlist(snapshot.data() ?? const Library());
+      _wishlist = snapshot.data() ?? const Library();
 
       notifyListeners();
     });

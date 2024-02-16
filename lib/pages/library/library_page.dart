@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart' as badges;
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
@@ -10,13 +11,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LibraryPage extends StatelessWidget {
-  const LibraryPage({super.key});
+  const LibraryPage({super.key, this.entries});
+
+  final Iterable<LibraryEntry>? entries;
 
   @override
   Widget build(BuildContext context) {
     final appConfig = context.watch<AppConfigModel>();
     final filter = context.watch<LibraryFilterModel>().filter;
-    final libraryViewModel = context.watch<LibraryViewModel>();
+    final libraryViewModel = entries == null
+        ? context.watch<LibraryViewModel>()
+        : LibraryViewModel.custom(appConfig, entries!, filter);
 
     return Scaffold(
       appBar:
