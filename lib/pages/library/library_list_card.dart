@@ -53,9 +53,6 @@ class LibraryListCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(8.0),
       child: CachedNetworkImage(
         imageUrl: '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg',
-        placeholder: (context, url) => const Center(
-          child: CircularProgressIndicator(),
-        ),
         errorWidget: (context, url, error) => const Icon(Icons.error),
       ),
     );

@@ -2,8 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/library_index_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 /// Model that handles LibraryEntries that are outside user's library.
@@ -15,7 +16,11 @@ class RemoteLibraryModel extends ChangeNotifier {
   Iterable<LibraryEntry> get entriesWithExpansions => _libraryEntries
       .where((entry) => entry.isStandaloneGame || entry.isExpansion);
 
-  Future<void> update(AppConfigModel appConfig, LibraryFilter filter) async {
+  Future<void> update(
+    AppConfigModel appConfig,
+    LibraryIndexModel libraryIndexModel,
+    LibraryFilter filter,
+  ) async {
     _libraryEntries.clear();
 
     if (!appConfig.showOutOfLib.value) {
@@ -54,6 +59,7 @@ class RemoteLibraryModel extends ChangeNotifier {
       final intersection = idSets.reduce((a, b) => a.intersection(b));
       _libraryEntries.addAll(fetchedEntries.first
           .where((e) => intersection.contains(e.id))
+          .where((e) => libraryIndexModel.getEntryById(e.id) == null)
           .toList());
     }
 

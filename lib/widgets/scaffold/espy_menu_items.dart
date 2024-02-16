@@ -1,5 +1,5 @@
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/failed_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -32,10 +32,10 @@ List<MenuItem> espyMenuItems = [
     onTap: (context) => context.goNamed('home'),
   ),
   MenuItem(
-    label: 'Timeline',
-    icon: Icons.timeline_outlined,
-    selectedIcon: Icons.timeline,
-    onTap: (context) => context.goNamed('timeline'),
+    label: 'Library',
+    icon: Icons.games_outlined,
+    selectedIcon: Icons.games,
+    onTap: (context) => setLibraryView(context, LibraryFilter()),
   ),
   MenuItem(
     label: 'Browse',
@@ -44,11 +44,10 @@ List<MenuItem> espyMenuItems = [
     onTap: (context) => context.goNamed('browse'),
   ),
   MenuItem(
-    label: 'Library',
-    icon: Icons.games_outlined,
-    selectedIcon: Icons.games,
-    onTap: (context) =>
-        setLibraryView(context, LibraryFilter(view: LibraryClass.inLibrary)),
+    label: 'Timeline',
+    icon: Icons.timeline_outlined,
+    selectedIcon: Icons.timeline,
+    onTap: (context) => context.goNamed('timeline'),
   ),
   MenuItem(
     label: 'Failed',

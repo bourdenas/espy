@@ -1,3 +1,4 @@
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,9 @@ void setLibraryView(BuildContext context, LibraryFilter filter) {
 }
 
 void updateLibraryView(BuildContext context, LibraryFilter filter) {
-  context.read<LibraryFilterModel>().updateFilter(filter);
-  context.pushNamed('games', queryParameters: filter.params());
+  final filterModel = context.read<LibraryFilterModel>();
+  filterModel.updateFilter(filter);
+  context.pushNamed('games', queryParameters: filter.params()).then((_) {
+    filterModel.pop();
+  });
 }

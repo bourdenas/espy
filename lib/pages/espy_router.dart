@@ -1,8 +1,11 @@
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/timeline_model.dart';
+import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/browse/browse_page.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
@@ -25,7 +28,7 @@ import 'package:provider/provider.dart';
 class EspyRouter extends StatelessWidget {
   final _router = GoRouter(
     observers: [
-      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance)
+      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
     ],
     routes: [
       GoRoute(
@@ -47,7 +50,7 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'timeline',
           child: EspyScaffold(
-            body: const TimelinePage(year: '2023'),
+            body: const TimelinePage(year: '2024'),
             path: state.path!,
           ),
         ),
@@ -77,6 +80,20 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
+        name: 'wishlist',
+        path: '/wishlist',
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          name: 'wishlist',
+          child: EspyScaffold(
+            body: LibraryPage(
+              entries: context.watch<WishlistModel>().entries,
+            ),
+            path: state.path!,
+          ),
+        ),
+      ),
+      GoRoute(
         name: 'releases',
         path: '/releases/:label/:year',
         pageBuilder: (context, state) => NoTransitionPage(
@@ -86,6 +103,27 @@ class EspyRouter extends StatelessWidget {
             body: TimelineView(
               scrollToLabel: state.pathParameters['label'],
               year: state.pathParameters['year'],
+            ),
+            path: state.path!,
+          ),
+        ),
+      ),
+      GoRoute(
+        name: 'view',
+        path: '/view/:label/:year',
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          name: 'view',
+          child: EspyScaffold(
+            body: LibraryPage(
+              entries: context
+                  .read<TimelineModel>()
+                  .releases
+                  .firstWhere((e) =>
+                      e.label == state.pathParameters['label'] &&
+                      e.year == state.pathParameters['year'])
+                  .games
+                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
             ),
             path: state.path!,
           ),
@@ -153,7 +191,7 @@ class EspyRouter extends StatelessWidget {
     ),
   );
 
-  EspyRouter({Key? key}) : super(key: key);
+  EspyRouter({super.key});
 
   @override
   Widget build(BuildContext context) {

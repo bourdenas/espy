@@ -1,27 +1,25 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/library_entries_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class TileShelve extends StatefulWidget {
   const TileShelve({
-    Key? key,
+    super.key,
     required this.title,
+    required this.entries,
     this.color,
     this.filter,
-    this.entries,
     this.expanded = true,
     this.pushNavigation = true,
-  }) : super(key: key);
+  });
 
   final String title;
+  final Iterable<LibraryEntry> entries;
   final Color? color;
   final LibraryFilter? filter;
-  final Iterable<LibraryEntry>? entries;
 
   final bool expanded;
   final bool pushNavigation;
@@ -44,9 +42,7 @@ class _TileShelveState extends State<TileShelve> {
     return Shelve(
       title: widget.title,
       expansion: LibraryEntriesView(
-        entries: widget.entries != null
-            ? widget.entries!
-            : context.watch<LibraryEntriesModel>().filter(widget.filter!).all,
+        entries: widget.entries,
         pushNavigation: widget.pushNavigation,
       ),
       color: widget.color,

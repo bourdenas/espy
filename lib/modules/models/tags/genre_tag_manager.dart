@@ -1,14 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_tags.dart';
 
 class GenreTagManager {
-  GenreTagManager(this._userId, this._userTags);
+  GenreTagManager(this._userId, this._userTags, this._getEntryById);
 
   Iterable<Genre> byGameId(int gameId) => _gameIdToGenres[gameId] ?? [];
 
   Iterable<Genre> get all => _genres;
 
   Iterable<int> gameIds(String genre) => _genreToGameIds[genre] ?? [];
+  Iterable<LibraryEntry> games(String genre) =>
+      gameIds(genre).map((id) => _getEntryById(id)).whereType<LibraryEntry>();
 
   Iterable<Genre> filter(Iterable<String> ngrams) {
     return all.where((e) => e.name.isNotEmpty).where(
@@ -77,6 +80,7 @@ class GenreTagManager {
 
   final String _userId;
   final UserTags _userTags;
+  final LibraryEntry? Function(int) _getEntryById;
 
   final Map<int, List<Genre>> _gameIdToGenres = {};
   final Map<String, List<int>> _genreToGameIds = {};

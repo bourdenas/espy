@@ -1,6 +1,6 @@
 import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/tags/user_tag_manager.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
@@ -17,8 +17,8 @@ class TagSearchResults extends StatelessWidget {
     this.franchises,
     this.genres,
     this.genresTags, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final Iterable<String> stores;
   final Iterable<CustomUserTag> userTags;
@@ -157,11 +157,10 @@ Map<Color, List<CustomUserTag>> groupTags(Iterable<CustomUserTag> tags) {
 
 class _ChipResults extends StatelessWidget {
   const _ChipResults({
-    Key? key,
     required this.title,
     required this.chips,
     this.color,
-  }) : super(key: key);
+  });
 
   final String title;
   final Iterable<EspyChip> chips;

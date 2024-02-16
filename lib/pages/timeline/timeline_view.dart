@@ -47,12 +47,23 @@ class TimelineView extends StatelessWidget {
             child: today == releases[index].label
                 ? IconButton.filled(
                     icon: Text(releases[index].label),
-                    onPressed: () {},
+                    onPressed: () => context.pushNamed(
+                      'view',
+                      pathParameters: {
+                        'label': releases[index].label,
+                        'year': releases[index].year,
+                      },
+                    ),
                   )
                 : IconButton.outlined(
                     icon: Text(releases[index].label),
-                    onPressed: () {},
-                  ),
+                    onPressed: () => context.pushNamed(
+                          'view',
+                          pathParameters: {
+                            'label': releases[index].label,
+                            'year': releases[index].year,
+                          },
+                        )),
           );
         },
         itemExtent: tileSize,

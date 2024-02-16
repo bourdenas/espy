@@ -1,9 +1,8 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_entries_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/pages/espy_navigator.dart';
+import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/home/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
 import 'package:espy/pages/timeline/timeline_carousel.dart';
@@ -17,7 +16,7 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return context.watch<LibraryEntriesModel>().isNotEmpty
+    return context.watch<UserLibraryModel>().isNotEmpty
         ? library(context)
         : const EmptyLibrary();
   }
@@ -42,7 +41,7 @@ class HomeContent extends StatelessWidget {
               final slate = slates[index];
               return TileCarousel(
                 title: slate.title,
-                onTitleTap: () => setLibraryView(context, slate.filter),
+                onTitleTap: () => slate.onTap(context),
                 tileSize: AppConfigModel.isMobile(context)
                     ? const TileSize(width: 133, height: 190)
                     : const TileSize(width: 227, height: 320),

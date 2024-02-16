@@ -1,11 +1,12 @@
 import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_tags.dart';
 import 'package:flutter/material.dart' show Colors, MaterialColor;
 
 class UserTagManager {
-  UserTagManager(this._userId, this._userTags);
+  UserTagManager(this._userId, this._userTags, this._getEntryById);
 
   CustomUserTag get(String name) =>
       CustomUserTag(name: name, clusterId: _tagToCluster[name] ?? 0);
@@ -38,6 +39,8 @@ class UserTagManager {
   }
 
   Iterable<int> gameIds(String tag) => _tagToGameIds[tag] ?? [];
+  Iterable<LibraryEntry> games(String tag) =>
+      gameIds(tag).map((id) => _getEntryById(id)).whereType<LibraryEntry>();
 
   Iterable<CustomUserTag> filter(Iterable<String> ngrams) {
     return tags.where(
@@ -141,6 +144,8 @@ class UserTagManager {
 
   final String _userId;
   final UserTags _userTags;
+  final LibraryEntry? Function(int) _getEntryById;
+
   final Map<int, List<CustomUserTag>> _gameIdToTags = {};
   final Map<String, List<int>> _tagToGameIds = {};
   final Map<String, int> _tagToCluster = {};

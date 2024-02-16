@@ -6,7 +6,7 @@ import 'package:espy/modules/documents/igdb_game.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_entries_model.dart';
+import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/expandable_fab.dart';
@@ -18,9 +18,9 @@ import 'package:provider/provider.dart';
 class LibraryGridCard extends StatefulWidget {
   const LibraryGridCard(
     this.libraryEntry, {
-    Key? key,
+    super.key,
     required this.pushNavigation,
-  }) : super(key: key);
+  });
 
   final LibraryEntry libraryEntry;
   final bool pushNavigation;
@@ -61,7 +61,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
     final isMobile = AppConfigModel.isMobile(context);
     final appConfig = context.watch<AppConfigModel>();
     final inLibrary = widget.libraryEntry.storeEntries.isNotEmpty ||
-        context.read<LibraryEntriesModel>().inLibrary(widget.libraryEntry.id);
+        context.read<LibraryIndexModel>().contains(widget.libraryEntry.id);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -94,14 +94,14 @@ class _LibraryGridCardState extends State<LibraryGridCard>
               0, 0, 0, 1, 0, padding.value, padding.value, 0, 1),
           child: GridTile(
             footer: cardFooter(appConfig),
-            child: coverImage(context, hover || !inLibrary),
+            child: coverImage(context, hover || !inLibrary, inLibrary),
           ),
         ),
       ),
     );
   }
 
-  Widget coverImage(BuildContext context, bool showAddButton) {
+  Widget coverImage(BuildContext context, bool showAddButton, bool inLibrary) {
     List<Widget> storeButtons = [
       if (widget.libraryEntry.storeEntries.isEmpty &&
           !context.read<WishlistModel>().contains(widget.libraryEntry.id))
@@ -129,8 +129,17 @@ class _LibraryGridCardState extends State<LibraryGridCard>
         children: [
           widget.libraryEntry.cover != null &&
                   widget.libraryEntry.cover!.isNotEmpty
-              ? Image.network(
-                  '${Urls.imageProvider}/t_cover_big/${widget.libraryEntry.cover}.jpg')
+              ? inLibrary
+                  ? Image.network(
+                      '${Urls.imageProvider}/t_cover_big/${widget.libraryEntry.cover}.jpg')
+                  : ColorFiltered(
+                      colorFilter: const ColorFilter.mode(
+                        Colors.grey,
+                        BlendMode.saturation,
+                      ),
+                      child: Image.network(
+                          '${Urls.imageProvider}/t_cover_big/${widget.libraryEntry.cover}.jpg'),
+                    )
               : Image.asset('assets/images/placeholder.png'),
           if (showAddButton)
             Positioned(
@@ -194,7 +203,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
 }
 
 class InfoTileBar extends StatelessWidget {
-  const InfoTileBar(this.entry, {Key? key}) : super(key: key);
+  const InfoTileBar(this.entry, {super.key});
 
   final LibraryEntry entry;
 
@@ -217,7 +226,7 @@ class InfoTileBar extends StatelessWidget {
 }
 
 class TagsTileBar extends StatelessWidget {
-  const TagsTileBar(this.libraryEntry, {Key? key}) : super(key: key);
+  const TagsTileBar(this.libraryEntry, {super.key});
 
   final LibraryEntry libraryEntry;
 
@@ -233,7 +242,7 @@ class TagsTileBar extends StatelessWidget {
 }
 
 class GameTitleText extends StatelessWidget {
-  const GameTitleText(this.text, {Key? key}) : super(key: key);
+  const GameTitleText(this.text, {super.key});
 
   final String text;
 

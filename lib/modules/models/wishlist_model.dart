@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,10 +10,13 @@ import 'package:http/http.dart' as http;
 
 class WishlistModel extends ChangeNotifier {
   String _userId = '';
+
+  // The user wishlist.
   Library _wishlist = const Library();
 
-  UnmodifiableListView<LibraryEntry> get wishlist =>
-      UnmodifiableListView(_wishlist.entries.reversed);
+  Iterable<LibraryEntry> get entries => _wishlist.entries;
+
+  bool contains(int id) => entries.any((e) => e.id == id);
 
   void update(UserData? userData) async {
     if (userData == null) {
@@ -28,17 +30,10 @@ class WishlistModel extends ChangeNotifier {
     }
 
     _userId = userData.uid;
-    _loadRecent(_userId);
+    _loadWishlist(_userId);
   }
 
-  bool contains(int gameId) {
-    for (final entry in _wishlist.entries) {
-      if (entry.id == gameId) return true;
-    }
-    return false;
-  }
-
-  Future<void> _loadRecent(String userId) async {
+  Future<void> _loadWishlist(String userId) async {
     FirebaseFirestore.instance
         .collection('users')
         .doc(userId)

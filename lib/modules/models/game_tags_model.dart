@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/tags/genre_tag_manager.dart';
 import 'package:espy/modules/models/tags/label_manager.dart';
 import 'package:espy/modules/models/tags/user_tag_manager.dart';
@@ -12,14 +13,15 @@ import 'package:flutter/material.dart' show ChangeNotifier;
 class GameTagsModel extends ChangeNotifier {
   String _userId = '';
 
-  LabelManager _storesManager = LabelManager([]);
-  LabelManager _developersManager = LabelManager([]);
-  LabelManager _publishersManager = LabelManager([]);
-  LabelManager _collectionsManager = LabelManager([]);
-  LabelManager _franchisesManager = LabelManager([]);
-  LabelManager _genresManager = LabelManager([]);
-  GenreTagManager _genreTagsManager = GenreTagManager('', UserTags());
-  UserTagManager _userTagsManager = UserTagManager('', UserTags());
+  late LabelManager _storesManager;
+  late LabelManager _developersManager;
+  late LabelManager _publishersManager;
+  late LabelManager _collectionsManager;
+  late LabelManager _franchisesManager;
+  late LabelManager _genresManager;
+  GenreTagManager _genreTagsManager =
+      GenreTagManager('', UserTags(), (_) => null);
+  late UserTagManager _userTagsManager;
 
   LabelManager get stores => _storesManager;
   LabelManager get developers => _developersManager;
@@ -40,21 +42,41 @@ class GameTagsModel extends ChangeNotifier {
 
   void update(
     String userId,
-    List<LibraryEntry> entries,
-    List<LibraryEntry> wishlist,
+    LibraryIndexModel indexModel,
   ) async {
-    final allEntries = entries;
-    _storesManager = LabelManager(allEntries,
-        (entry) => entry.storeEntries.map((store) => store.storefront));
-    _developersManager =
-        LabelManager(allEntries, (entry) => entry.digest.developers);
-    _publishersManager =
-        LabelManager(allEntries, (entry) => entry.digest.publishers);
-    _collectionsManager =
-        LabelManager(allEntries, (entry) => entry.digest.collections);
-    _franchisesManager =
-        LabelManager(allEntries, (entry) => entry.digest.franchises);
-    _genresManager = LabelManager(allEntries, (entry) => entry.digest.genres);
+    _indexModel = indexModel;
+
+    final entries = indexModel.entries;
+    _storesManager = LabelManager(
+      entries,
+      (entry) => entry.storeEntries.map((store) => store.storefront),
+      _getEntryById,
+    );
+    _developersManager = LabelManager(
+      entries,
+      (entry) => entry.digest.developers,
+      _getEntryById,
+    );
+    _publishersManager = LabelManager(
+      entries,
+      (entry) => entry.digest.publishers,
+      _getEntryById,
+    );
+    _collectionsManager = LabelManager(
+      entries,
+      (entry) => entry.digest.collections,
+      _getEntryById,
+    );
+    _franchisesManager = LabelManager(
+      entries,
+      (entry) => entry.digest.franchises,
+      _getEntryById,
+    );
+    _genresManager = LabelManager(
+      entries,
+      (entry) => entry.digest.genres,
+      _getEntryById,
+    );
 
     if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;
@@ -75,11 +97,16 @@ class GameTagsModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<UserTags> snapshot) {
       final userTags = snapshot.data() ?? UserTags();
-      _genreTagsManager = GenreTagManager(_userId, userTags)..build();
-      _userTagsManager = UserTagManager(_userId, userTags)..build();
+      _genreTagsManager = GenreTagManager(_userId, userTags, _getEntryById)
+        ..build();
+      _userTagsManager = UserTagManager(_userId, userTags, _getEntryById)
+        ..build();
       notifyListeners();
     });
   }
+
+  late LibraryIndexModel _indexModel;
+  LibraryEntry? _getEntryById(int id) => _indexModel.getEntryById(id);
 }
 
 const _genres = [
