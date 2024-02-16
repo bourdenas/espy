@@ -93,14 +93,14 @@ class _LibraryGridCardState extends State<LibraryGridCard>
               0, 0, 0, 1, 0, padding.value, padding.value, 0, 1),
           child: GridTile(
             footer: cardFooter(appConfig),
-            child: coverImage(context, hover || !inLibrary),
+            child: coverImage(context, hover || !inLibrary, inLibrary),
           ),
         ),
       ),
     );
   }
 
-  Widget coverImage(BuildContext context, bool showAddButton) {
+  Widget coverImage(BuildContext context, bool showAddButton, bool inLibrary) {
     List<Widget> storeButtons = [
       if (widget.libraryEntry.storeEntries.isEmpty &&
           !context.read<WishlistModel>().contains(widget.libraryEntry.id))
@@ -128,8 +128,17 @@ class _LibraryGridCardState extends State<LibraryGridCard>
         children: [
           widget.libraryEntry.cover != null &&
                   widget.libraryEntry.cover!.isNotEmpty
-              ? Image.network(
-                  '${Urls.imageProvider}/t_cover_big/${widget.libraryEntry.cover}.jpg')
+              ? inLibrary
+                  ? Image.network(
+                      '${Urls.imageProvider}/t_cover_big/${widget.libraryEntry.cover}.jpg')
+                  : ColorFiltered(
+                      colorFilter: const ColorFilter.mode(
+                        Colors.grey,
+                        BlendMode.saturation,
+                      ),
+                      child: Image.network(
+                          '${Urls.imageProvider}/t_cover_big/${widget.libraryEntry.cover}.jpg'),
+                    )
               : Image.asset('assets/images/placeholder.png'),
           if (showAddButton)
             Positioned(
