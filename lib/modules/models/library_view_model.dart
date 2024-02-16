@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_view.dart';
 import 'package:espy/modules/models/app_config_model.dart';
@@ -13,14 +11,14 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 /// Model that represents what is visible at the /games screen.
 class LibraryViewModel extends ChangeNotifier {
   AppConfigModel _appConfigModel = AppConfigModel();
-  UserLibraryModel _userLibraryModel = UserLibraryModel();
+  UserLibraryModel _libraryModel = UserLibraryModel();
+  WishlistModel _wishlistModel = WishlistModel();
   GameTagsModel _gameTagsModel = GameTagsModel();
 
-  HashMap<int, LibraryEntry> _wishlist = HashMap();
   LibraryView _view = LibraryView([]);
 
   int get length => _view.length;
-  Iterable<LibraryEntry> get entries => _view.all;
+  Iterable<LibraryEntry> get entries => _view.entries;
   List<(String, List<LibraryEntry>)> get groups =>
       _view.group(_appConfigModel.libraryGrouping.value);
 
@@ -33,18 +31,24 @@ class LibraryViewModel extends ChangeNotifier {
     LibraryFilterModel filterModel,
   ) {
     _appConfigModel = appConfigModel;
-    _userLibraryModel = userLibraryModel;
+    _libraryModel = userLibraryModel;
+    _wishlistModel = wishlistModel;
     _gameTagsModel = gameTags;
 
-    _wishlist = HashMap.fromEntries(
-        wishlistModel.entries.map((e) => MapEntry(e.id, e)));
-
     _view = filterModel.filter.isNotEmpty
-        ? filterModel.filter.apply(_userLibraryModel.gamesById, _gameTagsModel)
-        : LibraryView(_userLibraryModel.entries.toList());
-    _view.addEntries(remoteLibraryModel.entries);
+        ? filterModel.filter.apply(_gameTagsModel, _getEntryById)
+        : LibraryView(_libraryModel.entries.toList());
+    if (!_appConfigModel.showExpansions.value) {
+      _view.removeExpansions();
+    }
+    _view.addEntries(_appConfigModel.showExpansions.value
+        ? remoteLibraryModel.entriesWithExpansions
+        : remoteLibraryModel.entries);
     _view.sort(appConfigModel.libraryOrdering.value);
 
     notifyListeners();
   }
+
+  LibraryEntry? _getEntryById(int id) =>
+      _libraryModel.getEntryById(id) ?? _wishlistModel.getEntryById(id);
 }

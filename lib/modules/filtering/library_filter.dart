@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_view.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
@@ -79,8 +77,8 @@ class LibraryFilter {
       tags.isNotEmpty;
 
   LibraryView apply(
-    HashMap<int, LibraryEntry> entriesById,
     GameTagsModel tagsModel,
+    LibraryEntry? Function(int) entriesIndex,
   ) {
     List<Set<int>> gameIdSets = [];
 
@@ -113,7 +111,7 @@ class LibraryFilter {
         gameIdSets.reduce((value, element) => value.intersection(element));
 
     final filteredEntries = gameIds
-        .map((id) => entriesById[id])
+        .map((id) => entriesIndex(id))
         .where((e) => e != null)
         .map((e) => e!);
 

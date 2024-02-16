@@ -6,11 +6,14 @@ class LibraryView {
 
   final List<LibraryEntry> _libraryEntries;
 
-  Iterable<LibraryEntry> get all => _libraryEntries;
+  Iterable<LibraryEntry> get entries => _libraryEntries;
   int get length => _libraryEntries.length;
 
   void addEntries(Iterable<LibraryEntry> entries) =>
       _libraryEntries.addAll(entries);
+
+  void removeExpansions() =>
+      _libraryEntries.removeWhere((e) => !e.isStandaloneGame);
 
   void sort(LibraryOrdering ordering) {
     switch (ordering) {

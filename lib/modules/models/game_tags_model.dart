@@ -54,35 +54,34 @@ class GameTagsModel extends ChangeNotifier {
     _libraryModel = libraryModel;
     _wishlistModel = wishlistModel;
 
-    final allEntries =
-        [libraryModel.entries, wishlistModel.entries].expand((e) => e);
+    final entries = libraryModel.entries;
     _storesManager = LabelManager(
-      allEntries,
+      entries,
       (entry) => entry.storeEntries.map((store) => store.storefront),
       getEntryById,
     );
     _developersManager = LabelManager(
-      allEntries,
+      entries,
       (entry) => entry.digest.developers,
       getEntryById,
     );
     _publishersManager = LabelManager(
-      allEntries,
+      entries,
       (entry) => entry.digest.publishers,
       getEntryById,
     );
     _collectionsManager = LabelManager(
-      allEntries,
+      entries,
       (entry) => entry.digest.collections,
       getEntryById,
     );
     _franchisesManager = LabelManager(
-      allEntries,
+      entries,
       (entry) => entry.digest.franchises,
       getEntryById,
     );
     _genresManager = LabelManager(
-      allEntries,
+      entries,
       (entry) => entry.digest.genres,
       getEntryById,
     );
