@@ -11,6 +11,9 @@ class LibraryView {
   Iterable<LibraryEntry> get all => _libraryEntries;
   int get length => _libraryEntries.length;
 
+  void addEntries(Iterable<LibraryEntry> entries) =>
+      _libraryEntries.addAll(entries);
+
   void sort(LibraryOrdering ordering) {
     switch (ordering) {
       case LibraryOrdering.release:

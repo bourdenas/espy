@@ -42,6 +42,7 @@ class LibraryViewModel extends ChangeNotifier {
     _view = filterModel.filter.isNotEmpty
         ? filterModel.filter.apply(_userLibraryModel.gamesById, _gameTagsModel)
         : LibraryView(_userLibraryModel.entries.toList());
+    _view.addEntries(remoteLibraryModel.entries);
     _view.sort(appConfigModel.libraryOrdering.value);
 
     notifyListeners();

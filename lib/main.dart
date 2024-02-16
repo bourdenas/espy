@@ -136,18 +136,20 @@ ChangeNotifierProxyProvider<UserModel, UserDataModel> userDataProvider() {
   );
 }
 
-ChangeNotifierProxyProvider2<AppConfigModel, LibraryFilterModel,
-    RemoteLibraryModel> remoteLibraryProvider() {
-  return ChangeNotifierProxyProvider2<AppConfigModel, LibraryFilterModel,
-      RemoteLibraryModel>(
+ChangeNotifierProxyProvider3<AppConfigModel, UserLibraryModel,
+    LibraryFilterModel, RemoteLibraryModel> remoteLibraryProvider() {
+  return ChangeNotifierProxyProvider3<AppConfigModel, UserLibraryModel,
+      LibraryFilterModel, RemoteLibraryModel>(
     create: (_) => RemoteLibraryModel(),
     update: (
       _,
       appConfig,
+      libraryModel,
       libraryFilter,
       remoteLibraryModel,
     ) =>
-        remoteLibraryModel!..update(appConfig, libraryFilter.filter),
+        remoteLibraryModel!
+          ..update(appConfig, libraryModel, libraryFilter.filter),
   );
 }
 
