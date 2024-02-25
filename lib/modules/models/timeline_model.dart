@@ -14,7 +14,7 @@ class TimelineModel extends ChangeNotifier {
 
     return isReleased
         ? _scale(game.scores.espyScore)
-        : _scaleFuture(game.scores.popularity);
+        : _scaleFuture(game.scores.hype);
   }
 
   double _scale(int? score) => switch (score) {
