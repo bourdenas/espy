@@ -5,10 +5,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/timeline_model.dart';
+import 'package:espy/pages/timeline/timeline_utils.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines/timelines.dart';
 
@@ -23,7 +23,6 @@ class TimelineCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final releases = context.watch<TimelineModel>().releases;
-    final today = DateFormat('d MMM').format(DateTime.now());
 
     var startIndex = 0;
     final now = DateTime.now().millisecondsSinceEpoch / 1000;
@@ -56,30 +55,22 @@ class TimelineCarousel extends StatelessWidget {
                     builder: TimelineTileBuilder.connected(
                       contentsAlign: ContentsAlign.reverse,
                       itemCount: releases.length,
-                      connectorBuilder: (context, index, connectionType) =>
-                          const SolidLineConnector(),
-                      indicatorBuilder: (context, index) {
-                        expand() => context.pushNamed(
-                              'releases',
-                              pathParameters: {
-                                'label': releases[index].label,
-                                'year': releases[index].year,
-                              },
-                            );
-                        return SizedBox(
-                          width: 64,
-                          child: today == releases[index].label
-                              ? IconButton.filled(
-                                  icon: Text(releases[index].label),
-                                  onPressed: expand,
-                                )
-                              : IconButton.outlined(
-                                  icon: Text(releases[index].label),
-                                  onPressed: expand,
-                                ),
-                        );
-                      },
-                      itemExtent: tileSize.width,
+                      itemExtent: tileSize.width + 16,
+                      connectorBuilder: (context, index, connectorType) =>
+                          connectorBuilder(context, releases, index),
+                      indicatorBuilder: (context, index) => buttonBuilder(
+                        context,
+                        releases,
+                        index,
+                        now.round(),
+                        () => context.pushNamed(
+                          'releases',
+                          pathParameters: {
+                            'label': releases[index].label,
+                            'year': releases[index].year,
+                          },
+                        ),
+                      ),
                       nodePositionBuilder: (context, index) => .85,
                       contentsBuilder: (context, index) => ReleaseStack(
                           releases[index].games,
