@@ -121,6 +121,9 @@ class GameDigest {
             !_match(developers, other.developers) ||
             !_match(publishers, other.publishers));
   }
+
+  bool get isReleased => DateTime.now()
+      .isAfter(DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000));
 }
 
 bool _match(Iterable<String> left, Iterable<String> right) {

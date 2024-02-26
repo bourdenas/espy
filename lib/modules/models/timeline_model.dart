@@ -9,10 +9,7 @@ class TimelineModel extends ChangeNotifier {
   List<ReleaseEvent> get releases => _frontpage.releases;
 
   double highlightScore(GameDigest game) {
-    final isReleased = DateTime.now()
-        .isAfter(DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000));
-
-    return isReleased
+    return game.isReleased
         ? _scale(game.scores.espyScore)
         : _scaleFuture(game.scores.hype);
   }
