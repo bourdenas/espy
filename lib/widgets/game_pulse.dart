@@ -20,6 +20,7 @@ class GamePulse extends StatelessWidget {
     final userRating = context.watch<UserDataModel>().rating(libraryEntry.id);
     final thumbs = gameEntry?.scores.thumbs ?? libraryEntry.thumbs;
     final popularity = gameEntry?.scores.popularity ?? libraryEntry.popularity;
+    final hype = gameEntry?.scores.hype ?? libraryEntry.hype;
     final metacritic = userRating > 0
         ? userRating * 20
         : gameEntry?.scores.metacritic ?? libraryEntry.metacritic;
@@ -28,7 +29,10 @@ class GamePulse extends StatelessWidget {
       children: [
         criticsScore(metacritic, userRating),
         if (thumbs > 0) userScore(thumbs, popularity),
-        if (popularity > 0) popScore(popularity),
+        if (gameEntry?.isReleased ?? libraryEntry.isReleased)
+          popScore(popularity)
+        else
+          hypeScore(hype),
       ],
     );
   }
@@ -97,6 +101,22 @@ class GamePulse extends StatelessWidget {
         Text(popularity >= 1000
             ? '${popularity ~/ 1000}K'
             : popularity.toString()),
+      ],
+    );
+  }
+
+  Widget hypeScore(int hype) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(width: 8),
+        Icon(
+          Icons.upcoming,
+          color: hype > 0 ? Colors.redAccent : Colors.grey,
+          size: 18.0,
+        ),
+        const SizedBox(width: 4),
+        Text(hype >= 1000 ? '${hype ~/ 1000}K' : hype.toString()),
       ],
     );
   }
