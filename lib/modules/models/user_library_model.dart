@@ -120,6 +120,24 @@ class UserLibraryModel extends ChangeNotifier {
     return true;
   }
 
+  Future<bool> deleteGameEntry(int gameId) async {
+    final response = await http.post(
+      Uri.parse('${Urls.espyBackend}/delete'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'game_id': gameId,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      return false;
+    }
+
+    return true;
+  }
+
   Future<bool> matchEntry(StoreEntry storeEntry, GameEntry gameEntry) async {
     final response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/$userId/match'),

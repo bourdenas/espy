@@ -4,6 +4,7 @@ import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter_json_view/flutter_json_view.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class DebugDialog extends StatelessWidget {
@@ -34,13 +35,29 @@ class DebugDialog extends StatelessWidget {
             const SizedBox(
               height: 16,
             ),
-            ElevatedButton(
-              onPressed: () {
-                context
-                    .read<UserLibraryModel>()
-                    .retrieveGameEntry(gameEntry.id);
-              },
-              child: const Text('Refresh'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    context
+                        .read<UserLibraryModel>()
+                        .retrieveGameEntry(gameEntry.id);
+                  },
+                  child: const Text('Refresh'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    context.pop();
+                    context.pop();
+                    context
+                        .read<UserLibraryModel>()
+                        .deleteGameEntry(gameEntry.id);
+                  },
+                  child: const Text('Delete'),
+                ),
+              ],
             ),
           ],
         ),
