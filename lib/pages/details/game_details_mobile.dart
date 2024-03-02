@@ -160,8 +160,7 @@ class _GameDescription extends StatelessWidget {
 }
 
 class _GameDetailsHeader extends StatelessWidget {
-  const _GameDetailsHeader(this.libraryEntry, this.gameEntry, {Key? key})
-      : super(key: key);
+  const _GameDetailsHeader(this.libraryEntry, this.gameEntry);
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;

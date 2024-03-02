@@ -3,6 +3,7 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/game_pulse.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
@@ -31,8 +32,10 @@ class GameEntryActionBar extends StatelessWidget {
         children: [
           releaseYear(context),
           const SizedBox(width: 8.0),
-          ...actionButtons(context),
-          const SizedBox(width: 16.0),
+          if (context.watch<UserModel>().isSignedIn) ...[
+            ...actionButtons(context),
+            const SizedBox(width: 16.0),
+          ],
           if (gameEntry != null)
             ...linkButtons(context, libraryEntry, gameEntry!),
         ],

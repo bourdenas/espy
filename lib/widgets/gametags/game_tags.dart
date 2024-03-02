@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
@@ -64,11 +65,13 @@ class GameTags extends StatelessWidget {
                 onPressed: () => onChipPressed(
                     LibraryFilter(genreTags: {genreTag.encode()})),
               ),
-            for (final tag in tagsModel.userTags.byGameId(libraryEntry.id))
-              TagChip(
-                tag,
-                onPressed: () => onChipPressed(LibraryFilter(tags: {tag.name})),
-              ),
+            if (context.watch<UserModel>().isSignedIn)
+              for (final tag in tagsModel.userTags.byGameId(libraryEntry.id))
+                TagChip(
+                  tag,
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(tags: {tag.name})),
+                ),
           ],
         ),
       ],
