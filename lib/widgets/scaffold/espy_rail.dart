@@ -1,7 +1,9 @@
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/widgets/scaffold/espy_menu_items.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class EspyNavigationRail extends StatefulWidget {
   final bool extended;
@@ -39,21 +41,23 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
       extended: widget.extended,
       labelType: !widget.extended ? NavigationRailLabelType.selected : null,
       selectedIndex: _selectedIndex,
-      leading: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: FloatingActionButton(
-            heroTag: 'userPic',
-            backgroundColor: Colors.transparent,
-            child: CircleAvatar(
-              radius: 28,
-              child: user != null
-                  ? ClipOval(
-                      child: Image.network(user.photoURL!),
-                    )
-                  : const Icon(Icons.person),
-            ),
-            onPressed: () => context.pushNamed('profile')),
-      ),
+      leading: context.watch<UserModel>().isSignedIn
+          ? Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FloatingActionButton(
+                  heroTag: 'userPic',
+                  backgroundColor: Colors.transparent,
+                  child: CircleAvatar(
+                    radius: 28,
+                    child: user != null
+                        ? ClipOval(
+                            child: Image.network(user.photoURL!),
+                          )
+                        : const Icon(Icons.person),
+                  ),
+                  onPressed: () => context.pushNamed('profile')),
+            )
+          : null,
       groupAlignment: 0,
       destinations: espyMenuItems
           .map((e) => NavigationRailDestination(

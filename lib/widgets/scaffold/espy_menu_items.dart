@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 class MenuItem {
   MenuItem({
+    required this.requiresSignIn,
     required this.label,
     required this.icon,
     required this.selectedIcon,
@@ -17,6 +18,7 @@ class MenuItem {
   bool showBadge(context) => badgeCount != null && badgeCount!(context) > 0;
   Widget badgeLabel(context) => Text('${badgeCount!(context)}');
 
+  final bool requiresSignIn;
   final String label;
   final IconData? icon;
   final IconData? selectedIcon;
@@ -26,30 +28,35 @@ class MenuItem {
 
 List<MenuItem> espyMenuItems = [
   MenuItem(
+    requiresSignIn: false,
     label: 'Home',
     icon: Icons.home_outlined,
     selectedIcon: Icons.home,
     onTap: (context) => context.goNamed('home'),
   ),
   MenuItem(
+    requiresSignIn: true,
     label: 'Library',
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
     onTap: (context) => setLibraryView(context, LibraryFilter()),
   ),
   MenuItem(
+    requiresSignIn: true,
     label: 'Browse',
     icon: Icons.bookmark,
     selectedIcon: Icons.home,
     onTap: (context) => context.goNamed('browse'),
   ),
   MenuItem(
+    requiresSignIn: false,
     label: 'Timeline',
     icon: Icons.timeline_outlined,
     selectedIcon: Icons.timeline,
     onTap: (context) => context.goNamed('timeline'),
   ),
   MenuItem(
+    requiresSignIn: true,
     label: 'Failed',
     icon: Icons.error_outline,
     selectedIcon: Icons.error,
