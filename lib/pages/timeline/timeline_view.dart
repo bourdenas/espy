@@ -17,7 +17,7 @@ class TimelineView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
-    final releases = context.read<TimelineModel>().releases;
+    final releases = context.watch<TimelineModel>().releases;
     // final today = DateFormat('d MMM').format(DateTime.now());
 
     int startIndex = 0;
