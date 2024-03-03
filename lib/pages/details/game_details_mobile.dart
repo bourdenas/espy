@@ -99,10 +99,7 @@ class GameDetailsContentMobile extends StatelessWidget {
 }
 
 class _GameDescription extends StatelessWidget {
-  const _GameDescription(
-    this.gameEntry, {
-    Key? key,
-  }) : super(key: key);
+  const _GameDescription(this.gameEntry);
 
   final GameEntry gameEntry;
 

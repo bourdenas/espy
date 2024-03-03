@@ -32,10 +32,8 @@ class GameEntryActionBar extends StatelessWidget {
         children: [
           releaseYear(context),
           const SizedBox(width: 8.0),
-          if (context.watch<UserModel>().isSignedIn) ...[
-            ...actionButtons(context),
-            const SizedBox(width: 16.0),
-          ],
+          ...actionButtons(context),
+          const SizedBox(width: 16.0),
           if (gameEntry != null)
             ...linkButtons(context, libraryEntry, gameEntry!),
         ],
@@ -71,38 +69,42 @@ class GameEntryActionBar extends StatelessWidget {
 
     return [
       GamePulse(libraryEntry, gameEntry),
-      IconButton(
-        onPressed: () => AppConfigModel.isMobile(context)
-            ? context.pushNamed('edit',
-                pathParameters: {'gid': '${libraryEntry.id}'})
-            : EditEntryDialog.show(
-                context,
-                libraryEntry,
-                gameEntry: gameEntry,
-              ),
-        icon: Icon(
-          Icons.edit,
-          size: 24.0,
-          color: Theme.of(context).colorScheme.secondary,
-        ),
-        splashRadius: 20.0,
-      ),
-      if (libraryEntry.storeEntries.isEmpty)
+      if (context.watch<UserModel>().isSignedIn) ...[
         IconButton(
-          onPressed: () {
-            if (inWishlist) {
-              context.read<WishlistModel>().removeFromWishlist(libraryEntry.id);
-            } else {
-              context.read<WishlistModel>().addToWishlist(libraryEntry);
-            }
-          },
+          onPressed: () => AppConfigModel.isMobile(context)
+              ? context.pushNamed('edit',
+                  pathParameters: {'gid': '${libraryEntry.id}'})
+              : EditEntryDialog.show(
+                  context,
+                  libraryEntry,
+                  gameEntry: gameEntry,
+                ),
           icon: Icon(
-            inWishlist ? Icons.favorite : Icons.favorite_border_outlined,
-            color: Colors.red,
+            Icons.edit,
             size: 24.0,
+            color: Theme.of(context).colorScheme.secondary,
           ),
           splashRadius: 20.0,
         ),
+        if (libraryEntry.storeEntries.isEmpty)
+          IconButton(
+            onPressed: () {
+              if (inWishlist) {
+                context
+                    .read<WishlistModel>()
+                    .removeFromWishlist(libraryEntry.id);
+              } else {
+                context.read<WishlistModel>().addToWishlist(libraryEntry);
+              }
+            },
+            icon: Icon(
+              inWishlist ? Icons.favorite : Icons.favorite_border_outlined,
+              color: Colors.red,
+              size: 24.0,
+            ),
+            splashRadius: 20.0,
+          ),
+      ],
     ];
   }
 

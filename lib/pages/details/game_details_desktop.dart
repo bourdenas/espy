@@ -51,7 +51,7 @@ class GameDetailsContentDesktop extends StatelessWidget {
 }
 
 class _GameDetailsBody extends StatelessWidget {
-  const _GameDetailsBody(this.gameEntry, {Key? key}) : super(key: key);
+  const _GameDetailsBody(this.gameEntry);
 
   final GameEntry gameEntry;
 
@@ -98,9 +98,9 @@ class _GameDetailsBody extends StatelessWidget {
 
 class GameDescription extends StatelessWidget {
   const GameDescription({
-    Key? key,
+    super.key,
     required this.gameEntry,
-  }) : super(key: key);
+  });
 
   final GameEntry gameEntry;
 
@@ -148,8 +148,7 @@ class GameDescription extends StatelessWidget {
 }
 
 class _GameDetailsActionBar extends StatelessWidget {
-  const _GameDetailsActionBar(this.gameEntry, this.libraryEntry, {Key? key})
-      : super(key: key);
+  const _GameDetailsActionBar(this.gameEntry, this.libraryEntry);
 
   final GameEntry? gameEntry;
   final LibraryEntry libraryEntry;
@@ -174,8 +173,7 @@ class _GameDetailsActionBar extends StatelessWidget {
 }
 
 class _GameDetailsHeader extends StatelessWidget {
-  const _GameDetailsHeader(this.libraryEntry, this.gameEntry, {Key? key})
-      : super(key: key);
+  const _GameDetailsHeader(this.libraryEntry, this.gameEntry);
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;
