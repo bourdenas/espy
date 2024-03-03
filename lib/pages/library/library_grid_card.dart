@@ -64,6 +64,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
     final inLibrary = context.watch<UserModel>().isNotSignedIn ||
         widget.libraryEntry.storeEntries.isNotEmpty ||
         context.read<LibraryIndexModel>().contains(widget.libraryEntry.id);
+    final userModel = context.watch<UserModel>();
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -73,16 +74,23 @@ class _LibraryGridCardState extends State<LibraryGridCard>
                 pathParameters: {'gid': '${widget.libraryEntry.id}'})
             : context.replaceNamed('details',
                 pathParameters: {'gid': '${widget.libraryEntry.id}'}),
-        onSecondaryTap: () => EditEntryDialog.show(context, widget.libraryEntry,
-            gameId: widget.libraryEntry.id),
-        onLongPress: () => isMobile
-            ? context.pushNamed('edit',
-                pathParameters: {'gid': '${widget.libraryEntry.id}'})
-            : EditEntryDialog.show(
+        onSecondaryTap: () => userModel.isSignedIn
+            ? EditEntryDialog.show(
                 context,
                 widget.libraryEntry,
                 gameId: widget.libraryEntry.id,
-              ),
+              )
+            : null,
+        onLongPress: () => userModel.isSignedIn
+            ? isMobile
+                ? context.pushNamed('edit',
+                    pathParameters: {'gid': '${widget.libraryEntry.id}'})
+                : EditEntryDialog.show(
+                    context,
+                    widget.libraryEntry,
+                    gameId: widget.libraryEntry.id,
+                  )
+            : null,
         onHover: (val) => setState(() {
           hover = val;
           if (hover) {
