@@ -5,6 +5,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/widgets/game_pulse.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:espy/widgets/release_date_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -73,31 +74,19 @@ class LibraryListCard extends StatelessWidget {
             maxLines: 1,
           ),
           const SizedBox(height: 4.0),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 2.0,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(4.0),
-                ),
-                child: Text(
-                  libraryEntry.digest.releaseMonth,
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16.0),
-              GamePulse(libraryEntry, null),
-            ],
+          SizedBox(
+            height: 42,
+            child: ListView(
+              shrinkWrap: true,
+              scrollDirection: Axis.horizontal,
+              children: [
+                ReleaseDateChip(libraryEntry),
+                const SizedBox(width: 16.0),
+                GamePulse(libraryEntry, null),
+              ],
+            ),
           ),
-          const SizedBox(height: 16.0),
+          const SizedBox(height: 8.0),
           GameCardChips(
             libraryEntry: libraryEntry,
             includeCompanies: true,
