@@ -3,8 +3,10 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/game_pulse.dart';
+import 'package:espy/widgets/release_date_chip.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -29,7 +31,7 @@ class GameEntryActionBar extends StatelessWidget {
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         children: [
-          releaseYear(context),
+          ReleaseDateChip(libraryEntry),
           const SizedBox(width: 8.0),
           ...actionButtons(context),
           const SizedBox(width: 16.0),
@@ -40,66 +42,47 @@ class GameEntryActionBar extends StatelessWidget {
     );
   }
 
-  Widget releaseYear(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 2.0,
-          horizontal: 8.0,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primaryContainer,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Text(
-          libraryEntry.digest.releaseDay,
-          style: TextStyle(
-            fontSize: 16.0,
-            fontWeight: FontWeight.w500,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-          ),
-        ),
-      ),
-    );
-  }
-
   List<Widget> actionButtons(BuildContext context) {
     final inWishlist = context.watch<WishlistModel>().contains(libraryEntry.id);
 
     return [
       GamePulse(libraryEntry, gameEntry),
-      IconButton(
-        onPressed: () => AppConfigModel.isMobile(context)
-            ? context.pushNamed('edit',
-                pathParameters: {'gid': '${libraryEntry.id}'})
-            : EditEntryDialog.show(
-                context,
-                libraryEntry,
-                gameEntry: gameEntry,
-              ),
-        icon: Icon(
-          Icons.edit,
-          size: 24.0,
-          color: Theme.of(context).colorScheme.secondary,
-        ),
-        splashRadius: 20.0,
-      ),
-      if (libraryEntry.storeEntries.isEmpty)
+      if (context.watch<UserModel>().isSignedIn) ...[
         IconButton(
-          onPressed: () {
-            if (inWishlist) {
-              context.read<WishlistModel>().removeFromWishlist(libraryEntry.id);
-            } else {
-              context.read<WishlistModel>().addToWishlist(libraryEntry);
-            }
-          },
+          onPressed: () => AppConfigModel.isMobile(context)
+              ? context.pushNamed('edit',
+                  pathParameters: {'gid': '${libraryEntry.id}'})
+              : EditEntryDialog.show(
+                  context,
+                  libraryEntry,
+                  gameEntry: gameEntry,
+                ),
           icon: Icon(
-            inWishlist ? Icons.favorite : Icons.favorite_border_outlined,
-            color: Colors.red,
+            Icons.edit,
             size: 24.0,
+            color: Theme.of(context).colorScheme.secondary,
           ),
           splashRadius: 20.0,
         ),
+        if (libraryEntry.storeEntries.isEmpty)
+          IconButton(
+            onPressed: () {
+              if (inWishlist) {
+                context
+                    .read<WishlistModel>()
+                    .removeFromWishlist(libraryEntry.id);
+              } else {
+                context.read<WishlistModel>().addToWishlist(libraryEntry);
+              }
+            },
+            icon: Icon(
+              inWishlist ? Icons.favorite : Icons.favorite_border_outlined,
+              color: Colors.red,
+              size: 24.0,
+            ),
+            splashRadius: 20.0,
+          ),
+      ],
     ];
   }
 

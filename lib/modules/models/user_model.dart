@@ -16,6 +16,9 @@ class UserModel extends ChangeNotifier {
   String get gogAuthCode => _userData?.keys?.gogAuthCode ?? '';
   String get steamUserId => _userData?.keys?.steamUserId ?? '';
 
+  bool get isSignedIn => _userId != null;
+  bool get isNotSignedIn => _userId == null;
+
   UserModel() {
     _userId = FirebaseAuth.instance.currentUser?.uid;
     _fetchUserData();

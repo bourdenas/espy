@@ -39,7 +39,7 @@ Future<void> main() async {
   runApp(MultiProvider(
     providers: [
       appConfigProvider(),
-      frontpageProvider(),
+      timelineProvider(),
       userProvider(),
       userLibraryProvider(),
       libraryIndexProvider(),
@@ -59,7 +59,7 @@ Future<void> main() async {
 ChangeNotifierProvider<AppConfigModel> appConfigProvider() =>
     ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref());
 
-ChangeNotifierProvider<TimelineModel> frontpageProvider() =>
+ChangeNotifierProvider<TimelineModel> timelineProvider() =>
     ChangeNotifierProvider(create: (_) => TimelineModel()..load());
 
 ChangeNotifierProvider<UserModel> userProvider() =>

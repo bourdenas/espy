@@ -75,7 +75,7 @@ class EspyScaffold extends StatelessWidget {
   }
 
   AppBar appBar(BuildContext context) {
-    final appConfig = context.read<AppConfigModel>();
+    final appConfig = context.watch<AppConfigModel>();
 
     return AppBar(
       elevation: 4,
@@ -105,11 +105,6 @@ class EspyScaffold extends StatelessWidget {
                 _groupViews[appConfig.libraryGrouping.value.index].iconData),
             splashRadius: 20.0,
             onPressed: () => appConfig.libraryGrouping.nextValue(),
-          ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            splashRadius: 20.0,
-            onPressed: () => context.pushNamed('search'),
           ),
         ] else ...[
           ToggleButtons(

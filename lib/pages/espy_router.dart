@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
@@ -5,6 +7,7 @@ import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/browse/browse_page.dart';
 import 'package:espy/pages/details/game_details_page.dart';
@@ -21,6 +24,7 @@ import 'package:espy/pages/failed/failed_match_page.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -37,10 +41,18 @@ class EspyRouter extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
           name: 'home',
-          child: EspyScaffold(
-            body: const HomeContent(),
-            path: state.path!,
-          ),
+          child: context.read<UserModel>().isSignedIn
+              ? EspyScaffold(
+                  body: const HomeContent(),
+                  path: state.path!,
+                )
+              : EspyScaffold(
+                  body: const TimelineView(
+                    scrollToLabel: 'Mar',
+                    year: '2024',
+                  ),
+                  path: state.path!,
+                ),
         ),
       ),
       GoRoute(
@@ -214,7 +226,7 @@ class EspyRouter extends StatelessWidget {
           }
 
           if (snapshot.connectionState == ConnectionState.active) {
-            if (snapshot.hasData) {
+            if (snapshot.hasData || (!kIsWeb && Platform.isAndroid)) {
               return MaterialApp.router(
                 theme: context.watch<AppConfigModel>().theme,
                 routeInformationProvider: _router.routeInformationProvider,

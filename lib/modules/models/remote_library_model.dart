@@ -23,7 +23,7 @@ class RemoteLibraryModel extends ChangeNotifier {
   ) async {
     _libraryEntries.clear();
 
-    if (!appConfig.showOutOfLib.value) {
+    if (libraryIndexModel.entries.isNotEmpty && !appConfig.showOutOfLib.value) {
       return;
     }
 

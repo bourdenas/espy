@@ -4,6 +4,7 @@ import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/gametags/game_chips_filter_bar.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
@@ -72,36 +73,42 @@ class LibraryPage extends StatelessWidget {
         position: badges.BadgePosition.center(),
         child: Container(),
       ),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GameChipsFilterBar(filter),
-          Row(
-            children: [
-              Text(
-                'Expansions',
-                style: Theme.of(context).textTheme.bodyLarge!,
+      title: SizedBox(
+        height: 48,
+        child: ListView(
+          shrinkWrap: true,
+          scrollDirection: Axis.horizontal,
+          children: [
+            GameChipsFilterBar(filter),
+            const SizedBox(width: 8),
+            if (context.watch<UserModel>().isSignedIn)
+              Row(
+                children: [
+                  Text(
+                    'Expansions',
+                    style: Theme.of(context).textTheme.bodyLarge!,
+                  ),
+                  const SizedBox(width: 8),
+                  Switch(
+                    value: appConfig.showExpansions.value,
+                    onChanged: (selected) =>
+                        appConfig.showExpansions.value = selected,
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    'External',
+                    style: Theme.of(context).textTheme.bodyLarge!,
+                  ),
+                  const SizedBox(width: 8),
+                  Switch(
+                    value: appConfig.showOutOfLib.value,
+                    onChanged: (selected) =>
+                        appConfig.showOutOfLib.value = selected,
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Switch(
-                value: appConfig.showExpansions.value,
-                onChanged: (selected) =>
-                    appConfig.showExpansions.value = selected,
-              ),
-              const SizedBox(width: 16),
-              Text(
-                'External',
-                style: Theme.of(context).textTheme.bodyLarge!,
-              ),
-              const SizedBox(width: 8),
-              Switch(
-                value: appConfig.showOutOfLib.value,
-                onChanged: (selected) =>
-                    appConfig.showOutOfLib.value = selected,
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
       backgroundColor: Colors.black.withOpacity(0.6),
       elevation: 0.0,

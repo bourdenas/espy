@@ -21,7 +21,7 @@ class GameTagsModel extends ChangeNotifier {
   late LabelManager _genresManager;
   GenreTagManager _genreTagsManager =
       GenreTagManager('', UserTags(), (_) => null);
-  late UserTagManager _userTagsManager;
+  UserTagManager _userTagsManager = UserTagManager('', UserTags(), (_) => null);
 
   LabelManager get stores => _storesManager;
   LabelManager get developers => _developersManager;

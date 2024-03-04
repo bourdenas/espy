@@ -8,6 +8,7 @@ import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
+import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/expandable_fab.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
@@ -60,8 +61,10 @@ class _LibraryGridCardState extends State<LibraryGridCard>
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
     final appConfig = context.watch<AppConfigModel>();
-    final inLibrary = widget.libraryEntry.storeEntries.isNotEmpty ||
+    final inLibrary = context.watch<UserModel>().isNotSignedIn ||
+        widget.libraryEntry.storeEntries.isNotEmpty ||
         context.read<LibraryIndexModel>().contains(widget.libraryEntry.id);
+    final userModel = context.watch<UserModel>();
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -71,16 +74,23 @@ class _LibraryGridCardState extends State<LibraryGridCard>
                 pathParameters: {'gid': '${widget.libraryEntry.id}'})
             : context.replaceNamed('details',
                 pathParameters: {'gid': '${widget.libraryEntry.id}'}),
-        onSecondaryTap: () => EditEntryDialog.show(context, widget.libraryEntry,
-            gameId: widget.libraryEntry.id),
-        onLongPress: () => isMobile
-            ? context.pushNamed('edit',
-                pathParameters: {'gid': '${widget.libraryEntry.id}'})
-            : EditEntryDialog.show(
+        onSecondaryTap: () => userModel.isSignedIn
+            ? EditEntryDialog.show(
                 context,
                 widget.libraryEntry,
                 gameId: widget.libraryEntry.id,
-              ),
+              )
+            : null,
+        onLongPress: () => userModel.isSignedIn
+            ? isMobile
+                ? context.pushNamed('edit',
+                    pathParameters: {'gid': '${widget.libraryEntry.id}'})
+                : EditEntryDialog.show(
+                    context,
+                    widget.libraryEntry,
+                    gameId: widget.libraryEntry.id,
+                  )
+            : null,
         onHover: (val) => setState(() {
           hover = val;
           if (hover) {
