@@ -46,12 +46,16 @@ class ReleaseEvent {
 class AnnualReviewDoc {
   final List<GameDigest> releases;
   final List<GameDigest> indies;
+  final List<GameDigest> expansions;
+  final List<GameDigest> casual;
   final List<GameDigest> earlyAccess;
   final List<GameDigest> debug;
 
   const AnnualReviewDoc({
     this.releases = const [],
     this.indies = const [],
+    this.expansions = const [],
+    this.casual = const [],
     this.earlyAccess = const [],
     this.debug = const [],
   });
@@ -64,6 +68,14 @@ class AnnualReviewDoc {
           ],
           indies: [
             for (final event in json['indies'] ?? [])
+              GameDigest.fromJson(event),
+          ],
+          expansions: [
+            for (final event in json['expansions'] ?? [])
+              GameDigest.fromJson(event),
+          ],
+          casual: [
+            for (final event in json['casual'] ?? [])
               GameDigest.fromJson(event),
           ],
           earlyAccess: [

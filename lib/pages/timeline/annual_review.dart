@@ -32,6 +32,8 @@ class AnnualReview extends StatelessWidget {
     final groups = [
       ('Releases', review.releases),
       if (review.indies.isNotEmpty) ('Indies', review.indies),
+      if (review.expansions.isNotEmpty) ('Expansions', review.expansions),
+      if (review.casual.isNotEmpty) ('Casual', review.casual),
       if (review.earlyAccess.isNotEmpty) ('Early Access', review.earlyAccess),
       if (review.debug.isNotEmpty) ('Debug', review.debug),
     ];
