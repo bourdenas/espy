@@ -209,7 +209,7 @@ class GameEntry {
   }
 
   bool get isReleased =>
-      releaseDate != null &&
+      (releaseDate ?? 0) > 0 &&
       DateTime.now()
           .isAfter(DateTime.fromMillisecondsSinceEpoch(releaseDate! * 1000));
 }
