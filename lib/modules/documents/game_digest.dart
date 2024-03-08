@@ -1,6 +1,6 @@
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/scores.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' show DateFormat;
 
 class GameDigest {
   final int id;
@@ -46,7 +46,7 @@ class GameDigest {
           category: gameEntry.category,
           status: gameEntry.status,
           cover: gameEntry.cover?.imageId,
-          releaseDate: gameEntry.releaseDate ?? gameEntry.igdbGame.releaseDate,
+          releaseDate: gameEntry.releaseDate ?? 0,
           scores: gameEntry.scores,
           collections: [
             for (final collection in gameEntry.collections) collection.name
