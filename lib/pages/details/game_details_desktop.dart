@@ -140,6 +140,17 @@ class GameDescription extends StatelessWidget {
                 letterSpacing: 1.2,
               ),
             ),
+          const SizedBox(height: 4.0),
+          if ((gameEntry.steamData?.userTags ?? []).isNotEmpty)
+            Text(
+              'Steam: ${gameEntry.steamData?.userTags.join(", ")}',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12.0,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 1.2,
+              ),
+            ),
           const SizedBox(height: 16.0),
         ],
       ),

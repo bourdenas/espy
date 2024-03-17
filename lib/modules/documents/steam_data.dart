@@ -15,6 +15,7 @@ class SteamData {
   final Metacritic? metacritic;
 
   final List<Genre> genres;
+  final List<String> userTags;
   final List<Screenshot> screenshots;
   final List<Movie> movies;
 
@@ -31,6 +32,7 @@ class SteamData {
     this.score,
     this.metacritic,
     this.genres = const [],
+    this.userTags = const [],
     this.screenshots = const [],
     this.movies = const [],
   });
@@ -58,6 +60,9 @@ class SteamData {
           genres: [
             for (final genre in json['genres'] ?? []) Genre.fromJson(genre),
           ],
+          userTags: [
+            for (final tag in json['user_tags'] ?? []) tag,
+          ],
           screenshots: [
             for (final screenshot in json['screenshots'] ?? [])
               Screenshot.fromJson(screenshot),
@@ -84,6 +89,7 @@ class SteamData {
         'genres': [
           for (final genre in genres) genre.toJson(),
         ],
+      if (userTags.isNotEmpty) 'user_tags': userTags,
       if (screenshots.isNotEmpty)
         'screenshots': [
           for (final screenshot in screenshots) screenshot.toJson(),

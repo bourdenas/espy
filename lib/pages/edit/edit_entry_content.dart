@@ -60,18 +60,17 @@ Future<GameEntry> _getGameEntry(int gameId) async {
 
 class _EditEntryView extends StatelessWidget {
   const _EditEntryView({
-    Key? key,
     required this.libraryEntry,
     this.gameEntry,
-  }) : super(key: key);
+  });
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;
 
   @override
   Widget build(BuildContext context) {
-    List<String> keywords =
-        gameEntry != null ? gameEntry!.genres + gameEntry!.keywords : [];
+    List<String> keywords = gameEntry?.keywords ?? <String>[];
+    List<String> steamTags = gameEntry?.steamData?.userTags ?? <String>[];
 
     return ListView(
       shrinkWrap: true,
@@ -131,21 +130,39 @@ class _EditEntryView extends StatelessWidget {
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 4.0),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      'Keywords: ${keywords.join(", ")}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 1.2,
+                  if (steamTags.isNotEmpty) ...[
+                    const SizedBox(height: 4.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        'Steam: ${steamTags.join(", ")}',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 1.2,
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 4.0),
+                  ],
+                  if (keywords.isNotEmpty) ...[
+                    const SizedBox(height: 4.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        'IGDB: ${keywords.join(", ")}',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8.0),
-                  ChoiceTags(libraryEntry, keywords),
+                  ChoiceTags(libraryEntry, keywords + steamTags),
                   const SizedBox(height: 16.0),
                   const SizedBox(height: 8.0),
                 ],
