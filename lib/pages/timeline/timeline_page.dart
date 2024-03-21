@@ -28,6 +28,7 @@ class TimelinePageState extends State<TimelinePage> {
         child: Row(
           children: [
             yearBar(context),
+            const SizedBox(width: 4),
             Expanded(child: AnnualReview(year: selectedYear)),
           ],
         ),
