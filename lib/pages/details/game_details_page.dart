@@ -77,7 +77,7 @@ class GameDetailsPage extends StatelessWidget {
     );
   }
 
-  Center retrieveIndicator() {
+  Widget retrieveIndicator() {
     return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
