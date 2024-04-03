@@ -63,7 +63,7 @@ class GameDigest {
           publishers: [
             for (final company in gameEntry.publishers) company.name
           ],
-          genres: [],
+          genres: gameEntry.genres,
           keywords: [],
         );
 
