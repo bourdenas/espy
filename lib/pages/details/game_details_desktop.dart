@@ -115,6 +115,14 @@ class GameDescription extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // TODO: This can often cause repetition with the begining of the
+          // longer description. Find a better place to show it.
+          if (gameEntry.steamData != null) ...[
+            Html(
+              data: gameEntry.steamData?.shortDescription,
+            ),
+            const SizedBox(height: 8.0),
+          ],
           Html(
             data: description,
           ),
