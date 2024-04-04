@@ -1,20 +1,20 @@
-import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class Settings extends StatefulWidget {
-  const Settings({Key? key}) : super(key: key);
+  const Settings({super.key});
 
   @override
   State<Settings> createState() => _SettingsState();
 }
 
 class _SettingsState extends State<Settings> {
-  _SettingsState() : _syncLog = '';
+  bool _syncLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -25,30 +25,31 @@ class _SettingsState extends State<Settings> {
         children: [
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500),
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                const SizedBox(height: 16),
-                Text(
-                  'Settings',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                storefrontCodeBoxes(context),
-                const SizedBox(height: 16),
-                syncButton(context),
-                const SizedBox(height: 32),
-                manualEditBoxes(context),
-                const SizedBox(height: 16),
-                uploadButton(context),
-                const SizedBox(height: 64),
-                libraryStats(context),
-                const SizedBox(height: 32),
-                colorSelection(context),
-                const SizedBox(height: 32),
-                syncLog(),
-                const SizedBox(height: 32),
-              ],
+            child: ScrollConfiguration(
+              behavior:
+                  ScrollConfiguration.of(context).copyWith(scrollbars: false),
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  const SizedBox(height: 16),
+                  storefrontCodeBoxes(context),
+                  const SizedBox(height: 64),
+                  libraryStats(context),
+                  const SizedBox(height: 32),
+                  colorSelection(context),
+                  const SizedBox(height: 32),
+                  Center(
+                    child: FilledButton(
+                      child: const Text('Sign Out'),
+                      onPressed: () {
+                        context.read<UserModel>().logout();
+                        context.goNamed('home');
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
           ),
         ],
@@ -85,6 +86,8 @@ class _SettingsState extends State<Settings> {
               logoAsset: 'assets/images/steam-128.png',
               textController: _steamTextController,
             ),
+            const SizedBox(height: 16),
+            syncButton(context),
           ],
         ),
       ),
@@ -143,7 +146,6 @@ class _SettingsState extends State<Settings> {
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     setState(() {
-                      _syncLog = 'Syncing storefronts...';
                       _syncLoading = true;
                     });
 
@@ -153,101 +155,17 @@ class _SettingsState extends State<Settings> {
                       egsAuthCode: _egsTextController.text,
                     );
 
-                    await context.read<UserModel>().setUserKeys(keys);
-                    final response =
-                        await context.read<UserModel>().syncLibrary(keys);
+                    final userModel = context.read<UserModel>();
+                    await userModel.setUserKeys(keys);
+                    final response = await userModel.syncLibrary(keys);
 
                     setState(() {
-                      _syncLog = response;
                       _syncLoading = false;
-                    });
-                  }
-                },
-              ),
-      ],
-    );
-  }
-
-  Widget manualEditBoxes(BuildContext context) {
-    return Form(
-      // key: _formKey,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            manualUploadEditBox(
-              label: 'Add Epic Games Store titles manually...',
-              token: '',
-              logoAsset: 'assets/images/egs-128.png',
-              textController: _egsTextController,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget manualUploadEditBox({
-    required String logoAsset,
-    required String label,
-    required String token,
-    required TextEditingController textController,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
-            child: Image.asset(logoAsset, width: 48),
-          ),
-          Expanded(
-            child: SizedBox(
-              width: 200.0,
-              child: TextFormField(
-                maxLines: 5,
-                controller: textController..text = token,
-                decoration: InputDecoration(
-                  labelText: label,
-                  floatingLabelBehavior: FloatingLabelBehavior.auto,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget uploadButton(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _uploadLoading
-            ? const CircularProgressIndicator()
-            : FilledButton(
-                child: const Text('Upload'),
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    setState(() {
-                      _syncLog = 'uploading...';
-                      _uploadLoading = true;
-                    });
-
-                    final titles = Upload(
-                        entries: _egsTextController.text
-                            .split('\n')
-                            .map((line) => StoreEntry(
-                                id: '', title: line, storefront: 'egs'))
-                            .toList());
-
-                    final response =
-                        await context.read<UserModel>().uploadLibrary(titles);
-
-                    setState(() {
-                      _syncLog = response;
-                      _uploadLoading = false;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(response),
+                        ),
+                      );
                     });
                   }
                 },
@@ -291,22 +209,6 @@ class _SettingsState extends State<Settings> {
         Text('Versions: $versionCount'),
         Text('Ignore: $ignoreCount'),
       ],
-    );
-  }
-
-  String _syncLog;
-  bool _syncLoading = false;
-  bool _uploadLoading = false;
-
-  Widget syncLog() {
-    return Expanded(
-      child: SizedBox(
-        width: 400,
-        child: Text(
-          _syncLog,
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-      ),
     );
   }
 

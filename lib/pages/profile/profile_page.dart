@@ -1,23 +1,16 @@
+import 'package:espy/modules/models/user_model.dart';
+import 'package:espy/pages/profile/login_page.dart';
 import 'package:espy/pages/profile/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // return Column(
-    //   children: [
-    //     ProfileScreen(
-    //       providerConfigs: _providerConfigs,
-    //       actions: [
-    //         SignedOutAction((context) {
-    //           Navigator.pushReplacementNamed(context, '/');
-    //         }),
-    //       ],
-    //     ),
-    //   ],
-    // );
-    return const Settings();
+    return context.watch<UserModel>().isSignedIn
+        ? const Settings()
+        : const LoginPage();
   }
 }

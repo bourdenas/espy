@@ -20,8 +20,24 @@ class UserModel extends ChangeNotifier {
   bool get isNotSignedIn => _userId == null;
 
   UserModel() {
+    login();
+  }
+
+  void login() async {
+    if (FirebaseAuth.instance.currentUser == null) {
+      return;
+    }
+
     _userId = FirebaseAuth.instance.currentUser?.uid;
-    _fetchUserData();
+    await _fetchUserData();
+    notifyListeners();
+  }
+
+  void logout() {
+    FirebaseAuth.instance.signOut();
+    _userId = null;
+    _userData = null;
+    notifyListeners();
   }
 
   String? _userId;
