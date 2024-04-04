@@ -53,3 +53,5 @@ lib/firebase_options.dart
 *.cache
 
 pubspec.lock
+
+android/app/google-services.json
