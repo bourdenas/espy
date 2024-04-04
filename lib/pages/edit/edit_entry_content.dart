@@ -11,11 +11,11 @@ import 'package:flutter/material.dart';
 
 class EditEntryContent extends StatelessWidget {
   const EditEntryContent({
-    Key? key,
+    super.key,
     required this.libraryEntry,
     this.gameEntry,
     this.gameId,
-  }) : super(key: key);
+  });
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;
@@ -71,6 +71,9 @@ class _EditEntryView extends StatelessWidget {
   Widget build(BuildContext context) {
     List<String> keywords = gameEntry?.keywords ?? <String>[];
     List<String> steamTags = gameEntry?.steamData?.userTags ?? <String>[];
+    final genres = Set.from((gameEntry?.genres ?? <String>[]) +
+        (gameEntry?.steamData?.genres.map((e) => e.description).toList() ??
+            <String>[]));
 
     return ListView(
       shrinkWrap: true,
@@ -111,7 +114,7 @@ class _EditEntryView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 4.0),
-                  GenreChips(libraryEntry, keywords),
+                  GenreChips(libraryEntry, keywords + steamTags),
                   const SizedBox(height: 8.0),
                 ],
               ),
@@ -130,6 +133,22 @@ class _EditEntryView extends StatelessWidget {
               expanded: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (genres.isNotEmpty) ...[
+                    const SizedBox(height: 4.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        'Genres: ${genres.join(", ")}',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4.0),
+                  ],
                   if (steamTags.isNotEmpty) ...[
                     const SizedBox(height: 4.0),
                     Padding(

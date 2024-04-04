@@ -21,8 +21,7 @@ class EditEntryDialog extends StatelessWidget {
   final int? gameId;
 
   const EditEntryDialog(this.libraryEntry, this.gameEntry, this.gameId,
-      {Key? key})
-      : super(key: key);
+      {super.key});
 
   @override
   Widget build(BuildContext context) {

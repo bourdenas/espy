@@ -42,27 +42,22 @@ class UserTags {
 }
 
 class Genre {
-  final String root;
   final String name;
   final List<int> gameIds;
 
   Genre({
-    required this.root,
     required this.name,
     this.gameIds = const [],
   });
 
-  String encode() => '$root|$name';
+  String encode() => name;
 
   static decode(String encoded) {
-    final parts = encoded.split('|');
-    assert(parts.length == 2);
-    return Genre(root: parts[0], name: parts[1]);
+    return Genre(name: encoded);
   }
 
   Genre.fromJson(Map<String, dynamic> json)
       : this(
-          root: json['root']!,
           name: json['name']!,
           gameIds: [
             for (int id in json['game_ids'] ?? []) id,
@@ -71,7 +66,6 @@ class Genre {
 
   Map<String, dynamic> toJson() {
     return {
-      'root': root,
       'name': name,
       'game_ids': gameIds,
     };

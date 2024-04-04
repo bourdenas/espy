@@ -86,11 +86,11 @@ class GameCardChips extends StatelessWidget {
   final bool includeCollections;
 
   const GameCardChips({
-    Key? key,
+    super.key,
     required this.libraryEntry,
     this.includeCompanies = false,
     this.includeCollections = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

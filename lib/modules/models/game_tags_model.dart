@@ -34,16 +34,25 @@ class GameTagsModel extends ChangeNotifier {
 
   List<String> get espyGenres => _genres;
   Iterable<String> filterEspyGenres(Iterable<String> genres) => genres
-      .map((genre) => _IgdbToEspyGenres[genre])
+      .map((genre) => _igdbToEspyGenres[genre])
       .where((e) => e != null)
       .cast<String>()
       .toSet();
   List<String>? espyGenreTags(String genre) => _genreTags[genre];
+  String? getGenreGroup(String genre) => _groupMapping[genre];
 
   void update(
     String userId,
     LibraryIndexModel indexModel,
   ) async {
+    if (_groupMapping.isEmpty) {
+      for (final groupEntry in _genreTags.entries) {
+        for (final genre in groupEntry.value) {
+          _groupMapping[genre] = groupEntry.key;
+        }
+      }
+    }
+
     _indexModel = indexModel;
 
     final entries = indexModel.entries;
@@ -112,15 +121,15 @@ class GameTagsModel extends ChangeNotifier {
 const _genres = [
   'Adventure',
   'RPG',
-  'Strategy',
-  'Arcade',
-  'Online',
-  'Platformer',
   'Shooter',
+  'Platformer',
+  'Strategy',
   'Simulator',
+  'Arcade',
+  'Casual',
 ];
 
-const Map<String, String> _IgdbToEspyGenres = {
+const Map<String, String> _igdbToEspyGenres = {
   'Point-and-click': 'Adventure',
   'Adventure': 'Adventure',
   'Pinball': 'Arcade',
@@ -144,43 +153,50 @@ const Map<String, List<String>> _genreTags = {
   'Adventure': [
     'Point-and-Click',
     'Action',
-    'First-Person Adventure',
     'Isometric Action',
-    'Isometric Adventure',
+    'First-Person Adventure',
     'Narrative Adventure',
+    'Isometric Adventure',
+    'Survival Adventure',
     'Puzzle Adventure',
+    'Walking Simulator',
+    'Visual Novel',
   ],
   'Arcade': [
     'Fighting',
     'Pinball',
     'Beat\'em Up',
-    'Puzzle',
-    'Tower Defense',
-    'Endless Runner',
     'Card & Board Game',
+    'Deckbuilder',
   ],
-  'Online': [
-    'MMORPG',
-    'MOBA',
-    'Battle Royale',
-    'Co-op',
-    'PvP',
+  'Casual': [
+    'Life Sim',
+    'Farming Sim',
+    'Fishing Sim',
+    'Sailing Sim',
+    'Dating Sim',
+    'Puzzle',
+    'Endless Runner',
+    'Rhythm',
   ],
   'Platformer': [
     'Side-Scroller',
     'Metroidvania',
     '3D Platformer',
     'Shooter Platformer',
+    'Precision Platformer',
     'Puzzle Platformer',
   ],
   'RPG': [
-    'Isometric RPG',
+    'CRPG',
+    'ARPG',
+    'Action RPG',
+    'JRPG',
+    'First-Person RPG',
     'Turn-Based RPG',
     'RTwP RPG',
-    'First-Person RPG',
-    'Action RPG',
-    'Hack & Slash',
-    'JRPG',
+    'Dungeon Crawler',
+    'MMORPG',
   ],
   'Shooter': [
     'First Person Shooter',
@@ -188,14 +204,19 @@ const Map<String, List<String>> _genreTags = {
     '3rd Person Shooter',
     'Space Shooter',
     'Stealth Shooter',
+    'Shmup',
     'First Person Melee',
+    'Battle Royale',
   ],
   'Simulator': [
     'City Builder',
+    'Tycoon',
     'God Game',
     'Racing',
-    'Sport',
+    'Sports',
     'Flight Simulator',
+    'Combat Simulator',
+    'Naval Simulator',
     'Management',
     'Survival',
   ],
@@ -204,8 +225,11 @@ const Map<String, List<String>> _genreTags = {
     'Real-Time Strategy',
     'Turn-Based Tactics',
     'Real-Time Tactics',
-    'Isometric Tactics',
     'Grand Strategy',
     '4X',
+    'Tower Defense',
+    'MOBA',
   ],
 };
+
+Map<String, String> _groupMapping = {};

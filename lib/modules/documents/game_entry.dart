@@ -88,7 +88,7 @@ class GameEntry {
               ? Scores.fromJson(json['scores'])
               : const Scores(),
           genres: [
-            for (final genre in json['espy_genres'] ?? []) genre,
+            for (final genre in json['igdb_genres'] ?? []) genre,
           ],
           keywords: [
             for (final kw in json['keywords'] ?? []) kw,
@@ -155,7 +155,7 @@ class GameEntry {
       'status': status,
       if (releaseDate != null) 'release_date': releaseDate,
       'scores': scores.toJson(),
-      if (genres.isNotEmpty) 'espy_genres': genres,
+      if (genres.isNotEmpty) 'igdb_genres': genres,
       if (keywords.isNotEmpty) 'keywords': keywords,
       if (parent != null) 'parent': parent!.toJson(),
       if (expansions.isNotEmpty)

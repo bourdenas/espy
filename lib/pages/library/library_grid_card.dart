@@ -246,6 +246,8 @@ class TagsTileBar extends StatelessWidget {
       backgroundColor: Colors.black45,
       title: GameCardChips(
         libraryEntry: libraryEntry,
+        includeCollections: false,
+        includeCompanies: false,
       ),
     );
   }

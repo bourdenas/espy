@@ -98,7 +98,8 @@ class LibraryListCard extends StatelessWidget {
           const SizedBox(height: 8.0),
           GameCardChips(
             libraryEntry: libraryEntry,
-            includeCompanies: true,
+            includeCompanies: false,
+            includeCollections: false,
           ),
         ],
       ),

@@ -53,7 +53,7 @@ class GenreTagManager {
 
   void _addTag(Genre genre, int gameId) {
     for (final value in _userTags.genres) {
-      if (value.root == genre.root && value.name == genre.name) {
+      if (value.name == genre.name) {
         value.gameIds.add(gameId);
         return;
       }
@@ -62,7 +62,6 @@ class GenreTagManager {
     // New Genre, add new Genre in UserTags.
     _userTags.genres.add(
       Genre(
-        root: genre.root,
         name: genre.name,
         gameIds: [gameId],
       ),
@@ -71,7 +70,7 @@ class GenreTagManager {
 
   void _removeTag(Genre genre, int gameId) {
     for (final value in _userTags.genres) {
-      if (value.root == genre.root && value.name == genre.name) {
+      if (value.name == genre.name) {
         value.gameIds.remove(gameId);
         return;
       }
@@ -94,7 +93,7 @@ class GenreTagManager {
       if (genre.gameIds.isEmpty) {
         continue;
       }
-      final genreCopy = Genre(root: genre.root, name: genre.name);
+      final genreCopy = Genre(name: genre.name);
       genreHistogram.add((genreCopy, genre.gameIds.length));
 
       for (final id in genre.gameIds) {

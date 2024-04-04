@@ -46,6 +46,7 @@ class ReleaseEvent {
 class AnnualReviewDoc {
   final List<GameDigest> releases;
   final List<GameDigest> indies;
+  final List<GameDigest> remasters;
   final List<GameDigest> expansions;
   final List<GameDigest> casual;
   final List<GameDigest> earlyAccess;
@@ -54,6 +55,7 @@ class AnnualReviewDoc {
   const AnnualReviewDoc({
     this.releases = const [],
     this.indies = const [],
+    this.remasters = const [],
     this.expansions = const [],
     this.casual = const [],
     this.earlyAccess = const [],
@@ -68,6 +70,10 @@ class AnnualReviewDoc {
           ],
           indies: [
             for (final event in json['indies'] ?? [])
+              GameDigest.fromJson(event),
+          ],
+          remasters: [
+            for (final event in json['remasters'] ?? [])
               GameDigest.fromJson(event),
           ],
           expansions: [
