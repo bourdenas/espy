@@ -44,8 +44,8 @@ List<MenuItem> espyMenuItems = [
   MenuItem(
     requiresSignIn: true,
     label: 'Browse',
-    icon: Icons.bookmark,
-    selectedIcon: Icons.home,
+    icon: Icons.bookmark_outline,
+    selectedIcon: Icons.bookmark,
     onTap: (context) => context.goNamed('browse'),
   ),
   MenuItem(
