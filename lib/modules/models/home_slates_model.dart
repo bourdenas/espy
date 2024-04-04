@@ -25,7 +25,7 @@ class HomeSlatesModel extends ChangeNotifier {
   ) {
     _slates = [
       SlateInfo('Library', libraryModel.entries.take(16),
-          (context) => setLibraryView(context, LibraryFilter())),
+          (context) => updateLibraryView(context, LibraryFilter())),
       SlateInfo('Wishlist', wishlistModel.entries.take(16),
           (context) => context.goNamed('wishlist')),
     ];
@@ -36,7 +36,7 @@ class HomeSlatesModel extends ChangeNotifier {
           SlateInfo(
             collection,
             tagsModel.collections.games(collection),
-            (context) => setLibraryView(
+            (context) => updateLibraryView(
                 context, LibraryFilter(collections: {collection})),
           ),
       if (appConfigModel.stacks.value == Stacks.developers)
@@ -44,15 +44,15 @@ class HomeSlatesModel extends ChangeNotifier {
           SlateInfo(
             developer,
             tagsModel.developers.games(developer),
-            (context) =>
-                setLibraryView(context, LibraryFilter(developers: {developer})),
+            (context) => updateLibraryView(
+                context, LibraryFilter(developers: {developer})),
           ),
       if (appConfigModel.stacks.value == Stacks.genres)
         for (final genre in tagsModel.genreTags.all)
           SlateInfo(
             genre.name,
             tagsModel.genreTags.games(genre.name),
-            (context) => setLibraryView(
+            (context) => updateLibraryView(
                 context, LibraryFilter(genreTags: {genre.encode()})),
           ),
     ];
