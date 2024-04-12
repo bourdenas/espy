@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/frontpage.dart';
 import 'package:espy/modules/documents/game_digest.dart';
+import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/pages/timeline/timeline_utils.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
@@ -22,7 +24,7 @@ class TimelineCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final releases = context.watch<TimelineModel>().releases;
+    final releases = context.watch<FrontpageModel>().releases;
 
     var startIndex = 0;
     final now = DateTime.now().millisecondsSinceEpoch / 1000;

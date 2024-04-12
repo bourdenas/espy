@@ -1,6 +1,7 @@
 import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/failed_model.dart';
+import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
@@ -39,6 +40,7 @@ Future<void> main() async {
   runApp(MultiProvider(
     providers: [
       appConfigProvider(),
+      frontpageProvider(),
       timelineProvider(),
       userProvider(),
       userLibraryProvider(),
@@ -58,6 +60,9 @@ Future<void> main() async {
 
 ChangeNotifierProvider<AppConfigModel> appConfigProvider() =>
     ChangeNotifierProvider(create: (_) => AppConfigModel()..loadLocalPref());
+
+ChangeNotifierProvider<FrontpageModel> frontpageProvider() =>
+    ChangeNotifierProvider(create: (_) => FrontpageModel()..load());
 
 ChangeNotifierProvider<TimelineModel> timelineProvider() =>
     ChangeNotifierProvider(create: (_) => TimelineModel()..load());

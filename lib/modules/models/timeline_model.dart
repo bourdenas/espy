@@ -4,9 +4,9 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class TimelineModel extends ChangeNotifier {
-  Timeline _frontpage = const Timeline();
+  Timeline _timeline = const Timeline();
 
-  List<ReleaseEvent> get releases => _frontpage.releases;
+  List<ReleaseEvent> get releases => _timeline.releases;
 
   double highlightScore(GameDigest game) {
     return game.isReleased
@@ -66,7 +66,7 @@ class TimelineModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<Timeline> snapshot) {
-      _frontpage = snapshot.data() ?? const Timeline();
+      _timeline = snapshot.data() ?? const Timeline();
       notifyListeners();
     });
   }
