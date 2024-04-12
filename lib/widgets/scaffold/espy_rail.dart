@@ -18,19 +18,18 @@ class EspyNavigationRail extends StatefulWidget {
 class EspyNavigationRailState extends State<EspyNavigationRail> {
   int _selectedIndex = 0;
   final Map<String, int> _mapping = {
-    '/': 0,
-    '/games': 1,
-    '/browse': 2,
-    '/releases': 3,
-    '/timeline': 4,
-    '/unmatched': 5,
+    '': 0,
+    'games': 1,
+    'browse': 2,
+    'releases': 3,
+    'timeline': 4,
+    'unmatched': 5,
   };
 
   @override
   void initState() {
     super.initState();
-
-    _selectedIndex = _mapping[widget.path] ?? 0;
+    _selectedIndex = _mapping[widget.path.split('/')[1]] ?? 0;
   }
 
   @override
