@@ -3,6 +3,7 @@ import 'package:espy/modules/models/failed_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class MenuItem {
@@ -28,7 +29,7 @@ class MenuItem {
 
 List<MenuItem> espyMenuItems = [
   MenuItem(
-    requiresSignIn: false,
+    requiresSignIn: true,
     label: 'Home',
     icon: Icons.home_outlined,
     selectedIcon: Icons.home,
@@ -47,6 +48,20 @@ List<MenuItem> espyMenuItems = [
     icon: Icons.bookmark_outline,
     selectedIcon: Icons.bookmark,
     onTap: (context) => context.goNamed('browse'),
+  ),
+  MenuItem(
+    requiresSignIn: false,
+    label: 'Releases',
+    icon: Icons.calendar_month_outlined,
+    selectedIcon: Icons.calendar_month,
+    onTap: (context) {
+      final DateFormat formatter = DateFormat('MMM');
+      final now = DateTime.now();
+      context.goNamed('releases', pathParameters: {
+        'label': formatter.format(now),
+        'year': '${now.year}',
+      });
+    },
   ),
   MenuItem(
     requiresSignIn: false,
