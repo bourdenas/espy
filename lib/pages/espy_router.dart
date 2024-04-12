@@ -6,6 +6,7 @@ import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
@@ -131,9 +132,17 @@ class EspyRouter extends StatelessWidget {
               entries: context
                   .read<TimelineModel>()
                   .releases
-                  .firstWhere((e) =>
-                      e.label == state.pathParameters['label'] &&
-                      e.year == state.pathParameters['year'])
+                  .firstWhere(
+                    (e) =>
+                        e.label == state.pathParameters['label'] &&
+                        e.year == state.pathParameters['year'],
+                    orElse: () => context
+                        .read<FrontpageModel>()
+                        .releases
+                        .firstWhere((e) =>
+                            e.label == state.pathParameters['label'] &&
+                            e.year == state.pathParameters['year']),
+                  )
                   .games
                   .map((digest) => LibraryEntry.fromGameDigest(digest)),
             ),
