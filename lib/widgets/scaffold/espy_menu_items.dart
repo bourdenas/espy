@@ -51,9 +51,16 @@ List<MenuItem> espyMenuItems = [
   ),
   MenuItem(
     requiresSignIn: false,
-    label: 'Releases',
+    label: 'Years',
     icon: Icons.calendar_month_outlined,
     selectedIcon: Icons.calendar_month,
+    onTap: (context) => context.goNamed('years'),
+  ),
+  MenuItem(
+    requiresSignIn: false,
+    label: 'Timeline',
+    icon: Icons.timeline_outlined,
+    selectedIcon: Icons.timeline,
     onTap: (context) {
       final DateFormat formatter = DateFormat('MMM');
       final now = DateTime.now();
@@ -62,13 +69,6 @@ List<MenuItem> espyMenuItems = [
         'year': '${now.year}',
       });
     },
-  ),
-  MenuItem(
-    requiresSignIn: false,
-    label: 'Timeline',
-    icon: Icons.timeline_outlined,
-    selectedIcon: Icons.timeline,
-    onTap: (context) => context.goNamed('timeline'),
   ),
   MenuItem(
     requiresSignIn: true,

@@ -57,11 +57,11 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
-        name: 'timeline',
-        path: '/timeline',
+        name: 'years',
+        path: '/years',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
-          name: 'timeline',
+          name: 'years',
           child: EspyScaffold(
             body: const TimelinePage(year: '2024'),
             path: state.path!,

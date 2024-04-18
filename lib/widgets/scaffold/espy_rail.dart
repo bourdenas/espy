@@ -21,8 +21,8 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
     '': 0,
     'games': 1,
     'browse': 2,
-    'releases': 3,
-    'timeline': 4,
+    'years': 3,
+    'releases': 4,
     'unmatched': 5,
   };
 
