@@ -158,7 +158,6 @@ const Map<String, List<String>> _genreTags = {
     'Survival Adventure',
     'Puzzle Adventure',
     'Walking Simulator',
-    'Visual Novel',
   ],
   'Arcade': [
     'Fighting',
@@ -173,10 +172,12 @@ const Map<String, List<String>> _genreTags = {
     'Fishing Sim',
     'Sailing Sim',
     'Dating Sim',
-    'Exploration',
     'Puzzle',
     'Endless Runner',
     'Rhythm',
+    'Party Game',
+    'Visual Novel',
+    'Exploration',
   ],
   'Platformer': [
     'Side Scroller',
@@ -214,6 +215,7 @@ const Map<String, List<String>> _genreTags = {
     'Flight Simulator',
     'Combat Simulator',
     'Naval Simulator',
+    'Driving Simulator',
     'Survival',
   ],
   'Strategy': [
