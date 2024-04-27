@@ -48,7 +48,7 @@ class LibraryView {
       case LibraryGrouping.genre:
         return _groupBy(
           _libraryEntries,
-          (e) => e.digest.genres.toSet(),
+          (e) => e.digest.igdbGenres.toSet(),
         );
       case LibraryGrouping.genreTag:
         return _groupBy(

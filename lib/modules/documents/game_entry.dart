@@ -12,7 +12,7 @@ class GameEntry {
   final int? releaseDate;
   final Scores scores;
 
-  final List<String> genres;
+  final List<String> igdbGenres;
   final List<String> keywords;
 
   final GameDigest? parent;
@@ -58,7 +58,7 @@ class GameEntry {
     this.status = 'Released',
     this.releaseDate,
     this.scores = const Scores(),
-    this.genres = const [],
+    this.igdbGenres = const [],
     this.keywords = const [],
     this.parent,
     this.expansions = const [],
@@ -87,7 +87,7 @@ class GameEntry {
           scores: json.containsKey('scores')
               ? Scores.fromJson(json['scores'])
               : const Scores(),
-          genres: [
+          igdbGenres: [
             for (final genre in json['igdb_genres'] ?? []) genre,
           ],
           keywords: [
@@ -155,7 +155,7 @@ class GameEntry {
       'status': status,
       if (releaseDate != null) 'release_date': releaseDate,
       'scores': scores.toJson(),
-      if (genres.isNotEmpty) 'igdb_genres': genres,
+      if (igdbGenres.isNotEmpty) 'igdb_genres': igdbGenres,
       if (keywords.isNotEmpty) 'keywords': keywords,
       if (parent != null) 'parent': parent!.toJson(),
       if (expansions.isNotEmpty)

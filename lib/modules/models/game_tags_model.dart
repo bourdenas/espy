@@ -83,7 +83,7 @@ class GameTagsModel extends ChangeNotifier {
     );
     _genresManager = LabelManager(
       entries,
-      (entry) => entry.digest.genres,
+      (entry) => entry.digest.igdbGenres,
       _getEntryById,
     );
 

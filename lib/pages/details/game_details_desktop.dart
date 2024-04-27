@@ -127,9 +127,9 @@ class GameDescription extends StatelessWidget {
             data: description,
           ),
           const SizedBox(height: 8.0),
-          if (gameEntry.genres.isNotEmpty)
+          if (gameEntry.igdbGenres.isNotEmpty)
             Text(
-              'Genres: ${gameEntry.genres.join(", ")}',
+              'Genres: ${gameEntry.igdbGenres.join(", ")}',
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12.0,

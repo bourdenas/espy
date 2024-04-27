@@ -71,7 +71,7 @@ class _EditEntryView extends StatelessWidget {
   Widget build(BuildContext context) {
     List<String> keywords = gameEntry?.keywords ?? <String>[];
     List<String> steamTags = gameEntry?.steamData?.userTags ?? <String>[];
-    final genres = Set.from((gameEntry?.genres ?? <String>[]) +
+    final genres = Set.from((gameEntry?.igdbGenres ?? <String>[]) +
         (gameEntry?.steamData?.genres.map((e) => e.description).toList() ??
             <String>[]));
 

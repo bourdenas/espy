@@ -43,7 +43,7 @@ class _GenreChipsState extends State<GenreChips>
       reverseCurve: Curves.easeOutQuad,
       parent: _controller,
     );
-    _selectedGenres = Set.from(widget.libraryEntry.digest.genres);
+    _selectedGenres = Set.from(widget.libraryEntry.digest.igdbGenres);
   }
 
   @override
@@ -91,7 +91,7 @@ class _GenreChipsState extends State<GenreChips>
           child: _TagSelectionChip(
             label: genre,
             color: GenreChip.color,
-            hasHalo: widget.libraryEntry.digest.genres.contains(genre),
+            hasHalo: widget.libraryEntry.digest.igdbGenres.contains(genre),
             isSelected: _selectedGenres.any((e) => e == genre) ||
                 impliedGenres.any((e) => e == genre),
             onSelected: (selected) => toggleExpand(
