@@ -18,6 +18,7 @@ class GameDigest {
   final List<String> developers;
   final List<String> publishers;
 
+  final List<String> espyGenres;
   final List<String> igdbGenres;
   final List<String> keywords;
 
@@ -38,6 +39,7 @@ class GameDigest {
     this.franchises = const [],
     this.developers = const [],
     this.publishers = const [],
+    this.espyGenres = const [],
     this.igdbGenres = const [],
     this.keywords = const [],
   });
@@ -63,6 +65,7 @@ class GameDigest {
           publishers: [
             for (final company in gameEntry.publishers) company.name
           ],
+          espyGenres: gameEntry.espyGenres,
           igdbGenres: gameEntry.igdbGenres,
           keywords: [],
         );
@@ -90,6 +93,9 @@ class GameDigest {
           publishers: [
             for (final company in json['publishers'] ?? []) company,
           ],
+          espyGenres: [
+            for (final genre in json['espy_genres'] ?? []) genre,
+          ],
           igdbGenres: [
             for (final genre in json['igdb_genres'] ?? []) genre,
           ],
@@ -111,6 +117,7 @@ class GameDigest {
       if (franchises.isNotEmpty) 'franchises': franchises,
       if (developers.isNotEmpty) 'developers': developers,
       if (publishers.isNotEmpty) 'publishers': publishers,
+      if (espyGenres.isNotEmpty) 'espy_genres': espyGenres,
       if (igdbGenres.isNotEmpty) 'igdb_genres': igdbGenres,
       if (keywords.isNotEmpty) 'keywords': keywords,
     };
