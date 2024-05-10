@@ -85,6 +85,18 @@ class GenreTagChip extends EspyChip {
   static Color get color => Colors.deepPurpleAccent;
 }
 
+class EspyGenreTagChip extends EspyChip {
+  EspyGenreTagChip(String genre,
+      {super.key, VoidCallback? onPressed, super.onDeleted})
+      : super(
+          label: genre,
+          color: color,
+          onPressed: onPressed ?? () {},
+        );
+
+  static Color get color => Colors.orange;
+}
+
 class KeywordChip extends EspyChip {
   KeywordChip(String keyword,
       {Key? key, VoidCallback? onPressed, VoidCallback? onDeleted})

@@ -51,9 +51,13 @@ class _AnnualGameListState extends State<AnnualGameList> {
   final availableTags = HashMap<String, int>();
   bool updateAvailableTags = true;
 
+  final bannedTags = HashSet<String>();
+
   @override
   void initState() {
     super.initState();
+
+    bannedTags.addAll([]);
 
     final review = widget.review;
     for (final game in [
@@ -64,7 +68,7 @@ class _AnnualGameListState extends State<AnnualGameList> {
       review.earlyAccess,
       review.debug,
     ].expand((e) => e)) {
-      for (final genre in game.genres) {
+      for (final genre in game.igdbGenres) {
         (genres[genre] ??= []).add(game.id);
       }
     }
@@ -80,7 +84,8 @@ class _AnnualGameListState extends State<AnnualGameList> {
         'Releases',
         review.releases.where((game) =>
             (selectedGenres.isEmpty ||
-                game.genres.any((genre) => selectedGenres.contains(genre))) &&
+                game.igdbGenres
+                    .any((genre) => selectedGenres.contains(genre))) &&
             (selectedTags.isEmpty ||
                 selectedTags.every((tag) => game.keywords.contains(tag))))
       ),
@@ -89,7 +94,8 @@ class _AnnualGameListState extends State<AnnualGameList> {
           'Indies',
           review.indies.where((game) =>
               (selectedGenres.isEmpty ||
-                  game.genres.any((genre) => selectedGenres.contains(genre))) &&
+                  game.igdbGenres
+                      .any((genre) => selectedGenres.contains(genre))) &&
               (selectedTags.isEmpty ||
                   selectedTags.every((tag) => game.keywords.contains(tag))))
         ),
@@ -98,7 +104,8 @@ class _AnnualGameListState extends State<AnnualGameList> {
           'Remasters / Remakes',
           review.remasters.where((game) =>
               (selectedGenres.isEmpty ||
-                  game.genres.any((genre) => selectedGenres.contains(genre))) &&
+                  game.igdbGenres
+                      .any((genre) => selectedGenres.contains(genre))) &&
               (selectedTags.isEmpty ||
                   selectedTags.every((tag) => game.keywords.contains(tag))))
         ),
@@ -107,7 +114,8 @@ class _AnnualGameListState extends State<AnnualGameList> {
           'Expansions',
           review.expansions.where((game) =>
               (selectedGenres.isEmpty ||
-                  game.genres.any((genre) => selectedGenres.contains(genre))) &&
+                  game.igdbGenres
+                      .any((genre) => selectedGenres.contains(genre))) &&
               (selectedTags.isEmpty ||
                   selectedTags.every((tag) => game.keywords.contains(tag))))
         ),
@@ -116,7 +124,8 @@ class _AnnualGameListState extends State<AnnualGameList> {
           'Casual',
           review.casual.where((game) =>
               (selectedGenres.isEmpty ||
-                  game.genres.any((genre) => selectedGenres.contains(genre))) &&
+                  game.igdbGenres
+                      .any((genre) => selectedGenres.contains(genre))) &&
               (selectedTags.isEmpty ||
                   selectedTags.every((tag) => game.keywords.contains(tag))))
         ),
@@ -125,7 +134,8 @@ class _AnnualGameListState extends State<AnnualGameList> {
           'Early Access',
           review.earlyAccess.where((game) =>
               (selectedGenres.isEmpty ||
-                  game.genres.any((genre) => selectedGenres.contains(genre))) &&
+                  game.igdbGenres
+                      .any((genre) => selectedGenres.contains(genre))) &&
               (selectedTags.isEmpty ||
                   selectedTags.every((tag) => game.keywords.contains(tag))))
         ),
@@ -138,7 +148,9 @@ class _AnnualGameListState extends State<AnnualGameList> {
         final (_, games) = group;
         for (final game in games) {
           for (final tag in game.keywords) {
-            availableTags[tag] = (availableTags[tag] ?? 0) + 1;
+            if (!bannedTags.contains(tag)) {
+              availableTags[tag] = (availableTags[tag] ?? 0) + 1;
+            }
           }
         }
       }

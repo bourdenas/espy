@@ -72,6 +72,12 @@ class GameTags extends StatelessWidget {
                   onPressed: () =>
                       onChipPressed(LibraryFilter(tags: {tag.name})),
                 ),
+            for (final genre in libraryEntry.digest.espyGenres)
+              EspyGenreTagChip(
+                genre,
+                onPressed: () =>
+                    onChipPressed(LibraryFilter(genreTags: {genre})),
+              ),
           ],
         ),
       ],
@@ -105,70 +111,93 @@ class GameCardChips extends StatelessWidget {
       updateLibraryView(context, updatedFilter);
     }
 
-    return SizedBox(
-      height: 40.0,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          if (includeCompanies) ...[
-            for (final company in libraryEntry.developers)
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: DeveloperChip(
-                  company,
-                  onPressed: () =>
-                      onChipPressed(LibraryFilter(developers: {company})),
+    return Column(
+      children: [
+        SizedBox(
+          height: 40.0,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              if (includeCompanies) ...[
+                for (final company in libraryEntry.developers)
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: DeveloperChip(
+                      company,
+                      onPressed: () =>
+                          onChipPressed(LibraryFilter(developers: {company})),
+                    ),
+                  ),
+                for (final company in libraryEntry.publishers)
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: PublisherChip(
+                      company,
+                      onPressed: () =>
+                          onChipPressed(LibraryFilter(publishers: {company})),
+                    ),
+                  ),
+              ],
+              if (includeCollections) ...[
+                for (final collection in libraryEntry.collections)
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: CollectionChip(
+                      collection,
+                      onPressed: () => onChipPressed(
+                          LibraryFilter(collections: {collection})),
+                    ),
+                  ),
+                for (final franchise in libraryEntry.franchises)
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: FranchiseChip(
+                      franchise,
+                      onPressed: () =>
+                          onChipPressed(LibraryFilter(franchises: {franchise})),
+                    ),
+                  ),
+              ],
+              for (final genreTag
+                  in tagsModel.genreTags.byGameId(libraryEntry.id))
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: GenreTagChip(
+                    genreTag.name,
+                    onPressed: () => onChipPressed(
+                        LibraryFilter(genreTags: {genreTag.encode()})),
+                  ),
                 ),
-              ),
-            for (final company in libraryEntry.publishers)
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: PublisherChip(
-                  company,
-                  onPressed: () =>
-                      onChipPressed(LibraryFilter(publishers: {company})),
+              for (final tag in tagsModel.userTags.byGameId(libraryEntry.id))
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: TagChip(
+                    tag,
+                    onPressed: () =>
+                        onChipPressed(LibraryFilter(tags: {tag.name})),
+                  ),
                 ),
-              ),
-          ],
-          if (includeCollections) ...[
-            for (final collection in libraryEntry.collections)
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: CollectionChip(
-                  collection,
-                  onPressed: () =>
-                      onChipPressed(LibraryFilter(collections: {collection})),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 40.0,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              for (final genre in libraryEntry.digest.espyGenres)
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: EspyGenreTagChip(
+                    genre,
+                    onPressed: () =>
+                        onChipPressed(LibraryFilter(genreTags: {genre})),
+                  ),
                 ),
-              ),
-            for (final franchise in libraryEntry.franchises)
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: FranchiseChip(
-                  franchise,
-                  onPressed: () =>
-                      onChipPressed(LibraryFilter(franchises: {franchise})),
-                ),
-              ),
-          ],
-          for (final genreTag in tagsModel.genreTags.byGameId(libraryEntry.id))
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: GenreTagChip(
-                genreTag.name,
-                onPressed: () => onChipPressed(
-                    LibraryFilter(genreTags: {genreTag.encode()})),
-              ),
-            ),
-          for (final tag in tagsModel.userTags.byGameId(libraryEntry.id))
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: TagChip(
-                tag,
-                onPressed: () => onChipPressed(LibraryFilter(tags: {tag.name})),
-              ),
-            ),
-        ],
-      ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
