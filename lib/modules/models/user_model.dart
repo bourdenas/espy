@@ -93,9 +93,7 @@ class UserModel extends ChangeNotifier {
     );
 
     if (response.statusCode == 200) {
-      final jsonObj = jsonDecode(response.body) as Map<String, dynamic>;
-      final report = ReconReport.fromJson(jsonObj);
-      return report.lines.join('\n');
+      return 'Done';
     } else {
       return 'Failed to post updated user information:\n${response.statusCode}';
     }
