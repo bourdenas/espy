@@ -34,7 +34,9 @@ class CardCover extends StatelessWidget {
                       child: Image.network(
                           '${Urls.imageProvider}/t_cover_big/$cover.jpg'),
                     )
-              : Image.asset('assets/images/placeholder.png'),
+              : const Center(
+                  child: Icon(Icons.help_outline),
+                ),
           ...overlays
         ],
       ),

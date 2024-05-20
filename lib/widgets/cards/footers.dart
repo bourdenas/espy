@@ -15,8 +15,10 @@ class InfoTileBar extends StatelessWidget {
       backgroundColor: Colors.black45,
       title: _GameTitleText(title),
       subtitle: Row(children: [
-        if (year != null) _GameTitleText('$year'),
-        const Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
+        if (year != null) ...[
+          _GameTitleText('$year'),
+          const Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
+        ],
         if (stores.isNotEmpty) _GameTitleText(stores.join(', ')),
       ]),
     );
