@@ -1,11 +1,11 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:espy/modules/models/failed_model.dart';
+import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/pages/failed/failed_match_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class FailedMatchListView extends StatelessWidget {
-  const FailedMatchListView({Key? key}) : super(key: key);
+  const FailedMatchListView({super.key});
 
   @override
   Widget build(BuildContext context) {

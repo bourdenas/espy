@@ -182,10 +182,10 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
-        name: 'unmatched',
-        path: '/unmatched',
+        name: 'unresolved',
+        path: '/unresolved',
         pageBuilder: (context, state) => NoTransitionPage(
-          name: 'unmatched',
+          name: 'unresolved',
           child: EspyScaffold(
             body: const FailedMatchPage(),
             path: state.path!,

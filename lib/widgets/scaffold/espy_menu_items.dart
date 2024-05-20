@@ -1,5 +1,5 @@
 import 'package:espy/modules/filtering/library_filter.dart';
-import 'package:espy/modules/models/failed_model.dart';
+import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -72,10 +72,10 @@ List<MenuItem> espyMenuItems = [
   ),
   MenuItem(
     requiresSignIn: true,
-    label: 'Failed',
-    icon: Icons.error_outline,
-    selectedIcon: Icons.error,
-    onTap: (context) => context.goNamed('unmatched'),
+    label: 'Unresolved',
+    icon: Icons.task_alt_outlined,
+    selectedIcon: Icons.task_alt,
+    onTap: (context) => context.goNamed('unresolved'),
     badgeCount: (context) => context.watch<UnresolvedModel>().unknown.length,
   ),
 ];

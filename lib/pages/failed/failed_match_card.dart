@@ -8,9 +8,9 @@ import 'package:provider/provider.dart';
 
 class FailedMatchCard extends StatelessWidget {
   const FailedMatchCard({
-    Key? key,
+    super.key,
     required this.entry,
-  }) : super(key: key);
+  });
 
   final StoreEntry entry;
 

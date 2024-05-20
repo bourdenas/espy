@@ -28,10 +28,10 @@ class UnresolvedModel extends ChangeNotifier {
     }
     userId = userData.uid;
 
-    await _loadLibrary();
+    await _loadUnresolved();
   }
 
-  Future<void> _loadLibrary() async {
+  Future<void> _loadUnresolved() async {
     final prefs = await SharedPreferences.getInstance();
 
     final encodedFailed = prefs.getString('${userId}_unresolved');

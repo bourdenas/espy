@@ -1,6 +1,6 @@
 import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/failed_model.dart';
+import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
