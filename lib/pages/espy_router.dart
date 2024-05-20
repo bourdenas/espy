@@ -21,7 +21,7 @@ import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/pages/profile/login_page.dart';
 import 'package:espy/pages/profile/profile_page.dart';
 import 'package:espy/pages/search/search_page.dart';
-import 'package:espy/pages/failed/failed_match_page.dart';
+import 'package:espy/pages/unresolved/unresolved_page.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -187,7 +187,7 @@ class EspyRouter extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           name: 'unresolved',
           child: EspyScaffold(
-            body: const FailedMatchPage(),
+            body: const UnresolvedPage(),
             path: state.path!,
           ),
         ),

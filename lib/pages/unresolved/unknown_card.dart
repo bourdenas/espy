@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class FailedMatchCard extends StatelessWidget {
-  const FailedMatchCard({
+class UnknownCard extends StatelessWidget {
+  const UnknownCard({
     super.key,
     required this.entry,
   });
