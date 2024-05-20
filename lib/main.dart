@@ -98,9 +98,10 @@ ChangeNotifierProxyProvider<UserLibraryModel, LibraryIndexModel>
   );
 }
 
-ChangeNotifierProxyProvider<UserModel, FailedModel> failedMatchesProvider() {
-  return ChangeNotifierProxyProvider<UserModel, FailedModel>(
-    create: (_) => FailedModel(),
+ChangeNotifierProxyProvider<UserModel, UnresolvedModel>
+    failedMatchesProvider() {
+  return ChangeNotifierProxyProvider<UserModel, UnresolvedModel>(
+    create: (_) => UnresolvedModel(),
     update: (
       _,
       userModel,

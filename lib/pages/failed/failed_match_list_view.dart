@@ -9,7 +9,7 @@ class FailedMatchListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unmatchedEntries = context.watch<FailedModel>().entries;
+    final unmatchedEntries = context.watch<UnresolvedModel>().unknown;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),

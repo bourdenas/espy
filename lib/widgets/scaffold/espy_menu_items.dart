@@ -76,6 +76,6 @@ List<MenuItem> espyMenuItems = [
     icon: Icons.error_outline,
     selectedIcon: Icons.error,
     onTap: (context) => context.goNamed('unmatched'),
-    badgeCount: (context) => context.watch<FailedModel>().entries.length,
+    badgeCount: (context) => context.watch<UnresolvedModel>().unknown.length,
   ),
 ];

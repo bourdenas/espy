@@ -1,23 +1,24 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:espy/modules/documents/library.dart';
 import 'package:espy/modules/documents/store_entry.dart';
+import 'package:espy/modules/documents/unresolved.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Model that handles interactions with remote library data store.
-class FailedModel extends ChangeNotifier {
-  FailedEntries _failed = FailedEntries();
+class UnresolvedModel extends ChangeNotifier {
+  UnresolvedEntries _unresolved = UnresolvedEntries();
   String userId = '';
 
-  List<StoreEntry> get entries => _failed.entries;
+  List<Unresolved> get needApproval => _unresolved.needApproval;
+  List<StoreEntry> get unknown => _unresolved.unknown;
 
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
-      _failed = FailedEntries();
+      _unresolved = UnresolvedEntries();
       notifyListeners();
       return;
     }
@@ -33,9 +34,9 @@ class FailedModel extends ChangeNotifier {
   Future<void> _loadLibrary() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final encodedFailed = prefs.getString('${userId}_failed');
+    final encodedFailed = prefs.getString('${userId}_unresolved');
     if (encodedFailed != null) {
-      _failed = FailedEntries.fromJson(
+      _unresolved = UnresolvedEntries.fromJson(
           jsonDecode(encodedFailed) as Map<String, dynamic>);
       notifyListeners();
     }
@@ -45,7 +46,7 @@ class FailedModel extends ChangeNotifier {
 
   Future<void> _saveLocally() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('${userId}_failed', jsonEncode(_failed));
+    await prefs.setString('${userId}_unresolved', jsonEncode(_unresolved));
   }
 
   Future<void> _fetch() async {
@@ -53,15 +54,15 @@ class FailedModel extends ChangeNotifier {
         .collection('users')
         .doc(userId)
         .collection('games')
-        .doc('failed')
-        .withConverter<FailedEntries>(
+        .doc('unresolved')
+        .withConverter<UnresolvedEntries>(
           fromFirestore: (snapshot, _) =>
-              FailedEntries.fromJson(snapshot.data()!),
+              UnresolvedEntries.fromJson(snapshot.data()!),
           toFirestore: (entry, _) => entry.toJson(),
         )
         .snapshots()
-        .listen((DocumentSnapshot<FailedEntries> snapshot) {
-      _failed = snapshot.data() ?? FailedEntries();
+        .listen((DocumentSnapshot<UnresolvedEntries> snapshot) {
+      _unresolved = snapshot.data() ?? UnresolvedEntries();
       notifyListeners();
       _saveLocally();
     });
