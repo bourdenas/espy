@@ -1,11 +1,13 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:espy/widgets/cards/footers.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class TileData {
   const TileData({
     this.title,
+    this.subtitle,
     this.image,
     this.scale = 1,
     this.onTap,
@@ -13,6 +15,7 @@ class TileData {
   });
 
   final String? title;
+  final String? subtitle;
   final String? image;
   final double scale;
   final VoidCallback? onTap;
@@ -209,10 +212,10 @@ class _Tile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     SizedBox(
-                      width: tileSize.width,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(data.title!),
+                      width: tileSize.width * data.scale,
+                      child: InfoTileBar(
+                        data.title!,
+                        stores: data.subtitle != null ? [data.subtitle!] : [],
                       ),
                     ),
                   ],

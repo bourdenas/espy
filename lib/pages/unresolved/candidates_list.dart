@@ -14,7 +14,8 @@ class CandidatesList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: SizedBox(
-        height: AppConfigModel.gridCardContraints.maxCardWidth * 1.25 + 8,
+        height: AppConfigModel.gridCardContraints.maxCardWidth /
+            AppConfigModel.gridCardContraints.cardAspectRatio,
         child: Row(
           children: [
             SizedBox(
@@ -34,6 +35,7 @@ class CandidatesList extends StatelessWidget {
                   for (final digest in unresolved.candidates)
                     TileData(
                       title: digest.name,
+                      subtitle: '${digest.release.year}',
                       image: digest.cover != null
                           ? '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg'
                           : null,
