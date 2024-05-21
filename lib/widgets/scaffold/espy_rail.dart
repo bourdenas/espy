@@ -23,7 +23,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
     'browse': 2,
     'years': 3,
     'releases': 4,
-    'unmatched': 5,
+    'unresolved': 5,
   };
 
   @override
