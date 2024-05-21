@@ -18,6 +18,7 @@ class UnknownListView extends StatelessWidget {
         from: 20,
         duration: const Duration(milliseconds: 500),
         child: GridView.extent(
+          shrinkWrap: true,
           maxCrossAxisExtent: AppConfigModel.gridCardContraints.maxCardWidth,
           childAspectRatio: AppConfigModel.gridCardContraints.cardAspectRatio,
           padding: const EdgeInsets.all(4),
