@@ -3,6 +3,7 @@ import 'package:espy/modules/documents/unresolved.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CandidatesList extends StatelessWidget {
   const CandidatesList(this.unresolved, {super.key});
@@ -36,6 +37,8 @@ class CandidatesList extends StatelessWidget {
                       image: digest.cover != null
                           ? '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg'
                           : null,
+                      onTap: () => context.pushNamed('details',
+                          pathParameters: {'gid': '${digest.id}'}),
                     ),
                 ],
               ),
