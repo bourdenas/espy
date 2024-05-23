@@ -12,6 +12,7 @@ class TileData {
     this.scale = 1,
     this.onTap,
     this.onLongTap,
+    this.overlay,
   });
 
   final String? title;
@@ -20,6 +21,7 @@ class TileData {
   final double scale;
   final VoidCallback? onTap;
   final VoidCallback? onLongTap;
+  final Widget? overlay;
 }
 
 class TileSize {
@@ -222,6 +224,7 @@ class _Tile extends StatelessWidget {
                 ),
               if (data.image == null && data.title == null)
                 _PlaceholderShimmer(tileSize),
+              if (data.overlay != null) data.overlay!,
             ],
           ),
         ),
