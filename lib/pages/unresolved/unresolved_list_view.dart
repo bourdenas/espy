@@ -1,15 +1,15 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:espy/modules/models/unresolved_model.dart';
+import 'package:espy/modules/documents/unresolved.dart';
 import 'package:espy/pages/unresolved/candidates_list.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class UnresolvedListView extends StatelessWidget {
-  const UnresolvedListView({super.key});
+  const UnresolvedListView(this.unresolved, {super.key});
+
+  final List<Unresolved> unresolved;
 
   @override
   Widget build(BuildContext context) {
-    final unresolved = context.watch<UnresolvedModel>().needApproval;
     unresolved.sort((a, b) => a.storeEntry.title.compareTo(b.storeEntry.title));
 
     return Padding(

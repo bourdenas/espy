@@ -1,17 +1,16 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/pages/unresolved/unknown_card.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class UnknownListView extends StatelessWidget {
-  const UnknownListView({super.key});
+  const UnknownListView(this.unknowns, {super.key});
+
+  final List<StoreEntry> unknowns;
 
   @override
   Widget build(BuildContext context) {
-    final unknowns = context.watch<UnresolvedModel>().unknown;
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: FadeInUp(
