@@ -35,7 +35,7 @@ class CardCover extends StatelessWidget {
                           '${Urls.imageProvider}/t_cover_big/$cover.jpg'),
                     )
               : const Center(
-                  child: Icon(Icons.help_outline),
+                  child: Icon(Icons.question_mark),
                 ),
           ...overlays
         ],

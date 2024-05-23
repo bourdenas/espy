@@ -1,6 +1,8 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/unresolved.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/widgets/cards/cover.dart';
+import 'package:espy/widgets/cards/footers.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -21,10 +23,17 @@ class CandidatesList extends StatelessWidget {
             SizedBox(
               width: AppConfigModel.gridCardContraints.maxCardWidth,
               child: ListTile(
-                title: Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(unresolved.storeEntry.title),
+                title: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 300),
+                  child: Stack(
+                    alignment: AlignmentDirectional.bottomCenter,
+                    children: [
+                      const CardCover(),
+                      InfoTileBar(
+                        unresolved.storeEntry.title,
+                        stores: [unresolved.storeEntry.storefront],
+                      ),
+                    ],
                   ),
                 ),
               ),
