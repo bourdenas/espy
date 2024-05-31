@@ -163,75 +163,45 @@ class _AnnualGameListState extends State<AnnualGameList> {
       for (final genre in game.espyGenres) {
         (genres[genre] ??= []).add(game.id);
       }
+      if (game.espyGenres.isEmpty) {
+        (genres['Unknown'] ??= []).add(game.id);
+      }
     }
-    selectedGenres.addAll(genres.keys);
+    // selectedGenres.addAll(genres.keys);
   }
+
+  bool selectionCriteria(game) =>
+      (
+          // No genre is selected.
+          selectedGenres.isEmpty ||
+              // Game contains all selected genres
+              selectedGenres
+                  .every((genre) => game.espyGenres.contains(genre)) ||
+              // Unknown genre is selected and game has no assigned genres
+              selectedGenres.contains('Unknown') &&
+                  selectedGenres.length == 1 &&
+                  game.espyGenres.isEmpty) &&
+      (selectedTags.isEmpty ||
+          selectedTags.every((tag) => game.keywords.contains(tag)));
 
   @override
   Widget build(BuildContext context) {
     final review = widget.review;
 
     final groups = [
-      (
-        'Releases',
-        review.releases.where((game) =>
-            (selectedGenres.isEmpty ||
-                game.espyGenres
-                    .any((genre) => selectedGenres.contains(genre))) &&
-            (selectedTags.isEmpty ||
-                selectedTags.every((tag) => game.keywords.contains(tag))))
-      ),
+      ('Releases', review.releases.where(selectionCriteria)),
       if (review.indies.isNotEmpty)
-        (
-          'Indies',
-          review.indies.where((game) =>
-              (selectedGenres.isEmpty ||
-                  game.espyGenres
-                      .any((genre) => selectedGenres.contains(genre))) &&
-              (selectedTags.isEmpty ||
-                  selectedTags.every((tag) => game.keywords.contains(tag))))
-        ),
+        ('Indies', review.indies.where(selectionCriteria)),
       if (review.remasters.isNotEmpty)
-        (
-          'Remasters / Remakes',
-          review.remasters.where((game) =>
-              (selectedGenres.isEmpty ||
-                  game.espyGenres
-                      .any((genre) => selectedGenres.contains(genre))) &&
-              (selectedTags.isEmpty ||
-                  selectedTags.every((tag) => game.keywords.contains(tag))))
-        ),
+        ('Remasters / Remakes', review.remasters.where(selectionCriteria)),
       if (review.expansions.isNotEmpty)
-        (
-          'Expansions',
-          review.expansions.where((game) =>
-              (selectedGenres.isEmpty ||
-                  game.espyGenres
-                      .any((genre) => selectedGenres.contains(genre))) &&
-              (selectedTags.isEmpty ||
-                  selectedTags.every((tag) => game.keywords.contains(tag))))
-        ),
+        ('Expansions', review.expansions.where(selectionCriteria)),
       if (review.casual.isNotEmpty)
-        (
-          'Casual',
-          review.casual.where((game) =>
-              (selectedGenres.isEmpty ||
-                  game.espyGenres
-                      .any((genre) => selectedGenres.contains(genre))) &&
-              (selectedTags.isEmpty ||
-                  selectedTags.every((tag) => game.keywords.contains(tag))))
-        ),
+        ('Casual', review.casual.where(selectionCriteria)),
       if (review.earlyAccess.isNotEmpty)
-        (
-          'Early Access',
-          review.earlyAccess.where((game) =>
-              (selectedGenres.isEmpty ||
-                  game.espyGenres
-                      .any((genre) => selectedGenres.contains(genre))) &&
-              (selectedTags.isEmpty ||
-                  selectedTags.every((tag) => game.keywords.contains(tag))))
-        ),
-      if (review.debug.isNotEmpty) ('Debug', review.debug),
+        ('Early Access', review.earlyAccess.where(selectionCriteria)),
+      if (review.debug.isNotEmpty)
+        ('Debug', review.debug.where(selectionCriteria)),
     ];
 
     if (updateAvailableTags) {
