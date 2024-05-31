@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/documents/user_annotations.dart';
 
-class GenreTagManager {
-  GenreTagManager(this._userId, this._userTags, this._getEntryById);
+class ManualGenreManager {
+  ManualGenreManager(this._userId, this._userTags, this._getEntryById);
 
   Iterable<Genre> byGameId(int gameId) => _gameIdToGenres[gameId] ?? [];
 
@@ -78,7 +78,7 @@ class GenreTagManager {
   }
 
   final String _userId;
-  final UserTags _userTags;
+  final UserAnnotations _userTags;
   final LibraryEntry? Function(int) _getEntryById;
 
   final Map<int, List<Genre>> _gameIdToGenres = {};

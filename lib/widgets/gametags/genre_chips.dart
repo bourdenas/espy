@@ -1,6 +1,5 @@
 import 'package:badges/badges.dart' as badges;
-import 'package:espy/modules/documents/user_tags.dart';
-import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/utils/edit_distance.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
@@ -8,7 +7,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// Chips used for refining genres for a `LibraryEntry`.
+/// Widget used for manual genre selection in game entry edit dialog.
 class GenreChips extends StatefulWidget {
   const GenreChips(this.libraryEntry, this.keywords, {super.key});
 
@@ -25,7 +24,7 @@ class _GenreChipsState extends State<GenreChips>
   late final Animation<double> _scatterAnimation;
 
   bool _subgenreOpen = false;
-  String? _expandedGenre;
+  String? _expandedGenreGroup;
   Set<String> _selectedGenres = {};
 
   @override
@@ -54,50 +53,48 @@ class _GenreChipsState extends State<GenreChips>
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = AppConfigModel.isMobile(context);
     return Stack(
       alignment: Alignment.center,
       clipBehavior: Clip.none,
       children: [
-        if (_expandedGenre == null) _buildGenreChips(),
-        if (_expandedGenre != null)
-          // if (isMobile)
-          _buildGenreTagsChips(context)
-        // else ...[_buildTapToCloseFab(), _buildGenreTagsScatter(context)],
+        if (_expandedGenreGroup == null)
+          _buildGenreChips()
+        else
+          _buildManualGenreChips(context),
       ],
     );
   }
 
   Widget _buildGenreChips() {
     final tagsModel = context.watch<GameTagsModel>();
-    final genreTags = tagsModel.genreTags.byGameId(widget.libraryEntry.id);
+    final genreTags = tagsModel.manualGenres.byGameId(widget.libraryEntry.id);
     final impliedGenres = genreTags.map((e) => tagsModel.getGenreGroup(e.name));
 
     final widgets = [
-      for (final genre in context.read<GameTagsModel>().espyGenres)
+      for (final genreGroup in context.read<GameTagsModel>().genreGroups)
         badges.Badge(
           showBadge: genreTags
-              .where(
-                  (genreTag) => tagsModel.getGenreGroup(genreTag.name) == genre)
+              .where((genreTag) =>
+                  tagsModel.getGenreGroup(genreTag.name) == genreGroup)
               .isNotEmpty,
           badgeContent: Text(
-              '${genreTags.where((genreTag) => tagsModel.getGenreGroup(genreTag.name) == genre).length}'),
+              '${genreTags.where((genreTag) => tagsModel.getGenreGroup(genreTag.name) == genreGroup).length}'),
           position: badges.BadgePosition.topEnd(top: -16, end: -8),
           badgeAnimation: const badges.BadgeAnimation.scale(),
           badgeStyle: badges.BadgeStyle(
-            badgeColor: GenreTagChip.color,
+            badgeColor: ManualGenreChip.color,
             shape: badges.BadgeShape.circle,
           ),
           child: _TagSelectionChip(
-            label: genre,
-            color: GenreChip.color,
-            hasHalo: widget.libraryEntry.digest.igdbGenres.contains(genre),
-            isSelected: _selectedGenres.any((e) => e == genre) ||
-                impliedGenres.any((e) => e == genre),
+            label: genreGroup,
+            color: GenreGroupChip.color,
+            hasHalo: widget.libraryEntry.digest.igdbGenres.contains(genreGroup),
+            isSelected: _selectedGenres.any((e) => e == genreGroup) ||
+                impliedGenres.any((e) => e == genreGroup),
             onSelected: (selected) => toggleExpand(
               context,
               selected,
-              genre,
+              genreGroup,
               widget.libraryEntry.id,
             ),
           ),
@@ -111,23 +108,25 @@ class _GenreChipsState extends State<GenreChips>
     );
   }
 
-  Widget _buildGenreTagsChips(BuildContext context) {
-    final genre = _expandedGenre!;
+  Widget _buildManualGenreChips(BuildContext context) {
+    final genreGroup = _expandedGenreGroup!;
     final tagsModel = context.watch<GameTagsModel>();
 
     final widgets = [
-      for (final label in tagsModel.espyGenreTags(genre) ?? [])
+      for (final label in tagsModel.espyGenreTags(genreGroup) ?? [])
         _TagSelectionChip(
           label: label,
-          color: GenreTagChip.color,
+          color: ManualGenreChip.color,
           hasHalo: matchInDict(label, widget.keywords),
-          isSelected: tagsModel.genreTags.byGameId(widget.libraryEntry.id).any(
-              (e) =>
-                  tagsModel.getGenreGroup(e.name) == genre && e.name == label),
+          isSelected: tagsModel.manualGenres
+              .byGameId(widget.libraryEntry.id)
+              .any((e) =>
+                  tagsModel.getGenreGroup(e.name) == genreGroup &&
+                  e.name == label),
           onSelected: (selected) => selected
-              ? tagsModel.genreTags
+              ? tagsModel.manualGenres
                   .add(Genre(name: label), widget.libraryEntry.id)
-              : tagsModel.genreTags
+              : tagsModel.manualGenres
                   .remove(Genre(name: label), widget.libraryEntry.id),
         ),
     ];
@@ -144,14 +143,14 @@ class _GenreChipsState extends State<GenreChips>
     return AnimatedContainer(
       transformAlignment: Alignment.center,
       transform: Matrix4.diagonal3Values(
-        _expandedGenre == null ? 0.7 : 1.0,
-        _expandedGenre == null ? 0.7 : 1.0,
+        _expandedGenreGroup == null ? 0.7 : 1.0,
+        _expandedGenreGroup == null ? 0.7 : 1.0,
         1.0,
       ),
       duration: const Duration(milliseconds: 250),
       curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
       child: AnimatedOpacity(
-        opacity: _expandedGenre == null ? 0.0 : 1.0,
+        opacity: _expandedGenreGroup == null ? 0.0 : 1.0,
         curve: const Interval(0.25, 1.0, curve: Curves.easeInOut),
         duration: const Duration(milliseconds: 250),
         child: FloatingActionButton(
@@ -171,7 +170,7 @@ class _GenreChipsState extends State<GenreChips>
   void toggleExpand(
       BuildContext context, bool selected, String? genre, int gameId) {
     setState(() {
-      _expandedGenre = genre;
+      _expandedGenreGroup = genre;
 
       if (genre != null) {
         _controller.forward();

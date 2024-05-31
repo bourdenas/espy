@@ -1,6 +1,5 @@
-import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
-import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
@@ -69,18 +68,18 @@ class GameChipsFilterBar extends StatelessWidget {
       for (final genre in filter.genres) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: GenreChip(
+          child: EspyGenreTagChip(
             genre,
             onDeleted: () => onRemove(LibraryFilter(genres: {genre})),
           ),
         ),
       ],
-      for (final genreTag in filter.genreTags) ...[
+      for (final genreTag in filter.manualGenres) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: GenreTagChip(
+          child: ManualGenreChip(
             Genre.decode(genreTag).name,
-            onDeleted: () => onRemove(LibraryFilter(genreTags: {genreTag})),
+            onDeleted: () => onRemove(LibraryFilter(manualGenres: {genreTag})),
           ),
         ),
       ],
@@ -93,12 +92,12 @@ class GameChipsFilterBar extends StatelessWidget {
           ),
         ),
       ],
-      for (final tag in filter.tags) ...[
+      for (final userTag in filter.userTags) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: TagChip(
-            context.read<GameTagsModel>().userTags.get(tag),
-            onDeleted: () => onRemove(LibraryFilter(tags: {tag})),
+            userTag,
+            onDeleted: () => onRemove(LibraryFilter(userTags: {userTag})),
           ),
         ),
       ],

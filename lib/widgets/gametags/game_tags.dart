@@ -58,26 +58,28 @@ class GameTags extends StatelessWidget {
                 onPressed: () =>
                     onChipPressed(LibraryFilter(franchises: {franchise})),
               ),
-            for (final genreTag
-                in tagsModel.genreTags.byGameId(libraryEntry.id))
-              GenreTagChip(
-                genreTag.name,
-                onPressed: () => onChipPressed(
-                    LibraryFilter(genreTags: {genreTag.encode()})),
-              ),
-            if (context.watch<UserModel>().isSignedIn)
-              for (final tag in tagsModel.userTags.byGameId(libraryEntry.id))
-                TagChip(
-                  tag,
-                  onPressed: () =>
-                      onChipPressed(LibraryFilter(tags: {tag.name})),
-                ),
             for (final genre in libraryEntry.digest.espyGenres)
               EspyGenreTagChip(
                 genre,
                 onPressed: () =>
-                    onChipPressed(LibraryFilter(genreTags: {genre})),
+                    onChipPressed(LibraryFilter(manualGenres: {genre})),
               ),
+            if (context.watch<UserModel>().isSignedIn)
+              for (final tag
+                  in tagsModel.userTags.tagsByGameId(libraryEntry.id))
+                TagChip(
+                  tag,
+                  onPressed: () =>
+                      onChipPressed(LibraryFilter(userTags: {tag})),
+                ),
+            if (context.watch<UserModel>().isSignedIn)
+              for (final manualGenre
+                  in tagsModel.manualGenres.byGameId(libraryEntry.id))
+                ManualGenreChip(
+                  manualGenre.name,
+                  onPressed: () => onChipPressed(
+                      LibraryFilter(manualGenres: {manualGenre.encode()})),
+                ),
           ],
         ),
       ],
@@ -158,23 +160,23 @@ class GameCardChips extends StatelessWidget {
                     ),
                   ),
               ],
-              for (final genreTag
-                  in tagsModel.genreTags.byGameId(libraryEntry.id))
+              for (final genre in libraryEntry.digest.espyGenres)
                 Padding(
                   padding: const EdgeInsets.all(4.0),
-                  child: GenreTagChip(
-                    genreTag.name,
-                    onPressed: () => onChipPressed(
-                        LibraryFilter(genreTags: {genreTag.encode()})),
+                  child: EspyGenreTagChip(
+                    genre,
+                    onPressed: () =>
+                        onChipPressed(LibraryFilter(manualGenres: {genre})),
                   ),
                 ),
-              for (final tag in tagsModel.userTags.byGameId(libraryEntry.id))
+              for (final userTag
+                  in tagsModel.userTags.tagsByGameId(libraryEntry.id))
                 Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: TagChip(
-                    tag,
+                    userTag,
                     onPressed: () =>
-                        onChipPressed(LibraryFilter(tags: {tag.name})),
+                        onChipPressed(LibraryFilter(userTags: {userTag})),
                   ),
                 ),
             ],
@@ -185,13 +187,14 @@ class GameCardChips extends StatelessWidget {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              for (final genre in libraryEntry.digest.espyGenres)
+              for (final manualGenre
+                  in tagsModel.manualGenres.byGameId(libraryEntry.id))
                 Padding(
                   padding: const EdgeInsets.all(4.0),
-                  child: EspyGenreTagChip(
-                    genre,
-                    onPressed: () =>
-                        onChipPressed(LibraryFilter(genreTags: {genre})),
+                  child: ManualGenreChip(
+                    manualGenre.name,
+                    onPressed: () => onChipPressed(
+                        LibraryFilter(manualGenres: {manualGenre.encode()})),
                   ),
                 ),
             ],

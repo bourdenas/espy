@@ -1,5 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 
 class LibraryView {

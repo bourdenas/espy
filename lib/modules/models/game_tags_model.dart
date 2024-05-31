@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/models/library_index_model.dart';
-import 'package:espy/modules/models/tags/genre_tag_manager.dart';
+import 'package:espy/modules/models/tags/manual_genre_manager.dart';
 import 'package:espy/modules/models/tags/label_manager.dart';
 import 'package:espy/modules/models/tags/user_tag_manager.dart';
 import 'package:flutter/material.dart' show ChangeNotifier;
@@ -19,9 +19,11 @@ class GameTagsModel extends ChangeNotifier {
   late LabelManager _collectionsManager;
   late LabelManager _franchisesManager;
   late LabelManager _genresManager;
-  GenreTagManager _genreTagsManager =
-      GenreTagManager('', UserTags(), (_) => null);
-  UserTagManager _userTagsManager = UserTagManager('', UserTags(), (_) => null);
+  late LabelManager _keywordsManager;
+  ManualGenreManager _manualGenresManager =
+      ManualGenreManager('', UserAnnotations(), (_) => null);
+  UserTagManager _userTagsManager =
+      UserTagManager('', UserAnnotations(), (_) => null);
 
   LabelManager get stores => _storesManager;
   LabelManager get developers => _developersManager;
@@ -29,16 +31,12 @@ class GameTagsModel extends ChangeNotifier {
   LabelManager get collections => _collectionsManager;
   LabelManager get franchises => _franchisesManager;
   LabelManager get genres => _genresManager;
-  GenreTagManager get genreTags => _genreTagsManager;
+  LabelManager get keywords => _keywordsManager;
+  ManualGenreManager get manualGenres => _manualGenresManager;
   UserTagManager get userTags => _userTagsManager;
 
-  List<String> get espyGenres => _genres;
-  Iterable<String> filterEspyGenres(Iterable<String> genres) => genres
-      .map((genre) => _igdbToEspyGenres[genre])
-      .where((e) => e != null)
-      .cast<String>()
-      .toSet();
-  List<String>? espyGenreTags(String genre) => _genreTags[genre];
+  List<String> get genreGroups => _genreGroups;
+  List<String>? espyGenreTags(String genreGroup) => _genreTags[genreGroup];
   String? getGenreGroup(String genre) => _groupMapping[genre];
 
   void update(
@@ -83,7 +81,12 @@ class GameTagsModel extends ChangeNotifier {
     );
     _genresManager = LabelManager(
       entries,
-      (entry) => entry.digest.igdbGenres,
+      (entry) => entry.digest.espyGenres,
+      _getEntryById,
+    );
+    _keywordsManager = LabelManager(
+      entries,
+      (entry) => entry.digest.keywords,
       _getEntryById,
     );
 
@@ -99,15 +102,16 @@ class GameTagsModel extends ChangeNotifier {
         .doc(userId)
         .collection('user_data')
         .doc('tags')
-        .withConverter<UserTags>(
-          fromFirestore: (snapshot, _) => UserTags.fromJson(snapshot.data()!),
+        .withConverter<UserAnnotations>(
+          fromFirestore: (snapshot, _) =>
+              UserAnnotations.fromJson(snapshot.data()!),
           toFirestore: (entry, _) => entry.toJson(),
         )
         .snapshots()
-        .listen((DocumentSnapshot<UserTags> snapshot) {
-      final userTags = snapshot.data() ?? UserTags();
-      _genreTagsManager = GenreTagManager(_userId, userTags, _getEntryById)
-        ..build();
+        .listen((DocumentSnapshot<UserAnnotations> snapshot) {
+      final userTags = snapshot.data() ?? UserAnnotations();
+      _manualGenresManager =
+          ManualGenreManager(_userId, userTags, _getEntryById)..build();
       _userTagsManager = UserTagManager(_userId, userTags, _getEntryById)
         ..build();
       notifyListeners();
@@ -118,7 +122,7 @@ class GameTagsModel extends ChangeNotifier {
   LibraryEntry? _getEntryById(int id) => _indexModel.getEntryById(id);
 }
 
-const _genres = [
+const _genreGroups = [
   'Adventure',
   'RPG',
   'Shooter',
@@ -128,26 +132,6 @@ const _genres = [
   'Arcade',
   'Casual',
 ];
-
-const Map<String, String> _igdbToEspyGenres = {
-  'Point-and-click': 'Adventure',
-  'Adventure': 'Adventure',
-  'Pinball': 'Arcade',
-  'Arcade': 'Arcade',
-  'Fighting': 'Arcade',
-  'Card & Board Game': 'Arcade',
-  'MOBA': 'Online',
-  'Platform': 'Platformer',
-  'Role-playing (RPG)': 'RPG',
-  'Shooter': 'Shooter',
-  'Racing': 'Simulator',
-  'Simulator': 'Simulator',
-  'Sport': 'Simulator',
-  'Real Time Strategy (RTS)': 'Strategy',
-  'Strategy': 'Strategy',
-  'Turn-based strategy (TBS)': 'Strategy',
-  'Tactical  ': 'Strategy',
-};
 
 const Map<String, List<String>> _genreTags = {
   'Adventure': [

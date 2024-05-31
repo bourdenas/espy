@@ -1,33 +1,30 @@
-import 'package:espy/modules/documents/user_tags.dart';
+import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
-import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/tags/user_tag_manager.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class TagSearchResults extends StatelessWidget {
   const TagSearchResults(
     this.stores,
-    this.userTags,
     this.developers,
     this.publishers,
     this.collections,
     this.franchises,
-    this.genres,
-    this.genresTags, {
+    this.genres, {
     super.key,
+    this.manualGenres = const [],
+    this.userTags = const [],
   });
 
   final Iterable<String> stores;
-  final Iterable<CustomUserTag> userTags;
   final Iterable<String> developers;
   final Iterable<String> publishers;
   final Iterable<String> collections;
   final Iterable<String> franchises;
   final Iterable<String> genres;
-  final Iterable<Genre> genresTags;
+  final Iterable<Genre> manualGenres;
+  final Iterable<String> userTags;
 
   @override
   Widget build(BuildContext context) {
@@ -100,9 +97,9 @@ class TagSearchResults extends StatelessWidget {
           if (genres.isNotEmpty)
             _ChipResults(
               title: 'Genres',
-              color: GenreChip.color,
+              color: EspyGenreTagChip.color,
               chips: genres.map(
-                (genre) => GenreChip(
+                (genre) => EspyGenreTagChip(
                   genre,
                   onPressed: () => updateLibraryView(
                     context,
@@ -111,33 +108,31 @@ class TagSearchResults extends StatelessWidget {
                 ),
               ),
             ),
-          if (genresTags.isNotEmpty)
+          if (manualGenres.isNotEmpty)
             _ChipResults(
-              title: 'Genres',
-              color: GenreTagChip.color,
-              chips: genresTags.map(
-                (genreTag) => GenreTagChip(
+              title: 'User Genres',
+              color: ManualGenreChip.color,
+              chips: manualGenres.map(
+                (genreTag) => ManualGenreChip(
                   genreTag.name,
                   onPressed: () => updateLibraryView(
                     context,
-                    LibraryFilter(genreTags: {genreTag.encode()}),
+                    LibraryFilter(manualGenres: {genreTag.encode()}),
                   ),
                 ),
               ),
             ),
-          for (final group in groupTags(userTags).entries)
+          if (userTags.isNotEmpty)
             _ChipResults(
               title: 'Tags',
-              color: group.key,
-              chips: group.value.map(
+              color: TagChip.color,
+              chips: userTags.map(
                 (tag) => TagChip(
                   tag,
                   onPressed: () => updateLibraryView(
                     context,
-                    LibraryFilter(tags: {tag.name}),
+                    LibraryFilter(userTags: {tag}),
                   ),
-                  onRightClick: () =>
-                      context.read<GameTagsModel>().userTags.moveCluster(tag),
                 ),
               ),
             ),
@@ -145,14 +140,6 @@ class TagSearchResults extends StatelessWidget {
       ),
     );
   }
-}
-
-Map<Color, List<CustomUserTag>> groupTags(Iterable<CustomUserTag> tags) {
-  var groups = <Color, List<CustomUserTag>>{};
-  for (final tag in tags) {
-    (groups[tag.color] ??= []).add(tag);
-  }
-  return groups;
 }
 
 class _ChipResults extends StatelessWidget {
