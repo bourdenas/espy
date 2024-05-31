@@ -11,6 +11,8 @@ class Urls {
           : 'https://httpserver-fjxkoqq4wq-ew.a.run.app';
   static const imageProvider = kIsWeb
       ? 'https://images.igdb.com/igdb/image/upload'
-      // ? 'http://localhost:3030/images'
+      // ? 'http://127.0.0.1:8080/images/'
       : 'https://images.igdb.com/igdb/image/upload';
+
+  static const igdbImages = 'https://images.igdb.com/igdb/image/upload';
 }
