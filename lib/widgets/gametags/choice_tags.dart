@@ -1,29 +1,29 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
-import 'package:espy/modules/models/tags/user_tag_manager.dart';
 import 'package:espy/utils/edit_distance.dart';
+import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-/// Chips used for user tag selection for a `LibraryEntry`.
+/// Widget used for user tags selection in game entry edit dialog.
 class ChoiceTags extends StatefulWidget {
   final LibraryEntry entry;
   final List<String> keywords;
 
-  const ChoiceTags(this.entry, this.keywords, {Key? key}) : super(key: key);
+  const ChoiceTags(this.entry, this.keywords, {super.key});
 
   @override
   State<ChoiceTags> createState() => _ChoiceTagsState();
 }
 
 class _ChoiceTagsState extends State<ChoiceTags> {
-  Set<CustomUserTag> selectedTags = {};
+  Set<String> selectedTags = {};
   String filter = '';
 
   @override
   Widget build(BuildContext context) {
-    void onSelected(bool selected, CustomUserTag tag) {
+    void onSelected(bool selected, String tag) {
       if (selected) {
         context.read<GameTagsModel>().userTags.add(tag, widget.entry.id);
       } else {
@@ -34,7 +34,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
     final tagsModel = context.watch<GameTagsModel>();
     final filteredTags = tagsModel.userTags.filter(filter.split(' '));
     selectedTags.clear();
-    selectedTags.addAll(tagsModel.userTags.byGameId(widget.entry.id));
+    selectedTags.addAll(tagsModel.userTags.tagsByGameId(widget.entry.id));
 
     return Column(
       children: [
@@ -56,9 +56,9 @@ class _ChoiceTagsState extends State<ChoiceTags> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(50),
                             boxShadow: [
-                              if (matchInDict(tag.name, widget.keywords))
+                              if (matchInDict(tag, widget.keywords))
                                 BoxShadow(
-                                  color: tag.color,
+                                  color: TagChip.color,
                                   blurRadius: 6.0,
                                   spreadRadius: 6.0,
                                 ),
@@ -66,19 +66,17 @@ class _ChoiceTagsState extends State<ChoiceTags> {
                           ),
                           child: ChoiceChip(
                             label: Text(
-                              tag.name,
+                              tag,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
                                   .copyWith(
-                                      color: selectedTags
-                                              .any((e) => e.name == tag.name)
+                                      color: selectedTags.any((e) => e == tag)
                                           ? Colors.white
-                                          : tag.color[300]),
+                                          : TagChip.color[300]),
                             ),
-                            selected:
-                                selectedTags.any((e) => e.name == tag.name),
-                            selectedColor: tag.color,
+                            selected: selectedTags.any((e) => e == tag),
+                            selectedColor: TagChip.color,
                             onSelected: (selected) => onSelected(selected, tag),
                           ),
                         ),
@@ -104,10 +102,7 @@ class _ChoiceTagsState extends State<ChoiceTags> {
               });
             },
             onFieldSubmitted: (text) {
-              context
-                  .read<GameTagsModel>()
-                  .userTags
-                  .add(CustomUserTag(name: text), widget.entry.id);
+              context.read<GameTagsModel>().userTags.add(text, widget.entry.id);
               setState(() {
                 _textController.text = '';
                 filter = '';

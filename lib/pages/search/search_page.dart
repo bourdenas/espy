@@ -41,13 +41,13 @@ class _SearchPageState extends State<SearchPage> {
         searchBox(),
         TagSearchResults(
           tagsModel.stores.filter(ngrams),
-          tagsModel.userTags.filter(ngrams),
           tagsModel.developers.filter(ngrams),
           tagsModel.publishers.filter(ngrams),
           tagsModel.collections.filter(ngrams),
           tagsModel.franchises.filter(ngrams),
           tagsModel.genres.filter(ngrams),
-          tagsModel.genreTags.filter(ngrams),
+          manualGenres: tagsModel.manualGenres.filter(ngrams),
+          userTags: tagsModel.userTags.filter(ngrams),
         ),
         for (final company in tagsModel.developers.filterExact(ngrams)) ...[
           TileShelve(
@@ -86,23 +86,23 @@ class _SearchPageState extends State<SearchPage> {
             title: genre,
             entries: tagsModel.genres.games(genre),
             filter: LibraryFilter(genres: {genre}),
-            color: GenreChip.color,
+            color: EspyGenreTagChip.color,
           ),
         ],
-        for (final genreTag in tagsModel.genreTags.filterExact(ngrams)) ...[
+        // for (final genreTag in tagsModel.genreTags.filterExact(ngrams)) ...[
+        //   TileShelve(
+        //     title: genreTag.name,
+        //     entries: tagsModel.genreTags.games(genreTag.name),
+        //     filter: LibraryFilter(genreTags: {genreTag.encode()}),
+        //     color: GenreTagChip.color,
+        //   ),
+        // ],
+        for (final userTag in tagsModel.userTags.filterExact(ngrams)) ...[
           TileShelve(
-            title: genreTag.name,
-            entries: tagsModel.genreTags.games(genreTag.name),
-            filter: LibraryFilter(genreTags: {genreTag.encode()}),
-            color: GenreTagChip.color,
-          ),
-        ],
-        for (final tag in tagsModel.userTags.filterExact(ngrams)) ...[
-          TileShelve(
-            title: tag.name,
-            entries: tagsModel.genreTags.games(tag.name),
-            filter: LibraryFilter(tags: {tag.name}),
-            color: Colors.blueGrey,
+            title: userTag,
+            entries: tagsModel.manualGenres.games(userTag),
+            filter: LibraryFilter(userTags: {userTag}),
+            color: TagChip.color,
           ),
         ],
         if (titleMatches.isNotEmpty)

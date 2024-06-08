@@ -10,9 +10,9 @@ class LibraryFilter {
     this.collections = const {},
     this.franchises = const {},
     this.genres = const {},
-    this.genreTags = const {},
     this.keywords = const {},
-    this.tags = const {},
+    this.manualGenres = const {},
+    this.userTags = const {},
   });
 
   Set<String> stores;
@@ -21,9 +21,9 @@ class LibraryFilter {
   Set<String> collections;
   Set<String> franchises;
   Set<String> genres;
-  Set<String> genreTags;
   Set<String> keywords;
-  Set<String> tags;
+  Set<String> manualGenres;
+  Set<String> userTags;
 
   LibraryFilter add(LibraryFilter other) {
     return LibraryFilter(
@@ -33,9 +33,9 @@ class LibraryFilter {
       collections: collections.union(other.collections),
       franchises: franchises.union(other.franchises),
       genres: genres.union(other.genres),
-      genreTags: genreTags.union(other.genreTags),
       keywords: keywords.union(other.keywords),
-      tags: tags.union(other.tags),
+      manualGenres: manualGenres.union(other.manualGenres),
+      userTags: userTags.union(other.userTags),
     );
   }
 
@@ -47,9 +47,9 @@ class LibraryFilter {
       collections: collections.difference(other.collections),
       franchises: franchises.difference(other.franchises),
       genres: genres.difference(other.genres),
-      genreTags: genreTags.difference(other.genreTags),
       keywords: keywords.difference(other.keywords),
-      tags: tags.difference(other.tags),
+      manualGenres: manualGenres.difference(other.manualGenres),
+      userTags: userTags.difference(other.userTags),
     );
   }
 
@@ -60,9 +60,9 @@ class LibraryFilter {
         other.collections.difference(collections).isEmpty &&
         other.franchises.difference(franchises).isEmpty &&
         other.genres.difference(genres).isEmpty &&
-        other.genreTags.difference(genreTags).isEmpty &&
         other.keywords.difference(keywords).isEmpty &&
-        other.tags.difference(tags).isEmpty;
+        other.manualGenres.difference(manualGenres).isEmpty &&
+        other.userTags.difference(userTags).isEmpty;
   }
 
   bool get isNotEmpty =>
@@ -72,9 +72,9 @@ class LibraryFilter {
       collections.isNotEmpty ||
       franchises.isNotEmpty ||
       genres.isNotEmpty ||
-      genreTags.isNotEmpty ||
       keywords.isNotEmpty ||
-      tags.isNotEmpty;
+      manualGenres.isNotEmpty ||
+      userTags.isNotEmpty;
 
   LibraryView apply(
     GameTagsModel tagsModel,
@@ -100,11 +100,11 @@ class LibraryFilter {
     for (final genre in genres) {
       gameIdSets.add(Set.from(tagsModel.genres.gameIds(genre)));
     }
-    for (final genreTag in genreTags) {
-      gameIdSets.add(Set.from(tagsModel.genreTags.gameIds(genreTag)));
+    for (final genreTag in manualGenres) {
+      gameIdSets.add(Set.from(tagsModel.manualGenres.gameIds(genreTag)));
     }
-    for (final tag in tags) {
-      gameIdSets.add(Set.from(tagsModel.userTags.gameIds(tag)));
+    for (final tag in userTags) {
+      gameIdSets.add(Set.from(tagsModel.userTags.gameIdsByTag(tag)));
     }
 
     final gameIds =
@@ -120,15 +120,15 @@ class LibraryFilter {
 
   Map<String, String> params() {
     return {
+      if (stores.isNotEmpty) 'str': stores.map((s) => s).join(':'),
       if (developers.isNotEmpty) 'dev': developers.map((c) => c).join(':'),
       if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(':'),
       if (collections.isNotEmpty) 'col': collections.map((c) => c).join(':'),
       if (franchises.isNotEmpty) 'frn': franchises.map((c) => c).join(':'),
       if (genres.isNotEmpty) 'gnr': genres.map((c) => c).join(':'),
-      if (genreTags.isNotEmpty) 'gnt': genreTags.map((c) => c).join(':'),
       if (keywords.isNotEmpty) 'kw': keywords.map((c) => c).join(':'),
-      if (tags.isNotEmpty) 'tag': tags.map((t) => t).join(':'),
-      if (stores.isNotEmpty) 'str': stores.map((s) => s).join(':'),
+      if (manualGenres.isNotEmpty) 'gnt': manualGenres.map((c) => c).join(':'),
+      if (userTags.isNotEmpty) 'tag': userTags.map((t) => t).join(':'),
     };
   }
 
@@ -136,7 +136,9 @@ class LibraryFilter {
     var filter = LibraryFilter();
 
     params.forEach((key, value) {
-      if (key == 'dev') {
+      if (key == 'str') {
+        filter.stores = value.split(':').toSet();
+      } else if (key == 'dev') {
         filter.developers = value.split(':').toSet();
       } else if (key == 'pub') {
         filter.publishers = value.split(':').toSet();
@@ -146,14 +148,12 @@ class LibraryFilter {
         filter.franchises = value.split(':').toSet();
       } else if (key == 'gnr') {
         filter.genres = value.split(':').toSet();
-      } else if (key == 'gnt') {
-        filter.genreTags = value.split(':').toSet();
       } else if (key == 'kw') {
         filter.keywords = value.split(':').toSet();
+      } else if (key == 'gnt') {
+        filter.manualGenres = value.split(':').toSet();
       } else if (key == 'tag') {
-        filter.tags = value.split(':').toSet();
-      } else if (key == 'str') {
-        filter.stores = value.split(':').toSet();
+        filter.userTags = value.split(':').toSet();
       }
     });
     return filter;

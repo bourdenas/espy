@@ -20,7 +20,7 @@ class LibraryViewModel extends ChangeNotifier {
   Iterable<LibraryEntry> get entries => _view.entries;
   List<(String, List<LibraryEntry>)> get groups => _view.group(
         _appConfigModel.libraryGrouping.value,
-        _gameTagsModel.genreTags.byGameId,
+        _gameTagsModel.manualGenres.byGameId,
       );
 
   LibraryViewModel();
