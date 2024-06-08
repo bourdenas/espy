@@ -89,6 +89,8 @@ class _GameDetailsBody extends StatelessWidget {
               RelatedGamesGroup('Remasters', gameEntry.remasters),
             if (gameEntry.remakes.isNotEmpty)
               RelatedGamesGroup('Remakes', gameEntry.remakes),
+            if (gameEntry.contents.isNotEmpty)
+              RelatedGamesGroup('Contains', gameEntry.contents),
           ],
         ),
       ),
