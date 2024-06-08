@@ -134,7 +134,8 @@ class GameDigest {
             !_match(collections, other.collections) ||
             !_match(franchises, other.franchises) ||
             !_match(developers, other.developers) ||
-            !_match(publishers, other.publishers));
+            !_match(publishers, other.publishers) ||
+            !_match(espyGenres, other.espyGenres));
   }
 
   bool get isReleased =>
