@@ -140,7 +140,10 @@ class EspyChip extends StatelessWidget {
     return GestureDetector(
       onSecondaryTap: onRightClick,
       child: InputChip(
-        label: Text(_label),
+        label: Text(
+          _label,
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: _color,
         onPressed: onPressed,
         onDeleted: onDeleted,
