@@ -87,7 +87,7 @@ class LibraryView {
     for (final entry in entries) {
       final keys = keysExtractor(entry);
       if (keys.isEmpty) {
-        (groups['🚫'] ??= []).add(entry);
+        (groups['Unassigned'] ??= []).add(entry);
       }
       for (final key in keys) {
         (groups[key] ??= []).add(entry);
