@@ -63,11 +63,11 @@ class TimelinePageState extends State<TimelinePage> {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: selectedYear == '1970'
                   ? IconButton.filled(
-                      icon: Text('1970'),
+                      icon: const Text('1970'),
                       onPressed: () {},
                     )
                   : IconButton.outlined(
-                      icon: Text('1970'),
+                      icon: const Text('1970'),
                       onPressed: () => setState(() {
                         selectedYear = '1970';
                       }),

@@ -11,9 +11,9 @@ class MatchingDialogContent extends StatefulWidget {
   const MatchingDialogContent(
     this.storeEntry,
     this.matches, {
-    Key? key,
+    super.key,
     this.onMatch,
-  }) : super(key: key);
+  });
 
   final StoreEntry? storeEntry;
   final Future<List<GameEntry>> matches;

@@ -21,10 +21,10 @@ class MatchingDialog extends StatefulWidget {
   }
 
   const MatchingDialog({
-    Key? key,
+    super.key,
     this.storeEntry,
     this.onMatch,
-  }) : super(key: key);
+  });
 
   final StoreEntry? storeEntry;
   final void Function(StoreEntry, GameEntry)? onMatch;
@@ -51,8 +51,7 @@ class _MatchingDialogState extends State<MatchingDialog> {
 
 class MatchingDialogAnimation extends StatefulWidget {
   const MatchingDialogAnimation(this.storeEntry, this.matches, this.onMatch,
-      {Key? key})
-      : super(key: key);
+      {super.key});
 
   final StoreEntry? storeEntry;
   final Future<List<GameEntry>> matches;

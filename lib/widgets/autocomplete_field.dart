@@ -20,13 +20,13 @@ class AutocompleteField extends StatelessWidget {
   final void Function(String text, Suggestion? suggestion) onSubmit;
 
   const AutocompleteField({
-    Key? key,
+    super.key,
     required this.width,
     required this.hintText,
     required this.createSuggestions,
     required this.onSubmit,
     this.icon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

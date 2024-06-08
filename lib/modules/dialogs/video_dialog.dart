@@ -5,8 +5,8 @@ import 'package:video_player/video_player.dart';
 class VideoDialog extends StatefulWidget {
   const VideoDialog(
     this.videoUrl, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final String videoUrl;
 

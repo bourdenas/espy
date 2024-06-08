@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class BrowsePage extends StatelessWidget {
-  const BrowsePage({Key? key}) : super(key: key);
+  const BrowsePage({super.key});
 
   @override
   Widget build(BuildContext context) {

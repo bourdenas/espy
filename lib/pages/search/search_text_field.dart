@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 class SearchTextField extends StatefulWidget {
   const SearchTextField({
-    Key? key,
+    super.key,
     required this.onChanged,
     required this.onSubmitted,
-  }) : super(key: key);
+  });
 
   final ValueChanged<String> onChanged;
   final ValueChanged<String> onSubmitted;

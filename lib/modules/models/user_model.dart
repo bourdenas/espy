@@ -99,24 +99,6 @@ class UserModel extends ChangeNotifier {
     }
   }
 
-  Future<String> uploadLibrary(Upload titles) async {
-    var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/${_userId!}/upload'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(titles.toJson()),
-    );
-
-    if (response.statusCode == 200) {
-      final jsonObj = jsonDecode(response.body) as Map<String, dynamic>;
-      final report = ReconReport.fromJson(jsonObj);
-      return report.lines.join('\n');
-    } else {
-      return 'Failed to upload game titles:\n${response.statusCode}';
-    }
-  }
-
   /// Retrieves UserData from Firestore.
   Future<void> _fetchUserData() async {
     if (_userId == null) {

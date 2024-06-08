@@ -8,11 +8,11 @@ class TileStack extends StatefulWidget {
   final Iterable<String> tileImages;
 
   const TileStack({
-    Key? key,
+    super.key,
     required this.title,
     required this.tileImages,
     this.onExpand,
-  }) : super(key: key);
+  });
 
   @override
   State<TileStack> createState() => _TileStackState();

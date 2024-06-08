@@ -5,7 +5,7 @@ import 'package:espy/pages/espy_router.dart';
 import 'package:flutter/material.dart';
 
 class EspyApp extends StatefulWidget {
-  const EspyApp({Key? key}) : super(key: key);
+  const EspyApp({super.key});
 
   @override
   State<StatefulWidget> createState() => _EspyAppState();

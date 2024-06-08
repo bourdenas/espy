@@ -9,9 +9,9 @@ import 'package:provider/provider.dart';
 
 class DebugDialog extends StatelessWidget {
   const DebugDialog({
-    Key? key,
+    super.key,
     required this.gameEntry,
-  }) : super(key: key);
+  });
 
   final GameEntry gameEntry;
 

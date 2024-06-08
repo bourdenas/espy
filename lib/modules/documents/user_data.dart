@@ -1,5 +1,3 @@
-import 'package:espy/modules/documents/store_entry.dart';
-
 class UserData {
   final String uid;
   final Keys? keys;
@@ -23,33 +21,6 @@ class UserData {
       'uid': uid,
       if (keys != null) 'keys': keys!.toJson(),
       if (version != null) 'version': version,
-    };
-  }
-}
-
-class Upload {
-  final List<StoreEntry> entries;
-
-  Upload({
-    required this.entries,
-  });
-
-  Upload.fromJson(Map<StoreEntry, dynamic> json)
-      : this(
-          entries: json.containsKey('entries')
-              ? [
-                  for (final entry in json['entries'])
-                    StoreEntry.fromJson(entry)
-                ]
-              : [],
-        );
-
-  Map<String, dynamic> toJson() {
-    return {
-      if (entries.isNotEmpty)
-        'entries': [
-          for (final entry in entries) entry.toJson(),
-        ],
     };
   }
 }

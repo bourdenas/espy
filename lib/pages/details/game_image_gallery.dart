@@ -5,7 +5,7 @@ import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 
 class GameImageGallery extends StatelessWidget {
-  const GameImageGallery(this.gameEntry, {Key? key}) : super(key: key);
+  const GameImageGallery(this.gameEntry, {super.key});
 
   final GameEntry gameEntry;
 
@@ -21,17 +21,15 @@ class GameImageGallery extends StatelessWidget {
                 builder: (context) => VideoDialog(e.webm.max),
               ),
             )),
-        ...gameEntry.screenshotData
-            .map(
-              (e) => TileData(
-                image: e.thumbnail,
-                onTap: () => showDialog(
-                  context: context,
-                  builder: (context) => ImageDialog(imageUrl: e.full),
-                ),
-              ),
-            )
-            .toList(),
+        ...gameEntry.screenshotData.map(
+          (e) => TileData(
+            image: e.thumbnail,
+            onTap: () => showDialog(
+              context: context,
+              builder: (context) => ImageDialog(imageUrl: e.full),
+            ),
+          ),
+        ),
       ],
       tileSize: const TileSize(width: 320, height: 240),
     );
