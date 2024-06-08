@@ -135,7 +135,7 @@ enum LibraryGrouping {
   none,
   year,
   genre,
-  genreTag,
+  keywords,
   rating,
 }
 
