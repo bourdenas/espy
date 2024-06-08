@@ -113,9 +113,9 @@ enum CardDecoration {
 }
 
 enum Stacks {
+  genres,
   collections,
   developers,
-  genres,
 }
 
 enum LibraryClass {
