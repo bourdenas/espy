@@ -8,6 +8,7 @@ class LibraryIndexModel extends ChangeNotifier {
 
   HashMap<int, LibraryEntry> get gamesById => _gamesById;
   Iterable<LibraryEntry> get entries => _gamesById.values;
+  bool get isNotEmpty => _gamesById.isNotEmpty;
 
   bool contains(int id) => _gamesById[id] != null;
 
