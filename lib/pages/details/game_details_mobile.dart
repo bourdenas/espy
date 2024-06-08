@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/dialogs/image_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
@@ -187,7 +188,7 @@ class _GameDetailsHeader extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  coverImage(),
+                  coverImage(context),
                 ],
               ),
             ),
@@ -197,17 +198,24 @@ class _GameDetailsHeader extends StatelessWidget {
     );
   }
 
-  Stack coverImage() {
+  Stack coverImage(BuildContext context) {
     final coverId = gameEntry?.cover?.imageId ?? libraryEntry.cover;
+    final coverUrl = '${Urls.imageProvider}/t_cover_big/$coverId.jpg';
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
         FadeIn(
           duration: const Duration(milliseconds: 500),
-          child: CachedNetworkImage(
-            imageUrl: '${Urls.imageProvider}/t_cover_big/$coverId.jpg',
-            errorWidget: (context, url, error) => const Icon(Icons.error),
+          child: GestureDetector(
+            child: CachedNetworkImage(
+              imageUrl: coverUrl,
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            ),
+            onTap: () => showDialog(
+              context: context,
+              builder: (context) => ImageDialog(imageUrl: coverUrl),
+            ),
           ),
         ),
       ],

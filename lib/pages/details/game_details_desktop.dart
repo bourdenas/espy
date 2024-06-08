@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/debug_dialog.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
+import 'package:espy/modules/dialogs/image_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
@@ -214,7 +215,7 @@ class _GameDetailsHeader extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  coverImage(),
+                  coverImage(context),
                   const Padding(padding: EdgeInsets.all(8)),
                   gameTitle(context),
                 ],
@@ -226,14 +227,21 @@ class _GameDetailsHeader extends StatelessWidget {
     );
   }
 
-  Stack coverImage() {
+  Stack coverImage(BuildContext context) {
     final coverId = gameEntry?.cover?.imageId ?? libraryEntry.cover;
+    final coverUrl = '${Urls.imageProvider}/t_cover_big/$coverId.jpg';
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
         coverId != null && coverId.isNotEmpty
-            ? Image.network('${Urls.imageProvider}/t_cover_big/$coverId.jpg')
+            ? GestureDetector(
+                child: Image.network(coverUrl),
+                onTap: () => showDialog(
+                  context: context,
+                  builder: (context) => ImageDialog(imageUrl: coverUrl),
+                ),
+              )
             : Image.asset('assets/images/placeholder.png'),
         // Positioned(
         //   right: 0,
