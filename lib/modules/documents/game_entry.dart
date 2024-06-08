@@ -21,6 +21,7 @@ class GameEntry {
   final List<GameDigest> dlcs;
   final List<GameDigest> remakes;
   final List<GameDigest> remasters;
+  final List<GameDigest> contents;
 
   final List<Collection> collections;
   final List<Collection> franchises;
@@ -67,6 +68,7 @@ class GameEntry {
     this.dlcs = const [],
     this.remakes = const [],
     this.remasters = const [],
+    this.contents = const [],
     this.collections = const [],
     this.franchises = const [],
     this.developers = const [],
@@ -114,6 +116,10 @@ class GameEntry {
           ],
           remasters: [
             for (final entry in json['remasters'] ?? [])
+              GameDigest.fromJson(entry),
+          ],
+          contents: [
+            for (final entry in json['contents'] ?? [])
               GameDigest.fromJson(entry),
           ],
           collections: [
@@ -179,6 +185,10 @@ class GameEntry {
       if (remasters.isNotEmpty)
         'remasters': [
           for (final entry in remasters) entry.toJson(),
+        ],
+      if (contents.isNotEmpty)
+        'contents': [
+          for (final entry in contents) entry.toJson(),
         ],
       if (collections.isNotEmpty)
         'collections': [
