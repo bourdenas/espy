@@ -12,8 +12,14 @@ class LibraryView {
   void addEntries(Iterable<LibraryEntry> entries) =>
       _libraryEntries.addAll(entries);
 
-  void removeExpansions() =>
-      _libraryEntries.removeWhere((e) => !e.isStandaloneGame);
+  void filterCategories(AppConfigModel config) {
+    _libraryEntries.retainWhere((e) =>
+        (config.showMains.value && e.isStandaloneGame) ||
+        (config.showExpansions.value && e.isExpansion) ||
+        (config.showDlcs.value && e.isDlc) ||
+        (config.showVersions.value && e.isVersion) ||
+        (config.showBundles.value && e.isBundle));
+  }
 
   void sort(LibraryOrdering ordering) {
     switch (ordering) {

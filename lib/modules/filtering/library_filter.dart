@@ -65,6 +65,10 @@ class LibraryFilter {
         other.userTags.difference(userTags).isEmpty;
   }
 
+  bool equals(LibraryFilter other) {
+    return contains(other) && other.contains(this);
+  }
+
   bool get isNotEmpty =>
       stores.isNotEmpty ||
       developers.isNotEmpty ||

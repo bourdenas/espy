@@ -11,19 +11,27 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 class RemoteLibraryModel extends ChangeNotifier {
   final List<LibraryEntry> _libraryEntries = [];
 
-  Iterable<LibraryEntry> get entries =>
-      _libraryEntries.where((entry) => entry.isStandaloneGame);
-  Iterable<LibraryEntry> get entriesWithExpansions => _libraryEntries
-      .where((entry) => entry.isStandaloneGame || entry.isExpansion);
+  Iterable<LibraryEntry> get entries => _libraryEntries;
+
+  bool _fetchExternal = false;
+  LibraryFilter _filter = LibraryFilter();
 
   Future<void> update(
     AppConfigModel appConfig,
     LibraryIndexModel libraryIndexModel,
     LibraryFilter filter,
   ) async {
+    if (_fetchExternal == appConfig.showExternal.value &&
+        _filter.equals(filter)) {
+      // Nothing of interest changed.
+      return;
+    }
+    _fetchExternal = appConfig.showExternal.value;
+    _filter = LibraryFilter.fromParams(filter.params());
+
     _libraryEntries.clear();
 
-    if (libraryIndexModel.isNotEmpty && !appConfig.showOutOfLib.value) {
+    if (libraryIndexModel.isNotEmpty && !appConfig.showExternal.value) {
       return;
     }
 

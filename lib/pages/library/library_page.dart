@@ -84,27 +84,17 @@ class LibraryPage extends StatelessWidget {
             if (context.watch<UserModel>().isSignedIn)
               Row(
                 children: [
-                  Text(
-                    'Expansions',
-                    style: Theme.of(context).textTheme.bodyLarge!,
-                  ),
+                  LibraryChoice('Main Games', appConfig.showMains),
                   const SizedBox(width: 8),
-                  Switch(
-                    value: appConfig.showExpansions.value,
-                    onChanged: (selected) =>
-                        appConfig.showExpansions.value = selected,
-                  ),
-                  const SizedBox(width: 16),
-                  Text(
-                    'External',
-                    style: Theme.of(context).textTheme.bodyLarge!,
-                  ),
+                  LibraryChoice('Expansions', appConfig.showExpansions),
                   const SizedBox(width: 8),
-                  Switch(
-                    value: appConfig.showOutOfLib.value,
-                    onChanged: (selected) =>
-                        appConfig.showOutOfLib.value = selected,
-                  ),
+                  LibraryChoice('DLCs', appConfig.showDlcs),
+                  const SizedBox(width: 8),
+                  LibraryChoice('Versions', appConfig.showVersions),
+                  const SizedBox(width: 8),
+                  LibraryChoice('Bundles', appConfig.showBundles),
+                  const SizedBox(width: 8),
+                  LibraryChoice('External', appConfig.showExternal),
                 ],
               ),
           ],
@@ -112,6 +102,26 @@ class LibraryPage extends StatelessWidget {
       ),
       backgroundColor: Colors.black.withOpacity(0.6),
       elevation: 0.0,
+    );
+  }
+}
+
+class LibraryChoice extends StatelessWidget {
+  const LibraryChoice(
+    this.label,
+    this.option, {
+    super.key,
+  });
+
+  final String label;
+  final BoolOption option;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: option.value,
+      onSelected: (selected) => option.value = selected,
     );
   }
 }

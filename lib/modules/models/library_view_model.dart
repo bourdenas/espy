@@ -35,9 +35,7 @@ class LibraryViewModel extends ChangeNotifier {
     _view = filter.isNotEmpty
         ? filter.apply(_gameTagsModel, _getEntryById)
         : LibraryView(entries.toList());
-    if (!_appConfigModel.showExpansions.value) {
-      _view.removeExpansions();
-    }
+    _view.filterCategories(_appConfigModel);
   }
 
   void update(
@@ -54,12 +52,9 @@ class LibraryViewModel extends ChangeNotifier {
     _view = filterModel.filter.isNotEmpty
         ? filterModel.filter.apply(_gameTagsModel, _getEntryById)
         : LibraryView(_libraryIndexModel.entries.toList());
-    if (!_appConfigModel.showExpansions.value) {
-      _view.removeExpansions();
-    }
-    _view.addEntries(_appConfigModel.showExpansions.value
-        ? remoteLibraryModel.entriesWithExpansions
-        : remoteLibraryModel.entries);
+    _view.addEntries(remoteLibraryModel.entries);
+    _view.filterCategories(_appConfigModel);
+
     _view.sort(appConfigModel.libraryOrdering.value);
 
     notifyListeners();
