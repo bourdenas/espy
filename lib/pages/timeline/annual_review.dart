@@ -236,15 +236,18 @@ class _AnnualGameListState extends State<AnnualGameList> {
                     color: EspyGenreTagChip.color,
                     selected: selectedGenres.contains(entry.key),
                     onSelected: (bool selected) => setState(() {
-                      selected
-                          ? selectedGenres.add(entry.key)
-                          : selectedGenres.remove(entry.key);
+                      selectedGenres.clear();
+                      if (selected) {
+                        selectedGenres.add(entry.key);
+                      }
                       selectedTags.clear();
                       updateAvailableTags = true;
                     }),
                     onRightClick: () => setState(() {
-                      selectedGenres.clear();
-                      selectedGenres.add(entry.key);
+                      final selected = !selectedGenres.contains(entry.key);
+                      selected
+                          ? selectedGenres.add(entry.key)
+                          : selectedGenres.remove(entry.key);
                       selectedTags.clear();
                       updateAvailableTags = true;
                     }),

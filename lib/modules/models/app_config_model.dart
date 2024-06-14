@@ -113,9 +113,9 @@ enum CardDecoration {
 }
 
 enum Stacks {
+  genres,
   collections,
   developers,
-  genres,
 }
 
 enum LibraryClass {
@@ -135,7 +135,7 @@ enum LibraryGrouping {
   none,
   year,
   genre,
-  genreTag,
+  keywords,
   rating,
 }
 

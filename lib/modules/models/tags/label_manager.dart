@@ -4,15 +4,18 @@ class LabelManager {
   LabelManager(
     Iterable<LibraryEntry> entries,
     Iterable<String> Function(LibraryEntry) labelExtractor,
-    this._getEntryById,
   ) {
     for (final entry in entries) {
       for (final label in labelExtractor(entry)) {
-        (_labelToGameIds[label] ??= []).add(entry.id);
+        (_labelToLibraryEntries[label] ??= []).add(entry);
       }
     }
 
-    _labelsByCount = _labelToGameIds.entries
+    for (final gameList in _labelToLibraryEntries.values) {
+      gameList.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
+    }
+
+    _labelsByCount = _labelToLibraryEntries.entries
         .map((entry) => (entry.key, entry.value.length))
         .toList()
       ..sort((a, b) => b.$2 - a.$2);
@@ -23,11 +26,13 @@ class LabelManager {
   Iterable<String> get nonSingleton =>
       _labelsByCount.where((e) => e.$2 > 1).map((e) => e.$1);
 
-  Iterable<int> gameIds(String label) => _labelToGameIds[label] ?? [];
-  Iterable<LibraryEntry> games(String label) =>
-      gameIds(label).map((id) => _getEntryById(id)).whereType<LibraryEntry>();
+  Iterable<int> gameIds(String label) => (_labelToLibraryEntries[label] ?? [])
+      .map((libraryEntry) => libraryEntry.id);
 
-  int size(String label) => _labelToGameIds[label]?.length ?? 0;
+  Iterable<LibraryEntry> games(String label) =>
+      _labelToLibraryEntries[label] ?? [];
+
+  int size(String label) => _labelToLibraryEntries[label]?.length ?? 0;
 
   Iterable<String> filter(Iterable<String> ngrams) {
     return all.where((label) => ngrams.every((ngram) =>
@@ -39,7 +44,6 @@ class LabelManager {
         label.toLowerCase().split(' ').any((word) => word == ngram)));
   }
 
-  final LibraryEntry? Function(int) _getEntryById;
-  final Map<String, List<int>> _labelToGameIds = {};
+  final Map<String, List<LibraryEntry>> _labelToLibraryEntries = {};
   late List<(String, int)> _labelsByCount = [];
 }

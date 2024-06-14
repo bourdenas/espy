@@ -1,5 +1,4 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 
 class LibraryView {
@@ -30,10 +29,7 @@ class LibraryView {
     }
   }
 
-  List<(String, List<LibraryEntry>)> group(
-    LibraryGrouping grouping,
-    Iterable<Genre> Function(int) genreTagsIndex,
-  ) {
+  List<(String, List<LibraryEntry>)> group(LibraryGrouping grouping) {
     switch (grouping) {
       case LibraryGrouping.none:
         return [('', _libraryEntries)];
@@ -48,12 +44,12 @@ class LibraryView {
       case LibraryGrouping.genre:
         return _groupBy(
           _libraryEntries,
-          (e) => e.digest.igdbGenres.toSet(),
+          (e) => e.digest.espyGenres.toSet(),
         );
-      case LibraryGrouping.genreTag:
+      case LibraryGrouping.keywords:
         return _groupBy(
           _libraryEntries,
-          (e) => genreTagsIndex(e.id).map((e) => e.name),
+          (e) => e.digest.keywords.toSet(),
         );
       case LibraryGrouping.rating:
         return _groupBy(
@@ -91,7 +87,7 @@ class LibraryView {
     for (final entry in entries) {
       final keys = keysExtractor(entry);
       if (keys.isEmpty) {
-        (groups['🚫'] ??= []).add(entry);
+        (groups['Unassigned'] ??= []).add(entry);
       }
       for (final key in keys) {
         (groups[key] ??= []).add(entry);

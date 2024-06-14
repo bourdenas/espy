@@ -57,37 +57,30 @@ class GameTagsModel extends ChangeNotifier {
     _storesManager = LabelManager(
       entries,
       (entry) => entry.storeEntries.map((store) => store.storefront),
-      _getEntryById,
     );
     _developersManager = LabelManager(
       entries,
       (entry) => entry.digest.developers,
-      _getEntryById,
     );
     _publishersManager = LabelManager(
       entries,
       (entry) => entry.digest.publishers,
-      _getEntryById,
     );
     _collectionsManager = LabelManager(
       entries,
       (entry) => entry.digest.collections,
-      _getEntryById,
     );
     _franchisesManager = LabelManager(
       entries,
       (entry) => entry.digest.franchises,
-      _getEntryById,
     );
     _genresManager = LabelManager(
       entries,
       (entry) => entry.digest.espyGenres,
-      _getEntryById,
     );
     _keywordsManager = LabelManager(
       entries,
       (entry) => entry.digest.keywords,
-      _getEntryById,
     );
 
     if (userId.isNotEmpty && _userId != userId) {

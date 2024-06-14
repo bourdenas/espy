@@ -150,8 +150,8 @@ class EspyScaffold extends StatelessWidget {
   final List<_GroupView> _groupViews = const [
     _GroupView(LibraryGrouping.none, Icons.block),
     _GroupView(LibraryGrouping.year, Icons.calendar_month),
-    _GroupView(LibraryGrouping.genre, Icons.label),
-    _GroupView(LibraryGrouping.genreTag, Icons.label_important),
+    _GroupView(LibraryGrouping.genre, Icons.class_),
+    _GroupView(LibraryGrouping.keywords, Icons.tag),
     _GroupView(LibraryGrouping.rating, Icons.star),
   ];
 }

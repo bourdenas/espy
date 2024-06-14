@@ -31,6 +31,14 @@ class HomeSlatesModel extends ChangeNotifier {
     ];
 
     _stacks = [
+      if (appConfigModel.stacks.value == Stacks.genres)
+        for (final genre in tagsModel.genres.all)
+          SlateInfo(
+            genre,
+            tagsModel.genres.games(genre),
+            (context) =>
+                updateLibraryView(context, LibraryFilter(genres: {genre})),
+          ),
       if (appConfigModel.stacks.value == Stacks.collections)
         for (final collection in tagsModel.collections.nonSingleton)
           SlateInfo(
@@ -46,14 +54,6 @@ class HomeSlatesModel extends ChangeNotifier {
             tagsModel.developers.games(developer),
             (context) => updateLibraryView(
                 context, LibraryFilter(developers: {developer})),
-          ),
-      if (appConfigModel.stacks.value == Stacks.genres)
-        for (final manualGenre in tagsModel.manualGenres.all)
-          SlateInfo(
-            manualGenre.name,
-            tagsModel.manualGenres.games(manualGenre.name),
-            (context) => updateLibraryView(
-                context, LibraryFilter(manualGenres: {manualGenre.encode()})),
           ),
     ];
 
