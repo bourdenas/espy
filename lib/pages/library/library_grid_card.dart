@@ -187,18 +187,19 @@ class _LibraryGridCardState extends State<LibraryGridCard>
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: appConfig.cardDecoration.value == CardDecoration.tags
-          ? TagsTileBar(widget.libraryEntry)
-          : appConfig.cardDecoration.value == CardDecoration.info
-              ? InfoTileBar(
-                  widget.libraryEntry.name,
-                  year: widget.libraryEntry.digest.release.year,
-                  stores: widget.libraryEntry.storeEntries
-                      .map((e) => e.storefront)
-                      .toSet()
-                      .toList(),
-                )
-              : null,
+      child: switch (appConfig.cardDecoration.value) {
+        CardDecoration.info => InfoTileBar(
+            widget.libraryEntry.name,
+            year: widget.libraryEntry.digest.release.year,
+            stores: widget.libraryEntry.storeEntries
+                .map((e) => e.storefront)
+                .toSet()
+                .toList(),
+          ),
+        CardDecoration.pulse => PulseTileBar(widget.libraryEntry),
+        CardDecoration.tags => TagsTileBar(widget.libraryEntry),
+        _ => null,
+      },
     );
   }
 }

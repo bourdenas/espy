@@ -125,6 +125,7 @@ enum LibraryLayout {
 enum CardDecoration {
   empty,
   info,
+  pulse,
   tags,
 }
 

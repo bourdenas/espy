@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/widgets/game_pulse.dart';
 import 'package:espy/widgets/gametags/game_tags.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +22,20 @@ class InfoTileBar extends StatelessWidget {
         ],
         if (stores.isNotEmpty) _GameTitleText(stores.join(', ')),
       ]),
+    );
+  }
+}
+
+class PulseTileBar extends StatelessWidget {
+  const PulseTileBar(this.libraryEntry, {super.key});
+
+  final LibraryEntry libraryEntry;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridTileBar(
+      backgroundColor: Colors.black54,
+      title: GamePulse(libraryEntry, null),
     );
   }
 }
