@@ -21,10 +21,12 @@ class LibraryGridCard extends StatefulWidget {
     this.libraryEntry, {
     super.key,
     required this.pushNavigation,
+    this.grayOutMissing = false,
   });
 
   final LibraryEntry libraryEntry;
   final bool pushNavigation;
+  final bool grayOutMissing;
 
   @override
   State<LibraryGridCard> createState() => _LibraryGridCardState();
@@ -64,6 +66,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
     final inLibrary = context.watch<UserModel>().isNotSignedIn ||
         widget.libraryEntry.storeEntries.isNotEmpty ||
         context.read<LibraryIndexModel>().contains(widget.libraryEntry.id);
+    final grayedOut = widget.grayOutMissing && !inLibrary;
     final userModel = context.watch<UserModel>();
 
     return Padding(
@@ -104,14 +107,14 @@ class _LibraryGridCardState extends State<LibraryGridCard>
               0, 0, 0, 1, 0, padding.value, padding.value, 0, 1),
           child: GridTile(
             footer: cardFooter(appConfig),
-            child: coverImage(context, hover || !inLibrary, inLibrary),
+            child: coverImage(context, hover, grayedOut),
           ),
         ),
       ),
     );
   }
 
-  Widget coverImage(BuildContext context, bool showAddButton, bool inLibrary) {
+  Widget coverImage(BuildContext context, bool showAddButton, bool grayedOut) {
     Widget? storeFAB;
     if (showAddButton) {
       List<Widget> storeButtons = [
@@ -147,7 +150,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
     }
     return CardCover(
       cover: widget.libraryEntry.cover,
-      grayedOut: !inLibrary,
+      grayedOut: grayedOut,
       overlays: storeFAB != null ? [storeFAB] : [],
     );
   }

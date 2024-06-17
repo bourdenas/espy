@@ -10,6 +10,7 @@ class LibraryEntriesView extends StatelessWidget {
     super.key,
     required this.entries,
     this.pushNavigation = true,
+    this.grayOutMissing = false,
   });
 
   final Iterable<LibraryEntry> entries;
@@ -17,6 +18,10 @@ class LibraryEntriesView extends StatelessWidget {
   // If true clicks on an tile will result to a push event in routing.
   // Otherwise, it will replace current page.
   final bool pushNavigation;
+
+  // If true titles shown on the view that are not in user's library are grayed
+  // out.
+  final bool grayOutMissing;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +39,7 @@ class LibraryEntriesView extends StatelessWidget {
           .map((libraryEntry) => LibraryGridCard(
                 libraryEntry,
                 pushNavigation: pushNavigation,
+                grayOutMissing: grayOutMissing,
               ))
           .toList(),
     );

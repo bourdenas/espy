@@ -40,6 +40,7 @@ class LibraryPage extends StatelessWidget {
         if (appConfig.libraryGrouping.value == LibraryGrouping.none)
           LibraryEntriesView(
             entries: libraryViewModel.entries,
+            grayOutMissing: true,
           )
         else ...[
           for (final (label, entries) in libraryViewModel.groups)
@@ -47,6 +48,7 @@ class LibraryPage extends StatelessWidget {
               title: '$label (${entries.length})',
               color: Colors.grey,
               entries: entries,
+              grayOutMissing: true,
             ),
         ],
       ],
