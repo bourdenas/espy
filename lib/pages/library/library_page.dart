@@ -40,7 +40,6 @@ class LibraryPage extends StatelessWidget {
         if (appConfig.libraryGrouping.value == LibraryGrouping.none)
           LibraryEntriesView(
             entries: libraryViewModel.entries,
-            grayOutMissing: true,
           )
         else ...[
           for (final (label, entries) in libraryViewModel.groups)
@@ -48,7 +47,6 @@ class LibraryPage extends StatelessWidget {
               title: '$label (${entries.length})',
               color: Colors.grey,
               entries: entries,
-              grayOutMissing: true,
             ),
         ],
       ],
@@ -120,10 +118,21 @@ class LibraryChoice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: option.value,
-      onSelected: (selected) => option.value = selected,
+    final appConfig = context.read<AppConfigModel>();
+    return GestureDetector(
+      onSecondaryTap: () {
+        appConfig.showMains.value = false;
+        appConfig.showExpansions.value = false;
+        appConfig.showDlcs.value = false;
+        appConfig.showVersions.value = false;
+        appConfig.showBundles.value = false;
+        option.value = true;
+      },
+      child: ChoiceChip(
+        label: Text(label),
+        selected: option.value,
+        onSelected: (selected) => option.value = selected,
+      ),
     );
   }
 }
