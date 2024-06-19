@@ -10,6 +10,8 @@ class SlidingChip extends StatefulWidget {
     this.backgroundColor,
     this.onExpand,
     this.initialOpen = false,
+    this.openIcon = Icons.keyboard_arrow_right,
+    this.closeIcon = Icons.keyboard_arrow_left,
   });
 
   final String label;
@@ -18,6 +20,8 @@ class SlidingChip extends StatefulWidget {
   final Color? backgroundColor;
   final void Function()? onExpand;
   final bool initialOpen;
+  final IconData openIcon;
+  final IconData closeIcon;
 
   @override
   State<SlidingChip> createState() => _SlidingChipState();
@@ -96,7 +100,7 @@ class _SlidingChipState extends State<SlidingChip>
     return IconButton(
       onPressed: () => _toggle(),
       icon: Icon(
-        Icons.keyboard_double_arrow_left,
+        widget.closeIcon,
         color: widget.color,
         size: 24,
       ),
@@ -108,7 +112,7 @@ class _SlidingChipState extends State<SlidingChip>
       label: Row(
         children: [
           Icon(
-            Icons.keyboard_double_arrow_right,
+            widget.openIcon,
             color: widget.color,
           ),
           const SizedBox(width: 4),
