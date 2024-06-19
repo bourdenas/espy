@@ -2,10 +2,13 @@ import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
+import 'package:espy/widgets/gametags/game_chips.dart';
+import 'package:espy/widgets/sliding_chip.dart';
 import 'package:espy/widgets/gametags/game_chips_filter_bar.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
@@ -81,27 +84,97 @@ class LibraryPage extends StatelessWidget {
           children: [
             GameChipsFilterBar(filter),
             const SizedBox(width: 8),
+            SlidingChip(
+              label: 'Categories',
+              color: Theme.of(context).colorScheme.onSecondaryContainer,
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+              expansion: const GameCategoryFilter(),
+            ),
+            const SizedBox(width: 8.0),
+            SlidingChip(
+              label: 'Genres',
+              // color: Theme.of(context).colorScheme.onSecondaryContainer,
+              color: GenreGroupChip.color,
+              expansion: const GameGenreGroupFilter(),
+            ),
+            const SizedBox(width: 8.0),
             if (context.watch<UserModel>().isSignedIn)
-              Row(
-                children: [
-                  LibraryChoice('Main Games', appConfig.showMains),
-                  const SizedBox(width: 8),
-                  LibraryChoice('Expansions', appConfig.showExpansions),
-                  const SizedBox(width: 8),
-                  LibraryChoice('DLCs', appConfig.showDlcs),
-                  const SizedBox(width: 8),
-                  LibraryChoice('Versions', appConfig.showVersions),
-                  const SizedBox(width: 8),
-                  LibraryChoice('Bundles', appConfig.showBundles),
-                  const SizedBox(width: 8),
-                  LibraryChoice('External', appConfig.showExternal),
-                ],
-              ),
+              LibraryChoice('External', appConfig.showExternal),
           ],
         ),
       ),
       backgroundColor: Colors.black.withOpacity(0.6),
       elevation: 0.0,
+    );
+  }
+}
+
+class GameGenreGroupFilter extends StatelessWidget {
+  const GameGenreGroupFilter({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        for (final group in context.read<GameTagsModel>().genreGroups) ...[
+          SlidingChip(
+            label: group,
+            color: GenreGroupChip.color,
+            onExpand: () {
+              print('🦀🦀🦀');
+            },
+            expansion: EspyGenreFilter(group),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ],
+    );
+  }
+}
+
+class EspyGenreFilter extends StatelessWidget {
+  const EspyGenreFilter(this.genreGroup, {super.key});
+
+  final String genreGroup;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        for (final genre
+            in context.read<GameTagsModel>().espyGenreTags(genreGroup) ??
+                []) ...[
+          EspyGenreTagChip(
+            genre,
+            onPressed: () {},
+            activated: false,
+          ),
+          const SizedBox(width: 8),
+        ],
+      ],
+    );
+  }
+}
+
+class GameCategoryFilter extends StatelessWidget {
+  const GameCategoryFilter({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final appConfig = context.watch<AppConfigModel>();
+    return Row(
+      children: [
+        LibraryChoice('Main Games', appConfig.showMains),
+        const SizedBox(width: 8),
+        LibraryChoice('Expansions', appConfig.showExpansions),
+        const SizedBox(width: 8),
+        LibraryChoice('DLCs', appConfig.showDlcs),
+        const SizedBox(width: 8),
+        LibraryChoice('Versions', appConfig.showVersions),
+        const SizedBox(width: 8),
+        LibraryChoice('Bundles', appConfig.showBundles),
+        const SizedBox(width: 8),
+      ],
     );
   }
 }
