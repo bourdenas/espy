@@ -76,8 +76,7 @@ class _SlidingChipState extends State<SlidingChip>
         ? Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
             child: Row(children: [
-              topButton(context),
-              const SizedBox(width: 8),
+              closeButton(),
               expandedWidget(context),
             ]),
           )
@@ -96,9 +95,9 @@ class _SlidingChipState extends State<SlidingChip>
   Widget closeWidget() {
     return IconButton(
       onPressed: () => _toggle(),
-      icon: const Icon(
+      icon: Icon(
         Icons.keyboard_double_arrow_left,
-        color: Colors.white,
+        color: widget.color,
         size: 24,
       ),
     );
@@ -109,9 +108,7 @@ class _SlidingChipState extends State<SlidingChip>
       label: Row(
         children: [
           Icon(
-            open
-                ? Icons.keyboard_double_arrow_left
-                : Icons.keyboard_double_arrow_right,
+            Icons.keyboard_double_arrow_right,
             color: widget.color,
           ),
           const SizedBox(width: 4),
