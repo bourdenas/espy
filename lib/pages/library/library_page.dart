@@ -148,7 +148,7 @@ class EspyGenreFilter extends StatelessWidget {
           EspyGenreTagChip(
             genre,
             onPressed: () {},
-            activated: false,
+            filled: false,
           ),
           const SizedBox(width: 8),
         ],

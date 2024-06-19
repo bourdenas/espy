@@ -7,7 +7,7 @@ class StoreChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: store,
           color: color,
@@ -23,7 +23,7 @@ class DeveloperChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: company,
           color: color,
@@ -39,7 +39,7 @@ class PublisherChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: company,
           color: color,
@@ -55,7 +55,7 @@ class CollectionChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: name,
           color: color,
@@ -71,7 +71,7 @@ class FranchiseChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: name,
           color: color,
@@ -87,7 +87,7 @@ class GenreGroupChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: genre,
           color: color,
@@ -103,7 +103,7 @@ class EspyGenreTagChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: genre,
           color: color,
@@ -119,7 +119,7 @@ class KeywordChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: keyword,
           color: color,
@@ -135,7 +135,7 @@ class ManualGenreChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: genre,
           color: color,
@@ -151,7 +151,7 @@ class TagChip extends EspyChip {
     super.onPressed,
     super.onDeleted,
     super.onRightClick,
-    super.activated,
+    super.filled,
   }) : super(
           label: tag,
           color: color,
@@ -166,7 +166,7 @@ class EspyChip extends StatelessWidget {
   final VoidCallback? onPressed;
   final VoidCallback? onDeleted;
   final VoidCallback? onRightClick;
-  final bool activated;
+  final bool filled;
 
   const EspyChip({
     super.key,
@@ -175,7 +175,7 @@ class EspyChip extends StatelessWidget {
     this.onPressed,
     this.onDeleted,
     this.onRightClick,
-    this.activated = true,
+    this.filled = true,
   })  : _label = label,
         _color = color;
 
@@ -186,9 +186,9 @@ class EspyChip extends StatelessWidget {
       child: InputChip(
         label: Text(
           _label,
-          style: TextStyle(color: activated ? Colors.white : _color),
+          style: TextStyle(color: filled ? Colors.white : _color),
         ),
-        backgroundColor: activated ? _color : null,
+        backgroundColor: filled ? _color : null,
         onPressed: onPressed,
         onDeleted: onDeleted,
       ),
