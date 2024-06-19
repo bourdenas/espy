@@ -6,6 +6,7 @@ class SlidingChip extends StatefulWidget {
     super.key,
     required this.label,
     required this.expansion,
+    this.smallBackButton = true,
     this.color,
     this.backgroundColor,
     this.onExpand,
@@ -16,6 +17,7 @@ class SlidingChip extends StatefulWidget {
 
   final String label;
   final Widget expansion;
+  final bool smallBackButton;
   final Color? color;
   final Color? backgroundColor;
   final void Function()? onExpand;
@@ -80,31 +82,38 @@ class _SlidingChipState extends State<SlidingChip>
         ? Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
             child: Row(children: [
-              closeButton(),
+              closeButton(context),
               expandedWidget(context),
             ]),
           )
         : topButton(context);
   }
 
-  Widget closeButton() {
+  Widget closeButton(BuildContext context) {
     return AnimatedOpacity(
       opacity: !open ? 0.0 : 1.0,
       curve: const Interval(0.25, 1.0, curve: Curves.easeInOut),
       duration: const Duration(milliseconds: 250),
-      child: closeWidget(),
+      child: backWidget(context),
     );
   }
 
-  Widget closeWidget() {
-    return IconButton(
-      onPressed: () => _toggle(),
-      icon: Icon(
-        widget.closeIcon,
-        color: widget.color,
-        size: 24,
-      ),
-    );
+  Widget backWidget(BuildContext context) {
+    return widget.smallBackButton
+        ? IconButton(
+            onPressed: () => _toggle(),
+            icon: Icon(
+              widget.closeIcon,
+              color: widget.color,
+              size: 24,
+            ),
+          )
+        : Row(
+            children: [
+              topButton(context),
+              const SizedBox(width: 4),
+            ],
+          );
   }
 
   Widget topButton(BuildContext context) {
@@ -112,7 +121,7 @@ class _SlidingChipState extends State<SlidingChip>
       label: Row(
         children: [
           Icon(
-            widget.openIcon,
+            open ? widget.closeIcon : widget.openIcon,
             color: widget.color,
           ),
           const SizedBox(width: 4),

@@ -119,6 +119,7 @@ class GameGenreGroupFilter extends StatelessWidget {
         for (final group in context.read<GameTagsModel>().genreGroups) ...[
           SlidingChip(
             label: group,
+            smallBackButton: false,
             color: GenreGroupChip.color,
             onExpand: () {
               print('🦀🦀🦀');
