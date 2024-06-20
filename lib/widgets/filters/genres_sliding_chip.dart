@@ -1,4 +1,6 @@
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/widgets/filters/sliding_chip.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +36,7 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
   }
 
   String? activeGroup;
+  String? activeGenre;
 
   @override
   Widget build(BuildContext context) {
@@ -52,9 +55,9 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
           GenreFilterChip(
               label: group,
               color: GenreGroupChip.color,
-              onClick: () {
-                setState(() => activeGroup = group);
-              }),
+              onClick: () => setState(() {
+                    activeGroup = group;
+                  })),
           const SizedBox(width: 8),
         ],
     ];
@@ -66,16 +69,24 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
           label: genreGroup,
           backgroundColor: GenreGroupChip.color,
           open: true,
-          onClick: () {
-            setState(() => activeGroup = null);
-          }),
+          onClick: () => setState(() {
+                activeGroup = null;
+                activeGenre = null;
+                context.read<LibraryFilterModel>().filter = LibraryFilter();
+              })),
       const SizedBox(width: 4),
       for (final genre
           in context.read<GameTagsModel>().espyGenreTags(genreGroup) ?? []) ...[
         EspyGenreTagChip(
           genre,
-          onPressed: () {},
-          filled: false,
+          onPressed: () {
+            context.read<LibraryFilterModel>().filter =
+                LibraryFilter(genres: {genre});
+            setState(() {
+              activeGenre = genre;
+            });
+          },
+          filled: activeGenre == genre,
         ),
         const SizedBox(width: 8),
       ],
