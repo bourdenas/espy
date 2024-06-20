@@ -12,6 +12,7 @@ import 'package:espy/widgets/sliding_chip.dart';
 import 'package:espy/widgets/gametags/game_chips_filter_bar.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
 class LibraryPage extends StatelessWidget {
@@ -109,50 +110,108 @@ class LibraryPage extends StatelessWidget {
   }
 }
 
-class GameGenreGroupFilter extends StatelessWidget {
+class GameGenreGroupFilter extends StatefulWidget {
   const GameGenreGroupFilter({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (final group in context.read<GameTagsModel>().genreGroups) ...[
-          SlidingChip(
-            label: group,
-            smallBackButton: false,
-            color: GenreGroupChip.color,
-            onExpand: () {
-              print('🦀🦀🦀');
-            },
-            expansion: EspyGenreFilter(group),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ],
-    );
-  }
+  State<GameGenreGroupFilter> createState() => _GameGenreGroupFilterState();
 }
 
-class EspyGenreFilter extends StatelessWidget {
-  const EspyGenreFilter(this.genreGroup, {super.key});
+class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
-  final String genreGroup;
+  String? activeGroup;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: [
-        for (final genre
-            in context.read<GameTagsModel>().espyGenreTags(genreGroup) ??
-                []) ...[
-          EspyGenreTagChip(
-            genre,
-            onPressed: () {},
-            filled: false,
-          ),
+      // children: buildGenreGroups(context),
+      children: (activeGroup == null)
+          ? buildGenreGroups(context)
+          : buildEspyGenre(context, activeGroup!),
+    );
+  }
+
+  List<Widget> buildGenreGroups(BuildContext context) {
+    return [
+      for (final group in context.read<GameTagsModel>().genreGroups)
+        if (activeGroup == null || activeGroup == group) ...[
+          EspyFilterChip(
+              label: group,
+              color: GenreGroupChip.color,
+              onClick: () {
+                setState(() => activeGroup = group);
+              }),
           const SizedBox(width: 8),
         ],
+    ];
+  }
+
+  List<Widget> buildEspyGenre(BuildContext context, String genreGroup) {
+    return [
+      EspyFilterChip(
+          label: genreGroup,
+          backgroundColor: GenreGroupChip.color,
+          open: true,
+          onClick: () {
+            setState(() => activeGroup = null);
+          }),
+      const SizedBox(width: 4),
+      for (final genre
+          in context.read<GameTagsModel>().espyGenreTags(genreGroup) ?? []) ...[
+        EspyGenreTagChip(
+          genre,
+          onPressed: () {},
+          filled: false,
+        ),
+        const SizedBox(width: 8),
       ],
+    ];
+  }
+}
+
+class EspyFilterChip extends StatelessWidget {
+  const EspyFilterChip({
+    super.key,
+    required this.label,
+    this.color,
+    this.backgroundColor,
+    this.openIcon = Icons.keyboard_arrow_right,
+    this.closeIcon = Icons.keyboard_arrow_left,
+    required this.onClick,
+    this.open = false,
+  });
+
+  final String label;
+  final Color? color;
+  final Color? backgroundColor;
+  final IconData openIcon;
+  final IconData closeIcon;
+  final void Function() onClick;
+  final bool open;
+
+  @override
+  Widget build(BuildContext context) {
+    return InputChip(
+      label: Row(
+        children: [
+          Icon(
+            open ? closeIcon : openIcon,
+            color: color,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style:
+                Theme.of(context).textTheme.bodyMedium!.copyWith(color: color),
+          ),
+        ],
+      ),
+      backgroundColor: backgroundColor,
+      onPressed: onClick,
     );
   }
 }

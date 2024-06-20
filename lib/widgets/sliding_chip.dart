@@ -36,7 +36,6 @@ class _SlidingChipState extends State<SlidingChip>
   final layerLink = LayerLink();
 
   bool open = false;
-  List<OverlayEntry> overlays = [];
 
   @override
   void initState() {
@@ -66,12 +65,7 @@ class _SlidingChipState extends State<SlidingChip>
       if (open) {
         _controller.forward();
       } else {
-        _controller.reverse().whenComplete(() {
-          for (final overlay in overlays) {
-            overlay.remove();
-          }
-          overlays.clear();
-        });
+        _controller.reverse();
       }
     });
   }
