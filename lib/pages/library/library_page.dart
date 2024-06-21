@@ -28,7 +28,7 @@ class LibraryPage extends StatelessWidget {
 
     return Scaffold(
       appBar:
-          libraryHeader(context, appConfig, libraryViewModel.length, filter),
+          libraryAppBar(context, appConfig, libraryViewModel.length, filter),
       body: libraryBody(appConfig, libraryViewModel),
     );
   }
@@ -55,7 +55,7 @@ class LibraryPage extends StatelessWidget {
     );
   }
 
-  AppBar libraryHeader(
+  AppBar libraryAppBar(
     BuildContext context,
     AppConfigModel appConfig,
     int libraryViewLength,
