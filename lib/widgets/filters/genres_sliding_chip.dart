@@ -84,9 +84,9 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
           genre,
           onPressed: () {
             context.read<LibraryFilterModel>().filter =
-                LibraryFilter(genres: {genre});
+                LibraryFilter(genres: activeGenre != genre ? {genre} : {});
             setState(() {
-              activeGenre = genre;
+              activeGenre = activeGenre != genre ? genre : null;
             });
           },
           filled: activeGenre == genre,
