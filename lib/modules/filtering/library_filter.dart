@@ -5,87 +5,83 @@ import 'package:espy/modules/models/genres_mapping.dart';
 
 class LibraryFilter {
   LibraryFilter({
-    this.stores = const {},
-    this.developers = const {},
-    this.publishers = const {},
-    this.collections = const {},
-    this.franchises = const {},
-    this.genreGroups = const {},
-    this.genres = const {},
-    this.keywords = const {},
-    this.manualGenres = const {},
-    this.userTags = const {},
+    this.store,
+    this.developer,
+    this.publisher,
+    this.collection,
+    this.franchise,
+    this.genreGroup,
+    this.genre,
+    this.keyword,
+    this.manualGenre,
+    this.userTag,
   });
 
-  Set<String> stores;
-  Set<String> developers;
-  Set<String> publishers;
-  Set<String> collections;
-  Set<String> franchises;
-  Set<String> genreGroups;
-  Set<String> genres;
-  Set<String> keywords;
-  Set<String> manualGenres;
-  Set<String> userTags;
-
-  LibraryFilter add(LibraryFilter other) {
-    return LibraryFilter(
-      stores: stores.union(other.stores),
-      developers: developers.union(other.developers),
-      publishers: publishers.union(other.publishers),
-      collections: collections.union(other.collections),
-      franchises: franchises.union(other.franchises),
-      genreGroups: genreGroups.union(other.genreGroups),
-      genres: genres.union(other.genres),
-      keywords: keywords.union(other.keywords),
-      manualGenres: manualGenres.union(other.manualGenres),
-      userTags: userTags.union(other.userTags),
-    );
-  }
-
-  LibraryFilter remove(LibraryFilter other) {
-    return LibraryFilter(
-      stores: stores.difference(other.stores),
-      developers: developers.difference(other.developers),
-      publishers: publishers.difference(other.publishers),
-      collections: collections.difference(other.collections),
-      franchises: franchises.difference(other.franchises),
-      genreGroups: genreGroups.difference(other.genreGroups),
-      genres: genres.difference(other.genres),
-      keywords: keywords.difference(other.keywords),
-      manualGenres: manualGenres.difference(other.manualGenres),
-      userTags: userTags.difference(other.userTags),
-    );
-  }
-
-  bool contains(LibraryFilter other) {
-    return other.stores.difference(stores).isEmpty &&
-        other.developers.difference(developers).isEmpty &&
-        other.publishers.difference(publishers).isEmpty &&
-        other.collections.difference(collections).isEmpty &&
-        other.franchises.difference(franchises).isEmpty &&
-        other.genreGroups.difference(genreGroups).isEmpty &&
-        other.genres.difference(genres).isEmpty &&
-        other.keywords.difference(keywords).isEmpty &&
-        other.manualGenres.difference(manualGenres).isEmpty &&
-        other.userTags.difference(userTags).isEmpty;
-  }
+  String? store;
+  String? developer;
+  String? publisher;
+  String? collection;
+  String? franchise;
+  String? genreGroup;
+  String? genre;
+  String? keyword;
+  String? manualGenre;
+  String? userTag;
 
   bool equals(LibraryFilter other) {
-    return contains(other) && other.contains(this);
+    return store == other.store &&
+        developer == other.developer &&
+        publisher == other.publisher &&
+        collection == other.collection &&
+        franchise == other.franchise &&
+        genreGroup == other.genreGroup &&
+        genre == other.genre &&
+        keyword == other.keyword &&
+        manualGenre == other.manualGenre &&
+        userTag == other.userTag;
   }
 
   bool get isNotEmpty =>
-      stores.isNotEmpty ||
-      developers.isNotEmpty ||
-      publishers.isNotEmpty ||
-      collections.isNotEmpty ||
-      franchises.isNotEmpty ||
-      genreGroups.isNotEmpty ||
-      genres.isNotEmpty ||
-      keywords.isNotEmpty ||
-      manualGenres.isNotEmpty ||
-      userTags.isNotEmpty;
+      store != null ||
+      developer != null ||
+      publisher != null ||
+      collection != null ||
+      franchise != null ||
+      genreGroup != null ||
+      genre != null ||
+      keyword != null ||
+      manualGenre != null ||
+      userTag != null;
+
+  LibraryFilter add(LibraryFilter other) {
+    return LibraryFilter(
+      store: other.store ?? store,
+      developer: other.developer ?? developer,
+      publisher: other.publisher ?? publisher,
+      collection: other.collection ?? collection,
+      franchise: other.franchise ?? franchise,
+      genreGroup: other.genreGroup ?? genreGroup,
+      genre: other.genre ?? genre,
+      keyword: other.keyword ?? keyword,
+      manualGenre: other.manualGenre ?? manualGenre,
+      userTag: other.userTag ?? userTag,
+    );
+  }
+
+  LibraryFilter subtract(LibraryFilter other) {
+    return LibraryFilter(
+      store: other.store == null ? store : null,
+      developer: other.developer == null ? developer : null,
+      publisher: other.publisher == null ? publisher : null,
+      collection: other.collection == null ? collection : null,
+      franchise: other.franchise == null ? franchise : null,
+      genreGroup: other.genreGroup == null ? genreGroup : null,
+      genre: other.genre == null ? genre : null,
+      keyword: other.keyword == null ? keyword : null,
+      manualGenre: other.manualGenre == null ? manualGenre : null,
+      userTag: other.userTag == null ? userTag : null,
+    );
+  }
 
   LibraryView apply(
     GameTagsModel tagsModel,
@@ -93,36 +89,36 @@ class LibraryFilter {
   ) {
     List<Set<int>> gameIdSets = [];
 
-    for (final store in stores) {
-      gameIdSets.add(Set.from(tagsModel.stores.gameIds(store)));
+    if (store != null) {
+      gameIdSets.add(Set.from(tagsModel.stores.gameIds(store!)));
     }
-    for (final company in developers) {
-      gameIdSets.add(Set.from(tagsModel.developers.gameIds(company)));
+    if (developer != null) {
+      gameIdSets.add(Set.from(tagsModel.developers.gameIds(developer!)));
     }
-    for (final company in publishers) {
-      gameIdSets.add(Set.from(tagsModel.publishers.gameIds(company)));
+    if (publisher != null) {
+      gameIdSets.add(Set.from(tagsModel.publishers.gameIds(publisher!)));
     }
-    for (final collection in collections) {
-      gameIdSets.add(Set.from(tagsModel.collections.gameIds(collection)));
+    if (collection != null) {
+      gameIdSets.add(Set.from(tagsModel.collections.gameIds(collection!)));
     }
-    for (final franchise in franchises) {
-      gameIdSets.add(Set.from(tagsModel.franchises.gameIds(franchise)));
+    if (franchise != null) {
+      gameIdSets.add(Set.from(tagsModel.franchises.gameIds(franchise!)));
     }
-    for (final genreGroup in genreGroups) {
+    if (genreGroup != null) {
       final groupSet = <int>{};
-      for (final genre in Genres.genresInGroup(genreGroup) ?? []) {
+      for (final genre in Genres.genresInGroup(genreGroup!) ?? []) {
         groupSet.addAll(tagsModel.genres.gameIds(genre));
       }
       gameIdSets.add(groupSet);
     }
-    for (final genre in genres) {
-      gameIdSets.add(Set.from(tagsModel.genres.gameIds(genre)));
+    if (genre != null) {
+      gameIdSets.add(Set.from(tagsModel.genres.gameIds(genre!)));
     }
-    for (final genreTag in manualGenres) {
-      gameIdSets.add(Set.from(tagsModel.manualGenres.gameIds(genreTag)));
+    if (manualGenre != null) {
+      gameIdSets.add(Set.from(tagsModel.manualGenres.gameIds(manualGenre!)));
     }
-    for (final tag in userTags) {
-      gameIdSets.add(Set.from(tagsModel.userTags.gameIdsByTag(tag)));
+    if (userTag != null) {
+      gameIdSets.add(Set.from(tagsModel.userTags.gameIdsByTag(userTag!)));
     }
 
     final gameIds =
@@ -138,16 +134,16 @@ class LibraryFilter {
 
   Map<String, String> params() {
     return {
-      if (stores.isNotEmpty) 'str': stores.map((s) => s).join(':'),
-      if (developers.isNotEmpty) 'dev': developers.map((c) => c).join(':'),
-      if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(':'),
-      if (collections.isNotEmpty) 'col': collections.map((c) => c).join(':'),
-      if (franchises.isNotEmpty) 'frn': franchises.map((c) => c).join(':'),
-      if (genreGroups.isNotEmpty) 'ggr': genreGroups.map((c) => c).join(':'),
-      if (genres.isNotEmpty) 'gnr': genres.map((c) => c).join(':'),
-      if (keywords.isNotEmpty) 'kw': keywords.map((c) => c).join(':'),
-      if (manualGenres.isNotEmpty) 'gnt': manualGenres.map((c) => c).join(':'),
-      if (userTags.isNotEmpty) 'tag': userTags.map((t) => t).join(':'),
+      if (store != null) 'str': store!,
+      if (developer != null) 'dev': developer!,
+      if (publisher != null) 'pub': publisher!,
+      if (collection != null) 'col': collection!,
+      if (franchise != null) 'frn': franchise!,
+      if (genreGroup != null) 'ggr': genreGroup!,
+      if (genre != null) 'gnr': genre!,
+      if (keyword != null) 'kw': keyword!,
+      if (manualGenre != null) 'gnt': manualGenre!,
+      if (userTag != null) 'tag': userTag!,
     };
   }
 
@@ -156,25 +152,25 @@ class LibraryFilter {
 
     params.forEach((key, value) {
       if (key == 'str') {
-        filter.stores = value.split(':').toSet();
+        filter.store = value;
       } else if (key == 'dev') {
-        filter.developers = value.split(':').toSet();
+        filter.developer = value;
       } else if (key == 'pub') {
-        filter.publishers = value.split(':').toSet();
+        filter.publisher = value;
       } else if (key == 'col') {
-        filter.collections = value.split(':').toSet();
+        filter.collection = value;
       } else if (key == 'frn') {
-        filter.franchises = value.split(':').toSet();
+        filter.franchise = value;
       } else if (key == 'ggr') {
-        filter.genreGroups = value.split(':').toSet();
+        filter.genreGroup = value;
       } else if (key == 'gnr') {
-        filter.genres = value.split(':').toSet();
+        filter.genre = value;
       } else if (key == 'kw') {
-        filter.keywords = value.split(':').toSet();
+        filter.keyword = value;
       } else if (key == 'gnt') {
-        filter.manualGenres = value.split(':').toSet();
+        filter.manualGenre = value;
       } else if (key == 'tag') {
-        filter.userTags = value.split(':').toSet();
+        filter.userTag = value;
       }
     });
     return filter;

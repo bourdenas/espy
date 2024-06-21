@@ -57,7 +57,7 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
               color: GenreGroupChip.color,
               onClick: () {
                 context.read<LibraryFilterModel>().filter =
-                    LibraryFilter(genreGroups: {group});
+                    LibraryFilter(genreGroup: group);
                 setState(() {
                   activeGroup = group;
                 });
@@ -84,7 +84,7 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
           genre,
           onPressed: () {
             context.read<LibraryFilterModel>().filter =
-                LibraryFilter(genres: activeGenre != genre ? {genre} : {});
+                LibraryFilter(genre: activeGenre != genre ? genre : null);
             setState(() {
               activeGenre = activeGenre != genre ? genre : null;
             });

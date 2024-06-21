@@ -1,4 +1,3 @@
-import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
@@ -15,53 +14,57 @@ class GameChipsFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     void onRemove(LibraryFilter filter) {
       final updatedFilter =
-          context.read<LibraryFilterModel>().filter.remove(filter);
+          context.read<LibraryFilterModel>().filter.subtract(filter);
       updateLibraryView(context, updatedFilter);
     }
 
     return Row(children: [
-      for (final store in filter.stores) ...[
+      if (filter.store != null) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: StoreChip(
-            store,
-            onDeleted: () => onRemove(LibraryFilter(stores: {store})),
+            filter.store!,
+            onDeleted: () => onRemove(LibraryFilter(store: filter.store)),
           ),
         ),
       ],
-      for (final company in filter.developers) ...[
+      if (filter.developer != null) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: DeveloperChip(
-            company,
-            onDeleted: () => onRemove(LibraryFilter(developers: {company})),
+            filter.developer!,
+            onDeleted: () =>
+                onRemove(LibraryFilter(developer: filter.developer)),
           ),
         ),
       ],
-      for (final company in filter.publishers) ...[
+      if (filter.publisher != null) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: PublisherChip(
-            company,
-            onDeleted: () => onRemove(LibraryFilter(publishers: {company})),
+            filter.publisher!,
+            onDeleted: () =>
+                onRemove(LibraryFilter(publisher: filter.publisher)),
           ),
         ),
       ],
-      for (final collection in filter.collections) ...[
+      if (filter.collection != null) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: CollectionChip(
-            collection,
-            onDeleted: () => onRemove(LibraryFilter(collections: {collection})),
+            filter.collection!,
+            onDeleted: () =>
+                onRemove(LibraryFilter(collection: filter.collection)),
           ),
         ),
       ],
-      for (final franchise in filter.franchises) ...[
+      if (filter.franchise != null) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: FranchiseChip(
-            franchise,
-            onDeleted: () => onRemove(LibraryFilter(franchises: {franchise})),
+            filter.franchise!,
+            onDeleted: () =>
+                onRemove(LibraryFilter(franchise: filter.franchise)),
           ),
         ),
       ],
@@ -74,30 +77,30 @@ class GameChipsFilterBar extends StatelessWidget {
       //     ),
       //   ),
       // ],
-      for (final genreTag in filter.manualGenres) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: ManualGenreChip(
-            Genre.decode(genreTag).label,
-            onDeleted: () => onRemove(LibraryFilter(manualGenres: {genreTag})),
-          ),
-        ),
-      ],
-      for (final keyword in filter.keywords) ...[
+      // if (filter.manualGenre != null) ...[
+      //   Padding(
+      //     padding: const EdgeInsets.all(4.0),
+      //     child: ManualGenreChip(
+      //       filter.Genre!.decode(genreTag).label,
+      //       onDeleted: () => onRemove(LibraryFilter(manualGenre: filter.genreTag)),
+      //     ),
+      //   ),
+      // ],
+      if (filter.keyword != null) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: KeywordChip(
-            keyword,
-            onDeleted: () => onRemove(LibraryFilter(keywords: {keyword})),
+            filter.keyword!,
+            onDeleted: () => onRemove(LibraryFilter(keyword: filter.keyword)),
           ),
         ),
       ],
-      for (final userTag in filter.userTags) ...[
+      if (filter.userTag != null) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: TagChip(
-            userTag,
-            onDeleted: () => onRemove(LibraryFilter(userTags: {userTag})),
+            filter.userTag!,
+            onDeleted: () => onRemove(LibraryFilter(userTag: filter.userTag)),
           ),
         ),
       ],
