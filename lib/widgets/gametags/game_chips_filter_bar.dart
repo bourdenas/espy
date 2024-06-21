@@ -65,20 +65,20 @@ class GameChipsFilterBar extends StatelessWidget {
           ),
         ),
       ],
-      for (final genre in filter.genres) ...[
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: EspyGenreTagChip(
-            genre,
-            onDeleted: () => onRemove(LibraryFilter(genres: {genre})),
-          ),
-        ),
-      ],
+      // for (final genre in filter.genres) ...[
+      //   Padding(
+      //     padding: const EdgeInsets.all(4.0),
+      //     child: EspyGenreTagChip(
+      //       genre,
+      //       onDeleted: () => onRemove(LibraryFilter(genres: {genre})),
+      //     ),
+      //   ),
+      // ],
       for (final genreTag in filter.manualGenres) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
           child: ManualGenreChip(
-            Genre.decode(genreTag).name,
+            Genre.decode(genreTag).label,
             onDeleted: () => onRemove(LibraryFilter(manualGenres: {genreTag})),
           ),
         ),

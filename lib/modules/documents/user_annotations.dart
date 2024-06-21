@@ -1,3 +1,5 @@
+import 'package:espy/modules/models/genres_mapping.dart';
+
 class UserAnnotations {
   List<Genre> genres;
   List<UserTag> userTags;
@@ -38,10 +40,10 @@ class Genre {
     this.gameIds = const [],
   });
 
-  String encode() => label;
+  String encode() => Genres.genreFromLabel(label);
 
-  static decode(String encoded) {
-    return Genre(label: encoded);
+  static Genre decode(String encoded) {
+    return Genre(label: Genres.genreLabel(encoded));
   }
 
   Genre.fromJson(Map<String, dynamic> json)
