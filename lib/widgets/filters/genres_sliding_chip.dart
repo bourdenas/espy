@@ -13,42 +13,42 @@ class GameGenresSlidingChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filter = context.watch<LibraryFilterModel>().filter;
+
     return SlidingChip(
       label: 'Genres',
-      // color: Theme.of(context).colorScheme.onSecondaryContainer,
-      color: GenreGroupChip.color,
+      color: filter.genreGroup == null && filter.genre == null
+          ? GenreGroupChip.color
+          : null,
+      backgroundColor: filter.genreGroup != null || filter.genre != null
+          ? GenreGroupChip.color
+          : null,
+      closeIcon: Icons.close,
       expansion: const GameGenreGroupFilter(),
     );
   }
 }
 
-class GameGenreGroupFilter extends StatefulWidget {
+class GameGenreGroupFilter extends StatelessWidget {
   const GameGenreGroupFilter({super.key});
 
   @override
-  State<GameGenreGroupFilter> createState() => _GameGenreGroupFilterState();
-}
-
-class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  String? activeGroup;
-  String? activeGenre;
-
-  @override
   Widget build(BuildContext context) {
+    final filter = context.watch<LibraryFilterModel>().filter;
+    final activeGroup = filter.genreGroup ?? Genres.groupOfGenre(filter.genre);
+
     return Row(
       // children: buildGenreGroups(context),
       children: (activeGroup == null)
           ? buildGenreGroups(context)
-          : buildEspyGenre(context, activeGroup!),
+          : buildEspyGenre(context, activeGroup),
     );
   }
 
   List<Widget> buildGenreGroups(BuildContext context) {
+    final filter = context.watch<LibraryFilterModel>().filter;
+    final activeGroup = filter.genreGroup;
+
     return [
       for (final group in Genres.groups)
         if (activeGroup == null || activeGroup == group) ...[
@@ -56,11 +56,11 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
               label: group,
               color: GenreGroupChip.color,
               onClick: () {
-                context.read<LibraryFilterModel>().filter =
-                    LibraryFilter(genreGroup: group);
-                setState(() {
-                  activeGroup = group;
-                });
+                final updated = context
+                    .read<LibraryFilterModel>()
+                    .filter
+                    .add(LibraryFilter(genreGroup: group));
+                context.read<LibraryFilterModel>().filter = updated;
               }),
           const SizedBox(width: 8),
         ],
@@ -68,26 +68,28 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
   }
 
   List<Widget> buildEspyGenre(BuildContext context, String genreGroup) {
+    final activeGenre = context.watch<LibraryFilterModel>().filter.genre;
+
     return [
       GenreFilterChip(
           label: genreGroup,
           backgroundColor: GenreGroupChip.color,
           open: true,
-          onClick: () => setState(() {
-                activeGroup = null;
-                activeGenre = null;
-                context.read<LibraryFilterModel>().filter = LibraryFilter();
-              })),
+          onClick: () {
+            final updated = context.read<LibraryFilterModel>().filter.subtract(
+                LibraryFilter(genreGroup: genreGroup, genre: activeGenre));
+            context.read<LibraryFilterModel>().filter = updated;
+          }),
       const SizedBox(width: 4),
       for (final genre in Genres.genresInGroup(genreGroup) ?? []) ...[
         EspyGenreTagChip(
           genre,
           onPressed: () {
-            context.read<LibraryFilterModel>().filter =
-                LibraryFilter(genre: activeGenre != genre ? genre : null);
-            setState(() {
-              activeGenre = activeGenre != genre ? genre : null;
-            });
+            final filter = context.read<LibraryFilterModel>().filter;
+            final updated = activeGenre != genre
+                ? filter.add(LibraryFilter(genre: genre))
+                : filter.subtract(LibraryFilter(genre: genre));
+            context.read<LibraryFilterModel>().filter = updated;
           },
           filled: activeGenre == genre,
         ),
