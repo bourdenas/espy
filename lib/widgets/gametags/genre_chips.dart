@@ -71,7 +71,7 @@ class _GenreChipsState extends State<GenreChips>
     final impliedGenres = genreTags.map((e) => tagsModel.getGenreGroup(e.name));
 
     final widgets = [
-      for (final genreGroup in context.read<GameTagsModel>().genreGroups)
+      for (final genreGroup in GameTagsModel.genreGroups)
         badges.Badge(
           showBadge: genreTags
               .where((genreTag) =>
@@ -113,7 +113,7 @@ class _GenreChipsState extends State<GenreChips>
     final tagsModel = context.watch<GameTagsModel>();
 
     final widgets = [
-      for (final label in tagsModel.espyGenreTags(genreGroup) ?? [])
+      for (final label in GameTagsModel.espyGenreTags(genreGroup) ?? [])
         _TagSelectionChip(
           label: label,
           color: ManualGenreChip.color,

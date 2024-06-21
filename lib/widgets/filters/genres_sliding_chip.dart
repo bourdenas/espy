@@ -50,14 +50,18 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
 
   List<Widget> buildGenreGroups(BuildContext context) {
     return [
-      for (final group in context.read<GameTagsModel>().genreGroups)
+      for (final group in GameTagsModel.genreGroups)
         if (activeGroup == null || activeGroup == group) ...[
           GenreFilterChip(
               label: group,
               color: GenreGroupChip.color,
-              onClick: () => setState(() {
-                    activeGroup = group;
-                  })),
+              onClick: () {
+                context.read<LibraryFilterModel>().filter =
+                    LibraryFilter(genreGroups: {group});
+                setState(() {
+                  activeGroup = group;
+                });
+              }),
           const SizedBox(width: 8),
         ],
     ];
@@ -75,8 +79,7 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
                 context.read<LibraryFilterModel>().filter = LibraryFilter();
               })),
       const SizedBox(width: 4),
-      for (final genre
-          in context.read<GameTagsModel>().espyGenreTags(genreGroup) ?? []) ...[
+      for (final genre in GameTagsModel.espyGenreTags(genreGroup) ?? []) ...[
         EspyGenreTagChip(
           genre,
           onPressed: () {

@@ -35,8 +35,9 @@ class GameTagsModel extends ChangeNotifier {
   ManualGenreManager get manualGenres => _manualGenresManager;
   UserTagManager get userTags => _userTagsManager;
 
-  List<String> get genreGroups => _genreGroups;
-  List<String>? espyGenreTags(String genreGroup) => _genreTags[genreGroup];
+  static List<String> get genreGroups => _genreGroups;
+  static List<String>? espyGenreTags(String genreGroup) =>
+      _genreTags[genreGroup];
   String? getGenreGroup(String genre) => _groupMapping[genre];
 
   void update(
