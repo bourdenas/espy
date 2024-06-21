@@ -35,22 +35,10 @@ class GameTagsModel extends ChangeNotifier {
   ManualGenreManager get manualGenres => _manualGenresManager;
   UserTagManager get userTags => _userTagsManager;
 
-  List<String> get genreGroups => _genreGroups;
-  List<String>? espyGenreTags(String genreGroup) => _genreTags[genreGroup];
-  String? getGenreGroup(String genre) => _groupMapping[genre];
-
   void update(
     String userId,
     LibraryIndexModel indexModel,
   ) async {
-    if (_groupMapping.isEmpty) {
-      for (final groupEntry in _genreTags.entries) {
-        for (final genre in groupEntry.value) {
-          _groupMapping[genre] = groupEntry.key;
-        }
-      }
-    }
-
     _indexModel = indexModel;
 
     final entries = indexModel.entries;
@@ -114,97 +102,3 @@ class GameTagsModel extends ChangeNotifier {
   late LibraryIndexModel _indexModel;
   LibraryEntry? _getEntryById(int id) => _indexModel.getEntryById(id);
 }
-
-const _genreGroups = [
-  'Adventure',
-  'RPG',
-  'Shooter',
-  'Platformer',
-  'Strategy',
-  'Simulator',
-  'Arcade',
-  'Casual',
-];
-
-const Map<String, List<String>> _genreTags = {
-  'Adventure': [
-    'Point & Click',
-    'Action',
-    'Isometric Action',
-    'Narrative Adventure',
-    'Survival Adventure',
-    'Puzzle Adventure',
-    'Walking Simulator',
-  ],
-  'Arcade': [
-    'Fighting',
-    'Beat\'em Up',
-    'Pinball',
-    'Card & Board Game',
-    'Deckbuilder',
-  ],
-  'Casual': [
-    'Life Sim',
-    'Farming Sim',
-    'Fishing Sim',
-    'Sailing Sim',
-    'Dating Sim',
-    'Puzzle',
-    'Endless Runner',
-    'Rhythm',
-    'Party Game',
-    'Visual Novel',
-    'Exploration',
-  ],
-  'Platformer': [
-    'Side Scroller',
-    'Metroidvania',
-    '3D Platformer',
-    'Shooter Platformer',
-    'Precision Platformer',
-    'Puzzle Platformer',
-  ],
-  'RPG': [
-    'CRPG',
-    'ARPG',
-    'Action RPG',
-    'JRPG',
-    'First Person RPG',
-    'Turn Based RPG',
-    'RTwP RPG',
-    'Dungeon Crawler',
-    'MMORPG',
-  ],
-  'Shooter': [
-    'First Person Shooter',
-    'Top-Down Shooter',
-    '3rd Person Shooter',
-    'Space Shooter',
-    'Shmup',
-    'Battle Royale',
-  ],
-  'Simulator': [
-    'City Builder',
-    'Tycoon',
-    'God Game',
-    'Racing',
-    'Sports',
-    'Flight Simulator',
-    'Combat Simulator',
-    'Naval Simulator',
-    'Driving Simulator',
-    'Survival',
-  ],
-  'Strategy': [
-    'Turn Based Strategy',
-    'Real-Time Strategy',
-    'Turn Based Tactics',
-    'Real-Time Tactics',
-    'Grand Strategy',
-    '4X',
-    'Tower Defense',
-    'MOBA',
-  ],
-};
-
-Map<String, String> _groupMapping = {};

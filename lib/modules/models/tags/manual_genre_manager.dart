@@ -14,8 +14,8 @@ class ManualGenreManager {
       gameIds(genre).map((id) => _getEntryById(id)).whereType<LibraryEntry>();
 
   Iterable<Genre> filter(Iterable<String> ngrams) {
-    return all.where((e) => e.name.isNotEmpty).where(
-          (genre) => ngrams.every((ngram) => genre.name
+    return all.where((e) => e.label.isNotEmpty).where(
+          (genre) => ngrams.every((ngram) => genre.label
               .toLowerCase()
               .split(' ')
               .any((word) => word.startsWith(ngram))),
@@ -23,9 +23,9 @@ class ManualGenreManager {
   }
 
   Iterable<Genre> filterExact(Iterable<String> ngrams) {
-    return all.where((e) => e.name.isNotEmpty).where(
+    return all.where((e) => e.label.isNotEmpty).where(
           (tag) => ngrams.every((ngram) =>
-              tag.name.toLowerCase().split(' ').any((word) => word == ngram)),
+              tag.label.toLowerCase().split(' ').any((word) => word == ngram)),
         );
   }
 
@@ -53,7 +53,7 @@ class ManualGenreManager {
 
   void _addTag(Genre genre, int gameId) {
     for (final value in _userTags.genres) {
-      if (value.name == genre.name) {
+      if (value.label == genre.label) {
         value.gameIds.add(gameId);
         return;
       }
@@ -62,7 +62,7 @@ class ManualGenreManager {
     // New Genre, add new Genre in UserTags.
     _userTags.genres.add(
       Genre(
-        name: genre.name,
+        label: genre.label,
         gameIds: [gameId],
       ),
     );
@@ -70,7 +70,7 @@ class ManualGenreManager {
 
   void _removeTag(Genre genre, int gameId) {
     for (final value in _userTags.genres) {
-      if (value.name == genre.name) {
+      if (value.label == genre.label) {
         value.gameIds.remove(gameId);
         return;
       }
@@ -93,7 +93,7 @@ class ManualGenreManager {
       if (genre.gameIds.isEmpty) {
         continue;
       }
-      final genreCopy = Genre(name: genre.name);
+      final genreCopy = Genre(label: genre.label);
       genreHistogram.add((genreCopy, genre.gameIds.length));
 
       for (final id in genre.gameIds) {

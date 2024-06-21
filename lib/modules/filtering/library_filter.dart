@@ -1,6 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_view.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/genres_mapping.dart';
 
 class LibraryFilter {
   LibraryFilter({
@@ -9,6 +10,7 @@ class LibraryFilter {
     this.publishers = const {},
     this.collections = const {},
     this.franchises = const {},
+    this.genreGroups = const {},
     this.genres = const {},
     this.keywords = const {},
     this.manualGenres = const {},
@@ -20,6 +22,7 @@ class LibraryFilter {
   Set<String> publishers;
   Set<String> collections;
   Set<String> franchises;
+  Set<String> genreGroups;
   Set<String> genres;
   Set<String> keywords;
   Set<String> manualGenres;
@@ -32,6 +35,7 @@ class LibraryFilter {
       publishers: publishers.union(other.publishers),
       collections: collections.union(other.collections),
       franchises: franchises.union(other.franchises),
+      genreGroups: genreGroups.union(other.genreGroups),
       genres: genres.union(other.genres),
       keywords: keywords.union(other.keywords),
       manualGenres: manualGenres.union(other.manualGenres),
@@ -46,6 +50,7 @@ class LibraryFilter {
       publishers: publishers.difference(other.publishers),
       collections: collections.difference(other.collections),
       franchises: franchises.difference(other.franchises),
+      genreGroups: genreGroups.difference(other.genreGroups),
       genres: genres.difference(other.genres),
       keywords: keywords.difference(other.keywords),
       manualGenres: manualGenres.difference(other.manualGenres),
@@ -59,6 +64,7 @@ class LibraryFilter {
         other.publishers.difference(publishers).isEmpty &&
         other.collections.difference(collections).isEmpty &&
         other.franchises.difference(franchises).isEmpty &&
+        other.genreGroups.difference(genreGroups).isEmpty &&
         other.genres.difference(genres).isEmpty &&
         other.keywords.difference(keywords).isEmpty &&
         other.manualGenres.difference(manualGenres).isEmpty &&
@@ -75,6 +81,7 @@ class LibraryFilter {
       publishers.isNotEmpty ||
       collections.isNotEmpty ||
       franchises.isNotEmpty ||
+      genreGroups.isNotEmpty ||
       genres.isNotEmpty ||
       keywords.isNotEmpty ||
       manualGenres.isNotEmpty ||
@@ -100,6 +107,13 @@ class LibraryFilter {
     }
     for (final franchise in franchises) {
       gameIdSets.add(Set.from(tagsModel.franchises.gameIds(franchise)));
+    }
+    for (final genreGroup in genreGroups) {
+      final groupSet = <int>{};
+      for (final genre in Genres.genresInGroup(genreGroup) ?? []) {
+        groupSet.addAll(tagsModel.genres.gameIds(genre));
+      }
+      gameIdSets.add(groupSet);
     }
     for (final genre in genres) {
       gameIdSets.add(Set.from(tagsModel.genres.gameIds(genre)));
@@ -129,6 +143,7 @@ class LibraryFilter {
       if (publishers.isNotEmpty) 'pub': publishers.map((c) => c).join(':'),
       if (collections.isNotEmpty) 'col': collections.map((c) => c).join(':'),
       if (franchises.isNotEmpty) 'frn': franchises.map((c) => c).join(':'),
+      if (genreGroups.isNotEmpty) 'ggr': genreGroups.map((c) => c).join(':'),
       if (genres.isNotEmpty) 'gnr': genres.map((c) => c).join(':'),
       if (keywords.isNotEmpty) 'kw': keywords.map((c) => c).join(':'),
       if (manualGenres.isNotEmpty) 'gnt': manualGenres.map((c) => c).join(':'),
@@ -150,6 +165,8 @@ class LibraryFilter {
         filter.collections = value.split(':').toSet();
       } else if (key == 'frn') {
         filter.franchises = value.split(':').toSet();
+      } else if (key == 'ggr') {
+        filter.genreGroups = value.split(':').toSet();
       } else if (key == 'gnr') {
         filter.genres = value.split(':').toSet();
       } else if (key == 'kw') {

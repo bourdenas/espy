@@ -6,6 +6,8 @@ import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
+import 'package:espy/widgets/filters/categories_sliding_chip.dart';
+import 'package:espy/widgets/filters/genres_sliding_chip.dart';
 import 'package:espy/widgets/gametags/game_chips_filter_bar.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
@@ -81,58 +83,17 @@ class LibraryPage extends StatelessWidget {
           children: [
             GameChipsFilterBar(filter),
             const SizedBox(width: 8),
+            const GameCategoriesSlidingChip(),
+            const SizedBox(width: 8.0),
+            const GameGenresSlidingChip(),
+            const SizedBox(width: 8.0),
             if (context.watch<UserModel>().isSignedIn)
-              Row(
-                children: [
-                  LibraryChoice('Main Games', appConfig.showMains),
-                  const SizedBox(width: 8),
-                  LibraryChoice('Expansions', appConfig.showExpansions),
-                  const SizedBox(width: 8),
-                  LibraryChoice('DLCs', appConfig.showDlcs),
-                  const SizedBox(width: 8),
-                  LibraryChoice('Versions', appConfig.showVersions),
-                  const SizedBox(width: 8),
-                  LibraryChoice('Bundles', appConfig.showBundles),
-                  const SizedBox(width: 8),
-                  LibraryChoice('External', appConfig.showExternal),
-                ],
-              ),
+              CategoryFilterChip('External', appConfig.showExternal),
           ],
         ),
       ),
       backgroundColor: Colors.black.withOpacity(0.6),
       elevation: 0.0,
-    );
-  }
-}
-
-class LibraryChoice extends StatelessWidget {
-  const LibraryChoice(
-    this.label,
-    this.option, {
-    super.key,
-  });
-
-  final String label;
-  final BoolOption option;
-
-  @override
-  Widget build(BuildContext context) {
-    final appConfig = context.read<AppConfigModel>();
-    return GestureDetector(
-      onSecondaryTap: () {
-        appConfig.showMains.value = false;
-        appConfig.showExpansions.value = false;
-        appConfig.showDlcs.value = false;
-        appConfig.showVersions.value = false;
-        appConfig.showBundles.value = false;
-        option.value = true;
-      },
-      child: ChoiceChip(
-        label: Text(label),
-        selected: option.value,
-        onSelected: (selected) => option.value = selected,
-      ),
     );
   }
 }

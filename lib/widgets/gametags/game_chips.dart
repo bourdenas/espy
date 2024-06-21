@@ -1,118 +1,160 @@
 import 'package:flutter/material.dart';
 
 class StoreChip extends EspyChip {
-  StoreChip(String store, {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
+  StoreChip(
+    String store, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
           label: store,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static Color get color => Colors.deepOrange;
 }
 
 class DeveloperChip extends EspyChip {
-  DeveloperChip(String company,
-      {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
+  DeveloperChip(
+    String company, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
           label: company,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static Color get color => Colors.redAccent;
 }
 
 class PublisherChip extends EspyChip {
-  PublisherChip(String company,
-      {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
+  PublisherChip(
+    String company, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
           label: company,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static Color get color => Colors.red[200]!;
 }
 
 class CollectionChip extends EspyChip {
-  CollectionChip(String collection,
-      {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
-          label: collection,
+  CollectionChip(
+    String name, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
+          label: name,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static Color get color => Colors.indigoAccent;
 }
 
 class FranchiseChip extends EspyChip {
-  FranchiseChip(String collection,
-      {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
-          label: collection,
+  FranchiseChip(
+    String name, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
+          label: name,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static Color get color => Colors.indigo[200]!;
 }
 
 class GenreGroupChip extends EspyChip {
-  GenreGroupChip(String keyword,
-      {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
-          label: keyword,
+  GenreGroupChip(
+    String genre, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
+          label: genre,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static Color get color => Colors.deepPurple[200]!;
 }
 
 class EspyGenreTagChip extends EspyChip {
-  EspyGenreTagChip(String genre,
-      {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
+  EspyGenreTagChip(
+    String genre, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
           label: genre,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static Color get color => Colors.deepPurpleAccent;
 }
 
 class KeywordChip extends EspyChip {
-  KeywordChip(String keyword,
-      {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
+  KeywordChip(
+    String keyword, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
           label: keyword,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static Color get color => Colors.grey;
 }
 
 class ManualGenreChip extends EspyChip {
-  ManualGenreChip(String genre,
-      {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
+  ManualGenreChip(
+    String genre, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
           label: genre,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static Color get color => Colors.orange;
 }
 
 class TagChip extends EspyChip {
-  TagChip(String tag, {super.key, VoidCallback? onPressed, super.onDeleted})
-      : super(
+  TagChip(
+    String tag, {
+    super.key,
+    super.onPressed,
+    super.onDeleted,
+    super.onRightClick,
+    super.filled,
+  }) : super(
           label: tag,
           color: color,
-          onPressed: onPressed ?? () {},
         );
 
   static MaterialColor get color => Colors.blueGrey;
@@ -124,6 +166,7 @@ class EspyChip extends StatelessWidget {
   final VoidCallback? onPressed;
   final VoidCallback? onDeleted;
   final VoidCallback? onRightClick;
+  final bool filled;
 
   const EspyChip({
     super.key,
@@ -132,6 +175,7 @@ class EspyChip extends StatelessWidget {
     this.onPressed,
     this.onDeleted,
     this.onRightClick,
+    this.filled = true,
   })  : _label = label,
         _color = color;
 
@@ -142,9 +186,9 @@ class EspyChip extends StatelessWidget {
       child: InputChip(
         label: Text(
           _label,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: filled ? Colors.white : _color),
         ),
-        backgroundColor: _color,
+        backgroundColor: filled ? _color : null,
         onPressed: onPressed,
         onDeleted: onDeleted,
       ),

@@ -30,23 +30,23 @@ class UserAnnotations {
 }
 
 class Genre {
-  final String name;
+  final String label;
   final List<int> gameIds;
 
   Genre({
-    required this.name,
+    required this.label,
     this.gameIds = const [],
   });
 
-  String encode() => name;
+  String encode() => label;
 
   static decode(String encoded) {
-    return Genre(name: encoded);
+    return Genre(label: encoded);
   }
 
   Genre.fromJson(Map<String, dynamic> json)
       : this(
-          name: json['name']!,
+          label: json['name']!,
           gameIds: [
             for (int id in json['game_ids'] ?? []) id,
           ],
@@ -54,7 +54,7 @@ class Genre {
 
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
+      'name': label,
       'game_ids': gameIds,
     };
   }

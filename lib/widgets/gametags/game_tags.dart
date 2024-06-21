@@ -76,7 +76,7 @@ class GameTags extends StatelessWidget {
               for (final manualGenre
                   in tagsModel.manualGenres.byGameId(libraryEntry.id))
                 ManualGenreChip(
-                  manualGenre.name,
+                  manualGenre.label,
                   onPressed: () => onChipPressed(
                       LibraryFilter(manualGenres: {manualGenre.encode()})),
                 ),
@@ -192,7 +192,7 @@ class GameCardChips extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: ManualGenreChip(
-                    manualGenre.name,
+                    manualGenre.label,
                     onPressed: () => onChipPressed(
                         LibraryFilter(manualGenres: {manualGenre.encode()})),
                   ),

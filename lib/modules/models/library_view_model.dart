@@ -13,13 +13,7 @@ class LibraryViewModel extends ChangeNotifier {
   AppConfigModel _appConfigModel = AppConfigModel();
   LibraryIndexModel _libraryIndexModel = LibraryIndexModel();
   GameTagsModel _gameTagsModel = GameTagsModel();
-
   LibraryView _view = LibraryView([]);
-
-  int get length => _view.length;
-  Iterable<LibraryEntry> get entries => _view.entries;
-  List<(String, List<LibraryEntry>)> get groups =>
-      _view.group(_appConfigModel.libraryGrouping.value);
 
   LibraryViewModel();
 
@@ -37,6 +31,11 @@ class LibraryViewModel extends ChangeNotifier {
         : LibraryView(entries.toList());
     _view.filterCategories(_appConfigModel);
   }
+
+  Iterable<LibraryEntry> get entries => _view.entries;
+  List<(String, List<LibraryEntry>)> get groups =>
+      _view.group(_appConfigModel.libraryGrouping.value);
+  int get length => _view.length;
 
   void update(
     AppConfigModel appConfigModel,
