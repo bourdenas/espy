@@ -1,12 +1,15 @@
 import 'package:espy/modules/documents/library_entry.dart';
 
 class LabelManager {
-  LabelManager(
-    Iterable<LibraryEntry> entries,
-    Iterable<String> Function(LibraryEntry) labelExtractor,
-  ) {
+  LabelManager(Iterable<LibraryEntry> entries,
+      Iterable<String> Function(LibraryEntry) labelExtractor,
+      {bool createEmpty = false}) {
     for (final entry in entries) {
-      for (final label in labelExtractor(entry)) {
+      final labels = labelExtractor(entry);
+      if (createEmpty && labels.isEmpty) {
+        (_labelToLibraryEntries[''] ??= []).add(entry);
+      }
+      for (final label in labels) {
         (_labelToLibraryEntries[label] ??= []).add(entry);
       }
     }

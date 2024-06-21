@@ -113,6 +113,9 @@ const Map<String, List<String>> _genresInGroup = {
     'TowerDefense',
     'MOBA',
   ],
+  'Unknown': [
+    '',
+  ]
 };
 
 const Map<String, String> _genreToLabel = {
