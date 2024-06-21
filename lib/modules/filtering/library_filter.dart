@@ -1,6 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_view.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/genres_mapping.dart';
 
 class LibraryFilter {
   LibraryFilter({
@@ -109,7 +110,7 @@ class LibraryFilter {
     }
     for (final genreGroup in genreGroups) {
       final groupSet = <int>{};
-      for (final genre in GameTagsModel.espyGenreTags(genreGroup) ?? []) {
+      for (final genre in Genres.genresInGroup(genreGroup) ?? []) {
         groupSet.addAll(tagsModel.genres.gameIds(genre));
       }
       gameIdSets.add(groupSet);

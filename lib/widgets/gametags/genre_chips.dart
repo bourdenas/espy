@@ -1,6 +1,7 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/genres_mapping.dart';
 import 'package:espy/utils/edit_distance.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:espy/modules/documents/library_entry.dart';
@@ -68,17 +69,19 @@ class _GenreChipsState extends State<GenreChips>
   Widget _buildGenreChips() {
     final tagsModel = context.watch<GameTagsModel>();
     final genreTags = tagsModel.manualGenres.byGameId(widget.libraryEntry.id);
-    final impliedGenres = genreTags.map((e) => tagsModel.getGenreGroup(e.name));
+    // TODO: Collect the implied GenreGroups from the user tags.
+    final impliedGenres = [];
 
     final widgets = [
-      for (final genreGroup in GameTagsModel.genreGroups)
+      for (final genreGroup in Genres.groups)
         badges.Badge(
           showBadge: genreTags
               .where((genreTag) =>
-                  tagsModel.getGenreGroup(genreTag.name) == genreGroup)
+                  Genres.groupOfGenre(Genres.genreFromLabel(genreTag.name)) ==
+                  genreGroup)
               .isNotEmpty,
           badgeContent: Text(
-              '${genreTags.where((genreTag) => tagsModel.getGenreGroup(genreTag.name) == genreGroup).length}'),
+              '${genreTags.where((genreTag) => Genres.groupOfGenre(Genres.genreFromLabel(genreTag.name)) == genreGroup).length}'),
           position: badges.BadgePosition.topEnd(top: -16, end: -8),
           badgeAnimation: const badges.BadgeAnimation.scale(),
           badgeStyle: badges.BadgeStyle(
@@ -113,21 +116,20 @@ class _GenreChipsState extends State<GenreChips>
     final tagsModel = context.watch<GameTagsModel>();
 
     final widgets = [
-      for (final label in GameTagsModel.espyGenreTags(genreGroup) ?? [])
+      for (final genre in Genres.genresInGroup(genreGroup) ?? [])
         _TagSelectionChip(
-          label: label,
+          label: genre,
           color: ManualGenreChip.color,
-          hasHalo: matchInDict(label, widget.keywords),
+          hasHalo: matchInDict(genre, widget.keywords),
           isSelected: tagsModel.manualGenres
               .byGameId(widget.libraryEntry.id)
               .any((e) =>
-                  tagsModel.getGenreGroup(e.name) == genreGroup &&
-                  e.name == label),
+                  Genres.groupOfGenre(e.name) == genreGroup && e.name == genre),
           onSelected: (selected) => selected
               ? tagsModel.manualGenres
-                  .add(Genre(name: label), widget.libraryEntry.id)
+                  .add(Genre(name: genre), widget.libraryEntry.id)
               : tagsModel.manualGenres
-                  .remove(Genre(name: label), widget.libraryEntry.id),
+                  .remove(Genre(name: genre), widget.libraryEntry.id),
         ),
     ];
 

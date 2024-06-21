@@ -1,5 +1,5 @@
 import 'package:espy/modules/filtering/library_filter.dart';
-import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/genres_mapping.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/widgets/filters/sliding_chip.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
@@ -50,7 +50,7 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
 
   List<Widget> buildGenreGroups(BuildContext context) {
     return [
-      for (final group in GameTagsModel.genreGroups)
+      for (final group in Genres.groups)
         if (activeGroup == null || activeGroup == group) ...[
           GenreFilterChip(
               label: group,
@@ -79,7 +79,7 @@ class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
                 context.read<LibraryFilterModel>().filter = LibraryFilter();
               })),
       const SizedBox(width: 4),
-      for (final genre in GameTagsModel.espyGenreTags(genreGroup) ?? []) ...[
+      for (final genre in Genres.genresInGroup(genreGroup) ?? []) ...[
         EspyGenreTagChip(
           genre,
           onPressed: () {
