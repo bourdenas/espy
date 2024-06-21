@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/timeline.dart';
 import 'package:espy/modules/models/timeline_model.dart';
+import 'package:espy/pages/library/library_page.dart';
 import 'package:espy/widgets/gametags/game_chips.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
@@ -25,9 +26,30 @@ class _AnnualReviewState extends State<AnnualReview> {
       builder: (BuildContext context, AsyncSnapshot<AnnualReviewDoc> snapshot) {
         return snapshot.connectionState == ConnectionState.done &&
                 snapshot.hasData
-            ? AnnualGameList(review: snapshot.data!)
+            // ? AnnualGameList(review: snapshot.data!)
+            ? AnnualLibaryView(review: snapshot.data!)
             : Container();
       },
+    );
+  }
+}
+
+class AnnualLibaryView extends StatelessWidget {
+  const AnnualLibaryView({super.key, required this.review});
+
+  final AnnualReviewDoc review;
+
+  @override
+  Widget build(BuildContext context) {
+    return LibraryPage(
+      entries: [
+        review.releases,
+        review.indies,
+        review.earlyAccess,
+        review.expansions,
+        review.remasters,
+        review.casual
+      ].expand((e) => e).map((digest) => LibraryEntry.fromGameDigest(digest)),
     );
   }
 }

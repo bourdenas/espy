@@ -57,6 +57,7 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
+        // Annual releases.
         name: 'years',
         path: '/years',
         pageBuilder: (context, state) => NoTransitionPage(
@@ -107,6 +108,7 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
+        // Vertical timeline view that shows releases by month.
         name: 'releases',
         path: '/releases/:label/:year',
         pageBuilder: (context, state) => NoTransitionPage(
@@ -122,6 +124,7 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
+        // Library view month of game releases from a timeline view.
         name: 'view',
         path: '/view/:label/:year',
         pageBuilder: (context, state) => NoTransitionPage(
