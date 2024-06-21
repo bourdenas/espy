@@ -114,7 +114,7 @@ class TagSearchResults extends StatelessWidget {
               color: ManualGenreChip.color,
               chips: manualGenres.map(
                 (genreTag) => ManualGenreChip(
-                  genreTag.name,
+                  genreTag.label,
                   onPressed: () => updateLibraryView(
                     context,
                     LibraryFilter(manualGenres: {genreTag.encode()}),

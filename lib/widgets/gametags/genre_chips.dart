@@ -68,20 +68,22 @@ class _GenreChipsState extends State<GenreChips>
 
   Widget _buildGenreChips() {
     final tagsModel = context.watch<GameTagsModel>();
-    final genreTags = tagsModel.manualGenres.byGameId(widget.libraryEntry.id);
+    final manualGenres =
+        tagsModel.manualGenres.byGameId(widget.libraryEntry.id);
     // TODO: Collect the implied GenreGroups from the user tags.
     final impliedGenres = [];
 
     final widgets = [
       for (final genreGroup in Genres.groups)
         badges.Badge(
-          showBadge: genreTags
-              .where((genreTag) =>
-                  Genres.groupOfGenre(Genres.genreFromLabel(genreTag.name)) ==
+          showBadge: manualGenres
+              .where((manualGenre) =>
+                  Genres.groupOfGenre(
+                      Genres.genreFromLabel(manualGenre.label)) ==
                   genreGroup)
               .isNotEmpty,
           badgeContent: Text(
-              '${genreTags.where((genreTag) => Genres.groupOfGenre(Genres.genreFromLabel(genreTag.name)) == genreGroup).length}'),
+              '${manualGenres.where((genreTag) => Genres.groupOfGenre(Genres.genreFromLabel(genreTag.label)) == genreGroup).length}'),
           position: badges.BadgePosition.topEnd(top: -16, end: -8),
           badgeAnimation: const badges.BadgeAnimation.scale(),
           badgeStyle: badges.BadgeStyle(
@@ -116,20 +118,20 @@ class _GenreChipsState extends State<GenreChips>
     final tagsModel = context.watch<GameTagsModel>();
 
     final widgets = [
-      for (final genre in Genres.genresInGroup(genreGroup) ?? [])
+      for (final genreLabel in (Genres.genresInGroup(genreGroup) ?? [])
+          .map((e) => Genres.genreLabel(e)))
         _TagSelectionChip(
-          label: genre,
+          label: genreLabel,
           color: ManualGenreChip.color,
-          hasHalo: matchInDict(genre, widget.keywords),
+          hasHalo: matchInDict(genreLabel, widget.keywords),
           isSelected: tagsModel.manualGenres
               .byGameId(widget.libraryEntry.id)
-              .any((e) =>
-                  Genres.groupOfGenre(e.name) == genreGroup && e.name == genre),
+              .any((e) => e.label == genreLabel),
           onSelected: (selected) => selected
               ? tagsModel.manualGenres
-                  .add(Genre(name: genre), widget.libraryEntry.id)
+                  .add(Genre(label: genreLabel), widget.libraryEntry.id)
               : tagsModel.manualGenres
-                  .remove(Genre(name: genre), widget.libraryEntry.id),
+                  .remove(Genre(label: genreLabel), widget.libraryEntry.id),
         ),
     ];
 
