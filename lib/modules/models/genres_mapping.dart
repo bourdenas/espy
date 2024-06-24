@@ -46,7 +46,7 @@ const Map<String, List<String>> _genresInGroup = {
   ],
   'Arcade': [
     'Fighting',
-    "Beat'em Up",
+    'BeatEmUp',
     'Pinball',
     'CardAndBoard',
     'Deckbuilder',
