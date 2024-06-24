@@ -13,86 +13,96 @@ class GameGenresSlidingChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filter = context.watch<LibraryFilterModel>().filter;
+
     return SlidingChip(
       label: 'Genres',
-      // color: Theme.of(context).colorScheme.onSecondaryContainer,
-      color: GenreGroupChip.color,
+      color: filter.genreGroup == null && filter.genre == null
+          ? GenreGroupChip.color
+          : null,
+      backgroundColor: filter.genreGroup != null || filter.genre != null
+          ? GenreGroupChip.color
+          : null,
+      closeIcon: Icons.close,
       expansion: const GameGenreGroupFilter(),
     );
   }
 }
 
-class GameGenreGroupFilter extends StatefulWidget {
+class GameGenreGroupFilter extends StatelessWidget {
   const GameGenreGroupFilter({super.key});
 
   @override
-  State<GameGenreGroupFilter> createState() => _GameGenreGroupFilterState();
-}
-
-class _GameGenreGroupFilterState extends State<GameGenreGroupFilter> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  String? activeGroup;
-  String? activeGenre;
-
-  @override
   Widget build(BuildContext context) {
+    final filter = context.watch<LibraryFilterModel>().filter;
+    final activeGroup = filter.genreGroup ?? Genres.groupOfGenre(filter.genre);
+
     return Row(
       // children: buildGenreGroups(context),
       children: (activeGroup == null)
           ? buildGenreGroups(context)
-          : buildEspyGenre(context, activeGroup!),
+          : buildEspyGenre(context, activeGroup),
     );
   }
 
   List<Widget> buildGenreGroups(BuildContext context) {
     return [
-      for (final group in Genres.groups)
-        if (activeGroup == null || activeGroup == group) ...[
-          GenreFilterChip(
-              label: group,
-              color: GenreGroupChip.color,
-              onClick: () {
-                context.read<LibraryFilterModel>().filter =
-                    LibraryFilter(genreGroups: {group});
-                setState(() {
-                  activeGroup = group;
-                });
-              }),
-          const SizedBox(width: 8),
-        ],
+      for (final group in Genres.groups) ...[
+        GenreFilterChip(
+            label: group,
+            color: GenreGroupChip.color,
+            onClick: () {
+              final updated = context
+                  .read<LibraryFilterModel>()
+                  .filter
+                  .add(LibraryFilter(genreGroup: group));
+              context.read<LibraryFilterModel>().filter = updated;
+            }),
+        const SizedBox(width: 8),
+      ],
+      GenreFilterChip(
+          label: 'Unknown',
+          color: GenreGroupChip.color,
+          onClick: () {
+            final updated = context
+                .read<LibraryFilterModel>()
+                .filter
+                .add(LibraryFilter(genreGroup: 'Unknown'));
+            context.read<LibraryFilterModel>().filter = updated;
+          }),
+      const SizedBox(width: 8),
     ];
   }
 
   List<Widget> buildEspyGenre(BuildContext context, String genreGroup) {
+    final activeGenre = context.watch<LibraryFilterModel>().filter.genre;
+
     return [
       GenreFilterChip(
           label: genreGroup,
           backgroundColor: GenreGroupChip.color,
           open: true,
-          onClick: () => setState(() {
-                activeGroup = null;
-                activeGenre = null;
-                context.read<LibraryFilterModel>().filter = LibraryFilter();
-              })),
+          onClick: () {
+            final updated = context.read<LibraryFilterModel>().filter.subtract(
+                LibraryFilter(genreGroup: genreGroup, genre: activeGenre));
+            context.read<LibraryFilterModel>().filter = updated;
+          }),
       const SizedBox(width: 4),
-      for (final genre in Genres.genresInGroup(genreGroup) ?? []) ...[
-        EspyGenreTagChip(
-          genre,
-          onPressed: () {
-            context.read<LibraryFilterModel>().filter =
-                LibraryFilter(genres: activeGenre != genre ? {genre} : {});
-            setState(() {
-              activeGenre = activeGenre != genre ? genre : null;
-            });
-          },
-          filled: activeGenre == genre,
-        ),
-        const SizedBox(width: 8),
-      ],
+      for (final genre in Genres.genresInGroup(genreGroup) ?? [])
+        if (genre.isNotEmpty) ...[
+          EspyGenreTagChip(
+            genre,
+            onPressed: () {
+              final filter = context.read<LibraryFilterModel>().filter;
+              final updated = activeGenre != genre
+                  ? filter.add(LibraryFilter(genre: genre))
+                  : filter.subtract(LibraryFilter(genre: genre));
+              context.read<LibraryFilterModel>().filter = updated;
+            },
+            filled: activeGenre == genre,
+          ),
+          const SizedBox(width: 8),
+        ],
     ];
   }
 }

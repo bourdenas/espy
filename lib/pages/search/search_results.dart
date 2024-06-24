@@ -39,8 +39,8 @@ class TagSearchResults extends StatelessWidget {
               chips: stores.map(
                 (store) => StoreChip(
                   store,
-                  onPressed: () => updateLibraryView(
-                      context, LibraryFilter(stores: {store})),
+                  onPressed: () =>
+                      updateLibraryView(context, LibraryFilter(store: store)),
                 ),
               ),
             ),
@@ -52,7 +52,7 @@ class TagSearchResults extends StatelessWidget {
                 (company) => DeveloperChip(
                   company,
                   onPressed: () => updateLibraryView(
-                      context, LibraryFilter(developers: {company})),
+                      context, LibraryFilter(developer: company)),
                 ),
               ),
             ),
@@ -64,7 +64,7 @@ class TagSearchResults extends StatelessWidget {
                 (company) => PublisherChip(
                   company,
                   onPressed: () => updateLibraryView(
-                      context, LibraryFilter(publishers: {company})),
+                      context, LibraryFilter(publisher: company)),
                 ),
               ),
             ),
@@ -76,7 +76,7 @@ class TagSearchResults extends StatelessWidget {
                 (collection) => CollectionChip(
                   collection,
                   onPressed: () => updateLibraryView(
-                      context, LibraryFilter(collections: {collection})),
+                      context, LibraryFilter(collection: collection)),
                 ),
               ),
             ),
@@ -88,9 +88,7 @@ class TagSearchResults extends StatelessWidget {
                 (franchise) => FranchiseChip(
                   franchise,
                   onPressed: () => updateLibraryView(
-                    context,
-                    LibraryFilter(franchises: {franchise}),
-                  ),
+                      context, LibraryFilter(franchise: franchise)),
                 ),
               ),
             ),
@@ -101,10 +99,8 @@ class TagSearchResults extends StatelessWidget {
               chips: genres.map(
                 (genre) => EspyGenreTagChip(
                   genre,
-                  onPressed: () => updateLibraryView(
-                    context,
-                    LibraryFilter(genres: {genre}),
-                  ),
+                  onPressed: () =>
+                      updateLibraryView(context, LibraryFilter(genre: genre)),
                 ),
               ),
             ),
@@ -116,9 +112,7 @@ class TagSearchResults extends StatelessWidget {
                 (genreTag) => ManualGenreChip(
                   genreTag.label,
                   onPressed: () => updateLibraryView(
-                    context,
-                    LibraryFilter(manualGenres: {genreTag.encode()}),
-                  ),
+                      context, LibraryFilter(manualGenre: genreTag.encode())),
                 ),
               ),
             ),
@@ -129,10 +123,8 @@ class TagSearchResults extends StatelessWidget {
               chips: userTags.map(
                 (tag) => TagChip(
                   tag,
-                  onPressed: () => updateLibraryView(
-                    context,
-                    LibraryFilter(userTags: {tag}),
-                  ),
+                  onPressed: () =>
+                      updateLibraryView(context, LibraryFilter(userTag: tag)),
                 ),
               ),
             ),

@@ -28,7 +28,7 @@ class LibraryPage extends StatelessWidget {
 
     return Scaffold(
       appBar:
-          libraryHeader(context, appConfig, libraryViewModel.length, filter),
+          libraryAppBar(context, appConfig, libraryViewModel.length, filter),
       body: libraryBody(appConfig, libraryViewModel),
     );
   }
@@ -55,7 +55,7 @@ class LibraryPage extends StatelessWidget {
     );
   }
 
-  AppBar libraryHeader(
+  AppBar libraryAppBar(
     BuildContext context,
     AppConfigModel appConfig,
     int libraryViewLength,
@@ -87,7 +87,9 @@ class LibraryPage extends StatelessWidget {
             const SizedBox(width: 8.0),
             const GameGenresSlidingChip(),
             const SizedBox(width: 8.0),
-            if (context.watch<UserModel>().isSignedIn)
+            if (context.watch<UserModel>().isSignedIn &&
+                entries == null &&
+                filter.isNotEmpty)
               CategoryFilterChip('External', appConfig.showExternal),
           ],
         ),

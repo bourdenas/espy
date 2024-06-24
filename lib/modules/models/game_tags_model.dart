@@ -65,6 +65,7 @@ class GameTagsModel extends ChangeNotifier {
     _genresManager = LabelManager(
       entries,
       (entry) => entry.digest.espyGenres,
+      createEmpty: true,
     );
     _keywordsManager = LabelManager(
       entries,
@@ -91,9 +92,9 @@ class GameTagsModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<UserAnnotations> snapshot) {
       final userTags = snapshot.data() ?? UserAnnotations();
-      _manualGenresManager =
-          ManualGenreManager(_userId, userTags, _getEntryById)..build();
-      _userTagsManager = UserTagManager(_userId, userTags, _getEntryById)
+      _manualGenresManager = ManualGenreManager(userId, userTags, _getEntryById)
+        ..build();
+      _userTagsManager = UserTagManager(userId, userTags, _getEntryById)
         ..build();
       notifyListeners();
     });

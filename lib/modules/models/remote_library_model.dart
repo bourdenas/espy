@@ -37,28 +37,20 @@ class RemoteLibraryModel extends ChangeNotifier {
 
     List<List<LibraryEntry>> fetchedEntries = [];
 
-    if (filter.collections.isNotEmpty) {
-      for (final collection in filter.collections) {
-        fetchedEntries.add(await _getCollection(collection));
-      }
+    if (filter.collection != null) {
+      fetchedEntries.add(await _getCollection(filter.collection!));
     }
 
-    if (filter.franchises.isNotEmpty) {
-      for (final franchise in filter.franchises) {
-        fetchedEntries.add(await _getFranchise(franchise));
-      }
+    if (filter.franchise != null) {
+      fetchedEntries.add(await _getFranchise(filter.franchise!));
     }
 
-    if (filter.developers.isNotEmpty) {
-      for (final developer in filter.developers) {
-        fetchedEntries.add(await _getDeveloper(developer));
-      }
+    if (filter.developer != null) {
+      fetchedEntries.add(await _getDeveloper(filter.developer!));
     }
 
-    if (filter.publishers.isNotEmpty) {
-      for (final publisher in filter.publishers) {
-        fetchedEntries.add(await _getPublisher(publisher));
-      }
+    if (filter.publisher != null) {
+      fetchedEntries.add(await _getPublisher(filter.publisher!));
     }
 
     final idSets = fetchedEntries

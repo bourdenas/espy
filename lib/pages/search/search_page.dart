@@ -53,7 +53,7 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: company,
             entries: tagsModel.developers.games(company),
-            filter: LibraryFilter(developers: {company}),
+            filter: LibraryFilter(developer: company),
             color: DeveloperChip.color,
           ),
         ],
@@ -61,7 +61,7 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: company,
             entries: tagsModel.publishers.games(company),
-            filter: LibraryFilter(publishers: {company}),
+            filter: LibraryFilter(publisher: company),
             color: PublisherChip.color,
           ),
         ],
@@ -69,7 +69,7 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: collection,
             entries: tagsModel.collections.games(collection),
-            filter: LibraryFilter(collections: {collection}),
+            filter: LibraryFilter(collection: collection),
             color: CollectionChip.color,
           ),
         ],
@@ -77,7 +77,7 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: franchise,
             entries: tagsModel.franchises.games(franchise),
-            filter: LibraryFilter(franchises: {franchise}),
+            filter: LibraryFilter(franchise: franchise),
             color: FranchiseChip.color,
           ),
         ],
@@ -85,7 +85,7 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: genre,
             entries: tagsModel.genres.games(genre),
-            filter: LibraryFilter(genres: {genre}),
+            filter: LibraryFilter(genre: genre),
             color: EspyGenreTagChip.color,
           ),
         ],
@@ -93,7 +93,7 @@ class _SearchPageState extends State<SearchPage> {
         //   TileShelve(
         //     title: genreTag.name,
         //     entries: tagsModel.genreTags.games(genreTag.name),
-        //     filter: LibraryFilter(genreTags: {genreTag.encode()}),
+        //     filter: LibraryFilter(genreTags: genreTagencode()}),
         //     color: GenreTagChip.color,
         //   ),
         // ],
@@ -101,7 +101,7 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: userTag,
             entries: tagsModel.manualGenres.games(userTag),
-            filter: LibraryFilter(userTags: {userTag}),
+            filter: LibraryFilter(userTag: userTag),
             color: TagChip.color,
           ),
         ],

@@ -4,7 +4,11 @@ class Genres {
   static List<String>? genresInGroup(String genreGroup) =>
       _genresInGroup[genreGroup];
 
-  static String? groupOfGenre(String genre) {
+  static String? groupOfGenre(String? genre) {
+    if (genre == null) {
+      return null;
+    }
+
     for (final entry in _genresInGroup.entries) {
       for (final e in entry.value) {
         if (e == genre) {
@@ -109,6 +113,9 @@ const Map<String, List<String>> _genresInGroup = {
     'TowerDefense',
     'MOBA',
   ],
+  'Unknown': [
+    '',
+  ]
 };
 
 const Map<String, String> _genreToLabel = {

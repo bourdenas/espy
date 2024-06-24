@@ -37,7 +37,7 @@ class HomeSlatesModel extends ChangeNotifier {
             genre,
             tagsModel.genres.games(genre),
             (context) =>
-                updateLibraryView(context, LibraryFilter(genres: {genre})),
+                updateLibraryView(context, LibraryFilter(genre: genre)),
           ),
       if (appConfigModel.stacks.value == Stacks.collections)
         for (final collection in tagsModel.collections.nonSingleton)
@@ -45,15 +45,15 @@ class HomeSlatesModel extends ChangeNotifier {
             collection,
             tagsModel.collections.games(collection),
             (context) => updateLibraryView(
-                context, LibraryFilter(collections: {collection})),
+                context, LibraryFilter(collection: collection)),
           ),
       if (appConfigModel.stacks.value == Stacks.developers)
         for (final developer in tagsModel.developers.all)
           SlateInfo(
             developer,
             tagsModel.developers.games(developer),
-            (context) => updateLibraryView(
-                context, LibraryFilter(developers: {developer})),
+            (context) =>
+                updateLibraryView(context, LibraryFilter(developer: developer)),
           ),
     ];
 
