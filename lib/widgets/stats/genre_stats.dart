@@ -36,6 +36,10 @@ class GenreStats extends StatelessWidget {
       }
     }
 
+    final genresSize = Genres.genresInGroup(genreGroup)?.length ?? 0;
+    final colorStep = genresSize < 6 ? 200 : 100;
+    final colorStart = genresSize < 2 ? 500 : 900;
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
@@ -66,7 +70,8 @@ class GenreStats extends StatelessWidget {
                       Genres.genresInGroup(genreGroup) ?? [unknownLabel]))
                     if (genresPop[genre.value] != null)
                       LegendKey(
-                        color: legendColors[genre.index % legendColors.length],
+                        color: legendColors[genreGroup]
+                            ?[colorStart - (genre.index * colorStep)],
                         text: genre.value,
                         isSquare: true,
                         onTap: () {
@@ -95,8 +100,8 @@ class GenreStats extends StatelessWidget {
                         Genres.genresInGroup(genreGroup) ?? [unknownLabel]))
                       if (genresPop[genre.value] != null)
                         PieChartSectionData(
-                          color:
-                              legendColors[genre.index % legendColors.length],
+                          color: legendColors[genreGroup]
+                              ?[colorStart - (genre.index * colorStep)],
                           value: genresPop[genre.value],
                           title: '${genresPop[genre.value]}',
                           radius: 60,

@@ -44,7 +44,7 @@ class GenreGroupStats extends StatelessWidget {
                   for (final group in enumerate(Genres.groups))
                     if (genreGroupsPop[group.value] != null)
                       LegendKey(
-                        color: legendColors[group.index % legendColors.length]!,
+                        color: legendColors[group.value],
                         text: group.value,
                         isSquare: true,
                         onTap: () {
@@ -87,7 +87,7 @@ class GenreGroupStats extends StatelessWidget {
                     for (final group in enumerate(Genres.groups))
                       if (genreGroupsPop[group.value] != null)
                         PieChartSectionData(
-                          color: legendColors[group.index],
+                          color: legendColors[group.value],
                           value: genreGroupsPop[group.value],
                           title: '${genreGroupsPop[group.value]}',
                           radius: 60,

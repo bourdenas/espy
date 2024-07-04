@@ -53,16 +53,14 @@ class LegendKey extends StatelessWidget {
   }
 }
 
-const legendColors = [
-  Colors.blue,
-  Colors.deepOrange,
-  Colors.orange,
-  Colors.green,
-  Colors.deepPurple,
-  Colors.teal,
-  Colors.lightGreen,
-  Colors.pink,
-  Colors.grey,
-  Colors.purple,
-  Colors.amber,
-];
+const legendColors = {
+  'Adventure': Colors.blue,
+  'RPG': Colors.deepPurple,
+  'Strategy': Colors.green,
+  'Shooter': Colors.amber,
+  'Platformer': Colors.deepOrange,
+  'Simulator': Colors.teal,
+  'Casual': Colors.pink,
+  'Arcade': Colors.lightGreen,
+  'Unknown': Colors.grey,
+};
