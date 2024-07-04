@@ -95,9 +95,9 @@ class TagSearchResults extends StatelessWidget {
           if (genres.isNotEmpty)
             _ChipResults(
               title: 'Genres',
-              color: EspyGenreTagChip.color,
+              color: EspyGenreChip.color,
               chips: genres.map(
-                (genre) => EspyGenreTagChip(
+                (genre) => EspyGenreChip(
                   genre,
                   onPressed: () =>
                       updateLibraryView(context, LibraryFilter(genre: genre)),

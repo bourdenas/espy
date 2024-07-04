@@ -41,6 +41,8 @@ class LibraryFilter {
         userTag == other.userTag;
   }
 
+  bool get isEmpty => !isNotEmpty;
+
   bool get isNotEmpty =>
       store != null ||
       developer != null ||

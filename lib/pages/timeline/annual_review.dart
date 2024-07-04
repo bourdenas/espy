@@ -255,7 +255,7 @@ class _AnnualGameListState extends State<AnnualGameList> {
                   padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: EspyFilterChip(
                     label: '${entry.key} (${entry.value.length})',
-                    color: EspyGenreTagChip.color,
+                    color: EspyGenreChip.color,
                     selected: selectedGenres.contains(entry.key),
                     onSelected: (bool selected) => setState(() {
                       selectedGenres.clear();

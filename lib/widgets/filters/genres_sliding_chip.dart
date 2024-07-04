@@ -90,7 +90,7 @@ class GameGenreGroupFilter extends StatelessWidget {
       const SizedBox(width: 4),
       for (final genre in Genres.genresInGroup(genreGroup) ?? [])
         if (genre.isNotEmpty) ...[
-          EspyGenreTagChip(
+          EspyGenreChip(
             genre,
             onPressed: () {
               final filter = context.read<LibraryFilterModel>().filter;

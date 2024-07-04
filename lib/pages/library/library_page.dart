@@ -6,9 +6,10 @@ import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
+import 'package:espy/pages/library/library_stats.dart';
 import 'package:espy/widgets/filters/categories_sliding_chip.dart';
-import 'package:espy/widgets/filters/genres_sliding_chip.dart';
 import 'package:espy/widgets/gametags/game_chips_filter_bar.dart';
+import 'package:espy/widgets/shelve.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +40,12 @@ class LibraryPage extends StatelessWidget {
       primary: true,
       shrinkWrap: true,
       slivers: [
+        Shelve(
+          title: 'Library Stats',
+          expansion: LibraryStats(libraryViewModel.entries),
+          color: Colors.amber,
+          expanded: true,
+        ),
         if (appConfig.libraryGrouping.value == LibraryGrouping.none)
           LibraryEntriesView(
             entries: libraryViewModel.entries,
@@ -81,16 +88,14 @@ class LibraryPage extends StatelessWidget {
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
           children: [
-            GameChipsFilterBar(filter),
-            const SizedBox(width: 8),
             const GameCategoriesSlidingChip(),
-            const SizedBox(width: 8.0),
-            const GameGenresSlidingChip(),
             const SizedBox(width: 8.0),
             if (context.watch<UserModel>().isSignedIn &&
                 entries == null &&
                 filter.isNotEmpty)
               CategoryFilterChip('External', appConfig.showExternal),
+            const SizedBox(width: 8),
+            GameChipsFilterBar(filter),
           ],
         ),
       ),

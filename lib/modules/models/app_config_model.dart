@@ -90,7 +90,7 @@ class AppConfigModel extends ChangeNotifier {
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
     libraryGrouping.valueIndex = prefs.getInt('groupBy') ?? 0;
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
-    showMains.value = prefs.getBool('showMains') ?? false;
+    showMains.value = prefs.getBool('showMains') ?? true;
     showExpansions.value = prefs.getBool('showExpansions') ?? false;
     showDlcs.value = prefs.getBool('showDlcs') ?? false;
     showVersions.value = prefs.getBool('showVersions') ?? false;
