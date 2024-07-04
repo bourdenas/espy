@@ -27,6 +27,7 @@ const _genreGroups = [
   'Adventure',
   'RPG',
   'Strategy',
+  'Action',
   'Shooter',
   'Platformer',
   'Simulator',
@@ -35,10 +36,13 @@ const _genreGroups = [
 ];
 
 const Map<String, List<String>> _genresInGroup = {
+  'Action': [
+    'Action',
+    'ActionRpg',
+    'IsometricAction',
+  ],
   'Adventure': [
     'PointAndClick',
-    'Action',
-    'IsometricAction',
     'NarrativeAdventure',
     'SurvivalAdventure',
     'PuzzleAdventure',
@@ -54,15 +58,13 @@ const Map<String, List<String>> _genresInGroup = {
   'Casual': [
     'LifeSim',
     'FarmingSim',
-    'FishingSim',
-    'SailingSim',
     'DatingSim',
     'Puzzle',
+    'VisualNovel',
+    'Exploration',
     'EndlessRunner',
     'Rhythm',
     'PartyGame',
-    'VisualNovel',
-    'Exploration',
   ],
   'Platformer': [
     'SideScroller',
@@ -75,12 +77,11 @@ const Map<String, List<String>> _genresInGroup = {
   'RPG': [
     'CRPG',
     'ARPG',
-    'ActionRpg',
-    'JRPG',
     'FirstPersonRpg',
     'TurnBasedRpg',
     'RTwPRPG',
     'DungeonCrawler',
+    'JRPG',
     'MMORPG',
   ],
   'Shooter': [
