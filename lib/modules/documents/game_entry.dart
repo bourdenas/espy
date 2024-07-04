@@ -1,5 +1,6 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
+import 'package:espy/modules/documents/gog_data.dart';
 import 'package:espy/modules/documents/igdb_game.dart';
 import 'package:espy/modules/documents/scores.dart';
 import 'package:espy/modules/documents/steam_data.dart';
@@ -35,6 +36,7 @@ class GameEntry {
 
   final IgdbGame igdbGame;
   final SteamData? steamData;
+  final GogData? gogData;
 
   List<ImageData> get screenshotData => steamData != null
       ? steamData!.screenshots
@@ -79,6 +81,7 @@ class GameEntry {
     this.websites = const [],
     required this.igdbGame,
     this.steamData,
+    this.gogData,
   });
 
   GameEntry.fromJson(Map<String, dynamic> json)
@@ -156,6 +159,9 @@ class GameEntry {
           steamData: json.containsKey('steam_data')
               ? SteamData.fromJson(json['steam_data'])
               : null,
+          gogData: json.containsKey('gog_data')
+              ? GogData.fromJson(json['gog_data'])
+              : null,
         );
 
   Map<String, dynamic> toJson() {
@@ -220,7 +226,8 @@ class GameEntry {
           for (final entry in websites) entry.toJson(),
         ],
       'igdb_game': igdbGame.toJson(),
-      if (steamData != null) 'steam_data': steamData!.toJson()
+      if (steamData != null) 'steam_data': steamData!.toJson(),
+      if (gogData != null) 'gog_data': gogData!.toJson(),
     };
   }
 
