@@ -14,7 +14,7 @@ class LibraryStats extends StatelessWidget {
   Widget build(BuildContext context) {
     final filter = context.watch<LibraryFilterModel>().filter;
 
-    return filter.isEmpty
+    return filter.genreGroup == null
         ? GenreGroupStats(libraryEntries)
         : GenreStats(libraryEntries, filter);
   }
