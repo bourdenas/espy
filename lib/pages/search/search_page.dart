@@ -86,7 +86,7 @@ class _SearchPageState extends State<SearchPage> {
             title: genre,
             entries: tagsModel.genres.games(genre),
             filter: LibraryFilter(genre: genre),
-            color: EspyGenreTagChip.color,
+            color: EspyGenreChip.color,
           ),
         ],
         // for (final genreTag in tagsModel.genreTags.filterExact(ngrams)) ...[

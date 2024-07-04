@@ -59,7 +59,7 @@ class GameTags extends StatelessWidget {
                     onChipPressed(LibraryFilter(franchise: franchise)),
               ),
             for (final genre in libraryEntry.digest.espyGenres)
-              EspyGenreTagChip(
+              EspyGenreChip(
                 genre,
                 onPressed: () =>
                     onChipPressed(LibraryFilter(manualGenre: genre)),
@@ -162,7 +162,7 @@ class GameCardChips extends StatelessWidget {
               for (final genre in libraryEntry.digest.espyGenres)
                 Padding(
                   padding: const EdgeInsets.all(4.0),
-                  child: EspyGenreTagChip(
+                  child: EspyGenreChip(
                     genre,
                     onPressed: () =>
                         onChipPressed(LibraryFilter(manualGenre: genre)),

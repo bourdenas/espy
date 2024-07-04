@@ -96,8 +96,8 @@ class GenreGroupChip extends EspyChip {
   static Color get color => Colors.deepPurple[200]!;
 }
 
-class EspyGenreTagChip extends EspyChip {
-  EspyGenreTagChip(
+class EspyGenreChip extends EspyChip {
+  EspyGenreChip(
     String genre, {
     super.key,
     super.onPressed,
