@@ -130,7 +130,7 @@ const Map<String, String> _genreToLabel = {
 
   // Arcade
   'Fighting': 'Fighting',
-  "Beat'em Up": 'BeatEmUp',
+  'BeatEmUp': "Beat'em Up",
   'Pinball': 'Pinball',
   'CardAndBoard': 'Card & Board Game',
   'Deckbuilder': 'Deckbuilder',
