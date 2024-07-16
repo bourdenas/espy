@@ -289,37 +289,41 @@ class _GameDetailsHeader extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Row(children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => DebugDialog(gameEntry: gameEntry!),
-                  );
-                },
-                child: Text(
-                  libraryEntry.name,
-                  style: Theme.of(context).textTheme.displaySmall,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            if (!kReleaseMode)
+          Row(
+            children: [
               Expanded(
-                child: Text(
-                  '${libraryEntry.id}',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                  textAlign: TextAlign.center,
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => DebugDialog(gameEntry: gameEntry!),
+                    );
+                  },
+                  child: Text(
+                    libraryEntry.name,
+                    style: Theme.of(context).textTheme.displaySmall,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-          ]),
+              if (!kReleaseMode)
+                Expanded(
+                  child: Text(
+                    '${libraryEntry.id}',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+            ],
+          ),
           const Padding(padding: EdgeInsets.all(16)),
           GameTags(
             gameEntry != null
                 ? LibraryEntry.fromGameEntry(gameEntry!)
                 : libraryEntry,
           ),
+          const Padding(padding: EdgeInsets.all(8)),
+          GameKeywords(libraryEntry),
         ],
       ),
     );

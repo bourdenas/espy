@@ -51,6 +51,12 @@ class GameDetailsContentMobile extends StatelessWidget {
             ),
           ),
         ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: GameKeywords(libraryEntry),
+          ),
+        ),
         if (gameEntry != null) ...[
           Shelve(
             title: 'Screenshots',

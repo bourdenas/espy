@@ -86,6 +86,40 @@ class GameTags extends StatelessWidget {
   }
 }
 
+class GameKeywords extends StatelessWidget {
+  const GameKeywords(this.libraryEntry, {super.key});
+
+  final LibraryEntry libraryEntry;
+
+  @override
+  Widget build(BuildContext context) {
+    void onChipPressed(LibraryFilter filter) {
+      if (context.canPop()) {
+        context.pop();
+      }
+      final updatedFilter =
+          context.read<LibraryFilterModel>().filter.add(filter);
+      updateLibraryView(context, updatedFilter);
+    }
+
+    return Column(
+      children: [
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 4.0,
+          children: [
+            for (final keyword in libraryEntry.digest.keywords)
+              KeywordChip(
+                keyword,
+                onPressed: () => onChipPressed(LibraryFilter(keyword: keyword)),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 /// Tags shows on a LibraryEntry's grid/list card.
 class GameCardChips extends StatelessWidget {
   final LibraryEntry libraryEntry;
