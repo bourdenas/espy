@@ -116,6 +116,9 @@ class LibraryFilter {
     if (genre != null) {
       gameIdSets.add(Set.from(tagsModel.genres.gameIds(genre!)));
     }
+    if (keyword != null) {
+      gameIdSets.add(Set.from(tagsModel.keywords.gameIds(keyword!)));
+    }
     if (manualGenre != null) {
       gameIdSets.add(Set.from(tagsModel.manualGenres.gameIds(manualGenre!)));
     }
