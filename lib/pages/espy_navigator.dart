@@ -12,7 +12,4 @@ void setLibraryView(BuildContext context, LibraryFilter filter) {
 void updateLibraryView(BuildContext context, LibraryFilter filter) {
   final filterModel = context.read<LibraryFilterModel>();
   filterModel.filter = filter;
-  context.pushNamed('games').then((_) {
-    filterModel.filter = LibraryFilter();
-  });
 }
