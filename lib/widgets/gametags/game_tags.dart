@@ -25,6 +25,7 @@ class GameTags extends StatelessWidget {
       }
       final updatedFilter =
           context.read<LibraryFilterModel>().filter.add(filter);
+
       updateLibraryView(context, updatedFilter);
     }
 
@@ -61,8 +62,7 @@ class GameTags extends StatelessWidget {
             for (final genre in libraryEntry.digest.espyGenres)
               EspyGenreChip(
                 genre,
-                onPressed: () =>
-                    onChipPressed(LibraryFilter(manualGenre: genre)),
+                onPressed: () => onChipPressed(LibraryFilter(genre: genre)),
               ),
             if (context.watch<UserModel>().isSignedIn)
               for (final tag

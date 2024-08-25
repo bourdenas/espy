@@ -6,8 +6,8 @@ import 'package:espy/widgets/tiles/tile_stack.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class BrowsePage extends StatelessWidget {
-  const BrowsePage({super.key});
+class ExplorePage extends StatelessWidget {
+  const ExplorePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class BrowsePage extends StatelessWidget {
                 child: InkWell(
                   onTap: () => appConfig.stacks.nextValue(),
                   child: Text(
-                    'Browse by ${appConfig.stacks.value.name}',
+                    'Explore ${appConfig.stacks.value.name}',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),

@@ -25,7 +25,7 @@ class HomeSlatesModel extends ChangeNotifier {
   ) {
     _slates = [
       SlateInfo('Library', libraryModel.entries.take(16),
-          (context) => updateLibraryView(context, LibraryFilter())),
+          (context) => setLibraryView(context, LibraryFilter())),
       SlateInfo('Wishlist', wishlistModel.entries.take(16),
           (context) => context.goNamed('wishlist')),
     ];

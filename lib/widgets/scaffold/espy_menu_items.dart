@@ -44,10 +44,10 @@ List<MenuItem> espyMenuItems = [
   ),
   MenuItem(
     requiresSignIn: true,
-    label: 'Browse',
-    icon: Icons.bookmark_outline,
-    selectedIcon: Icons.bookmark,
-    onTap: (context) => context.goNamed('browse'),
+    label: 'Explore',
+    icon: Icons.explore_outlined,
+    selectedIcon: Icons.explore,
+    onTap: (context) => context.goNamed('explore'),
   ),
   MenuItem(
     requiresSignIn: false,

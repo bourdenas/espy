@@ -10,7 +10,7 @@ import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
-import 'package:espy/pages/browse/browse_page.dart';
+import 'package:espy/pages/explore/explore_page.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/library/library_page.dart';
@@ -70,13 +70,13 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
-        name: 'browse',
-        path: '/browse',
+        name: 'explore',
+        path: '/explore',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
-          name: 'browse',
+          name: 'explore',
           child: EspyScaffold(
-            body: const BrowsePage(),
+            body: const ExplorePage(),
             path: state.path!,
           ),
         ),
