@@ -40,6 +40,7 @@ const Map<String, List<String>> _genresInGroup = {
     'Action',
     'ActionRpg',
     'IsometricAction',
+    'JRPG',
   ],
   'Adventure': [
     'PointAndClick',
@@ -68,20 +69,14 @@ const Map<String, List<String>> _genresInGroup = {
   ],
   'Platformer': [
     'SideScroller',
-    'Metroidvania',
     'Platformer3d',
     'ShooterPlatformer',
-    'PrecisionPlatformer',
     'PuzzlePlatformer',
   ],
   'RPG': [
     'CRPG',
     'ARPG',
     'FirstPersonRpg',
-    'TurnBasedRpg',
-    'RTwPRPG',
-    'DungeonCrawler',
-    'JRPG',
     'MMORPG',
   ],
   'Shooter': [
@@ -98,11 +93,11 @@ const Map<String, List<String>> _genresInGroup = {
     'GodGame',
     'Racing',
     'Sports',
+    'Survival',
     'FlightSimulator',
     'CombatSimulator',
-    'NavalSimulator',
     'DrivingSimulator',
-    'Survival',
+    'NavalSimulator',
   ],
   'Strategy': [
     'TurnBasedStrategy',
@@ -120,10 +115,14 @@ const Map<String, List<String>> _genresInGroup = {
 };
 
 const Map<String, String> _genreToLabel = {
+  // Action
+  'Action': 'Action',
+  'ActionRpg': 'Action RPG',
+  'IsometricAction': 'Isometric Action',
+  'JRPG': 'JRPG',
+
   // Adventure
   'PointAndClick': 'Point & Click',
-  'Action': 'Action',
-  'IsometricAction': 'Isometric Action',
   'NarrativeAdventure': 'Narrative Adventure',
   'SurvivalAdventure': 'Survival Adventure',
   'PuzzleAdventure': 'Puzzle Adventure',
@@ -160,8 +159,6 @@ const Map<String, String> _genreToLabel = {
   // RPG
   'CRPG': 'CRPG',
   'ARPG': 'ARPG',
-  'ActionRpg': 'Action RPG',
-  'JRPG': 'JRPG',
   'FirstPersonRpg': 'First Person RPG',
   'TurnBasedRpg': 'Turn Based RPG',
   'RTwPRPG': 'RTwP RPG',
@@ -200,10 +197,14 @@ const Map<String, String> _genreToLabel = {
 };
 
 const Map<String, String> _labelToGenre = {
+  // Action
+  'Action': 'Action',
+  'Action RPG': 'ActionRpg',
+  'Isometric Action': 'IsometricAction',
+  'JRPG': 'JRPG',
+
   // Adventure
   'Point & Click': 'PointAndClick',
-  'Action': 'Action',
-  'Isometric Action': 'IsometricAction',
   'Narrative Adventure': 'NarrativeAdventure',
   'Survival Adventure': 'SurvivalAdventure',
   'Puzzle Adventure': 'PuzzleAdventure',
@@ -240,8 +241,6 @@ const Map<String, String> _labelToGenre = {
   // RPG
   'CRPG': 'CRPG',
   'ARPG': 'ARPG',
-  'Action RPG': 'ActionRpg',
-  'JRPG': 'JRPG',
   'First Person RPG': 'FirstPersonRpg',
   'Turn Based RPG': 'TurnBasedRpg',
   'RTwP RPG': 'RTwPRPG',
