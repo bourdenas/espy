@@ -34,7 +34,7 @@ class EspyPieChart extends StatelessWidget {
         child: Row(
           children: [
             legend(),
-            if (itemsPop != null) chart(),
+            if (itemsPop?.isNotEmpty != null) chart(),
           ],
         ),
       ),

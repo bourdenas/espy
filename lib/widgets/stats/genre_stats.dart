@@ -31,13 +31,13 @@ class _GenreStatsState extends State<GenreStats> {
     super.initState();
 
     final filter = context.read<LibraryFilterModel>().filter;
-    buildStructure(filter);
+    buildPops(filter);
 
     selectedGroup = Genres.groupOfGenre(filter.genre);
     selectedGenre = filter.genre;
   }
 
-  void buildStructure(LibraryFilter filter) {
+  void buildPops(LibraryFilter filter) {
     genreGroupsPops.clear();
     genresPops.clear();
 
@@ -53,12 +53,13 @@ class _GenreStatsState extends State<GenreStats> {
         genresPops[genre] = (genresPops[genre] ?? 0) + 1;
       }
     }
+    genresPops[unknownLabel] = genreGroupsPops[unknownLabel] ?? 0;
   }
 
   @override
   Widget build(BuildContext context) {
     final filter = context.watch<LibraryFilterModel>().filter;
-    setState(() => buildStructure(filter));
+    setState(() => buildPops(filter));
 
     return selectedGroup == null ? genreGroupsPie() : genresPie();
   }
@@ -68,9 +69,11 @@ class _GenreStatsState extends State<GenreStats> {
       Genres.groups.toList(),
       itemsPop: genreGroupsPops,
       unknownLabel: unknownLabel,
-      onItemTap: (selectedItem) => setState(() {
-        selectedGroup = selectedItem;
-      }),
+      onItemTap: (selectedItem) {
+        context.read<RefinementModel>().refinement =
+            LibraryFilter(genreGroup: selectedItem);
+        setState(() => selectedGroup = selectedItem);
+      },
     );
   }
 
@@ -90,17 +93,17 @@ class _GenreStatsState extends State<GenreStats> {
     return EspyPieChart(
       genresInGroup ?? [unknownLabel],
       itemsPop: genresPops,
+      unknownLabel: unknownLabel,
       selectedItem: selectedGenre,
       palette: palette,
-      onItemTap: (selectedItem) => setState(() {
-        selectedGenre = selectedItem;
-      }),
+      onItemTap: (selectedItem) {
+        context.read<RefinementModel>().refinement =
+            LibraryFilter(genre: selectedItem);
+        setState(() => selectedGenre = selectedItem);
+      },
       backLabel: selectedGroup,
       onBack: () {
-        final filter = context.read<LibraryFilterModel>().filter;
-        filter.genreGroup = null;
-        filter.genre = null;
-        context.read<LibraryFilterModel>().filter = filter;
+        context.read<RefinementModel>().refinement = LibraryFilter();
 
         setState(() {
           selectedGenre = null;
