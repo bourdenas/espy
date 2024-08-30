@@ -110,7 +110,7 @@ const Map<String, List<String>> _genresInGroup = {
     'MOBA',
   ],
   'Unknown': [
-    '',
+    'Unknown',
   ]
 };
 

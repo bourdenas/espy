@@ -22,6 +22,7 @@ class _GenreStatsState extends State<GenreStats> {
 
   final genreGroupsPops = <String, int>{};
   final genresPops = <String, int>{};
+  int unknownPops = 0;
 
   String? selectedGroup;
   String? selectedGenre;
@@ -40,12 +41,12 @@ class _GenreStatsState extends State<GenreStats> {
   void buildPops(LibraryFilter filter) {
     genreGroupsPops.clear();
     genresPops.clear();
+    unknownPops = 0;
 
     // Build Genre histograms.
     for (final entry in widget.libraryEntries) {
       if (entry.digest.espyGenres.isEmpty) {
-        genreGroupsPops[unknownLabel] =
-            (genreGroupsPops[unknownLabel] ?? 0) + 1;
+        unknownPops += 1;
       }
       for (final genre in entry.digest.espyGenres) {
         final group = Genres.groupOfGenre(genre) ?? unknownLabel;
@@ -53,7 +54,7 @@ class _GenreStatsState extends State<GenreStats> {
         genresPops[genre] = (genresPops[genre] ?? 0) + 1;
       }
     }
-    genresPops[unknownLabel] = genreGroupsPops[unknownLabel] ?? 0;
+    genreGroupsPops[unknownLabel] = unknownPops;
   }
 
   @override
@@ -67,7 +68,7 @@ class _GenreStatsState extends State<GenreStats> {
   Widget genreGroupsPie() {
     return EspyPieChart(
       Genres.groups.toList(),
-      itemsPop: genreGroupsPops,
+      itemPops: genreGroupsPops,
       unknownLabel: unknownLabel,
       onItemTap: (selectedItem) {
         context.read<RefinementModel>().refinement =
@@ -91,9 +92,10 @@ class _GenreStatsState extends State<GenreStats> {
     ];
 
     return EspyPieChart(
-      genresInGroup ?? [unknownLabel],
-      itemsPop: genresPops,
-      unknownLabel: unknownLabel,
+      genresInGroup ?? [],
+      itemPops: genresInGroup?.first != unknownLabel
+          ? genresPops
+          : {unknownLabel: unknownPops},
       selectedItem: selectedGenre,
       palette: palette,
       onItemTap: (selectedItem) {

@@ -7,7 +7,7 @@ class EspyPieChart extends StatelessWidget {
   const EspyPieChart(
     this.items, {
     super.key,
-    this.itemsPop,
+    this.itemPops,
     this.selectedItem,
     this.palette,
     this.unknownLabel,
@@ -17,7 +17,7 @@ class EspyPieChart extends StatelessWidget {
   });
 
   final List<String> items;
-  final Map<String, int>? itemsPop;
+  final Map<String, int>? itemPops;
   final String? selectedItem;
   final List<Color?>? palette;
   final String? unknownLabel;
@@ -34,7 +34,7 @@ class EspyPieChart extends StatelessWidget {
         child: Row(
           children: [
             legend(),
-            if (itemsPop?.isNotEmpty != null) chart(),
+            if (itemPops?.isNotEmpty != null) chart(),
           ],
         ),
       ),
@@ -56,20 +56,20 @@ class EspyPieChart extends StatelessWidget {
           centerSpaceRadius: 40,
           sections: [
             for (final item in enumerate(items))
-              if (itemsPop![item.value] != null)
+              if (itemPops![item.value] != null)
                 PieChartSectionData(
                   color: palette?[item.index % items.length] ??
                       defaultPalette[item.index % items.length],
-                  value: itemsPop![item.value] as double?,
-                  title: '${itemsPop![item.value]}',
+                  value: itemPops![item.value] as double?,
+                  title: '${itemPops![item.value]}',
                   radius: 60,
                   titleStyle: sliceStyle,
                 ),
-            if (itemsPop![unknownLabel] != null)
+            if (itemPops![unknownLabel] != null)
               PieChartSectionData(
                 color: Colors.grey,
-                value: itemsPop![unknownLabel] as double?,
-                title: '${itemsPop![unknownLabel]}',
+                value: itemPops![unknownLabel] as double?,
+                title: '${itemPops![unknownLabel]}',
                 radius: 60,
                 titleStyle: sliceStyle,
               ),
@@ -96,13 +96,13 @@ class EspyPieChart extends StatelessWidget {
               text: item.value,
               textColor: item.value == selectedItem
                   ? Colors.blue
-                  : itemsPop?[item.value] != null
+                  : itemPops?[item.value] != null
                       ? Colors.white
                       : Colors.grey,
               isSquare: true,
               onTap: () => onItemTap?.call(item.value),
             ),
-          if (unknownLabel != null && itemsPop?[unknownLabel] != null)
+          if (unknownLabel != null && itemPops?[unknownLabel] != null)
             LegendKey(
               color: Colors.grey,
               text: unknownLabel!,
