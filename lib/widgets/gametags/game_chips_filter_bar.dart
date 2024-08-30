@@ -15,7 +15,7 @@ class GameChipsFilterBar extends StatelessWidget {
     void onRemove(LibraryFilter filter) {
       final updatedFilter =
           context.read<LibraryFilterModel>().filter.subtract(filter);
-      updateLibraryView(context, updatedFilter);
+      context.read<LibraryFilterModel>().filter = updatedFilter;
     }
 
     return Row(children: [
