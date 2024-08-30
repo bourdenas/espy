@@ -47,7 +47,27 @@ class EspyPieChart extends StatelessWidget {
       child: PieChart(
         PieChartData(
           pieTouchData: PieTouchData(
-            touchCallback: (FlTouchEvent event, pieTouchResponse) {},
+            touchCallback:
+                (FlTouchEvent event, PieTouchResponse? pieTouchResponse) {
+              if (!event.isInterestedForInteractions ||
+                  event is! FlTapDownEvent ||
+                  pieTouchResponse == null ||
+                  pieTouchResponse.touchedSection == null) {
+                return;
+              }
+              int index = pieTouchResponse.touchedSection!.touchedSectionIndex;
+              if (index >= 0 && index < items.length && onItemTap != null) {
+                for (final item in enumerate(items)) {
+                  if (itemPops![item.value] == null) {
+                    ++index;
+                  }
+                  if (index == item.index) {
+                    onItemTap!(items[index]);
+                    break;
+                  }
+                }
+              }
+            },
           ),
           borderData: FlBorderData(
             show: false,
@@ -62,7 +82,7 @@ class EspyPieChart extends StatelessWidget {
                       defaultPalette[item.index % items.length],
                   value: itemPops![item.value] as double?,
                   title: '${itemPops![item.value]}',
-                  radius: 60,
+                  radius: selectedItem == item.value ? 72 : 60,
                   titleStyle: sliceStyle,
                 ),
             if (itemPops![unknownLabel] != null)
