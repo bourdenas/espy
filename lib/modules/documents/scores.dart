@@ -7,8 +7,7 @@ class Scores {
 
   final String? espyTier;
 
-  String get title => switch (espyScore) {
-        int x when x >= 95 => 'Masterpiece',
+  String get title => switch (metacritic) {
         int x when x >= 90 => 'Excellent',
         int x when x >= 80 => 'Great',
         int x when x >= 70 => 'Good',
@@ -58,7 +57,6 @@ class Scores {
 }
 
 const scoreTitles = [
-  'Masterpiece',
   'Excellent',
   'Great',
   'Good',
