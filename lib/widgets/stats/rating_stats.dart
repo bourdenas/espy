@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/scores.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
@@ -58,66 +56,59 @@ class _GenreStatsState extends State<RatingStats> {
       child: SizedBox(
         height: 240,
         width: 360,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final barsSpace = 1.0 * constraints.maxWidth / 400;
-            final barsWidth = 8.0 * constraints.maxWidth / 400;
-
-            return Expanded(
-              child: BarChart(
-                BarChartData(
-                  maxY: (ratingPops.values.toList()..sort()).last.toDouble(),
-                  barTouchData: BarTouchData(
-                    enabled: false,
-                  ),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: getTitles,
-                        reservedSize: 38,
-                      ),
-                    ),
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(
-                        reservedSize: 30,
-                        showTitles: true,
-                      ),
-                    ),
-                    topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  barGroups: [
-                    for (final item in enumerate(scoreTitles))
-                      makeGroupData(
-                          item.index, ratingPops[item.value]?.toDouble() ?? 0)
-                  ],
-                  groupsSpace: 2,
-                  gridData: const FlGridData(show: false),
+        child: BarChart(
+          BarChartData(
+            maxY:
+                (((ratingPops.values.toList()..sort()).last / 10.0).ceil() * 10)
+                    .toDouble(),
+            barTouchData: BarTouchData(
+              enabled: false,
+            ),
+            titlesData: FlTitlesData(
+              show: true,
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: getTitles,
+                  reservedSize: 32,
                 ),
               ),
-            );
-          },
+              leftTitles: const AxisTitles(
+                sideTitles: SideTitles(
+                  reservedSize: 32,
+                  showTitles: true,
+                ),
+              ),
+              topTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            ),
+            borderData: FlBorderData(show: false),
+            barGroups: [
+              for (final item in enumerate(scoreTitles))
+                buildRatingBar(
+                    item.index, ratingPops[item.value]?.toDouble() ?? 0)
+            ],
+            groupsSpace: 2,
+            gridData: const FlGridData(show: false),
+          ),
         ),
       ),
     );
   }
 
-  BarChartGroupData makeGroupData(int x, double y) {
+  BarChartGroupData buildRatingBar(int ratingClassIndex, double y) {
     return BarChartGroupData(
-      x: x,
-      barsSpace: 2,
+      x: ratingClassIndex,
+      barsSpace: 0,
       barRods: [
         BarChartRodData(
           toY: y,
           color: Colors.amber,
           borderRadius: BorderRadius.zero,
           // borderDashArray: x >= 4 ? [4, 4] : null,
-          width: 16,
+          width: 32,
           // borderSide: BorderSide(color: widget.barColor, width: 2.0),
         ),
       ],
@@ -131,7 +122,7 @@ class _GenreStatsState extends State<RatingStats> {
       fontSize: 14,
     );
 
-    final symbols = ['🏆', '⭐', '👍', '✔️', '🤨', '👎', '🤷‍♂️'];
+    final symbols = ['⭐', '👍', '✔️', '🤨', '👎', '🤷‍♂️'];
 
     Widget text = Text(
       symbols[value.toInt()],

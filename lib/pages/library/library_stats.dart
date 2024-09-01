@@ -10,12 +10,17 @@ class LibraryStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        GenreStats(libraryEntries),
-        const SizedBox(width: 64),
-        RatingStats(libraryEntries),
-      ],
+    return SizedBox(
+      height: 260,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        children: [
+          GenreStats(libraryEntries),
+          const SizedBox(width: 64),
+          RatingStats(libraryEntries),
+        ],
+      ),
     );
   }
 }
