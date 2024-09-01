@@ -17,10 +17,9 @@ class RatingStats extends StatefulWidget {
 }
 
 class _GenreStatsState extends State<RatingStats> {
-  static const unknownLabel = 'Unrated';
+  static const unknownLabel = 'Unknown';
 
   final ratingPops = <String, int>{};
-  int unknownPops = 0;
   String? selectedGenre;
 
   @override
@@ -33,23 +32,19 @@ class _GenreStatsState extends State<RatingStats> {
 
   void buildPops(LibraryFilter filter) {
     ratingPops.clear();
-    unknownPops = 0;
 
     // Build Genre histograms.
-    for (final entry in widget.libraryEntries) {
-      if (entry.scores.espyScore == null) {
-        unknownPops += 1;
-      }
+    for (final entry in widget.libraryEntries.where((e) => filter.pass(e))) {
       final title = entry.scores.title;
       ratingPops[title] = (ratingPops[title] ?? 0) + 1;
     }
-    ratingPops[unknownLabel] = unknownPops;
+    ratingPops[unknownLabel] = 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final filter = context.watch<LibraryFilterModel>().filter;
-    setState(() => buildPops(filter));
+    final refinement = context.watch<RefinementModel>().refinement;
+    setState(() => buildPops(refinement));
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -86,7 +81,8 @@ class _GenreStatsState extends State<RatingStats> {
             ),
             borderData: FlBorderData(show: false),
             barGroups: [
-              for (final item in enumerate(scoreTitles))
+              for (final item
+                  in enumerate(scoreTitles).take(scoreTitles.length - 1))
                 buildRatingBar(
                     item.index, ratingPops[item.value]?.toDouble() ?? 0)
             ],
@@ -105,11 +101,13 @@ class _GenreStatsState extends State<RatingStats> {
       barRods: [
         BarChartRodData(
           toY: y,
-          color: Colors.amber,
+          color: ratingClassIndex < 5 ? Colors.amber : Colors.transparent,
           borderRadius: BorderRadius.zero,
-          // borderDashArray: x >= 4 ? [4, 4] : null,
+          borderDashArray: ratingClassIndex == 5 ? [4, 4] : null,
           width: 32,
-          // borderSide: BorderSide(color: widget.barColor, width: 2.0),
+          borderSide: ratingClassIndex == 5
+              ? const BorderSide(color: Colors.amber, width: 2.0)
+              : null,
         ),
       ],
     );
