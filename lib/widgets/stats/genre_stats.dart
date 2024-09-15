@@ -105,7 +105,7 @@ class _GenreStatsState extends State<GenreStats> {
       },
       backLabel: selectedGroup,
       onBack: () {
-        context.read<RefinementModel>().refinement = LibraryFilter();
+        context.read<RefinementModel>().clear();
 
         setState(() {
           selectedGenre = null;

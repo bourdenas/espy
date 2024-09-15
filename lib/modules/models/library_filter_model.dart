@@ -12,6 +12,11 @@ class LibraryFilterModel extends ChangeNotifier {
     _filter = filter;
     notifyListeners();
   }
+
+  void clear() {
+    _filter = LibraryFilter();
+    notifyListeners();
+  }
 }
 
 // Filtering refinements that are used for drill-down. They have a less
@@ -23,6 +28,11 @@ class RefinementModel extends ChangeNotifier {
 
   set refinement(LibraryFilter filter) {
     _refinement = filter;
+    notifyListeners();
+  }
+
+  void clear() {
+    _refinement = LibraryFilter();
     notifyListeners();
   }
 }
