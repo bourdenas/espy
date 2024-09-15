@@ -31,10 +31,8 @@ class _GenreStatsState extends State<GenreStats> {
   void initState() {
     super.initState();
 
-    final filter = context.read<LibraryFilterModel>().filter;
-    buildPops(filter);
-
-    selectedGroup = Genres.groupOfGenre(filter.genre);
+    final filter = context.read<RefinementModel>().refinement;
+    selectedGroup = filter.genreGroup ?? Genres.groupOfGenre(filter.genre);
     selectedGenre = filter.genre;
   }
 
@@ -48,10 +46,13 @@ class _GenreStatsState extends State<GenreStats> {
       if (entry.digest.espyGenres.isEmpty) {
         unknownPops += 1;
       }
+      final groups = <String>{};
       for (final genre in entry.digest.espyGenres) {
-        final group = Genres.groupOfGenre(genre) ?? unknownLabel;
-        genreGroupsPops[group] = (genreGroupsPops[group] ?? 0) + 1;
+        groups.add(Genres.groupOfGenre(genre) ?? unknownLabel);
         genresPops[genre] = (genresPops[genre] ?? 0) + 1;
+      }
+      for (final group in groups) {
+        genreGroupsPops[group] = (genreGroupsPops[group] ?? 0) + 1;
       }
     }
     genreGroupsPops[unknownLabel] = unknownPops;
