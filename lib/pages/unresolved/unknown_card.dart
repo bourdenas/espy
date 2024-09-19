@@ -18,10 +18,9 @@ class UnknownCard extends StatelessWidget {
       onTap: () => MatchingDialog.show(
         context,
         storeEntry: entry,
-        onMatch: (storeEntry, gameEntry) {
-          context.read<UserLibraryModel>().matchEntry(storeEntry, gameEntry);
-          context
-              .pushNamed('details', pathParameters: {'gid': '${gameEntry.id}'});
+        onMatch: (storeEntry, digest) {
+          context.read<UserLibraryModel>().matchEntry(storeEntry, digest.id);
+          context.pushNamed('details', pathParameters: {'gid': '${digest.id}'});
         },
       ),
       onSecondaryTap: () {},

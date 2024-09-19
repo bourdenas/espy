@@ -1,7 +1,5 @@
 import 'package:espy/constants/stores.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
-import 'package:espy/modules/documents/game_entry.dart';
-import 'package:espy/modules/documents/igdb_game.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
@@ -169,12 +167,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
                         title: widget.libraryEntry.name,
                         storefront: storeId,
                       ),
-                      GameEntry(
-                        id: widget.libraryEntry.id,
-                        name: widget.libraryEntry.name,
-                        category: widget.libraryEntry.digest.category ?? '',
-                        igdbGame: const IgdbGame(id: 0, name: ''),
-                      ),
+                      widget.libraryEntry.id,
                     );
               },
               child: Stores.getIcon(storeId),

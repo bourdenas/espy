@@ -1,5 +1,5 @@
 import 'package:espy/modules/dialogs/matching/matching_dialog_content.dart';
-import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +9,7 @@ class MatchingDialog extends StatefulWidget {
   static void show(
     BuildContext context, {
     StoreEntry? storeEntry,
-    void Function(StoreEntry, GameEntry)? onMatch,
+    void Function(StoreEntry, GameDigest)? onMatch,
   }) {
     showDialog(
       context: context,
@@ -27,7 +27,7 @@ class MatchingDialog extends StatefulWidget {
   });
 
   final StoreEntry? storeEntry;
-  final void Function(StoreEntry, GameEntry)? onMatch;
+  final void Function(StoreEntry, GameDigest)? onMatch;
 
   @override
   State<MatchingDialog> createState() => _MatchingDialogState();
@@ -54,8 +54,8 @@ class MatchingDialogAnimation extends StatefulWidget {
       {super.key});
 
   final StoreEntry? storeEntry;
-  final Future<List<GameEntry>> matches;
-  final void Function(StoreEntry, GameEntry)? onMatch;
+  final Future<List<GameDigest>> matches;
+  final void Function(StoreEntry, GameDigest)? onMatch;
 
   @override
   State<MatchingDialogAnimation> createState() =>

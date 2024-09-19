@@ -1,6 +1,4 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/documents/game_entry.dart';
-import 'package:espy/modules/documents/igdb_game.dart';
 import 'package:espy/modules/documents/unresolved.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
@@ -60,16 +58,9 @@ class CandidatesList extends StatelessWidget {
                         child: IconButton(
                           iconSize: 32,
                           hoverColor: Colors.green.withOpacity(0.5),
-                          onPressed: () =>
-                              context.read<UserLibraryModel>().matchEntry(
-                                    unresolved.storeEntry,
-                                    GameEntry(
-                                      id: digest.id,
-                                      name: digest.name,
-                                      category: digest.category ?? '',
-                                      igdbGame: const IgdbGame(id: 0, name: ''),
-                                    ),
-                                  ),
+                          onPressed: () => context
+                              .read<UserLibraryModel>()
+                              .matchEntry(unresolved.storeEntry, digest.id),
                           icon: const Icon(Icons.check_circle_outline),
                         ),
                       ),

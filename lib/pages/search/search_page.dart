@@ -150,12 +150,12 @@ class _SearchPageState extends State<SearchPage> {
               setState(() {
                 _fetchingRemoteGames = false;
                 _remoteGames = remoteGames
-                    .where((gameEntry) =>
+                    .where((digest) =>
                         context
                             .read<LibraryIndexModel>()
-                            .getEntryById(gameEntry.id) ==
+                            .getEntryById(digest.id) ==
                         null)
-                    .map((gameEntry) => LibraryEntry.fromGameEntry(gameEntry))
+                    .map((digest) => LibraryEntry.fromGameDigest(digest))
                     .toList();
               });
             },

@@ -106,12 +106,11 @@ class StorefrontViewState extends State<StorefrontView>
     MatchingDialog.show(
       context,
       storeEntry: storeEntry,
-      onMatch: (storeEntry, gameEntry) {
+      onMatch: (storeEntry, digest) {
         context
             .read<UserLibraryModel>()
-            .rematchEntry(storeEntry, widget.libraryEntry, gameEntry);
-        context
-            .pushNamed('details', pathParameters: {'gid': '${gameEntry.id}'});
+            .rematchEntry(storeEntry, widget.libraryEntry, digest.id);
+        context.pushNamed('details', pathParameters: {'gid': '${digest.id}'});
       },
     );
   }

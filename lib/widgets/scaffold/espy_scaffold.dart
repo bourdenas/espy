@@ -32,12 +32,12 @@ class EspyScaffold extends StatelessWidget {
         AddGameIntent: CallbackAction<AddGameIntent>(
             onInvoke: (intent) => MatchingDialog.show(
                   context,
-                  onMatch: (storeEntry, gameEntry) {
+                  onMatch: (storeEntry, gameDigest) {
                     context
                         .read<UserLibraryModel>()
-                        .matchEntry(storeEntry, gameEntry);
+                        .matchEntry(storeEntry, gameDigest.id);
                     context.pushNamed('details',
-                        pathParameters: {'gid': '${gameEntry.id}'});
+                        pathParameters: {'gid': '${gameDigest.id}'});
                   },
                 )),
       },

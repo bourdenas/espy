@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
@@ -77,7 +77,7 @@ class UserLibraryModel extends ChangeNotifier {
     });
   }
 
-  Future<List<GameEntry>> searchByTitle(
+  Future<List<GameDigest>> searchByTitle(
     String title, {
     baseGameOnly = false,
   }) async {
@@ -99,7 +99,7 @@ class UserLibraryModel extends ChangeNotifier {
     }
 
     final jsonObj = jsonDecode(response.body) as List<dynamic>;
-    return jsonObj.map((obj) => GameEntry.fromJson(obj)).toList();
+    return jsonObj.map((obj) => GameDigest.fromJson(obj)).toList();
   }
 
   Future<bool> retrieveGameEntry(int gameId) async {
@@ -138,7 +138,7 @@ class UserLibraryModel extends ChangeNotifier {
     return true;
   }
 
-  Future<bool> matchEntry(StoreEntry storeEntry, GameEntry gameEntry) async {
+  Future<bool> matchEntry(StoreEntry storeEntry, int gameId) async {
     final response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/$userId/match'),
       headers: {
@@ -146,7 +146,7 @@ class UserLibraryModel extends ChangeNotifier {
       },
       body: jsonEncode({
         'store_entry': storeEntry.toJson(),
-        'game_entry': gameEntry.toJson(),
+        'game_id': gameId,
       }),
     );
 
@@ -184,7 +184,7 @@ class UserLibraryModel extends ChangeNotifier {
   Future<bool> rematchEntry(
     StoreEntry storeEntry,
     LibraryEntry libraryEntry,
-    GameEntry gameEntry,
+    int gameId,
   ) async {
     final response = await http.post(
       Uri.parse('${Urls.espyBackend}/library/$userId/match'),
@@ -193,9 +193,8 @@ class UserLibraryModel extends ChangeNotifier {
       },
       body: jsonEncode({
         'store_entry': storeEntry.toJson(),
-        'game_entry': gameEntry.toJson(),
+        'game_id': gameId,
         'unmatch_entry': libraryEntry.toJson(),
-        'exact_match': true,
       }),
     );
 

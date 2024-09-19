@@ -1,5 +1,5 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
@@ -16,8 +16,8 @@ class MatchingDialogContent extends StatefulWidget {
   });
 
   final StoreEntry? storeEntry;
-  final Future<List<GameEntry>> matches;
-  final void Function(StoreEntry, GameEntry)? onMatch;
+  final Future<List<GameDigest>> matches;
+  final void Function(StoreEntry, GameDigest)? onMatch;
 
   @override
   State<MatchingDialogContent> createState() => _MatchingDialogContentState();
@@ -112,16 +112,16 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
 
                   final gameEntries = snapshot.data!;
                   final tiles = gameEntries
-                      .map((gameEntry) => TileData(
-                          title: gameEntry.name,
-                          image: gameEntry.cover != null
-                              ? '${Urls.imageProvider}/t_cover_big/${gameEntry.cover!.imageId}.jpg'
+                      .map((digest) => TileData(
+                          title: digest.name,
+                          image: digest.cover != null
+                              ? '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg'
                               : null,
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                     content: Text('Matching in progress...')));
-                            widget.onMatch!(getStoreEntry(), gameEntry);
+                            widget.onMatch!(getStoreEntry(), digest);
                             Navigator.of(context).pop();
                           }))
                       .toList();
@@ -177,7 +177,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
     super.dispose();
   }
 
-  late Future<List<GameEntry>> matches;
+  late Future<List<GameDigest>> matches;
 
   final TextEditingController _matchController = TextEditingController();
   final FocusNode _matchFocusNode = FocusNode();
