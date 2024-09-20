@@ -144,8 +144,8 @@ class ManualGenreChip extends EspyChip {
   static Color get color => Colors.orange;
 }
 
-class TagChip extends EspyChip {
-  TagChip(
+class ManualTagChip extends EspyChip {
+  ManualTagChip(
     String tag, {
     super.key,
     super.onPressed,

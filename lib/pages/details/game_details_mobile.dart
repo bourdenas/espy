@@ -7,7 +7,7 @@ import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
-import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:espy/widgets/gametags/espy_chips_details_bar.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -44,17 +44,11 @@ class GameDetailsContentMobile extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: GameTags(
+            child: EspyChipsDetailsBar(
               gameEntry != null
                   ? LibraryEntry.fromGameEntry(gameEntry!)
                   : libraryEntry,
             ),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: GameKeywords(libraryEntry),
           ),
         ),
         if (gameEntry != null) ...[

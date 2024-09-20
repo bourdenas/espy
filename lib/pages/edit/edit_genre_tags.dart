@@ -3,7 +3,7 @@ import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/genres_mapping.dart';
 import 'package:espy/utils/edit_distance.dart';
-import 'package:espy/widgets/gametags/game_chips.dart';
+import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

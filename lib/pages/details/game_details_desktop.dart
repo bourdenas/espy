@@ -10,7 +10,7 @@ import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/pages/details/game_image_gallery.dart';
-import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:espy/widgets/gametags/espy_chips_details_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -317,13 +317,12 @@ class _GameDetailsHeader extends StatelessWidget {
             ],
           ),
           const Padding(padding: EdgeInsets.all(16)),
-          GameTags(
+          EspyChipsDetailsBar(
             gameEntry != null
                 ? LibraryEntry.fromGameEntry(gameEntry!)
                 : libraryEntry,
           ),
           const Padding(padding: EdgeInsets.all(8)),
-          GameKeywords(libraryEntry),
         ],
       ),
     );

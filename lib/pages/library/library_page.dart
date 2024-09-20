@@ -9,7 +9,7 @@ import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/pages/library/library_stats.dart';
 import 'package:espy/widgets/filters/categories_sliding_chip.dart';
 import 'package:espy/widgets/filters/refinements.dart';
-import 'package:espy/widgets/gametags/game_chips_filter_bar.dart';
+import 'package:espy/widgets/gametags/espy_chips_filter_bar.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +98,7 @@ class LibraryPage extends StatelessWidget {
                 filter.isNotEmpty)
               CategoryFilterChip('External', appConfig.showExternal),
             const SizedBox(width: 8),
-            GameChipsFilterBar(filter),
+            EspyChipsFilterBar(filter),
           ],
         ),
       ),

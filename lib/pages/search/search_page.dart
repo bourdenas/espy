@@ -6,7 +6,7 @@ import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/pages/search/search_results.dart';
 import 'package:espy/pages/search/search_text_field.dart';
-import 'package:espy/widgets/gametags/game_chips.dart';
+import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -102,7 +102,7 @@ class _SearchPageState extends State<SearchPage> {
             title: userTag,
             entries: tagsModel.manualGenres.games(userTag),
             filter: LibraryFilter(userTag: userTag),
-            color: TagChip.color,
+            color: ManualTagChip.color,
           ),
         ],
         if (titleMatches.isNotEmpty)

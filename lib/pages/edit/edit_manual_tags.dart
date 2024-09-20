@@ -2,7 +2,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/utils/edit_distance.dart';
-import 'package:espy/widgets/gametags/game_chips.dart';
+import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -58,7 +58,7 @@ class _EditManualTagsState extends State<EditManualTags> {
                             boxShadow: [
                               if (matchInDict(tag, widget.keywords))
                                 BoxShadow(
-                                  color: TagChip.color,
+                                  color: ManualTagChip.color,
                                   blurRadius: 6.0,
                                   spreadRadius: 6.0,
                                 ),
@@ -73,10 +73,10 @@ class _EditManualTagsState extends State<EditManualTags> {
                                   .copyWith(
                                       color: selectedTags.any((e) => e == tag)
                                           ? Colors.white
-                                          : TagChip.color[300]),
+                                          : ManualTagChip.color[300]),
                             ),
                             selected: selectedTags.any((e) => e == tag),
-                            selectedColor: TagChip.color,
+                            selectedColor: ManualTagChip.color,
                             onSelected: (selected) => onSelected(selected, tag),
                           ),
                         ),

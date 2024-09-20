@@ -1,7 +1,7 @@
 import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/pages/espy_navigator.dart';
-import 'package:espy/widgets/gametags/game_chips.dart';
+import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:flutter/material.dart';
 
 class TagSearchResults extends StatelessWidget {
@@ -119,9 +119,9 @@ class TagSearchResults extends StatelessWidget {
           if (userTags.isNotEmpty)
             _ChipResults(
               title: 'Tags',
-              color: TagChip.color,
+              color: ManualTagChip.color,
               chips: userTags.map(
-                (tag) => TagChip(
+                (tag) => ManualTagChip(
                   tag,
                   onPressed: () =>
                       updateLibraryView(context, LibraryFilter(userTag: tag)),

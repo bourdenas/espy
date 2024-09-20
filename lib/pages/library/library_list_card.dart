@@ -5,7 +5,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/widgets/game_pulse.dart';
-import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:espy/widgets/gametags/espy_chips_game_card.dart';
 import 'package:espy/widgets/release_date_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -96,7 +96,7 @@ class LibraryListCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8.0),
-          GameCardChips(
+          EspyChipsGameCard(
             libraryEntry: libraryEntry,
             includeCompanies: false,
             includeCollections: false,

@@ -1,11 +1,11 @@
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/widgets/gametags/game_chips.dart';
+import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GameChipsFilterBar extends StatelessWidget {
-  const GameChipsFilterBar(this.filter, {super.key});
+class EspyChipsFilterBar extends StatelessWidget {
+  const EspyChipsFilterBar(this.filter, {super.key});
 
   final LibraryFilter filter;
 
@@ -108,7 +108,7 @@ class GameChipsFilterBar extends StatelessWidget {
       if (filter.userTag != null) ...[
         Padding(
           padding: const EdgeInsets.all(4.0),
-          child: TagChip(
+          child: ManualTagChip(
             filter.userTag!,
             onDeleted: () => onRemove(LibraryFilter(userTag: filter.userTag)),
           ),

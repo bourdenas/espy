@@ -1,6 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/game_pulse.dart';
-import 'package:espy/widgets/gametags/game_tags.dart';
+import 'package:espy/widgets/gametags/espy_chips_game_card.dart';
 import 'package:flutter/material.dart';
 
 class InfoTileBar extends StatelessWidget {
@@ -49,7 +49,7 @@ class TagsTileBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridTileBar(
       backgroundColor: Colors.black45,
-      title: GameCardChips(
+      title: EspyChipsGameCard(
         libraryEntry: libraryEntry,
         includeCollections: false,
         includeCompanies: false,

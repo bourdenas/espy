@@ -4,7 +4,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/timeline.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/pages/library/library_page.dart';
-import 'package:espy/widgets/gametags/game_chips.dart';
+import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
