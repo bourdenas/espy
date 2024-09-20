@@ -19,16 +19,6 @@ class GameTags extends StatelessWidget {
   Widget build(BuildContext context) {
     final tagsModel = context.watch<GameTagsModel>();
 
-    void onChipPressed(LibraryFilter filter) {
-      if (context.canPop()) {
-        context.pop();
-      }
-      final updatedFilter =
-          context.read<LibraryFilterModel>().filter.add(filter);
-
-      updateLibraryView(context, updatedFilter);
-    }
-
     return Column(
       children: [
         Wrap(
@@ -39,44 +29,46 @@ class GameTags extends StatelessWidget {
               DeveloperChip(
                 company,
                 onPressed: () =>
-                    onChipPressed(LibraryFilter(developer: company)),
+                    addFilter(context, LibraryFilter(developer: company)),
               ),
             for (final company in libraryEntry.publishers)
               PublisherChip(
                 company,
                 onPressed: () =>
-                    onChipPressed(LibraryFilter(publisher: company)),
+                    addFilter(context, LibraryFilter(publisher: company)),
               ),
             for (final collection in libraryEntry.collections)
               CollectionChip(
                 collection,
                 onPressed: () =>
-                    onChipPressed(LibraryFilter(collection: collection)),
+                    addFilter(context, LibraryFilter(collection: collection)),
               ),
             for (final franchise in libraryEntry.franchises)
               FranchiseChip(
                 franchise,
                 onPressed: () =>
-                    onChipPressed(LibraryFilter(franchise: franchise)),
+                    addFilter(context, LibraryFilter(franchise: franchise)),
               ),
             for (final genre in libraryEntry.digest.espyGenres)
               EspyGenreChip(
                 genre,
-                onPressed: () => onChipPressed(LibraryFilter(genre: genre)),
+                onPressed: () =>
+                    addRefinement(context, LibraryFilter(genre: genre)),
               ),
             if (context.watch<UserModel>().isSignedIn)
               for (final tag
                   in tagsModel.userTags.tagsByGameId(libraryEntry.id))
                 TagChip(
                   tag,
-                  onPressed: () => onChipPressed(LibraryFilter(userTag: tag)),
+                  onPressed: () =>
+                      addFilter(context, LibraryFilter(userTag: tag)),
                 ),
             if (context.watch<UserModel>().isSignedIn)
               for (final manualGenre
                   in tagsModel.manualGenres.byGameId(libraryEntry.id))
                 ManualGenreChip(
                   manualGenre.label,
-                  onPressed: () => onChipPressed(
+                  onPressed: () => addFilter(context,
                       LibraryFilter(manualGenre: manualGenre.encode())),
                 ),
           ],
@@ -137,15 +129,6 @@ class GameCardChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final tagsModel = context.watch<GameTagsModel>();
 
-    void onChipPressed(LibraryFilter filter) {
-      if (context.canPop()) {
-        context.pop();
-      }
-      final updatedFilter =
-          context.read<LibraryFilterModel>().filter.add(filter);
-      updateLibraryView(context, updatedFilter);
-    }
-
     return Column(
       children: [
         SizedBox(
@@ -160,7 +143,7 @@ class GameCardChips extends StatelessWidget {
                     child: DeveloperChip(
                       company,
                       onPressed: () =>
-                          onChipPressed(LibraryFilter(developer: company)),
+                          addFilter(context, LibraryFilter(developer: company)),
                     ),
                   ),
                 for (final company in libraryEntry.publishers)
@@ -169,7 +152,7 @@ class GameCardChips extends StatelessWidget {
                     child: PublisherChip(
                       company,
                       onPressed: () =>
-                          onChipPressed(LibraryFilter(publisher: company)),
+                          addFilter(context, LibraryFilter(publisher: company)),
                     ),
                   ),
               ],
@@ -179,8 +162,8 @@ class GameCardChips extends StatelessWidget {
                     padding: const EdgeInsets.all(4.0),
                     child: CollectionChip(
                       collection,
-                      onPressed: () =>
-                          onChipPressed(LibraryFilter(collection: collection)),
+                      onPressed: () => addFilter(
+                          context, LibraryFilter(collection: collection)),
                     ),
                   ),
                 for (final franchise in libraryEntry.franchises)
@@ -188,8 +171,8 @@ class GameCardChips extends StatelessWidget {
                     padding: const EdgeInsets.all(4.0),
                     child: FranchiseChip(
                       franchise,
-                      onPressed: () =>
-                          onChipPressed(LibraryFilter(franchise: franchise)),
+                      onPressed: () => addFilter(
+                          context, LibraryFilter(franchise: franchise)),
                     ),
                   ),
               ],
@@ -198,18 +181,8 @@ class GameCardChips extends StatelessWidget {
                   padding: const EdgeInsets.all(4.0),
                   child: EspyGenreChip(
                     genre,
-                    onPressed: () =>
-                        onChipPressed(LibraryFilter(manualGenre: genre)),
-                  ),
-                ),
-              for (final userTag
-                  in tagsModel.userTags.tagsByGameId(libraryEntry.id))
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: TagChip(
-                    userTag,
-                    onPressed: () =>
-                        onChipPressed(LibraryFilter(userTag: userTag)),
+                    onPressed: () => addRefinement(
+                        context, LibraryFilter(manualGenre: genre)),
                   ),
                 ),
             ],
@@ -226,7 +199,7 @@ class GameCardChips extends StatelessWidget {
                   padding: const EdgeInsets.all(4.0),
                   child: ManualGenreChip(
                     manualGenre.label,
-                    onPressed: () => onChipPressed(
+                    onPressed: () => addFilter(context,
                         LibraryFilter(manualGenre: manualGenre.encode())),
                   ),
                 ),
@@ -236,4 +209,19 @@ class GameCardChips extends StatelessWidget {
       ],
     );
   }
+}
+
+void addFilter(BuildContext context, LibraryFilter filter) {
+  if (context.canPop()) {
+    context.pop();
+  }
+  final updatedFilter = context.read<LibraryFilterModel>().filter.add(filter);
+  updateLibraryView(context, updatedFilter);
+}
+
+void addRefinement(BuildContext context, LibraryFilter filter) {
+  if (context.canPop()) {
+    context.pop();
+  }
+  context.read<RefinementModel>().refinement = filter;
 }

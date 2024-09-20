@@ -9,20 +9,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// Widget used for manual genre selection in game entry edit dialog.
-class GenreChips extends StatefulWidget {
-  const GenreChips(this.libraryEntry, this.keywords, {super.key});
+class EditGenreTags extends StatefulWidget {
+  const EditGenreTags(this.libraryEntry, this.keywords, {super.key});
 
   final LibraryEntry libraryEntry;
   final List<String> keywords;
 
   @override
-  State<GenreChips> createState() => _GenreChipsState();
+  State<EditGenreTags> createState() => _EditGenreTagsState();
 }
 
-class _GenreChipsState extends State<GenreChips>
+class _EditGenreTagsState extends State<EditGenreTags>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _scatterAnimation;
 
   bool _subgenreOpen = false;
   String? _expandedGenreGroup;
@@ -37,11 +36,6 @@ class _GenreChipsState extends State<GenreChips>
       value: _subgenreOpen ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 250),
       vsync: this,
-    );
-    _scatterAnimation = CurvedAnimation(
-      curve: Curves.fastOutSlowIn,
-      reverseCurve: Curves.easeOutQuad,
-      parent: _controller,
     );
     _selectedGenres = Set.from(widget.libraryEntry.digest.igdbGenres);
   }

@@ -4,8 +4,8 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/storefront_view.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/widgets/gametags/choice_tags.dart';
-import 'package:espy/widgets/gametags/genre_chips.dart';
+import 'package:espy/pages/edit/edit_manual_tags.dart';
+import 'package:espy/pages/edit/edit_genre_tags.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 
@@ -114,7 +114,7 @@ class _EditEntryView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 4.0),
-                  GenreChips(libraryEntry, keywords + steamTags),
+                  EditGenreTags(libraryEntry, keywords + steamTags),
                   const SizedBox(height: 8.0),
                 ],
               ),
@@ -181,7 +181,7 @@ class _EditEntryView extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 8.0),
-                  ChoiceTags(libraryEntry, keywords + steamTags),
+                  EditManualTags(libraryEntry, keywords + steamTags),
                   const SizedBox(height: 16.0),
                   const SizedBox(height: 8.0),
                 ],

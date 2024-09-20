@@ -7,17 +7,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// Widget used for user tags selection in game entry edit dialog.
-class ChoiceTags extends StatefulWidget {
+class EditManualTags extends StatefulWidget {
   final LibraryEntry entry;
   final List<String> keywords;
 
-  const ChoiceTags(this.entry, this.keywords, {super.key});
+  const EditManualTags(this.entry, this.keywords, {super.key});
 
   @override
-  State<ChoiceTags> createState() => _ChoiceTagsState();
+  State<EditManualTags> createState() => _EditManualTagsState();
 }
 
-class _ChoiceTagsState extends State<ChoiceTags> {
+class _EditManualTagsState extends State<EditManualTags> {
   Set<String> selectedTags = {};
   String filter = '';
 
