@@ -1,5 +1,3 @@
-// ignore_for_file: dead_code
-
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/genres_mapping.dart';
@@ -8,41 +6,23 @@ import 'package:espy/widgets/stats/pie_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GenreStats extends StatefulWidget {
+class GenreStats extends StatelessWidget {
   const GenreStats(this.libraryEntries, {super.key});
 
   final Iterable<LibraryEntry> libraryEntries;
 
   @override
-  State<GenreStats> createState() => _GenreStatsState();
-}
-
-class _GenreStatsState extends State<GenreStats> {
-  static const unknownLabel = 'Unknown';
-
-  final genreGroupsPops = <String, int>{};
-  final genresPops = <String, int>{};
-  int unknownPops = 0;
-
-  String? selectedGroup;
-  String? selectedGenre;
-
-  @override
-  void initState() {
-    super.initState();
-
-    final filter = context.read<RefinementModel>().refinement;
-    selectedGroup = filter.genreGroup ?? Genres.groupOfGenre(filter.genre);
-    selectedGenre = filter.genre;
-  }
-
-  void buildPops(LibraryFilter filter) {
-    genreGroupsPops.clear();
-    genresPops.clear();
-    unknownPops = 0;
+  Widget build(BuildContext context) {
+    final refinement = context.watch<RefinementModel>().refinement;
+    final selectedGroup =
+        refinement.genreGroup ?? Genres.groupOfGenre(refinement.genre);
+    final selectedGenre = refinement.genre;
 
     // Build Genre histograms.
-    for (final entry in widget.libraryEntries) {
+    Map<String, int> genreGroupsPops = {};
+    Map<String, int> genresPops = {};
+    int unknownPops = 0;
+    for (final entry in libraryEntries) {
       if (entry.digest.espyGenres.isEmpty) {
         unknownPops += 1;
       }
@@ -56,17 +36,21 @@ class _GenreStatsState extends State<GenreStats> {
       }
     }
     genreGroupsPops[unknownLabel] = unknownPops;
+    genresPops[unknownLabel] = unknownPops;
+
+    return selectedGroup == null
+        ? GenreGroupPie(genreGroupsPops)
+        : GenresPie(selectedGroup, selectedGenre, genresPops);
   }
+}
+
+class GenreGroupPie extends StatelessWidget {
+  const GenreGroupPie(this.genreGroupsPops, {super.key});
+
+  final Map<String, int> genreGroupsPops;
 
   @override
   Widget build(BuildContext context) {
-    final filter = context.watch<LibraryFilterModel>().filter;
-    setState(() => buildPops(filter));
-
-    return selectedGroup == null ? genreGroupsPie() : genresPie();
-  }
-
-  Widget genreGroupsPie() {
     return EspyPieChart(
       Genres.groups.toList(),
       itemPops: genreGroupsPops,
@@ -74,18 +58,27 @@ class _GenreStatsState extends State<GenreStats> {
       onItemTap: (selectedItem) {
         context.read<RefinementModel>().refinement =
             LibraryFilter(genreGroup: selectedItem);
-        setState(() => selectedGroup = selectedItem);
       },
     );
   }
+}
 
-  Widget genresPie() {
-    final genresInGroup = Genres.genresInGroup(selectedGroup!);
+class GenresPie extends StatelessWidget {
+  const GenresPie(this.selectedGroup, this.selectedGenre, this.genresPops,
+      {super.key});
+
+  final String selectedGroup;
+  final String? selectedGenre;
+  final Map<String, int> genresPops;
+
+  @override
+  Widget build(BuildContext context) {
+    final genresInGroup = Genres.genresInGroup(selectedGroup);
     final genresSize = genresInGroup?.length ?? 0;
     final colorStep = genresSize < 6 ? 200 : 100;
     final colorStart = genresSize < 2 ? 500 : 900;
 
-    final index = Genres.groups.toList().indexOf(selectedGroup!);
+    final index = Genres.groups.toList().indexOf(selectedGroup);
     final groupColor = defaultPalette[index % defaultPalette.length];
     final palette = [
       for (var i = 0; i < genresSize; ++i)
@@ -96,23 +89,17 @@ class _GenreStatsState extends State<GenreStats> {
       genresInGroup ?? [],
       itemPops: genresInGroup?.first != unknownLabel
           ? genresPops
-          : {unknownLabel: unknownPops},
+          : {unknownLabel: genresPops[unknownLabel] ?? 0},
       selectedItem: selectedGenre,
       palette: palette,
       onItemTap: (selectedItem) {
         context.read<RefinementModel>().refinement =
             LibraryFilter(genre: selectedItem);
-        setState(() => selectedGenre = selectedItem);
       },
       backLabel: selectedGroup,
-      onBack: () {
-        context.read<RefinementModel>().clear();
-
-        setState(() {
-          selectedGenre = null;
-          selectedGroup = null;
-        });
-      },
+      onBack: () => context.read<RefinementModel>().clear(),
     );
   }
 }
+
+const unknownLabel = 'Unknown';
