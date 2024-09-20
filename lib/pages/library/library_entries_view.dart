@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/library/library_grid_card.dart';
 import 'package:espy/pages/library/library_list_card.dart';
 import 'package:flutter/material.dart';
@@ -25,10 +26,13 @@ class LibraryEntriesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final refinement = context.watch<RefinementModel>().refinement;
+    final refinedEntries = entries.where((e) => refinement.pass(e));
+
     return context.watch<AppConfigModel>().libraryLayout.value ==
             LibraryLayout.grid
-        ? gridView(entries)
-        : listView(entries);
+        ? gridView(refinedEntries)
+        : listView(refinedEntries);
   }
 
   SliverGrid gridView(Iterable<LibraryEntry> matchedEntries) {

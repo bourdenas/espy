@@ -5,9 +5,10 @@ import 'package:quiver/iterables.dart';
 
 class EspyPieChart extends StatelessWidget {
   const EspyPieChart(
-    this.items,
-    this.itemsPop, {
+    this.items, {
     super.key,
+    this.itemPops,
+    this.selectedItem,
     this.palette,
     this.unknownLabel,
     this.onItemTap,
@@ -16,7 +17,8 @@ class EspyPieChart extends StatelessWidget {
   });
 
   final List<String> items;
-  final Map<String, int> itemsPop;
+  final Map<String, int>? itemPops;
+  final String? selectedItem;
   final List<Color?>? palette;
   final String? unknownLabel;
   final void Function(String selectedItem)? onItemTap;
@@ -32,7 +34,7 @@ class EspyPieChart extends StatelessWidget {
         child: Row(
           children: [
             legend(),
-            chart(),
+            if (itemPops?.isNotEmpty != null) chart(),
           ],
         ),
       ),
@@ -45,7 +47,27 @@ class EspyPieChart extends StatelessWidget {
       child: PieChart(
         PieChartData(
           pieTouchData: PieTouchData(
-            touchCallback: (FlTouchEvent event, pieTouchResponse) {},
+            touchCallback:
+                (FlTouchEvent event, PieTouchResponse? pieTouchResponse) {
+              if (!event.isInterestedForInteractions ||
+                  event is! FlTapDownEvent ||
+                  pieTouchResponse == null ||
+                  pieTouchResponse.touchedSection == null) {
+                return;
+              }
+              int index = pieTouchResponse.touchedSection!.touchedSectionIndex;
+              if (index >= 0 && index < items.length && onItemTap != null) {
+                for (final item in enumerate(items)) {
+                  if (itemPops![item.value] == null) {
+                    ++index;
+                  }
+                  if (index == item.index) {
+                    onItemTap!(items[index]);
+                    break;
+                  }
+                }
+              }
+            },
           ),
           borderData: FlBorderData(
             show: false,
@@ -54,20 +76,20 @@ class EspyPieChart extends StatelessWidget {
           centerSpaceRadius: 40,
           sections: [
             for (final item in enumerate(items))
-              if (itemsPop[item.value] != null)
+              if (itemPops![item.value] != null)
                 PieChartSectionData(
                   color: palette?[item.index % items.length] ??
                       defaultPalette[item.index % items.length],
-                  value: itemsPop[item.value] as double?,
-                  title: '${itemsPop[item.value]}',
-                  radius: 60,
+                  value: itemPops![item.value] as double?,
+                  title: '${itemPops![item.value]}',
+                  radius: selectedItem == item.value ? 72 : 60,
                   titleStyle: sliceStyle,
                 ),
-            if (itemsPop[unknownLabel] != null)
+            if (itemPops![unknownLabel] != null)
               PieChartSectionData(
                 color: Colors.grey,
-                value: itemsPop[unknownLabel] as double?,
-                title: '${itemsPop[unknownLabel]}',
+                value: itemPops![unknownLabel] as double?,
+                title: '${itemPops![unknownLabel]}',
                 radius: 60,
                 titleStyle: sliceStyle,
               ),
@@ -88,15 +110,19 @@ class EspyPieChart extends StatelessWidget {
             const SizedBox(height: 4),
           ],
           for (final item in enumerate(items))
-            if (itemsPop[item.value] != null)
-              LegendKey(
-                color: palette?[item.index % items.length] ??
-                    defaultPalette[item.index % items.length],
-                text: item.value,
-                isSquare: true,
-                onTap: () => onItemTap?.call(item.value),
-              ),
-          if (unknownLabel != null && itemsPop[unknownLabel] != null)
+            LegendKey(
+              color: palette?[item.index % items.length] ??
+                  defaultPalette[item.index % items.length],
+              text: item.value,
+              textColor: item.value == selectedItem
+                  ? Colors.blue
+                  : itemPops?[item.value] != null
+                      ? Colors.white
+                      : Colors.grey,
+              isSquare: true,
+              onTap: () => onItemTap?.call(item.value),
+            ),
+          if (unknownLabel != null && itemPops?[unknownLabel] != null)
             LegendKey(
               color: Colors.grey,
               text: unknownLabel!,

@@ -6,10 +6,12 @@ import 'package:provider/provider.dart';
 
 void setLibraryView(BuildContext context, LibraryFilter filter) {
   context.read<LibraryFilterModel>().filter = filter;
+  context.read<RefinementModel>().clear();
   context.goNamed('games');
 }
 
 void updateLibraryView(BuildContext context, LibraryFilter filter) {
   context.read<LibraryFilterModel>().filter = filter;
+  context.read<RefinementModel>().clear();
   context.pushNamed('games');
 }

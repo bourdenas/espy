@@ -85,6 +85,27 @@ class LibraryFilter {
     );
   }
 
+  bool pass(LibraryEntry entry) {
+    return (store == null ||
+            entry.storeEntries.any((e) => e.storefront == store)) &&
+        (developer == null ||
+            entry.digest.developers.any((e) => e == developer)) &&
+        (publisher == null ||
+            entry.digest.publishers.any((e) => e == publisher)) &&
+        (collection == null ||
+            entry.digest.collections.any((e) => e == collection)) &&
+        (franchise == null ||
+            entry.digest.franchises.any((e) => e == franchise)) &&
+        (genreGroup == null ||
+            entry.digest.espyGenres
+                .any((e) => Genres.groupOfGenre(e) == genreGroup) ||
+            (entry.digest.espyGenres.isEmpty && genreGroup == 'Unknown')) &&
+        (genre == null ||
+            entry.digest.espyGenres.any((e) => e == genre) ||
+            (entry.digest.espyGenres.isEmpty && genre == 'Unknown')) &&
+        (keyword == null || entry.digest.keywords.any((e) => e == keyword));
+  }
+
   LibraryView apply(
     GameTagsModel tagsModel,
     LibraryEntry? Function(int) entriesIndex,

@@ -7,6 +7,15 @@ class Scores {
 
   final String? espyTier;
 
+  String get title => switch (metacritic) {
+        int x when x >= 90 => 'Excellent',
+        int x when x >= 80 => 'Great',
+        int x when x >= 70 => 'Good',
+        int x when x >= 60 => 'Mixed',
+        int() => 'Bad',
+        null => 'Unknown',
+      };
+
   const Scores({
     this.thumbs,
     this.popularity,
@@ -46,3 +55,12 @@ class Scores {
         espyTier != other.espyTier;
   }
 }
+
+const scoreTitles = [
+  'Excellent',
+  'Great',
+  'Good',
+  'Mixed',
+  'Bad',
+  'Unknown',
+];

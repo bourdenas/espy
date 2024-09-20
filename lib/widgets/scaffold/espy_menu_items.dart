@@ -1,4 +1,5 @@
 import 'package:espy/modules/filtering/library_filter.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:flutter/material.dart';
@@ -54,7 +55,11 @@ List<MenuItem> espyMenuItems = [
     label: 'Years',
     icon: Icons.calendar_month_outlined,
     selectedIcon: Icons.calendar_month,
-    onTap: (context) => context.goNamed('years'),
+    onTap: (context) {
+      context.read<LibraryFilterModel>().clear();
+      context.read<RefinementModel>().clear();
+      context.goNamed('years');
+    },
   ),
   MenuItem(
     requiresSignIn: false,
@@ -62,6 +67,9 @@ List<MenuItem> espyMenuItems = [
     icon: Icons.timeline_outlined,
     selectedIcon: Icons.timeline,
     onTap: (context) {
+      context.read<LibraryFilterModel>().clear();
+      context.read<RefinementModel>().clear();
+
       final DateFormat formatter = DateFormat('MMM');
       final now = DateTime.now();
       context.goNamed('releases', pathParameters: {

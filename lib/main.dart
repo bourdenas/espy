@@ -50,6 +50,7 @@ Future<void> main() async {
       gameTagsProvider(),
       userDataProvider(),
       libraryFilterProvider(),
+      refinementProvider(),
       remoteLibraryProvider(),
       libraryEntriesProvider(),
       homeSlatesProvider(),
@@ -72,6 +73,9 @@ ChangeNotifierProvider<UserModel> userProvider() =>
 
 ChangeNotifierProvider<LibraryFilterModel> libraryFilterProvider() =>
     ChangeNotifierProvider(create: (_) => LibraryFilterModel());
+
+ChangeNotifierProvider<RefinementModel> refinementProvider() =>
+    ChangeNotifierProvider(create: (_) => RefinementModel());
 
 ChangeNotifierProxyProvider<UserModel, UserLibraryModel> userLibraryProvider() {
   return ChangeNotifierProxyProvider<UserModel, UserLibraryModel>(

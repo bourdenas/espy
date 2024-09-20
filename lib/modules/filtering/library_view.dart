@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/scores.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 
 class LibraryView {
@@ -60,31 +61,11 @@ class LibraryView {
       case LibraryGrouping.rating:
         return _groupBy(
           _libraryEntries,
-          (e) => [
-            switch (e.digest.scores.metacritic) {
-              int x when x >= 95 => 'Masterpiece',
-              int x when x >= 90 => 'Excellent',
-              int x when x >= 80 => 'Great',
-              int x when x >= 70 => 'Good',
-              int x when x >= 60 => 'Mixed',
-              int() => 'Bad',
-              null => 'Unknown',
-            }
-          ],
-          (a, b) => ratingTitles.indexOf(a).compareTo(ratingTitles.indexOf(b)),
+          (e) => [e.digest.scores.title],
+          (a, b) => scoreTitles.indexOf(a).compareTo(scoreTitles.indexOf(b)),
         );
     }
   }
-
-  static const ratingTitles = [
-    'Masterpiece',
-    'Excellent',
-    'Great',
-    'Good',
-    'Mixed',
-    'Bad',
-    'Unknown',
-  ];
 
   List<(String, List<LibraryEntry>)> _groupBy(Iterable<LibraryEntry> entries,
       Iterable<String> Function(LibraryEntry) keysExtractor,

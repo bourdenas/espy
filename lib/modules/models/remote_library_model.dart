@@ -109,7 +109,7 @@ class RemoteLibraryModel extends ChangeNotifier {
   static Future<List<LibraryEntry>> _getDeveloper(String name) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('companies')
-        .where('name', isEqualTo: name)
+        .where('slug', isEqualTo: name)
         .withConverter<IgdbCompany>(
           fromFirestore: (snapshot, _) =>
               IgdbCompany.fromJson(snapshot.data()!),
@@ -129,7 +129,7 @@ class RemoteLibraryModel extends ChangeNotifier {
   static Future<List<LibraryEntry>> _getPublisher(String name) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('companies')
-        .where('name', isEqualTo: name)
+        .where('slug', isEqualTo: name)
         .withConverter<IgdbCompany>(
           fromFirestore: (snapshot, _) =>
               IgdbCompany.fromJson(snapshot.data()!),
