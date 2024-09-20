@@ -10,7 +10,6 @@ class EspyPieChart extends StatelessWidget {
     this.itemPops,
     this.selectedItem,
     this.palette,
-    this.unknownLabel,
     this.onItemTap,
     this.backLabel,
     this.onBack,
@@ -20,7 +19,6 @@ class EspyPieChart extends StatelessWidget {
   final Map<String, int>? itemPops;
   final String? selectedItem;
   final List<Color?>? palette;
-  final String? unknownLabel;
   final void Function(String selectedItem)? onItemTap;
   final String? backLabel;
   final void Function()? onBack;
@@ -85,14 +83,6 @@ class EspyPieChart extends StatelessWidget {
                   radius: selectedItem == item.value ? 72 : 60,
                   titleStyle: sliceStyle,
                 ),
-            if (itemPops![unknownLabel] != null)
-              PieChartSectionData(
-                color: Colors.grey,
-                value: itemPops![unknownLabel] as double?,
-                title: '${itemPops![unknownLabel]}',
-                radius: 60,
-                titleStyle: sliceStyle,
-              ),
           ],
         ),
       ),
@@ -121,13 +111,6 @@ class EspyPieChart extends StatelessWidget {
                       : Colors.grey,
               isSquare: true,
               onTap: () => onItemTap?.call(item.value),
-            ),
-          if (unknownLabel != null && itemPops?[unknownLabel] != null)
-            LegendKey(
-              color: Colors.grey,
-              text: unknownLabel!,
-              isSquare: true,
-              onTap: () => onItemTap?.call(unknownLabel!),
             ),
         ],
       ),
@@ -161,6 +144,5 @@ const defaultPalette = [
   Colors.orange,
   Colors.lime,
   Colors.pink,
-  Colors.deepOrange,
   Colors.grey,
 ];

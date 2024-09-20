@@ -52,9 +52,8 @@ class GenreGroupPie extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EspyPieChart(
-      Genres.groups.toList(),
+      Genres.groups.toList() + [unknownLabel],
       itemPops: genreGroupsPops,
-      unknownLabel: unknownLabel,
       onItemTap: (selectedItem) {
         context.read<RefinementModel>().refinement =
             LibraryFilter(genreGroup: selectedItem);
