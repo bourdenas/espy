@@ -92,8 +92,9 @@ class GenresPie extends StatelessWidget {
       selectedItem: selectedGenre,
       palette: palette,
       onItemTap: (selectedItem) {
-        context.read<RefinementModel>().refinement =
-            LibraryFilter(genre: selectedItem);
+        final refinement = context.read<RefinementModel>().refinement;
+        refinement.genre = selectedGenre != selectedItem ? selectedItem : null;
+        context.read<RefinementModel>().refinement = refinement;
       },
       backLabel: selectedGroup,
       onBack: () => context.read<RefinementModel>().clear(),

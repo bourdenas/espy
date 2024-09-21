@@ -53,6 +53,7 @@ class EspyPieChart extends StatelessWidget {
                   pieTouchResponse.touchedSection == null) {
                 return;
               }
+
               int index = pieTouchResponse.touchedSection!.touchedSectionIndex;
               if (index >= 0 && index < items.length && onItemTap != null) {
                 for (final item in enumerate(items)) {
@@ -72,6 +73,7 @@ class EspyPieChart extends StatelessWidget {
           ),
           sectionsSpace: 0,
           centerSpaceRadius: 40,
+          startDegreeOffset: -90,
           sections: [
             for (final item in enumerate(items))
               if (itemPops![item.value] != null)
