@@ -10,6 +10,7 @@ class LibraryFilter {
     this.publisher,
     this.collection,
     this.franchise,
+    this.score,
     this.genreGroup,
     this.genre,
     this.keyword,
@@ -22,6 +23,7 @@ class LibraryFilter {
   String? publisher;
   String? collection;
   String? franchise;
+  String? score;
   String? genreGroup;
   String? genre;
   String? keyword;
@@ -34,6 +36,7 @@ class LibraryFilter {
         publisher == other.publisher &&
         collection == other.collection &&
         franchise == other.franchise &&
+        score == other.score &&
         genreGroup == other.genreGroup &&
         genre == other.genre &&
         keyword == other.keyword &&
@@ -49,6 +52,7 @@ class LibraryFilter {
       publisher != null ||
       collection != null ||
       franchise != null ||
+      score != null ||
       genreGroup != null ||
       genre != null ||
       keyword != null ||
@@ -62,6 +66,7 @@ class LibraryFilter {
       publisher: other.publisher ?? publisher,
       collection: other.collection ?? collection,
       franchise: other.franchise ?? franchise,
+      score: other.score ?? score,
       genreGroup: other.genreGroup ?? genreGroup,
       genre: other.genre ?? genre,
       keyword: other.keyword ?? keyword,
@@ -77,6 +82,7 @@ class LibraryFilter {
       publisher: other.publisher == null ? publisher : null,
       collection: other.collection == null ? collection : null,
       franchise: other.franchise == null ? franchise : null,
+      score: other.score == null ? score : null,
       genreGroup: other.genreGroup == null ? genreGroup : null,
       genre: other.genre == null ? genre : null,
       keyword: other.keyword == null ? keyword : null,
@@ -96,6 +102,7 @@ class LibraryFilter {
             entry.digest.collections.any((e) => e == collection)) &&
         (franchise == null ||
             entry.digest.franchises.any((e) => e == franchise)) &&
+        (score == null || entry.scores.title == score) &&
         (genreGroup == null ||
             entry.digest.espyGenres
                 .any((e) => Genres.groupOfGenre(e) == genreGroup) ||
@@ -127,6 +134,7 @@ class LibraryFilter {
     if (franchise != null) {
       gameIdSets.add(Set.from(tagsModel.franchises.gameIds(franchise!)));
     }
+    // NOTE: Intentionally skipping score as we don't use it in filtering.
     if (genreGroup != null) {
       final groupSet = <int>{};
       for (final genre in Genres.genresInGroup(genreGroup!) ?? []) {

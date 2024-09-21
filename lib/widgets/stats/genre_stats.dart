@@ -55,8 +55,9 @@ class GenreGroupPie extends StatelessWidget {
       Genres.groups.toList() + [unknownLabel],
       itemPops: genreGroupsPops,
       onItemTap: (selectedItem) {
-        context.read<RefinementModel>().refinement =
-            LibraryFilter(genreGroup: selectedItem);
+        context
+            .read<RefinementModel>()
+            .add(LibraryFilter(genreGroup: selectedItem));
       },
     );
   }
@@ -92,12 +93,20 @@ class GenresPie extends StatelessWidget {
       selectedItem: selectedGenre,
       palette: palette,
       onItemTap: (selectedItem) {
-        final refinement = context.read<RefinementModel>().refinement;
-        refinement.genre = selectedGenre != selectedItem ? selectedItem : null;
-        context.read<RefinementModel>().refinement = refinement;
+        final filter = LibraryFilter(genre: selectedItem);
+        if (selectedGenre != selectedItem) {
+          context.read<RefinementModel>().add(filter);
+        } else {
+          context.read<RefinementModel>().subtract(filter);
+        }
       },
       backLabel: selectedGroup,
-      onBack: () => context.read<RefinementModel>().clear(),
+      onBack: () => context.read<RefinementModel>().subtract(
+            LibraryFilter(
+              genreGroup: selectedGroup,
+              genre: selectedGenre,
+            ),
+          ),
     );
   }
 }

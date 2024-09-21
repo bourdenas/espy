@@ -31,6 +31,16 @@ class RefinementModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void add(LibraryFilter filter) {
+    _refinement = _refinement.add(filter);
+    notifyListeners();
+  }
+
+  void subtract(LibraryFilter filter) {
+    _refinement = _refinement.subtract(filter);
+    notifyListeners();
+  }
+
   void clear() {
     _refinement = LibraryFilter();
     notifyListeners();
