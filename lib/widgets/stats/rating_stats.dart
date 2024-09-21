@@ -1,50 +1,29 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/scores.dart';
-import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quiver/iterables.dart';
 
-class RatingStats extends StatefulWidget {
+class RatingStats extends StatelessWidget {
   const RatingStats(this.libraryEntries, {super.key});
 
   final Iterable<LibraryEntry> libraryEntries;
 
   @override
-  State<RatingStats> createState() => _GenreStatsState();
-}
-
-class _GenreStatsState extends State<RatingStats> {
-  static const unknownLabel = 'Unknown';
-
-  final ratingPops = <String, int>{};
-  String? selectedGenre;
-
-  @override
-  void initState() {
-    super.initState();
-
-    final filter = context.read<LibraryFilterModel>().filter;
-    buildPops(filter);
-  }
-
-  void buildPops(LibraryFilter filter) {
-    ratingPops.clear();
+  Widget build(BuildContext context) {
+    if (libraryEntries.isEmpty) {
+      return Container();
+    }
+    final refinement = context.watch<RefinementModel>().refinement;
 
     // Build Genre histograms.
-    for (final entry in widget.libraryEntries.where((e) => filter.pass(e))) {
+    final ratingPops = <String, int>{};
+    for (final entry in libraryEntries.where((e) => refinement.pass(e))) {
       final title = entry.scores.title;
       ratingPops[title] = (ratingPops[title] ?? 0) + 1;
     }
-    ratingPops[unknownLabel] = 0;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final refinement = context.watch<RefinementModel>().refinement;
-    setState(() => buildPops(refinement));
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -57,8 +36,21 @@ class _GenreStatsState extends State<RatingStats> {
                 (((ratingPops.values.toList()..sort()).last / 10.0).ceil() * 10)
                     .toDouble(),
             barTouchData: BarTouchData(
-              enabled: false,
-            ),
+                enabled: false,
+                touchCallback:
+                    (FlTouchEvent event, BarTouchResponse? barTouchResponse) {
+                  if (!event.isInterestedForInteractions ||
+                      event is! FlTapDownEvent ||
+                      barTouchResponse == null ||
+                      barTouchResponse.spot == null) {
+                    return;
+                  }
+
+                  // final refinement =
+                  //     context.watch<RefinementModel>().refinement;
+                  // refinement.score =
+                  //     ratings[barTouchResponse.spot!.touchedBarGroupIndex];
+                }),
             titlesData: FlTitlesData(
               show: true,
               bottomTitles: AxisTitles(
@@ -120,10 +112,8 @@ class _GenreStatsState extends State<RatingStats> {
       fontSize: 14,
     );
 
-    final symbols = ['⭐', '👍', '✔️', '🤨', '👎', '🤷‍♂️'];
-
     Widget text = Text(
-      symbols[value.toInt()],
+      labels[value.toInt()],
       style: style,
     );
 
@@ -134,3 +124,6 @@ class _GenreStatsState extends State<RatingStats> {
     );
   }
 }
+
+const ratings = ['Excellent', 'Great', 'Good', 'Mixed', 'Bad'];
+const labels = ['⭐', '👍', '✔️', '🤨', '👎'];
