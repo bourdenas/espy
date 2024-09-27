@@ -25,7 +25,7 @@ class _EditGenreTagsState extends State<EditGenreTags>
 
   bool _subgenreOpen = false;
   String? _expandedGenreGroup;
-  Set<String> _selectedGenres = {};
+  final Set<String> _selectedGenres = {};
 
   @override
   void initState() {
@@ -37,7 +37,6 @@ class _EditGenreTagsState extends State<EditGenreTags>
       duration: const Duration(milliseconds: 250),
       vsync: this,
     );
-    _selectedGenres = Set.from(widget.libraryEntry.digest.igdbGenres);
   }
 
   @override
@@ -87,7 +86,7 @@ class _EditGenreTagsState extends State<EditGenreTags>
           child: _TagSelectionChip(
             label: genreGroup,
             color: GenreGroupChip.color,
-            hasHalo: widget.libraryEntry.digest.igdbGenres.contains(genreGroup),
+            hasHalo: false,
             isSelected: _selectedGenres.any((e) => e == genreGroup) ||
                 impliedGenres.any((e) => e == genreGroup),
             onSelected: (selected) => toggleExpand(
