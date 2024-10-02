@@ -38,15 +38,20 @@ class GenreStats extends StatelessWidget {
     genreGroupsPops[unknownLabel] = unknownPops;
     genresPops[unknownLabel] = unknownPops;
 
-    return selectedGroup == null
-        ? GenreGroupPie(genreGroupsPops)
-        : GenresPie(selectedGroup, selectedGenre, genresPops);
+    return Row(
+      children: [
+        GenreGroupPie(selectedGroup, genreGroupsPops),
+        if (selectedGroup != null && selectedGroup != unknownLabel)
+          GenresPie(selectedGroup, selectedGenre, genresPops),
+      ],
+    );
   }
 }
 
 class GenreGroupPie extends StatelessWidget {
-  const GenreGroupPie(this.genreGroupsPops, {super.key});
+  const GenreGroupPie(this.selectedGroup, this.genreGroupsPops, {super.key});
 
+  final String? selectedGroup;
   final Map<String, int> genreGroupsPops;
 
   @override
@@ -54,10 +59,13 @@ class GenreGroupPie extends StatelessWidget {
     return EspyPieChart(
       Genres.groups.toList() + [unknownLabel],
       itemPops: genreGroupsPops,
+      selectedItem: selectedGroup,
       onItemTap: (selectedItem) {
-        context
-            .read<RefinementModel>()
-            .add(LibraryFilter(genreGroup: selectedItem));
+        final refinement = context.read<RefinementModel>().refinement;
+        refinement.genre = null;
+        refinement.genreGroup =
+            selectedGroup != selectedItem ? selectedItem : null;
+        context.read<RefinementModel>().refinement = refinement;
       },
     );
   }
