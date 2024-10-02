@@ -6,8 +6,8 @@ import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class Refinements extends StatelessWidget {
-  const Refinements({super.key});
+class KeywordsSlidingChip extends StatelessWidget {
+  const KeywordsSlidingChip({super.key});
 
   @override
   Widget build(BuildContext context) {

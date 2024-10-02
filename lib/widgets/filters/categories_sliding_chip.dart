@@ -3,8 +3,8 @@ import 'package:espy/widgets/filters/sliding_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GameCategoriesSlidingChip extends StatelessWidget {
-  const GameCategoriesSlidingChip({
+class CategoriesSlidingChip extends StatelessWidget {
+  const CategoriesSlidingChip({
     super.key,
   });
 
