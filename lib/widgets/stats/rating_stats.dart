@@ -14,13 +14,20 @@ class RatingStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final refinement = context.watch<RefinementModel>().refinement;
+    // Get a copy of the currect refinement.
+    final refinement =
+        context.watch<RefinementModel>().refinement.add(LibraryFilter());
+    final selectedScore = refinement.score;
+    // Remove score from refinement to make the bar chart stable to selections.
+    refinement.score = null;
 
-    // Build Genre histograms.
+    // Build scores histograms.
     final ratingPops = <String, int>{};
     for (final entry in libraryEntries.where((e) => refinement.pass(e))) {
       final title = entry.scores.title;
-      ratingPops[title] = (ratingPops[title] ?? 0) + 1;
+      if (title != 'Unknown') {
+        ratingPops[title] = (ratingPops[title] ?? 0) + 1;
+      }
     }
 
     if (ratingPops.isEmpty) {
@@ -84,7 +91,9 @@ class RatingStats extends StatelessWidget {
               for (final item
                   in enumerate(scoreTitles).take(scoreTitles.length - 1))
                 buildRatingBar(
-                    item.index, ratingPops[item.value]?.toDouble() ?? 0)
+                    item.index,
+                    ratingPops[item.value]?.toDouble() ?? 0,
+                    item.value == selectedScore)
             ],
             groupsSpace: 2,
             gridData: const FlGridData(show: false),
@@ -94,14 +103,17 @@ class RatingStats extends StatelessWidget {
     );
   }
 
-  BarChartGroupData buildRatingBar(int ratingClassIndex, double y) {
+  BarChartGroupData buildRatingBar(
+      int ratingClassIndex, double y, bool selected) {
     return BarChartGroupData(
       x: ratingClassIndex,
       barsSpace: 0,
       barRods: [
         BarChartRodData(
           toY: y,
-          color: ratingClassIndex < 5 ? Colors.amber : Colors.transparent,
+          color: ratingClassIndex < 5
+              ? (selected ? Colors.lightBlue : Colors.amber)
+              : Colors.transparent,
           borderRadius: BorderRadius.zero,
           borderDashArray: ratingClassIndex == 5 ? [4, 4] : null,
           width: 32,
