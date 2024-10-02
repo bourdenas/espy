@@ -14,6 +14,7 @@ class GameCategoriesSlidingChip extends StatelessWidget {
       label: 'Categories',
       color: Theme.of(context).colorScheme.onSecondaryContainer,
       backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+      initialOpen: true,
       expansion: const GameCategoryFilter(),
     );
   }

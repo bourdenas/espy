@@ -18,7 +18,7 @@ class Refinements extends StatelessWidget {
       color: filter.keyword == null ? KeywordChip.color : null,
       backgroundColor: filter.keyword != null ? KeywordChip.color : null,
       closeIcon: Icons.close,
-      initialOpen: true,
+      initialOpen: false,
       expansion: const KeywordGroupChips(),
     );
   }
