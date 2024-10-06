@@ -13,7 +13,8 @@ class GenreStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final refinement = context.watch<RefinementModel>().refinement;
+    final refinement =
+        context.watch<RefinementModel>().refinement.add(LibraryFilter());
     final selectedGroup =
         refinement.genreGroup ?? Genres.groupOfGenre(refinement.genre);
     final selectedGenre = refinement.genre;
@@ -22,7 +23,8 @@ class GenreStats extends StatelessWidget {
     Map<String, int> genreGroupsPops = {};
     Map<String, int> genresPops = {};
     int unknownPops = 0;
-    for (final entry in libraryEntries) {
+    refinement.genreGroup = refinement.genre = null;
+    for (final entry in libraryEntries.where((e) => refinement.pass(e))) {
       if (entry.digest.espyGenres.isEmpty) {
         unknownPops += 1;
       }
