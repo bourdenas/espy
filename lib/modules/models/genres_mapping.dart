@@ -50,9 +50,9 @@ const Map<String, List<String>> _genresInGroup = {
     'WalkingSimulator',
   ],
   'Arcade': [
+    'Arcade',
     'Fighting',
     'BeatEmUp',
-    'Pinball',
     'CardAndBoard',
     'Deckbuilder',
   ],
@@ -129,9 +129,9 @@ const Map<String, String> _genreToLabel = {
   'WalkingSimulator': 'Walking Simulator',
 
   // Arcade
+  'Arcade': 'Arcade',
   'Fighting': 'Fighting',
   'BeatEmUp': "Beat'em Up",
-  'Pinball': 'Pinball',
   'CardAndBoard': 'Card & Board Game',
   'Deckbuilder': 'Deckbuilder',
 
@@ -213,7 +213,7 @@ const Map<String, String> _labelToGenre = {
   // Arcade
   'Fighting': 'Fighting',
   "Beat'em Up": 'BeatEmUp',
-  'Pinball': 'Pinball',
+  'Arcade': 'Arcade',
   'Card & Board Game': 'CardAndBoard',
   'Deckbuilder': 'Deckbuilder',
 
