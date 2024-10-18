@@ -15,11 +15,17 @@ class LibraryView {
 
   void filterCategories(AppConfigModel config) {
     _libraryEntries.retainWhere((e) =>
-        (config.showMains.value && e.isStandaloneGame) ||
+        (config.showMains.value &&
+            e.isMain &&
+            !e.isEarlyAccess &&
+            !e.isCasual) ||
         (config.showExpansions.value && e.isExpansion) ||
+        (config.showRemakes.value && (e.isRemake || e.isRemaster)) ||
+        (config.showEarlyAccess.value && e.isEarlyAccess) ||
         (config.showDlcs.value && e.isDlc) ||
         (config.showVersions.value && e.isVersion) ||
-        (config.showBundles.value && e.isBundle));
+        (config.showBundles.value && e.isBundle) ||
+        (config.showCasual.value && e.isCasual));
   }
 
   void sort(LibraryOrdering ordering) {
