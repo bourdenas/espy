@@ -61,9 +61,12 @@ class AppConfigModel extends ChangeNotifier {
 
   BoolOption showMains = BoolOption();
   BoolOption showExpansions = BoolOption();
+  BoolOption showRemakes = BoolOption();
+  BoolOption showEarlyAccess = BoolOption();
   BoolOption showDlcs = BoolOption();
   BoolOption showVersions = BoolOption();
   BoolOption showBundles = BoolOption();
+  BoolOption showCasual = BoolOption();
   BoolOption showExternal = BoolOption();
 
   AppConfigModel() {
@@ -73,9 +76,12 @@ class AppConfigModel extends ChangeNotifier {
     stacks.onUpdate = _updateOptions;
     showMains.onUpdate = _updateOptions;
     showExpansions.onUpdate = _updateOptions;
+    showRemakes.onUpdate = _updateOptions;
+    showEarlyAccess.onUpdate = _updateOptions;
     showDlcs.onUpdate = _updateOptions;
     showVersions.onUpdate = _updateOptions;
     showBundles.onUpdate = _updateOptions;
+    showCasual.onUpdate = _updateOptions;
     showExternal.onUpdate = _updateOptions;
   }
 
@@ -92,9 +98,12 @@ class AppConfigModel extends ChangeNotifier {
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
     showMains.value = prefs.getBool('showMains') ?? true;
     showExpansions.value = prefs.getBool('showExpansions') ?? false;
+    showRemakes.value = prefs.getBool('showRemakes') ?? false;
+    showEarlyAccess.value = prefs.getBool('showEarlyAccess') ?? false;
     showDlcs.value = prefs.getBool('showDlcs') ?? false;
     showVersions.value = prefs.getBool('showVersions') ?? false;
     showBundles.value = prefs.getBool('showBundles') ?? false;
+    showCasual.value = prefs.getBool('showCasual') ?? false;
     showExternal.value = prefs.getBool('showExternal') ?? false;
     _seedColor = Color(prefs.getInt('seedColor') ?? 0);
 
@@ -109,9 +118,12 @@ class AppConfigModel extends ChangeNotifier {
     prefs.setInt('stacks', stacks.value.index);
     prefs.setBool('showMains', showMains.value);
     prefs.setBool('showExpansions', showExpansions.value);
+    prefs.setBool('showRemakes', showRemakes.value);
+    prefs.setBool('showEarlyAccess', showEarlyAccess.value);
     prefs.setBool('showDlcs', showDlcs.value);
     prefs.setBool('showVersions', showVersions.value);
     prefs.setBool('showBundles', showBundles.value);
+    prefs.setBool('showCasual', showCasual.value);
     prefs.setBool('showExternal', showExternal.value);
     prefs.setInt('seedColor', _seedColor.value);
   }

@@ -1,4 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:quiver/iterables.dart';
+
+class Legend extends StatelessWidget {
+  const Legend(
+    this.items, {
+    super.key,
+    this.itemPops,
+    this.selectedItem,
+    this.palette,
+    this.onItemTap,
+    this.backLabel,
+    this.onBack,
+    this.width = 180,
+  });
+
+  final List<String> items;
+  final Map<String, int>? itemPops;
+  final String? selectedItem;
+  final List<Color?>? palette;
+  final void Function(String selectedItem)? onItemTap;
+  final String? backLabel;
+  final void Function()? onBack;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: ListView(
+        children: [
+          if (backLabel != null) ...[
+            backButton(),
+            const SizedBox(height: 4),
+          ],
+          for (final item in enumerate(items))
+            LegendKey(
+              color: palette?[item.index % items.length],
+              text: item.value,
+              textColor: item.value == selectedItem
+                  ? Colors.blue
+                  : itemPops?[item.value] != null
+                      ? Colors.white
+                      : Colors.grey,
+              isSquare: true,
+              onTap: () => onItemTap?.call(item.value),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget backButton() {
+    return LegendKey(
+      color: Colors.white,
+      text: backLabel!,
+      isSquare: true,
+      icon: Icons.keyboard_arrow_left,
+      onTap: () => onBack?.call(),
+    );
+  }
+}
 
 class LegendKey extends StatelessWidget {
   const LegendKey({

@@ -32,11 +32,17 @@ class GameCategoryFilter extends StatelessWidget {
         const SizedBox(width: 8),
         CategoryFilterChip('Expansions', appConfig.showExpansions),
         const SizedBox(width: 8),
+        CategoryFilterChip('Remakes', appConfig.showRemakes),
+        const SizedBox(width: 8),
+        CategoryFilterChip('Early Access', appConfig.showEarlyAccess),
+        const SizedBox(width: 8),
         CategoryFilterChip('DLCs', appConfig.showDlcs),
         const SizedBox(width: 8),
         CategoryFilterChip('Versions', appConfig.showVersions),
         const SizedBox(width: 8),
         CategoryFilterChip('Bundles', appConfig.showBundles),
+        const SizedBox(width: 8),
+        CategoryFilterChip('Casual', appConfig.showCasual),
         const SizedBox(width: 8),
       ],
     );
@@ -60,9 +66,12 @@ class CategoryFilterChip extends StatelessWidget {
       onSecondaryTap: () {
         appConfig.showMains.value = false;
         appConfig.showExpansions.value = false;
+        appConfig.showRemakes.value = false;
+        appConfig.showEarlyAccess.value = false;
         appConfig.showDlcs.value = false;
         appConfig.showVersions.value = false;
         appConfig.showBundles.value = false;
+        appConfig.showCasual.value = false;
         option.value = true;
       },
       child: ChoiceChip(

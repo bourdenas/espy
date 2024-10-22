@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/scores.dart';
 import 'package:espy/modules/documents/store_entry.dart';
+import 'package:espy/modules/models/genres_mapping.dart';
 
 class LibraryEntry {
   final int id;
@@ -39,6 +40,12 @@ class LibraryEntry {
   bool get isRemaster => digest.category == 'Remaster';
   bool get isVersion => digest.category == 'Version';
   bool get isIgnore => digest.category == 'Ignore';
+
+  bool get isEarlyAccess => digest.status == 'EarlyAccess';
+  bool get isCasual =>
+      digest.espyGenres.isNotEmpty &&
+      digest.espyGenres
+          .every((genre) => Genres.groupOfGenre(genre) == 'Casual');
 
   LibraryEntry({
     required this.id,

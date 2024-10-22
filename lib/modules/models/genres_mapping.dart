@@ -50,9 +50,9 @@ const Map<String, List<String>> _genresInGroup = {
     'WalkingSimulator',
   ],
   'Arcade': [
+    'Arcade',
     'Fighting',
     'BeatEmUp',
-    'Pinball',
     'CardAndBoard',
     'Deckbuilder',
   ],
@@ -63,7 +63,6 @@ const Map<String, List<String>> _genresInGroup = {
     'Puzzle',
     'VisualNovel',
     'Exploration',
-    'EndlessRunner',
     'Rhythm',
     'PartyGame',
   ],
@@ -129,9 +128,9 @@ const Map<String, String> _genreToLabel = {
   'WalkingSimulator': 'Walking Simulator',
 
   // Arcade
+  'Arcade': 'Arcade',
   'Fighting': 'Fighting',
   'BeatEmUp': "Beat'em Up",
-  'Pinball': 'Pinball',
   'CardAndBoard': 'Card & Board Game',
   'Deckbuilder': 'Deckbuilder',
 
@@ -142,7 +141,6 @@ const Map<String, String> _genreToLabel = {
   'SailingSim': 'Sailing Sim',
   'DatingSim': 'Dating Sim',
   'Puzzle': 'Puzzle',
-  'EndlessRunner': 'Endless Runner',
   'Rhythm': 'Rhythm',
   'PartyGame': 'Party Game',
   'VisualNovel': 'Visual Novel',
@@ -213,7 +211,7 @@ const Map<String, String> _labelToGenre = {
   // Arcade
   'Fighting': 'Fighting',
   "Beat'em Up": 'BeatEmUp',
-  'Pinball': 'Pinball',
+  'Arcade': 'Arcade',
   'Card & Board Game': 'CardAndBoard',
   'Deckbuilder': 'Deckbuilder',
 
@@ -224,7 +222,6 @@ const Map<String, String> _labelToGenre = {
   'Sailing Sim': 'SailingSim',
   'Dating Sim': 'DatingSim',
   'Puzzle': 'Puzzle',
-  'Endless Runner': 'EndlessRunner',
   'Rhythm': 'Rhythm',
   'Party Game': 'PartyGame',
   'Visual Novel': 'VisualNovel',

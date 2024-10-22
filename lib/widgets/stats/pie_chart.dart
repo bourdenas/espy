@@ -31,7 +31,15 @@ class EspyPieChart extends StatelessWidget {
         height: 240,
         child: Row(
           children: [
-            legend(),
+            Legend(
+              items,
+              itemPops: itemPops,
+              selectedItem: selectedItem,
+              palette: palette ?? defaultPalette,
+              onItemTap: onItemTap,
+              backLabel: backLabel,
+              onBack: onBack,
+            ),
             if (itemPops?.isNotEmpty != null) chart(),
           ],
         ),
@@ -88,44 +96,6 @@ class EspyPieChart extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  SizedBox legend() {
-    return SizedBox(
-      width: 180,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (backLabel != null) ...[
-            backButton(),
-            const SizedBox(height: 4),
-          ],
-          for (final item in enumerate(items))
-            LegendKey(
-              color: palette?[item.index % items.length] ??
-                  defaultPalette[item.index % items.length],
-              text: item.value,
-              textColor: item.value == selectedItem
-                  ? Colors.blue
-                  : itemPops?[item.value] != null
-                      ? Colors.white
-                      : Colors.grey,
-              isSquare: true,
-              onTap: () => onItemTap?.call(item.value),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget backButton() {
-    return LegendKey(
-      color: Colors.white,
-      text: backLabel!,
-      isSquare: true,
-      icon: Icons.keyboard_arrow_left,
-      onTap: () => onBack?.call(),
     );
   }
 }
