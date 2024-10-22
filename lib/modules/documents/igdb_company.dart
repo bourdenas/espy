@@ -1,10 +1,12 @@
 import 'package:espy/modules/documents/game_digest.dart';
+import 'package:espy/modules/documents/game_entry.dart';
 
 class IgdbCompany {
   final int id;
   final String name;
-  final String? slug;
-  final String? url;
+  final String slug;
+  final String? description;
+  final GameImage? logo;
 
   final List<GameDigest> developed;
   final List<GameDigest> published;
@@ -12,8 +14,9 @@ class IgdbCompany {
   IgdbCompany({
     required this.id,
     required this.name,
-    this.slug,
-    this.url,
+    required this.slug,
+    this.description,
+    this.logo,
     this.developed = const [],
     this.published = const [],
   });
@@ -22,8 +25,9 @@ class IgdbCompany {
       : this(
           id: json['id']!,
           name: json['name']!,
-          slug: json['slug'],
-          url: json['url'],
+          slug: json['slug']!,
+          description: json['description'],
+          logo: json['logo'],
           developed: [
             for (final game in json['developed'] ?? [])
               GameDigest.fromJson(game),
@@ -38,8 +42,9 @@ class IgdbCompany {
     return {
       'id': id,
       'name': name,
-      if (slug != null) 'slug': slug,
-      if (url != null) 'url': url,
+      'slug': slug,
+      if (description != null) 'description': description,
+      if (logo != null) 'logo': logo,
       if (developed.isNotEmpty)
         'developed': [
           for (final game in developed) game.toJson(),
