@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
@@ -75,67 +74,6 @@ class UserLibraryModel extends ChangeNotifier {
       notifyListeners();
       _saveLocally();
     });
-  }
-
-  Future<List<GameDigest>> searchByTitle(
-    String title, {
-    baseGameOnly = false,
-  }) async {
-    if (title.isEmpty) return [];
-
-    final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/search'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({
-        'title': title,
-        'base_game_only': baseGameOnly,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      return [];
-    }
-
-    final jsonObj = jsonDecode(response.body) as List<dynamic>;
-    return jsonObj.map((obj) => GameDigest.fromJson(obj)).toList();
-  }
-
-  Future<bool> retrieveGameEntry(int gameId) async {
-    final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/resolve'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({
-        'game_id': gameId,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      return false;
-    }
-
-    return true;
-  }
-
-  Future<bool> deleteGameEntry(int gameId) async {
-    final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/delete'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({
-        'game_id': gameId,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      return false;
-    }
-
-    return true;
   }
 
   Future<bool> matchEntry(StoreEntry storeEntry, int gameId) async {

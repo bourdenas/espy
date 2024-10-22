@@ -1,6 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
@@ -145,8 +146,7 @@ class _SearchPageState extends State<SearchPage> {
               setState(() {
                 _fetchingRemoteGames = true;
               });
-              final remoteGames =
-                  await context.read<UserLibraryModel>().searchByTitle(text);
+              final remoteGames = await BackendApi.searchByTitle(text);
               setState(() {
                 _fetchingRemoteGames = false;
                 _remoteGames = remoteGames

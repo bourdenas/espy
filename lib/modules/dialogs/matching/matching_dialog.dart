@@ -1,9 +1,8 @@
 import 'package:espy/modules/dialogs/matching/matching_dialog_content.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:espy/modules/models/user_library_model.dart';
+import 'package:espy/modules/models/backend_api.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class MatchingDialog extends StatefulWidget {
   static void show(
@@ -42,9 +41,7 @@ class _MatchingDialogState extends State<MatchingDialog> {
   Widget build(BuildContext context) {
     return MatchingDialogAnimation(
         widget.storeEntry,
-        context
-            .read<UserLibraryModel>()
-            .searchByTitle(widget.storeEntry?.title ?? ''),
+        BackendApi.searchByTitle(widget.storeEntry?.title ?? ''),
         widget.onMatch);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
@@ -33,9 +34,7 @@ class GameDetailsPage extends StatelessWidget {
             // If GameEntry is not found in Firebase this will force retrieval
             // from IGDB. Because it's a streaming connection with Firebase when
             // the document is created the page will update automatically.
-            context
-                .read<UserLibraryModel>()
-                .retrieveGameEntry(int.tryParse(id) ?? 0);
+            BackendApi.retrieveGameEntry(int.tryParse(id) ?? 0);
 
             return libraryEntry != null
                 ? GameDetailsContent(libraryEntry, null)
@@ -53,9 +52,7 @@ class GameDetailsPage extends StatelessWidget {
             // format changed and the entry was not updated in the Firebase. This
             // will force a new retrieval from IGDB and produce a document with
             // the updated format.
-            context
-                .read<UserLibraryModel>()
-                .retrieveGameEntry(int.tryParse(id) ?? 0);
+            BackendApi.retrieveGameEntry(int.tryParse(id) ?? 0);
             return retrieveIndicator();
           }
 

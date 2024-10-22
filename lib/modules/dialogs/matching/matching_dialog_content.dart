@@ -2,10 +2,9 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/user_library_model.dart';
+import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class MatchingDialogContent extends StatefulWidget {
   const MatchingDialogContent(
@@ -37,7 +36,7 @@ class _MatchingDialogContentState extends State<MatchingDialogContent> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               onSubmitted: (text) => setState(() {
-                matches = context.read<UserLibraryModel>().searchByTitle(text);
+                matches = BackendApi.searchByTitle(text);
               }),
               controller: _matchController,
               focusNode: _matchFocusNode,
