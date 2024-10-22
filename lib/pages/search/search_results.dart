@@ -3,6 +3,7 @@ import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class TagSearchResults extends StatelessWidget {
   const TagSearchResults(
@@ -51,8 +52,8 @@ class TagSearchResults extends StatelessWidget {
               chips: developers.map(
                 (company) => DeveloperChip(
                   company,
-                  onPressed: () => updateLibraryView(
-                      context, LibraryFilter(developer: company)),
+                  onPressed: () => context
+                      .pushNamed('company', pathParameters: {'name': company}),
                 ),
               ),
             ),
@@ -63,8 +64,8 @@ class TagSearchResults extends StatelessWidget {
               chips: publishers.map(
                 (company) => PublisherChip(
                   company,
-                  onPressed: () => updateLibraryView(
-                      context, LibraryFilter(publisher: company)),
+                  onPressed: () => context
+                      .pushNamed('company', pathParameters: {'name': company}),
                 ),
               ),
             ),

@@ -5,6 +5,7 @@ import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 /// Tags shows on a LibraryEntry's grid/list card.
@@ -37,8 +38,8 @@ class EspyChipsGameCard extends StatelessWidget {
                     padding: const EdgeInsets.all(4.0),
                     child: DeveloperChip(
                       company,
-                      onPressed: () =>
-                          addFilter(context, LibraryFilter(developer: company)),
+                      onPressed: () => context.pushNamed('company',
+                          pathParameters: {'name': company}),
                     ),
                   ),
                 for (final company in libraryEntry.publishers)
@@ -46,8 +47,8 @@ class EspyChipsGameCard extends StatelessWidget {
                     padding: const EdgeInsets.all(4.0),
                     child: PublisherChip(
                       company,
-                      onPressed: () =>
-                          addFilter(context, LibraryFilter(publisher: company)),
+                      onPressed: () => context.pushNamed('company',
+                          pathParameters: {'name': company}),
                     ),
                   ),
               ],

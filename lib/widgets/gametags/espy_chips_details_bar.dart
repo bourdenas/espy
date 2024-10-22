@@ -28,14 +28,14 @@ class EspyChipsDetailsBar extends StatelessWidget {
             for (final company in libraryEntry.developers)
               DeveloperChip(
                 company,
-                onPressed: () =>
-                    addFilter(context, LibraryFilter(developer: company)),
+                onPressed: () => context
+                    .pushNamed('company', pathParameters: {'name': company}),
               ),
             for (final company in libraryEntry.publishers)
               PublisherChip(
                 company,
-                onPressed: () =>
-                    addFilter(context, LibraryFilter(publisher: company)),
+                onPressed: () => context
+                    .pushNamed('company', pathParameters: {'name': company}),
               ),
             for (final collection in libraryEntry.collections)
               CollectionChip(

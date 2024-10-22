@@ -10,6 +10,7 @@ import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
+import 'package:espy/pages/company/company_page.dart';
 import 'package:espy/pages/explore/explore_page.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
@@ -172,6 +173,18 @@ class EspyRouter extends StatelessWidget {
                 EditEntryPage(id: state.pathParameters['gid']!),
           ),
         ],
+      ),
+      GoRoute(
+        name: 'company',
+        path: '/company/:name',
+        pageBuilder: (context, state) => NoTransitionPage(
+          name: 'company',
+          arguments: state.pathParameters['name']!,
+          child: EspyScaffold(
+            body: CompanyPage(name: state.pathParameters['name']!),
+            path: state.path!,
+          ),
+        ),
       ),
       GoRoute(
         name: 'search',

@@ -48,12 +48,12 @@ class HomeSlatesModel extends ChangeNotifier {
                 context, LibraryFilter(collection: collection)),
           ),
       if (appConfigModel.stacks.value == Stacks.developers)
-        for (final developer in tagsModel.developers.all)
+        for (final company in tagsModel.developers.all)
           SlateInfo(
-            developer,
-            tagsModel.developers.games(developer),
+            company,
+            tagsModel.developers.games(company),
             (context) =>
-                updateLibraryView(context, LibraryFilter(developer: developer)),
+                context.pushNamed('company', pathParameters: {'name': company}),
           ),
     ];
 
