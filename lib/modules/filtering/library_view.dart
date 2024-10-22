@@ -36,8 +36,8 @@ class LibraryView {
       case LibraryOrdering.rating:
         _libraryEntries.sort((a, b) => -a.metacritic.compareTo(b.metacritic));
         break;
-      case LibraryOrdering.title:
-        _libraryEntries.sort((a, b) => a.name.compareTo(b.name));
+      case LibraryOrdering.popularity:
+        _libraryEntries.sort((a, b) => -a.popularity.compareTo(b.popularity));
         break;
     }
   }

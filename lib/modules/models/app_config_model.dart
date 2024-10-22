@@ -46,13 +46,13 @@ class AppConfigModel extends ChangeNotifier {
     (index) => CardDecoration.values[index],
     CardDecoration.values.length,
   );
-  EnumOption<LibraryGrouping> libraryGrouping = EnumOption<LibraryGrouping>(
-    (index) => LibraryGrouping.values[index],
-    LibraryGrouping.values.length,
-  );
   EnumOption<LibraryOrdering> libraryOrdering = EnumOption<LibraryOrdering>(
     (index) => LibraryOrdering.values[index],
     LibraryOrdering.values.length,
+  );
+  EnumOption<LibraryGrouping> libraryGrouping = EnumOption<LibraryGrouping>(
+    (index) => LibraryGrouping.values[index],
+    LibraryGrouping.values.length,
   );
   EnumOption<Stacks> stacks = EnumOption<Stacks>(
     (index) => Stacks.values[index],
@@ -72,6 +72,7 @@ class AppConfigModel extends ChangeNotifier {
   AppConfigModel() {
     libraryLayout.onUpdate = _updateOptions;
     cardDecoration.onUpdate = _updateOptions;
+    libraryOrdering.onUpdate = _updateOptions;
     libraryGrouping.onUpdate = _updateOptions;
     stacks.onUpdate = _updateOptions;
     showMains.onUpdate = _updateOptions;
@@ -94,6 +95,7 @@ class AppConfigModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     libraryLayout.valueIndex = prefs.getInt('libraryLayout') ?? 0;
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
+    libraryOrdering.valueIndex = prefs.getInt('orderBy') ?? 0;
     libraryGrouping.valueIndex = prefs.getInt('groupBy') ?? 0;
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
     showMains.value = prefs.getBool('showMains') ?? true;
@@ -114,6 +116,7 @@ class AppConfigModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('libraryLayout', libraryLayout.value.index);
     prefs.setInt('cardDecoration', cardDecoration.value.index);
+    prefs.setInt('orderBy', libraryOrdering.value.index);
     prefs.setInt('groupBy', libraryGrouping.value.index);
     prefs.setInt('stacks', stacks.value.index);
     prefs.setBool('showMains', showMains.value);
@@ -157,7 +160,7 @@ enum LibraryClass {
 enum LibraryOrdering {
   release,
   rating,
-  title,
+  popularity,
 }
 
 enum LibraryGrouping {

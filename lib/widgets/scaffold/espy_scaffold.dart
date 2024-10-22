@@ -102,7 +102,13 @@ class EspyScaffold extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-                _groupViews[appConfig.libraryGrouping.value.index].iconData),
+                _orderingViews[appConfig.libraryOrdering.value.index].iconData),
+            splashRadius: 20.0,
+            onPressed: () => appConfig.libraryOrdering.nextValue(),
+          ),
+          IconButton(
+            icon: Icon(
+                _groupingViews[appConfig.libraryGrouping.value.index].iconData),
             splashRadius: 20.0,
             onPressed: () => appConfig.libraryGrouping.nextValue(),
           ),
@@ -125,10 +131,18 @@ class EspyScaffold extends StatelessWidget {
           const SizedBox(width: 24),
           ToggleButtons(
             renderBorder: false,
-            isSelected: List.generate(_groupViews.length,
+            isSelected: List.generate(_orderingViews.length,
+                (i) => i == appConfig.libraryOrdering.value.index),
+            onPressed: (index) => appConfig.libraryOrdering.valueIndex = index,
+            children: _orderingViews.map((e) => Icon(e.iconData)).toList(),
+          ),
+          const SizedBox(width: 24),
+          ToggleButtons(
+            renderBorder: false,
+            isSelected: List.generate(_groupingViews.length,
                 (i) => i == appConfig.libraryGrouping.value.index),
             onPressed: (index) => appConfig.libraryGrouping.valueIndex = index,
-            children: _groupViews.map((e) => Icon(e.iconData)).toList(),
+            children: _groupingViews.map((e) => Icon(e.iconData)).toList(),
           ),
           const SizedBox(width: 8),
         ],
@@ -148,12 +162,18 @@ class EspyScaffold extends StatelessWidget {
     _CardsView(CardDecoration.tags, Icons.collections_bookmark),
   ];
 
-  final List<_GroupView> _groupViews = const [
-    _GroupView(LibraryGrouping.none, Icons.block),
-    _GroupView(LibraryGrouping.year, Icons.calendar_month),
-    _GroupView(LibraryGrouping.genre, Icons.class_),
-    _GroupView(LibraryGrouping.keywords, Icons.tag),
-    _GroupView(LibraryGrouping.rating, Icons.star),
+  final List<_OrderingView> _orderingViews = const [
+    _OrderingView(LibraryOrdering.release, Icons.calendar_month),
+    _OrderingView(LibraryOrdering.rating, Icons.star),
+    _OrderingView(LibraryOrdering.popularity, Icons.people),
+  ];
+
+  final List<_GroupingView> _groupingViews = const [
+    _GroupingView(LibraryGrouping.none, Icons.block),
+    _GroupingView(LibraryGrouping.year, Icons.calendar_month),
+    _GroupingView(LibraryGrouping.genre, Icons.class_),
+    _GroupingView(LibraryGrouping.keywords, Icons.tag),
+    _GroupingView(LibraryGrouping.rating, Icons.star),
   ];
 }
 
@@ -171,9 +191,16 @@ class _CardsView {
   const _CardsView(this.decoration, this.iconData);
 }
 
-class _GroupView {
+class _OrderingView {
+  final LibraryOrdering ordering;
+  final IconData iconData;
+
+  const _OrderingView(this.ordering, this.iconData);
+}
+
+class _GroupingView {
   final LibraryGrouping grouping;
   final IconData iconData;
 
-  const _GroupView(this.grouping, this.iconData);
+  const _GroupingView(this.grouping, this.iconData);
 }

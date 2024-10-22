@@ -30,6 +30,7 @@ class LibraryViewModel extends ChangeNotifier {
         ? filter.apply(_gameTagsModel, _getEntryById)
         : LibraryView(entries.toList());
     _view.filterCategories(_appConfigModel);
+    _view.sort(appConfigModel.libraryOrdering.value);
   }
 
   Iterable<LibraryEntry> get entries => _view.entries;
@@ -53,7 +54,6 @@ class LibraryViewModel extends ChangeNotifier {
         : LibraryView(_libraryIndexModel.entries.toList());
     _view.addEntries(remoteLibraryModel.entries);
     _view.filterCategories(_appConfigModel);
-
     _view.sort(appConfigModel.libraryOrdering.value);
 
     notifyListeners();
