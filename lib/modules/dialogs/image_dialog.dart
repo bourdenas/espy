@@ -5,9 +5,11 @@ class ImageDialog extends StatelessWidget {
   const ImageDialog({
     super.key,
     required this.imageUrl,
+    this.scale = 1,
   });
 
   final String imageUrl;
+  final double scale;
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +17,7 @@ class ImageDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(2),
       title: CachedNetworkImage(
+        scale: scale,
         fit: BoxFit.cover,
         imageUrl: imageUrl,
         placeholder: (context, url) => Container(),

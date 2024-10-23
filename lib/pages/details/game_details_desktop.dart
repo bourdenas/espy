@@ -236,7 +236,10 @@ class _GameDetailsHeader extends StatelessWidget {
                 child: Image.network(coverUrl),
                 onTap: () => showDialog(
                   context: context,
-                  builder: (context) => ImageDialog(imageUrl: coverUrl),
+                  builder: (context) => ImageDialog(
+                    imageUrl: coverUrl,
+                    scale: .5,
+                  ),
                 ),
               )
             : Image.asset('assets/images/placeholder.png'),
