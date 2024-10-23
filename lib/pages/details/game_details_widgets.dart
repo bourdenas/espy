@@ -1,3 +1,4 @@
+import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
@@ -7,7 +8,7 @@ import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/game_pulse.dart';
 import 'package:espy/widgets/release_date_chip.dart';
-import 'package:espy/widgets/tiles/tile_shelve.dart';
+import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -167,11 +168,22 @@ class RelatedGamesGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TileShelve(
-      title: title,
-      entries: gameDigests
-          .map((gameEntry) => LibraryEntry.fromGameDigest(gameEntry)),
-      pushNavigation: false,
+    gameDigests.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
+    return SliverToBoxAdapter(
+      child: TileCarousel(
+        title: title,
+        tileSize: AppConfigModel.isMobile(context)
+            ? const TileSize(width: 133, height: 190)
+            : const TileSize(width: 227, height: 320),
+        tiles: gameDigests
+            .map((digest) => TileData(
+                  image:
+                      '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg',
+                  onTap: () => context.pushNamed('details',
+                      pathParameters: {'gid': '${digest.id}'}),
+                ))
+            .toList(),
+      ),
     );
   }
 }

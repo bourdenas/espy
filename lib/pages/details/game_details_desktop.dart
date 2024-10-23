@@ -74,26 +74,23 @@ class _GameDetailsBody extends StatelessWidget {
 
   Widget relatedGames() {
     return Expanded(
-      child: SizedBox(
-        height: 1200,
-        child: CustomScrollView(
-          primary: false,
-          shrinkWrap: true,
-          slivers: [
-            if (gameEntry.parent != null)
-              RelatedGamesGroup('Base Game', [gameEntry.parent!]),
-            if (gameEntry.expansions.isNotEmpty)
-              RelatedGamesGroup('Expansions', gameEntry.expansions),
-            if (gameEntry.dlcs.isNotEmpty)
-              RelatedGamesGroup('DLCs', gameEntry.dlcs),
-            if (gameEntry.remasters.isNotEmpty)
-              RelatedGamesGroup('Remasters', gameEntry.remasters),
-            if (gameEntry.remakes.isNotEmpty)
-              RelatedGamesGroup('Remakes', gameEntry.remakes),
-            if (gameEntry.contents.isNotEmpty)
-              RelatedGamesGroup('Contains', gameEntry.contents),
-          ],
-        ),
+      child: CustomScrollView(
+        primary: false,
+        shrinkWrap: true,
+        slivers: [
+          if (gameEntry.parent != null)
+            RelatedGamesGroup('Base Game', [gameEntry.parent!]),
+          if (gameEntry.expansions.isNotEmpty)
+            RelatedGamesGroup('Expansions', gameEntry.expansions),
+          if (gameEntry.dlcs.isNotEmpty)
+            RelatedGamesGroup('DLCs', gameEntry.dlcs),
+          if (gameEntry.remasters.isNotEmpty)
+            RelatedGamesGroup('Remasters', gameEntry.remasters),
+          if (gameEntry.remakes.isNotEmpty)
+            RelatedGamesGroup('Remakes', gameEntry.remakes),
+          if (gameEntry.contents.isNotEmpty)
+            RelatedGamesGroup('Contains', gameEntry.contents),
+        ],
       ),
     );
   }
