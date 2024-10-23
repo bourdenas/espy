@@ -34,7 +34,7 @@ class LibraryView {
         _libraryEntries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
         break;
       case LibraryOrdering.rating:
-        _libraryEntries.sort((a, b) => -a.metacritic.compareTo(b.metacritic));
+        _libraryEntries.sort((a, b) => -a.espyScore.compareTo(b.espyScore));
         break;
       case LibraryOrdering.popularity:
         _libraryEntries.sort((a, b) => -a.popularity.compareTo(b.popularity));

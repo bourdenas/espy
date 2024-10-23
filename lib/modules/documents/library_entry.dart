@@ -19,6 +19,7 @@ class LibraryEntry {
   int get popularity => digest.scores.popularity ?? 0;
   int get hype => digest.scores.hype ?? 0;
   int get metacritic => digest.scores.metacritic ?? 0;
+  int get espyScore => digest.scores.espyScore ?? 0;
   List<String> get collections => digest.collections;
   List<String> get franchises => digest.franchises;
   List<String> get developers => digest.developers;
