@@ -25,7 +25,7 @@ class LibraryPage extends StatelessWidget {
     final filter = context.watch<LibraryFilterModel>().filter;
     final libraryViewModel = entries == null
         ? context.watch<LibraryViewModel>()
-        : LibraryViewModel.custom(appConfig, entries!, filter);
+        : LibraryViewModel.custom(appConfig, entries!, filter: filter);
 
     return Scaffold(
       appBar:

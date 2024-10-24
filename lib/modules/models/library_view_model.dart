@@ -18,15 +18,13 @@ class LibraryViewModel extends ChangeNotifier {
   LibraryViewModel();
 
   LibraryViewModel.custom(
-    AppConfigModel appConfigModel,
-    Iterable<LibraryEntry> entries,
-    LibraryFilter filter,
-  ) {
+      AppConfigModel appConfigModel, Iterable<LibraryEntry> entries,
+      {LibraryFilter? filter}) {
     _appConfigModel = appConfigModel;
     _libraryIndexModel = LibraryIndexModel()..update(entries);
     _gameTagsModel = GameTagsModel()..update('', _libraryIndexModel);
 
-    _view = filter.isNotEmpty
+    _view = filter != null && filter.isNotEmpty
         ? filter.apply(_gameTagsModel, _getEntryById)
         : LibraryView(entries.toList());
     _view.filterCategories(_appConfigModel);
