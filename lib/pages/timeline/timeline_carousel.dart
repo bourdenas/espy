@@ -23,7 +23,7 @@ class TimelineCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final releases = context.watch<FrontpageModel>().releases;
+    final releases = context.watch<FrontpageModel>().timeline;
 
     var startIndex = 0;
     final now = DateTime.now().millisecondsSinceEpoch / 1000;

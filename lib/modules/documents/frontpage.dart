@@ -2,41 +2,37 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/timeline.dart';
 
 class Frontpage {
-  final List<ReleaseEvent> releases;
-  final List<GameDigest> today;
-  final List<GameDigest> recent;
-  final List<GameDigest> upcoming;
-  final List<GameDigest> newUpdated;
+  final List<ReleaseEvent> timeline;
+  final List<GameDigest> todayReleases;
+  final List<GameDigest> upcomingReleases;
+  final List<GameDigest> recentReleases;
   final List<GameDigest> hyped;
 
   const Frontpage({
-    this.releases = const [],
-    this.today = const [],
-    this.recent = const [],
-    this.upcoming = const [],
-    this.newUpdated = const [],
+    this.timeline = const [],
+    this.todayReleases = const [],
+    this.recentReleases = const [],
+    this.upcomingReleases = const [],
     this.hyped = const [],
   });
 
   Frontpage.fromJson(Map<String, dynamic> json)
       : this(
-          releases: [
-            for (final event in json['releases'] ?? [])
+          timeline: [
+            for (final event in json['timeline'] ?? [])
               ReleaseEvent.fromJson(event),
           ],
-          today: [
-            for (final event in json['today'] ?? []) GameDigest.fromJson(event),
-          ],
-          recent: [
-            for (final event in json['recent'] ?? [])
+          todayReleases: [
+            for (final event in json['today_releases'] ?? [])
               GameDigest.fromJson(event),
           ],
-          upcoming: [
-            for (final event in json['upcoming'] ?? [])
+          upcomingReleases: [
+            for (final event in json['upcoming_releases'] ?? [])
               GameDigest.fromJson(event),
           ],
-          newUpdated: [
-            for (final event in json['new'] ?? []) GameDigest.fromJson(event),
+          recentReleases: [
+            for (final event in json['recent_releases'] ?? [])
+              GameDigest.fromJson(event),
           ],
           hyped: [
             for (final event in json['hyped'] ?? []) GameDigest.fromJson(event),

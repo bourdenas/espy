@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 class FrontpageModel extends ChangeNotifier {
   Frontpage _frontpage = const Frontpage();
 
-  List<ReleaseEvent> get releases => _frontpage.releases;
+  List<ReleaseEvent> get timeline => _frontpage.timeline;
 
   Future<void> load() async {
     FirebaseFirestore.instance
