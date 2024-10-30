@@ -20,7 +20,7 @@ class EspyNavigationRailState extends State<EspyNavigationRail> {
   final Map<String, int> _mapping = {
     '': 0,
     'games': 1,
-    'browse': 2,
+    'explore': 2,
     'years': 3,
     'releases': 4,
     'unresolved': 5,

@@ -21,7 +21,8 @@ class GameDigest {
   final List<String> espyGenres;
   final List<String> keywords;
 
-  String get releaseDay => DateFormat('yMMMd').format(release);
+  String get releaseDay =>
+      releaseDate > 0 ? DateFormat('yMMMd').format(release) : 'TBD';
   String get releaseMonth => DateFormat('yMMM').format(release);
   DateTime get release =>
       DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000);
