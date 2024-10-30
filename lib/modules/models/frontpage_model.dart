@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/frontpage.dart';
-import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/timeline.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
@@ -36,11 +35,6 @@ class FrontpageModel extends ChangeNotifier {
           (context) => context.goNamed('hyped'),
         ),
       ];
-
-  List<GameDigest> get todayReleases => _frontpage.todayReleases;
-  List<GameDigest> get upcomingReleases => _frontpage.upcomingReleases;
-  List<GameDigest> get recentReleases => _frontpage.recentReleases;
-  List<GameDigest> get hyped => _frontpage.hyped;
 
   Future<void> load() async {
     FirebaseFirestore.instance
