@@ -1,6 +1,7 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/home/empty_library.dart';
@@ -22,9 +23,16 @@ class HomeContent extends StatelessWidget {
   }
 
   Widget library(BuildContext context) {
-    final model = context.watch<HomeSlatesModel>();
-    final slates =
-        model.slates.where((slate) => slate.entries.isNotEmpty).toList();
+    final slates = context
+        .watch<HomeSlatesModel>()
+        .slates
+        .where((slate) => slate.entries.isNotEmpty)
+        .toList();
+    final frontpageSlates = context
+        .watch<FrontpageModel>()
+        .slates
+        .where((slate) => slate.entries.isNotEmpty)
+        .toList();
     final isMobile = AppConfigModel.isMobile(context);
 
     return CustomScrollView(
@@ -64,6 +72,29 @@ class HomeContent extends StatelessWidget {
               );
             },
             childCount: slates.length,
+          ),
+        ),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return TileCarousel(
+                title: frontpageSlates[index].title,
+                onTitleTap: () => frontpageSlates[index].onTap(context),
+                tileSize: AppConfigModel.isMobile(context)
+                    ? const TileSize(width: 133, height: 190)
+                    : const TileSize(width: 227, height: 320),
+                tiles: frontpageSlates[index]
+                    .entries
+                    .map((digest) => TileData(
+                          image:
+                              '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg',
+                          onTap: () => context.pushNamed('details',
+                              pathParameters: {'gid': '${digest.id}'}),
+                        ))
+                    .toList(),
+              );
+            },
+            childCount: frontpageSlates.length,
           ),
         ),
         const SliverToBoxAdapter(
