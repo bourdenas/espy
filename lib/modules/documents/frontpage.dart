@@ -23,19 +23,20 @@ class Frontpage {
               ReleaseEvent.fromJson(event),
           ],
           todayReleases: [
-            for (final event in json['today_releases'] ?? [])
-              GameDigest.fromJson(event),
+            for (final digest in json['today_releases'] ?? [])
+              GameDigest.fromJson(digest),
           ],
           upcomingReleases: [
-            for (final event in json['upcoming_releases'] ?? [])
-              GameDigest.fromJson(event),
+            for (final digest in json['upcoming_releases'] ?? [])
+              GameDigest.fromJson(digest),
           ],
           recentReleases: [
-            for (final event in json['recent_releases'] ?? [])
-              GameDigest.fromJson(event),
+            for (final digest in json['recent_releases'] ?? [])
+              GameDigest.fromJson(digest),
           ],
           hyped: [
-            for (final event in json['hyped'] ?? []) GameDigest.fromJson(event),
+            for (final digest in json['hyped'] ?? [])
+              GameDigest.fromJson(digest),
           ],
         );
 
