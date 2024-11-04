@@ -32,22 +32,24 @@ class KeywordCloud extends StatelessWidget {
             .map((entry) => {'word': entry.key, 'value': entry.value})
             .toList());
 
-    return WordCloudView(
-      data: wcdata,
-      mapcolor: Theme.of(context).colorScheme.surface,
-      mapwidth: 500,
-      mapheight: 250,
-      maxtextsize: 38,
-      mintextsize: 10,
-      shape: WordCloudEllipse(majoraxis: 250, minoraxis: 125),
-      colorlist: const [
-        Colors.white,
-        Colors.redAccent,
-        Colors.green,
-        Colors.blue,
-        Colors.amber,
-      ],
-    );
+    return kwPops.isNotEmpty
+        ? WordCloudView(
+            data: wcdata,
+            mapcolor: Theme.of(context).colorScheme.surface,
+            mapwidth: 500,
+            mapheight: 250,
+            maxtextsize: 38,
+            mintextsize: 10,
+            shape: WordCloudEllipse(majoraxis: 250, minoraxis: 125),
+            colorlist: const [
+              Colors.white,
+              Colors.redAccent,
+              Colors.green,
+              Colors.blue,
+              Colors.amber,
+            ],
+          )
+        : Container();
   }
 }
 
