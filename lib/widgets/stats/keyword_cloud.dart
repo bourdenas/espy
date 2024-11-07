@@ -1,22 +1,31 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/keyword_mapping.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/widgets/stats/word_cloud.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:word_cloud/word_cloud.dart';
 
-class KeywordCloud extends StatelessWidget {
+class KeywordCloud extends StatefulWidget {
   const KeywordCloud(this.libraryEntries, {super.key});
 
   final Iterable<LibraryEntry> libraryEntries;
 
   @override
+  State<KeywordCloud> createState() => _KeywordCloudState();
+}
+
+class _KeywordCloudState extends State<KeywordCloud> {
+  @override
   Widget build(BuildContext context) {
-    final refinement = context.watch<RefinementModel>().refinement;
+    final refinement =
+        context.watch<RefinementModel>().refinement.add(LibraryFilter());
+    final selectedKeyword = refinement.keyword;
 
     Map<String, int> kwGroupsPops = {};
     Map<String, int> kwPops = {};
-    for (final entry in libraryEntries.where((e) => refinement.pass(e))) {
+    for (final entry
+        in widget.libraryEntries.where((e) => refinement.pass(e))) {
       final groups = <String>{};
       for (final kw in entry.digest.keywords) {
         groups.add(Keywords.groupOfKeyword(kw) ?? unknownLabel);
@@ -27,30 +36,45 @@ class KeywordCloud extends StatelessWidget {
       }
     }
 
-    WordCloudData wcdata = WordCloudData(
-        data: kwPops.entries
-            .map((entry) => {'word': entry.key, 'value': entry.value})
-            .toList());
-
     return kwPops.isNotEmpty
-        ? WordCloudView(
-            data: wcdata,
-            mapcolor: Theme.of(context).colorScheme.surface,
-            mapwidth: 500,
-            mapheight: 250,
-            maxtextsize: 38,
-            mintextsize: 10,
-            shape: WordCloudEllipse(majoraxis: 250, minoraxis: 125),
-            colorlist: const [
-              Colors.white,
-              Colors.redAccent,
-              Colors.green,
-              Colors.blue,
-              Colors.amber,
-            ],
+        ? WordCloud(
+            words: kwPops.entries
+                .map((entry) => WordSpec(
+                      entry.key,
+                      entry.value.toDouble(),
+                      color: selectedKeyword == entry.key
+                          ? Colors.white
+                          : palette[Keywords.groupOfKeyword(entry.key)],
+                    ))
+                .toList(),
+            config: WordCloudConfig(
+              attempts: 30,
+              mapWidth: 500,
+              mapHeight: 250,
+              minTextSize: 12,
+              maxTextSize: 42,
+            ),
+            onClick: (String word) {
+              final filter = LibraryFilter(keyword: word);
+              if (context.read<RefinementModel>().refinement.keyword != word) {
+                context.read<RefinementModel>().add(filter);
+              } else {
+                context.read<RefinementModel>().subtract(filter);
+              }
+            },
           )
         : Container();
   }
 }
 
 const unknownLabel = 'None';
+
+const palette = {
+  'Gameplay': Colors.blue,
+  'Visual Style': Colors.redAccent,
+  'Setting': Colors.orange,
+  'Historical Setting': Colors.green,
+  'Maturity': Colors.purple,
+  'Multiplayer': Colors.lime,
+  'Warning': Colors.pink,
+};

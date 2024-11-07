@@ -19,9 +19,9 @@ class LibraryStats extends StatelessWidget {
         children: [
           GenreStats(libraryEntries),
           const SizedBox(width: 64),
-          RatingStats(libraryEntries),
-          const SizedBox(width: 64),
           KeywordCloud(libraryEntries),
+          const SizedBox(width: 64),
+          RatingStats(libraryEntries),
         ],
       ),
     );
