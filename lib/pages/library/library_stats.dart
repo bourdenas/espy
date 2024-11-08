@@ -1,6 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/stats/genre_stats.dart';
-import 'package:espy/widgets/stats/keyword_stats.dart';
+import 'package:espy/widgets/stats/keyword_cloud.dart';
 import 'package:espy/widgets/stats/rating_stats.dart';
 import 'package:flutter/material.dart';
 
@@ -13,20 +13,15 @@ class LibraryStats extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 260,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
         children: [
-          ListView(
-            scrollDirection: Axis.horizontal,
-            shrinkWrap: true,
-            children: [
-              GenreStats(libraryEntries),
-              const SizedBox(width: 64),
-              RatingStats(libraryEntries),
-            ],
-          ),
-          const SizedBox(width: 8),
-          KeywordStats(libraryEntries),
+          GenreStats(libraryEntries),
+          const SizedBox(width: 64),
+          KeywordCloud(libraryEntries),
+          const SizedBox(width: 64),
+          RatingStats(libraryEntries),
         ],
       ),
     );
