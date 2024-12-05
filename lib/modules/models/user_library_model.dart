@@ -78,11 +78,12 @@ class UserLibraryModel extends ChangeNotifier {
 
   Future<bool> matchEntry(StoreEntry storeEntry, int gameId) async {
     final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$userId/match'),
+      Uri.parse('${Urls.espyBackend}/library/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
+        'user_id': userId,
         'store_entry': storeEntry.toJson(),
         'game_id': gameId,
       }),
@@ -101,11 +102,12 @@ class UserLibraryModel extends ChangeNotifier {
     bool delete = false,
   }) async {
     final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$userId/match'),
+      Uri.parse('${Urls.espyBackend}/library/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
+        'user_id': userId,
         'store_entry': storeEntry.toJson(),
         'unmatch_entry': libraryEntry.toJson(),
         'delete_unmatched': delete,
@@ -125,11 +127,12 @@ class UserLibraryModel extends ChangeNotifier {
     int gameId,
   ) async {
     final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$userId/match'),
+      Uri.parse('${Urls.espyBackend}/library/match'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
+        'user_id': userId,
         'store_entry': storeEntry.toJson(),
         'game_id': gameId,
         'unmatch_entry': libraryEntry.toJson(),
@@ -145,11 +148,12 @@ class UserLibraryModel extends ChangeNotifier {
 
   Future<bool> updateEntry(LibraryEntry libraryEntry) async {
     final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$userId/update'),
+      Uri.parse('${Urls.espyBackend}/library/update'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
+        'user_id': userId,
         'game_id': libraryEntry.id,
       }),
     );

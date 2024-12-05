@@ -68,11 +68,11 @@ class UserModel extends ChangeNotifier {
   /// Unlinks a storefront from the account.
   Future<void> unlink(String storefrontId) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/${_userId!}/unlink'),
+      Uri.parse('${Urls.espyBackend}/library/unlink'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode({'storefront_id': storefrontId}),
+      body: jsonEncode({'user_id': _userId, 'storefront_id': storefrontId}),
     );
 
     if (response.statusCode != 200) {
@@ -85,11 +85,11 @@ class UserModel extends ChangeNotifier {
   /// Initiates the library sync process to the espy backend for the user.
   Future<String> syncLibrary(Keys keys) async {
     var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/${_userId!}/sync'),
+      Uri.parse('${Urls.espyBackend}/library/sync'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(keys.toJson()),
+      body: jsonEncode({'user_id': _userId}),
     );
 
     if (response.statusCode == 200) {

@@ -53,11 +53,12 @@ class WishlistModel extends ChangeNotifier {
 
   Future<void> addToWishlist(LibraryEntry libraryEntry) async {
     await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$_userId/wishlist'),
+      Uri.parse('${Urls.espyBackend}/library/wishlist'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
+        'user_id': _userId,
         'add_game': libraryEntry.toJson(),
       }),
     );
@@ -65,11 +66,12 @@ class WishlistModel extends ChangeNotifier {
 
   Future<void> removeFromWishlist(int gameId) async {
     await http.post(
-      Uri.parse('${Urls.espyBackend}/library/$_userId/wishlist'),
+      Uri.parse('${Urls.espyBackend}/library/wishlist'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode({
+        'user_id': _userId,
         'remove_game': gameId,
       }),
     );
