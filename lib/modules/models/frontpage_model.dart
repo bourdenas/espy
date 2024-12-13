@@ -9,30 +9,55 @@ import 'package:go_router/go_router.dart';
 class FrontpageModel extends ChangeNotifier {
   Frontpage _frontpage = const Frontpage();
 
+  Frontpage get frontpage => _frontpage;
   List<ReleaseEvent> get timeline => _frontpage.timeline;
   List<SlateInfo> get slates => [
         SlateInfo(
           'Releasing today',
           _frontpage.todayReleases
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
-          (context) => context.goNamed('today'),
+          (context) => context.pushNamed(
+            'view',
+            pathParameters: {
+              'label': 'today',
+              'year': '2024',
+            },
+          ),
         ),
         SlateInfo(
           'Recent releases',
           _frontpage.recentReleases
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
-          (context) => context.goNamed('recent'),
+          (context) => context.pushNamed(
+            'view',
+            pathParameters: {
+              'label': 'recent',
+              'year': '2024',
+            },
+          ),
         ),
         SlateInfo(
           'Upcoming releases',
           _frontpage.upcomingReleases
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
-          (context) => context.goNamed('upcoming'),
+          (context) => context.pushNamed(
+            'view',
+            pathParameters: {
+              'label': 'upcoming',
+              'year': '2024',
+            },
+          ),
         ),
         SlateInfo(
           'Most anticipated',
           _frontpage.hyped.map((digest) => LibraryEntry.fromGameDigest(digest)),
-          (context) => context.goNamed('hyped'),
+          (context) => context.pushNamed(
+            'view',
+            pathParameters: {
+              'label': 'hyped',
+              'year': '2024',
+            },
+          ),
         ),
       ];
 

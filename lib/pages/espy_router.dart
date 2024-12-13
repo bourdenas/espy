@@ -133,7 +133,28 @@ class EspyRouter extends StatelessWidget {
           name: 'view',
           child: EspyScaffold(
             body: LibraryPage(
-              entries: context
+                entries: switch (state.pathParameters['label']) {
+              'today' => context
+                  .read<FrontpageModel>()
+                  .frontpage
+                  .todayReleases
+                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
+              'recent' => context
+                  .read<FrontpageModel>()
+                  .frontpage
+                  .recentReleases
+                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
+              'upcoming' => context
+                  .read<FrontpageModel>()
+                  .frontpage
+                  .upcomingReleases
+                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
+              'hyped' => context
+                  .read<FrontpageModel>()
+                  .frontpage
+                  .hyped
+                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
+              _ => context
                   .read<TimelineModel>()
                   .releases
                   .firstWhere(
@@ -148,8 +169,8 @@ class EspyRouter extends StatelessWidget {
                             e.year == state.pathParameters['year']),
                   )
                   .games
-                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
-            ),
+                  .map((digest) => LibraryEntry.fromGameDigest(digest))
+            }),
             path: state.path!,
           ),
         ),

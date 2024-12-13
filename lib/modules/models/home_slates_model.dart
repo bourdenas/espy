@@ -24,10 +24,15 @@ class HomeSlatesModel extends ChangeNotifier {
     GameTagsModel tagsModel,
   ) {
     _slates = [
-      SlateInfo('Library', libraryModel.entries.take(16),
-          (context) => setLibraryView(context, LibraryFilter())),
+      SlateInfo(
+          'New in library',
+          libraryModel.entries.take(16).where((e) =>
+              DateTime.now().difference(
+                  (DateTime.fromMillisecondsSinceEpoch(e.addedDate * 1000))) <
+              const Duration(days: 30)),
+          (context) => updateLibraryView(context, LibraryFilter())),
       SlateInfo('Wishlist', wishlistModel.entries.take(16),
-          (context) => context.goNamed('wishlist')),
+          (context) => context.pushNamed('wishlist')),
     ];
 
     _stacks = [

@@ -22,6 +22,11 @@ class UserLibraryModel extends ChangeNotifier {
   Iterable<LibraryEntry> get entries =>
       _library.entries.where((e) => e.isStandaloneGame || e.isExpansion);
 
+  set library(Library lib) {
+    lib.entries.sort((a, b) => -a.addedDate.compareTo(b.addedDate));
+    _library = lib;
+  }
+
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
@@ -44,7 +49,7 @@ class UserLibraryModel extends ChangeNotifier {
     final encodedLibrary = prefs.getString('${userId}_library');
     if (encodedLibrary != null) {
       try {
-        _library = Library.fromJson(
+        library = Library.fromJson(
             jsonDecode(encodedLibrary) as Map<String, dynamic>);
         notifyListeners();
       } catch (_) {}
@@ -70,7 +75,7 @@ class UserLibraryModel extends ChangeNotifier {
         )
         .snapshots()
         .listen((DocumentSnapshot<Library> snapshot) {
-      _library = snapshot.data() ?? const Library();
+      library = snapshot.data() ?? const Library();
       notifyListeners();
       _saveLocally();
     });
