@@ -3,8 +3,6 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
-import 'package:espy/modules/models/user_library_model.dart';
-import 'package:espy/pages/home/empty_library.dart';
 import 'package:espy/pages/home/home_headline.dart';
 import 'package:espy/pages/timeline/timeline_carousel.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
@@ -18,9 +16,7 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return context.watch<UserLibraryModel>().isNotEmpty
-        ? library(context)
-        : const EmptyLibrary();
+    return library(context);
   }
 
   Widget library(BuildContext context) {

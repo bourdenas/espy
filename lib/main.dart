@@ -14,8 +14,6 @@ import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/modules/models/years_model.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,15 +25,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     // NOTE: Bug in the Firebase library. Adding the name attibute fails to connect.
-    // name: 'espy',
+    name: 'espy',
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  FirebaseUIAuth.configureProviders([
-    GoogleProvider(
-        clientId:
-            '478783154654-gq2jbr76gn0eggo0i71ak51bu9l3q7q5.apps.googleusercontent.com'),
-  ]);
 
   runApp(MultiProvider(
     providers: [
