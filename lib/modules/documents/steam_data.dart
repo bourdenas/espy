@@ -12,6 +12,7 @@ class SteamData {
   final List<String> publishers;
 
   final SteamScore? score;
+  final List<NewsItem> news;
   final Metacritic? metacritic;
 
   final List<Genre> genres;
@@ -30,6 +31,7 @@ class SteamData {
     this.developers = const [],
     this.publishers = const [],
     this.score,
+    this.news = const [],
     this.metacritic,
     this.genres = const [],
     this.userTags = const [],
@@ -54,6 +56,9 @@ class SteamData {
           ],
           score:
               json['score'] != null ? SteamScore.fromJson(json['score']) : null,
+          news: [
+            for (final item in json['news'] ?? []) NewsItem.fromJson(item),
+          ],
           metacritic: json['metacritic'] != null
               ? Metacritic.fromJson(json['metacritic'])
               : null,
@@ -148,6 +153,37 @@ class SteamScore {
       'review_score': reviewScore,
       'total_reviews': totalReviews,
       'review_score_desc': reviewScoreDescription,
+    };
+  }
+}
+
+class NewsItem {
+  final int date;
+  final String url;
+  final String title;
+  final String contents;
+
+  const NewsItem({
+    required this.date,
+    required this.url,
+    required this.title,
+    required this.contents,
+  });
+
+  NewsItem.fromJson(Map<String, dynamic> json)
+      : this(
+          date: json['date'] ?? '',
+          url: json['url'] ?? '',
+          title: json['title'] ?? '',
+          contents: json['contents'] ?? '',
+        );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'url': url,
+      'title': title,
+      'contents': contents,
     };
   }
 }
