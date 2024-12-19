@@ -99,7 +99,9 @@ class GamePulse extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(popularity >= 1000
-            ? '${popularity ~/ 1000}K'
+            ? popularity >= 1000000
+                ? '${popularity ~/ 1000000}M'
+                : '${popularity ~/ 1000}K'
             : popularity.toString()),
       ],
     );
