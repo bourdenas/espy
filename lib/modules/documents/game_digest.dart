@@ -22,7 +22,7 @@ class GameDigest {
   final List<String> keywords;
 
   String get releaseDay =>
-      releaseDate > 0 ? DateFormat('yMMMd').format(release) : 'TBD';
+      releaseDate > 0 ? DateFormat('yMMMd').format(release) : 'TBA';
   String get releaseMonth => DateFormat('yMMM').format(release);
   DateTime get release =>
       DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000);

@@ -61,20 +61,6 @@ class TimelinePageState extends State<TimelinePage> {
                         }),
                       ),
               ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: selectedYear == '1970'
-                  ? IconButton.filled(
-                      icon: const Text('1970'),
-                      onPressed: () {},
-                    )
-                  : IconButton.outlined(
-                      icon: const Text('1970'),
-                      onPressed: () => setState(() {
-                        selectedYear = '1970';
-                      }),
-                    ),
-            ),
           ],
         ),
       ),
