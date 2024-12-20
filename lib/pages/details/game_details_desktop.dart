@@ -92,7 +92,8 @@ class _GameDetailsBody extends StatelessWidget {
               RelatedGamesGroup('Remakes', gameEntry.remakes),
             if (gameEntry.contents.isNotEmpty)
               RelatedGamesGroup('Contains', gameEntry.contents),
-            GameUpdates(gameEntry: gameEntry),
+            if (gameEntry.steamData?.news.isNotEmpty != null)
+              GameUpdates(gameEntry: gameEntry),
           ],
         ),
       ),
