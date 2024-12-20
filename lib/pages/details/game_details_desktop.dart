@@ -181,62 +181,31 @@ class GameDescription extends StatelessWidget {
         ? gameEntry.steamData!.aboutTheGame
         : gameEntry.igdbGame.summary;
 
-    return Material(
-      elevation: 10,
-      color: AppConfigModel.gameDetailsBackgroundColor,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // TODO: This can often cause repetition with the begining of the
-              // longer description. Find a better place to show it.
-              if (gameEntry.steamData != null) ...[
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Material(
+        elevation: 10,
+        color: AppConfigModel.gameDetailsBackgroundColor,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // TODO: This can often cause repetition with the begining of the
+                // longer description. Find a better place to show it.
+                if (gameEntry.steamData != null) ...[
+                  Html(
+                    data: gameEntry.steamData!.shortDescription,
+                  ),
+                  const SizedBox(height: 8.0),
+                ],
                 Html(
-                  data: gameEntry.steamData?.shortDescription,
+                  data: description,
                 ),
-                const SizedBox(height: 8.0),
               ],
-              Html(
-                data: description,
-              ),
-              const SizedBox(height: 8.0),
-              if (gameEntry.igdbGenres.isNotEmpty)
-                Text(
-                  'Genres: ${gameEntry.igdbGenres.join(", ")}',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              const SizedBox(height: 4.0),
-              if (gameEntry.keywords.isNotEmpty)
-                Text(
-                  'Keywords: ${gameEntry.keywords.join(", ")}',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              const SizedBox(height: 4.0),
-              if ((gameEntry.steamData?.userTags ?? []).isNotEmpty)
-                Text(
-                  'Steam: ${gameEntry.steamData?.userTags.join(", ")}',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              const SizedBox(height: 16.0),
-            ],
+            ),
           ),
         ),
       ),
