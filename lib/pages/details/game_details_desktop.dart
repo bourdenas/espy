@@ -15,6 +15,7 @@ import 'package:espy/widgets/gametags/espy_chips_details_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class GameDetailsContentDesktop extends StatelessWidget {
@@ -92,7 +93,7 @@ class _GameDetailsBody extends StatelessWidget {
               RelatedGamesGroup('Remakes', gameEntry.remakes),
             if (gameEntry.contents.isNotEmpty)
               RelatedGamesGroup('Contains', gameEntry.contents),
-            if (gameEntry.steamData?.news.isNotEmpty != null)
+            if (gameEntry.steamData?.news.isNotEmpty ?? false)
               GameUpdates(gameEntry: gameEntry),
           ],
         ),
@@ -146,12 +147,19 @@ class GameUpdates extends StatelessWidget {
         borderRadius: BorderRadius.circular(10.0),
       ),
       child: ListTile(
-        title: InkWell(
-          onTap: () async => await launchUrl(Uri.parse(item.url)),
-          child: Text(
-            item.title,
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
-          ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            InkWell(
+              onTap: () async => await launchUrl(Uri.parse(item.url)),
+              child: Text(
+                item.title,
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
+            ),
+            Text(DateFormat('yMMMd')
+                .format(DateTime.fromMillisecondsSinceEpoch(item.date * 1000))),
+          ],
         ),
         subtitle: SelectableText(item.contents),
       ),
