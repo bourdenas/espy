@@ -43,6 +43,7 @@ class LabelManager {
   }
 
   Iterable<String> filterExact(Iterable<String> ngrams) {
+    if (ngrams.isEmpty) return [];
     return all.where((label) => ngrams.every((ngram) =>
         label.toLowerCase().split(' ').any((word) => word == ngram)));
   }

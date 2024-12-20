@@ -33,6 +33,7 @@ class UserTagManager {
   }
 
   Iterable<String> filterExact(Iterable<String> ngrams) {
+    if (ngrams.isEmpty) return [];
     return userTags.where(
       (userTag) => ngrams.every((ngram) =>
           userTag.toLowerCase().split(' ').any((word) => word == ngram)),

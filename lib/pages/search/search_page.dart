@@ -22,7 +22,8 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
-    final ngrams = _text.toLowerCase().split(' ');
+    final ngrams =
+        _text.isNotEmpty ? _text.toLowerCase().split(' ') : <String>[];
     final libraryModel = context.watch<UserLibraryModel>();
     final tagsModel = context.watch<GameTagsModel>();
 
