@@ -6,6 +6,7 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/dialogs/image_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/steam_data.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
@@ -14,6 +15,7 @@ import 'package:espy/widgets/gametags/espy_chips_details_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GameDetailsContentDesktop extends StatelessWidget {
   const GameDetailsContentDesktop(this.libraryEntry, this.gameEntry,
@@ -35,16 +37,13 @@ class GameDetailsContentDesktop extends StatelessWidget {
       },
       child: Focus(
         autofocus: true,
-        child: Container(
-          color: AppConfigModel.gameDetailsBackgroundColor,
-          child: CustomScrollView(
-            primary: true,
-            slivers: [
-              _GameDetailsHeader(libraryEntry, gameEntry),
-              _GameDetailsActionBar(gameEntry, libraryEntry),
-              if (gameEntry != null) _GameDetailsBody(gameEntry!),
-            ],
-          ),
+        child: CustomScrollView(
+          primary: true,
+          slivers: [
+            GameDetailsHeader(libraryEntry, gameEntry),
+            GameDetailsActionBar(gameEntry, libraryEntry),
+            if (gameEntry != null) _GameDetailsBody(gameEntry!),
+          ],
         ),
       ),
     );
@@ -60,37 +59,100 @@ class _GameDetailsBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(width: 64),
           GameDescription(gameEntry: gameEntry),
-          const SizedBox(width: 64),
-          relatedGames(),
+          ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 32, maxWidth: 200)),
+          Flexible(flex: 3, child: sidePane(context)),
         ],
       ),
     );
   }
 
-  Widget relatedGames() {
-    return Expanded(
-      child: CustomScrollView(
-        primary: false,
-        shrinkWrap: true,
-        slivers: [
-          if (gameEntry.parent != null)
-            RelatedGamesGroup('Base Game', [gameEntry.parent!]),
-          if (gameEntry.expansions.isNotEmpty)
-            RelatedGamesGroup('Expansions', gameEntry.expansions),
-          if (gameEntry.dlcs.isNotEmpty)
-            RelatedGamesGroup('DLCs', gameEntry.dlcs),
-          if (gameEntry.remasters.isNotEmpty)
-            RelatedGamesGroup('Remasters', gameEntry.remasters),
-          if (gameEntry.remakes.isNotEmpty)
-            RelatedGamesGroup('Remakes', gameEntry.remakes),
-          if (gameEntry.contents.isNotEmpty)
-            RelatedGamesGroup('Contains', gameEntry.contents),
+  Widget sidePane(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: CustomScrollView(
+          primary: false,
+          shrinkWrap: true,
+          slivers: [
+            if (gameEntry.parent != null)
+              RelatedGamesGroup('Base Game', [gameEntry.parent!]),
+            if (gameEntry.expansions.isNotEmpty)
+              RelatedGamesGroup('Expansions', gameEntry.expansions),
+            if (gameEntry.dlcs.isNotEmpty)
+              RelatedGamesGroup('DLCs', gameEntry.dlcs),
+            if (gameEntry.remasters.isNotEmpty)
+              RelatedGamesGroup('Remasters', gameEntry.remasters),
+            if (gameEntry.remakes.isNotEmpty)
+              RelatedGamesGroup('Remakes', gameEntry.remakes),
+            if (gameEntry.contents.isNotEmpty)
+              RelatedGamesGroup('Contains', gameEntry.contents),
+            GameUpdates(gameEntry: gameEntry),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class GameUpdates extends StatelessWidget {
+  const GameUpdates({
+    super.key,
+    required this.gameEntry,
+  });
+
+  final GameEntry gameEntry;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Column(
+        children: [
+          Material(
+            elevation: 10.0,
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Text(
+                    'Updates',
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+          for (final item in gameEntry.steamData?.news ?? [])
+            newsItem(context, item),
         ],
+      ),
+    );
+  }
+
+  Widget newsItem(BuildContext context, NewsItem item) {
+    return Container(
+      margin: const EdgeInsets.all(4.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      child: ListTile(
+        title: InkWell(
+          onTap: () async => await launchUrl(Uri.parse(item.url)),
+          child: Text(
+            item.title,
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          ),
+        ),
+        subtitle: SelectableText(item.contents),
       ),
     );
   }
@@ -110,64 +172,71 @@ class GameDescription extends StatelessWidget {
         ? gameEntry.steamData!.aboutTheGame
         : gameEntry.igdbGame.summary;
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 600),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // TODO: This can often cause repetition with the begining of the
-          // longer description. Find a better place to show it.
-          if (gameEntry.steamData != null) ...[
-            Html(
-              data: gameEntry.steamData?.shortDescription,
-            ),
-            const SizedBox(height: 8.0),
-          ],
-          Html(
-            data: description,
+    return Material(
+      elevation: 10,
+      color: AppConfigModel.gameDetailsBackgroundColor,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // TODO: This can often cause repetition with the begining of the
+              // longer description. Find a better place to show it.
+              if (gameEntry.steamData != null) ...[
+                Html(
+                  data: gameEntry.steamData?.shortDescription,
+                ),
+                const SizedBox(height: 8.0),
+              ],
+              Html(
+                data: description,
+              ),
+              const SizedBox(height: 8.0),
+              if (gameEntry.igdbGenres.isNotEmpty)
+                Text(
+                  'Genres: ${gameEntry.igdbGenres.join(", ")}',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              const SizedBox(height: 4.0),
+              if (gameEntry.keywords.isNotEmpty)
+                Text(
+                  'Keywords: ${gameEntry.keywords.join(", ")}',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              const SizedBox(height: 4.0),
+              if ((gameEntry.steamData?.userTags ?? []).isNotEmpty)
+                Text(
+                  'Steam: ${gameEntry.steamData?.userTags.join(", ")}',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              const SizedBox(height: 16.0),
+            ],
           ),
-          const SizedBox(height: 8.0),
-          if (gameEntry.igdbGenres.isNotEmpty)
-            Text(
-              'Genres: ${gameEntry.igdbGenres.join(", ")}',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12.0,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 1.2,
-              ),
-            ),
-          const SizedBox(height: 4.0),
-          if (gameEntry.keywords.isNotEmpty)
-            Text(
-              'Keywords: ${gameEntry.keywords.join(", ")}',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12.0,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 1.2,
-              ),
-            ),
-          const SizedBox(height: 4.0),
-          if ((gameEntry.steamData?.userTags ?? []).isNotEmpty)
-            Text(
-              'Steam: ${gameEntry.steamData?.userTags.join(", ")}',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12.0,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 1.2,
-              ),
-            ),
-          const SizedBox(height: 16.0),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _GameDetailsActionBar extends StatelessWidget {
-  const _GameDetailsActionBar(this.gameEntry, this.libraryEntry);
+class GameDetailsActionBar extends StatelessWidget {
+  const GameDetailsActionBar(this.gameEntry, this.libraryEntry, {super.key});
 
   final GameEntry? gameEntry;
   final LibraryEntry libraryEntry;
@@ -191,8 +260,8 @@ class _GameDetailsActionBar extends StatelessWidget {
   }
 }
 
-class _GameDetailsHeader extends StatelessWidget {
-  const _GameDetailsHeader(this.libraryEntry, this.gameEntry);
+class GameDetailsHeader extends StatelessWidget {
+  const GameDetailsHeader(this.libraryEntry, this.gameEntry, {super.key});
 
   final LibraryEntry libraryEntry;
   final GameEntry? gameEntry;
