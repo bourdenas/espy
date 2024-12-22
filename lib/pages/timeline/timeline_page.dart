@@ -46,7 +46,7 @@ class TimelinePageState extends State<TimelinePage> {
         child: ListView(
           shrinkWrap: true,
           children: [
-            for (final year in List.generate(45, (i) => '${2024 - i}'))
+            for (final year in List.generate(47, (i) => '${2025 - i}'))
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: selectedYear == year
