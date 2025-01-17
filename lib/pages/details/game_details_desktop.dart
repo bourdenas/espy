@@ -6,17 +6,15 @@ import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/dialogs/image_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/documents/steam_data.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/pages/details/game_image_gallery.dart';
+import 'package:espy/pages/details/game_updates.dart';
 import 'package:espy/widgets/gametags/espy_chips_details_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class GameDetailsContentDesktop extends StatelessWidget {
   const GameDetailsContentDesktop(this.libraryEntry, this.gameEntry,
@@ -97,71 +95,6 @@ class _GameDetailsBody extends StatelessWidget {
               GameUpdates(gameEntry: gameEntry),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class GameUpdates extends StatelessWidget {
-  const GameUpdates({
-    super.key,
-    required this.gameEntry,
-  });
-
-  final GameEntry gameEntry;
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Column(
-        children: [
-          Material(
-            elevation: 10.0,
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Text(
-                    'Updates',
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-          for (final item in gameEntry.steamData?.news ?? [])
-            newsItem(context, item),
-        ],
-      ),
-    );
-  }
-
-  Widget newsItem(BuildContext context, NewsItem item) {
-    return Container(
-      margin: const EdgeInsets.all(4.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: ListTile(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            InkWell(
-              onTap: () async => await launchUrl(Uri.parse(item.url)),
-              child: Text(
-                item.title,
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
-              ),
-            ),
-            Text(DateFormat('yMMMd')
-                .format(DateTime.fromMillisecondsSinceEpoch(item.date * 1000))),
-          ],
-        ),
-        subtitle: SelectableText(item.contents),
       ),
     );
   }
