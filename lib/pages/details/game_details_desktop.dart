@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:espy/constants/urls.dart';
@@ -79,6 +80,7 @@ class _GameDetailsBody extends StatelessWidget {
           primary: false,
           shrinkWrap: true,
           slivers: [
+            ScreenshotsCarousel(gameEntry),
             if (gameEntry.parent != null)
               RelatedGamesGroup('Base Game', [gameEntry.parent!]),
             if (gameEntry.expansions.isNotEmpty)
@@ -94,6 +96,59 @@ class _GameDetailsBody extends StatelessWidget {
             if (gameEntry.steamData?.news.isNotEmpty ?? false)
               GameUpdates(gameEntry: gameEntry),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class ScreenshotsCarousel extends StatelessWidget {
+  const ScreenshotsCarousel(this.gameEntry, {super.key});
+
+  final GameEntry gameEntry;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 380,
+        child: CarouselView.weighted(
+          itemSnapping: true,
+          enableSplash: false,
+          flexWeights: [1, 7, 1],
+          controller: CarouselController(
+              initialItem: Random().nextInt(gameEntry.screenshotData.length)),
+          onTap: (index) => showDialog(
+            context: context,
+            builder: (context) =>
+                ImageDialog(imageUrl: gameEntry.screenshotData[index].full),
+          ),
+          children: [
+            for (final image in gameEntry.screenshotData)
+              CarouselTile(image.thumbnail),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CarouselTile extends StatelessWidget {
+  const CarouselTile(this.thumbUrl, {super.key});
+
+  final String thumbUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final double width = MediaQuery.sizeOf(context).width;
+
+    return ClipRect(
+      child: OverflowBox(
+        maxWidth: width * 7 / 8,
+        minWidth: width * 7 / 8,
+        child: Image(
+          fit: BoxFit.fitHeight,
+          image: NetworkImage(thumbUrl),
         ),
       ),
     );
