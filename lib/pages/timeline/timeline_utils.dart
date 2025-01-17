@@ -1,6 +1,6 @@
 import 'package:espy/modules/documents/timeline.dart';
 import 'package:flutter/material.dart';
-import 'package:timelines/timelines.dart';
+import 'package:timelines_plus/timelines_plus.dart';
 
 Widget connectorBuilder(
     BuildContext context, List<ReleaseEvent> releases, int index) {
