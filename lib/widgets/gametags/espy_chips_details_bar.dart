@@ -73,42 +73,6 @@ class EspyChipsDetailsBar extends StatelessWidget {
                 ),
           ],
         ),
-        const Padding(padding: EdgeInsets.all(8)),
-        GameKeywords(libraryEntry),
-      ],
-    );
-  }
-}
-
-class GameKeywords extends StatelessWidget {
-  const GameKeywords(this.libraryEntry, {super.key});
-
-  final LibraryEntry libraryEntry;
-
-  @override
-  Widget build(BuildContext context) {
-    void onChipPressed(LibraryFilter filter) {
-      if (context.canPop()) {
-        context.pop();
-      }
-      final updatedFilter =
-          context.read<LibraryFilterModel>().filter.add(filter);
-      updateLibraryView(context, updatedFilter);
-    }
-
-    return Column(
-      children: [
-        Wrap(
-          spacing: 8.0,
-          runSpacing: 4.0,
-          children: [
-            for (final keyword in libraryEntry.digest.keywords)
-              KeywordChip(
-                keyword,
-                onPressed: () => onChipPressed(LibraryFilter(keyword: keyword)),
-              ),
-          ],
-        ),
       ],
     );
   }

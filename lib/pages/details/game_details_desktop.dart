@@ -9,7 +9,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
-import 'package:espy/pages/details/game_image_gallery.dart';
+import 'package:espy/pages/details/game_keywords.dart';
 import 'package:espy/pages/details/game_updates.dart';
 import 'package:espy/pages/details/screenshots_carousel.dart';
 import 'package:espy/widgets/gametags/espy_chips_details_bar.dart';
@@ -62,16 +62,19 @@ class _GameDetailsBody extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Flexible(flex: 3, child: leftPane(context)),
+          ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 32, maxWidth: 320)),
           GameDescription(gameEntry: gameEntry),
           ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 32, maxWidth: 200)),
-          Flexible(flex: 3, child: sidePane(context)),
+              constraints: const BoxConstraints(minWidth: 32, maxWidth: 320)),
+          Flexible(flex: 2, child: rightPane(context)),
         ],
       ),
     );
   }
 
-  Widget sidePane(BuildContext context) {
+  Widget leftPane(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ConstrainedBox(
@@ -81,6 +84,23 @@ class _GameDetailsBody extends StatelessWidget {
           shrinkWrap: true,
           slivers: [
             ScreenshotsCarousel(gameEntry),
+            if (gameEntry.steamData?.news.isNotEmpty ?? false)
+              GameUpdates(gameEntry: gameEntry),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget rightPane(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: CustomScrollView(
+          primary: false,
+          shrinkWrap: true,
+          slivers: [
             if (gameEntry.parent != null)
               RelatedGamesGroup('Base Game', [gameEntry.parent!]),
             if (gameEntry.expansions.isNotEmpty)
@@ -93,8 +113,7 @@ class _GameDetailsBody extends StatelessWidget {
               RelatedGamesGroup('Remakes', gameEntry.remakes),
             if (gameEntry.contents.isNotEmpty)
               RelatedGamesGroup('Contains', gameEntry.contents),
-            if (gameEntry.steamData?.news.isNotEmpty ?? false)
-              GameUpdates(gameEntry: gameEntry),
+            GameKeywords(gameEntry),
           ],
         ),
       ),
@@ -164,8 +183,8 @@ class GameDetailsActionBar extends StatelessWidget {
           children: [
             GameEntryActionBar(libraryEntry, gameEntry),
             const SizedBox(height: 16.0),
-            if (gameEntry != null) GameImageGallery(gameEntry!),
-            const SizedBox(height: 16.0),
+            // if (gameEntry != null) GameImageGallery(gameEntry!),
+            // const SizedBox(height: 16.0),
           ],
         ),
       ),
