@@ -28,6 +28,8 @@ class _KeywordCloudState extends State<KeywordCloud> {
         in widget.libraryEntries.where((e) => refinement.pass(e))) {
       final groups = <String>{};
       for (final kw in entry.digest.keywords) {
+        if (kw == 'co-op' || kw == 'PvP') continue;
+
         groups.add(Keywords.groupOfKeyword(kw) ?? unknownLabel);
         kwPops[kw] = (kwPops[kw] ?? 0) + 1;
       }
@@ -44,7 +46,7 @@ class _KeywordCloudState extends State<KeywordCloud> {
                       entry.value.toDouble(),
                       color: selectedKeyword == entry.key
                           ? Colors.white
-                          : palette[Keywords.groupOfKeyword(entry.key)],
+                          : keywordsPalette[Keywords.groupOfKeyword(entry.key)],
                     ))
                 .toList(),
             config: WordCloudConfig(
@@ -68,13 +70,3 @@ class _KeywordCloudState extends State<KeywordCloud> {
 }
 
 const unknownLabel = 'None';
-
-const palette = {
-  'Gameplay': Colors.blue,
-  'Visual Style': Colors.redAccent,
-  'Setting': Colors.orange,
-  'Historical Setting': Colors.green,
-  'Maturity': Colors.purple,
-  'Multiplayer': Colors.lime,
-  'Warning': Colors.pink,
-};

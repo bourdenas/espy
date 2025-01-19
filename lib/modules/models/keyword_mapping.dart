@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Keywords {
   static Iterable<String> get groups => _kwGroups;
 
@@ -97,4 +99,14 @@ const Map<String, List<String>> _kwsInGroup = {
     'pay-to-play',
     'microtransaction',
   ],
+};
+
+const keywordsPalette = {
+  'Gameplay': Colors.blue,
+  'Visual Style': Colors.redAccent,
+  'Setting': Colors.orange,
+  'Historical Setting': Colors.green,
+  'Maturity': Colors.purple,
+  'Multiplayer': Colors.lime,
+  'Warning': Colors.pink,
 };

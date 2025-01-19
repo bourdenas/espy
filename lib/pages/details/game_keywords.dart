@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/game_entry.dart';
+import 'package:espy/modules/models/keyword_mapping.dart';
 import 'package:flutter/material.dart';
 
 class GameKeywords extends StatelessWidget {
@@ -9,20 +10,51 @@ class GameKeywords extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          header(context),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 4.0,
+              children: [
+                for (final keyword in gameEntry.keywords)
+                  InkWell(
+                    onTap: () {},
+                    child: Text(
+                      '#$keyword',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: keywordsPalette[
+                              Keywords.groupOfKeyword(keyword)]),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget header(BuildContext context) {
+    return Material(
+      elevation: 10.0,
+      color: Theme.of(context).colorScheme.surfaceContainer,
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Wrap(
-          spacing: 8.0,
-          runSpacing: 4.0,
+        padding: EdgeInsets.all(8.0),
+        child: Row(
           children: [
-            for (final keyword in gameEntry.keywords)
-              Text(
-                '#$keyword',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.copyWith(color: Colors.blueGrey),
+            InkWell(
+              onTap: () {},
+              child: Text(
+                'Keywords',
+                style: TextStyle(
+                  fontSize: 18,
+                ),
               ),
+            )
           ],
         ),
       ),
