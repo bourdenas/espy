@@ -61,7 +61,6 @@ const Map<String, List<String>> _genresInGroup = {
     'DatingSim',
     'Puzzle',
     'VisualNovel',
-    'Exploration',
     'Rhythm',
     'PartyGame',
   ],
@@ -143,7 +142,6 @@ const Map<String, String> _genreToLabel = {
   'Rhythm': 'Rhythm',
   'PartyGame': 'Party Game',
   'VisualNovel': 'Visual Novel',
-  'Exploration': 'Exploration',
 
   // Platformer
   'SideScroller': 'Side Scroller',
@@ -224,7 +222,6 @@ const Map<String, String> _labelToGenre = {
   'Rhythm': 'Rhythm',
   'Party Game': 'PartyGame',
   'Visual Novel': 'VisualNovel',
-  'Exploration': 'Exploration',
 
   // Platformer
   'Side Scroller': 'SideScroller',
