@@ -48,11 +48,18 @@ class _CalendarViewState extends State<CalendarView> {
     final refinement = context.watch<RefinementModel>().refinement;
     final refinedEntries = entries.where((e) => refinement.pass(e));
 
-    final entryMap = HashMap<String, LibraryEntry>.fromEntries(
-        refinedEntries.map((entry) => MapEntry(
-            DateFormat('yMMMd').format(
-                DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000)),
-            entry)));
+    final entryMap = HashMap<String, List<LibraryEntry>>();
+    for (final entry in refinedEntries) {
+      final key = DateFormat('yMMMd').format(
+          DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000));
+      entryMap.putIfAbsent(key, () => []).add(entry);
+    }
+    for (final entries in entryMap.values) {
+      entries.sort((a, b) =>
+          b.scores.popularity?.compareTo(a.scores.popularity ?? 0) ??
+          b.scores.hype?.compareTo(a.scores.hype ?? 0) ??
+          0);
+    }
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -100,15 +107,15 @@ class _CalendarViewState extends State<CalendarView> {
               (BuildContext context, int index) {
                 final date = fromDate.add(Duration(days: index + 1));
                 final dateLabel = DateFormat('yMMMd').format(date);
-                final libraryEntry = entryMap[dateLabel];
+                final entries = entryMap[dateLabel];
                 return Container(
                   alignment: Alignment.topLeft,
                   color: dateLabel == todayLabel
                       ? Theme.of(context).colorScheme.primaryContainer
                       : null,
-                  child: libraryEntry != null
+                  child: entries != null
                       ? LibraryGridCard(
-                          libraryEntry,
+                          entries.first,
                           overlays: [
                             Positioned(
                               top: -1,
