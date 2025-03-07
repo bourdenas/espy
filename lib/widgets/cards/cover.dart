@@ -17,7 +17,7 @@ class CardCover extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       elevation: 10,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         clipBehavior: Clip.none,

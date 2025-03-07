@@ -86,11 +86,32 @@ class _CalendarViewState extends State<CalendarView> {
                 final libraryEntry = entryMap[dateLabel];
                 return Container(
                   alignment: Alignment.topLeft,
-                  color: dateLabel == todayLabel ? Colors.teal : null,
-                  // child: Text(DateFormat('MMM').format(date)),
+                  color: dateLabel == todayLabel
+                      ? Theme.of(context).colorScheme.primaryContainer
+                      : null,
                   child: libraryEntry != null
-                      ? LibraryGridCard(libraryEntry)
-                      : Text(DateFormat('MMMd').format(date)),
+                      ? LibraryGridCard(
+                          libraryEntry,
+                          overlays: [
+                            Positioned(
+                              top: -1,
+                              left: -1,
+                              child: Container(
+                                color: Color.fromRGBO(0, 0, 0, .7),
+                                padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+                                child: Text(DateFormat('MMMd').format(date)),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.all(7),
+                          child: Container(
+                            color: Color.fromRGBO(0, 0, 0, .7),
+                            padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+                            child: Text(DateFormat('MMMd').format(date)),
+                          ),
+                        ),
                 );
               },
               childCount: (pastWeeks + 16) * 7,

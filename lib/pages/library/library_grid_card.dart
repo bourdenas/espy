@@ -19,10 +19,12 @@ class LibraryGridCard extends StatefulWidget {
     this.libraryEntry, {
     super.key,
     this.grayOutMissing = false,
+    this.overlays = const [],
   });
 
   final LibraryEntry libraryEntry;
   final bool grayOutMissing;
+  final List<Widget> overlays;
 
   @override
   State<LibraryGridCard> createState() => _LibraryGridCardState();
@@ -141,10 +143,11 @@ class _LibraryGridCardState extends State<LibraryGridCard>
         ),
       );
     }
+
     return CardCover(
       cover: widget.libraryEntry.cover,
       grayedOut: grayedOut,
-      overlays: storeFAB != null ? [storeFAB] : [],
+      overlays: [if (storeFAB != null) storeFAB, ...widget.overlays],
     );
   }
 
@@ -175,7 +178,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
     return Material(
       color: Colors.transparent,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(8)),
       ),
       clipBehavior: Clip.antiAlias,
       child: switch (appConfig.cardDecoration.value) {
