@@ -52,13 +52,13 @@ List<MenuItem> espyMenuItems = [
   ),
   MenuItem(
     requiresSignIn: false,
-    label: 'Years',
+    label: 'Calendar',
     icon: Icons.calendar_month_outlined,
     selectedIcon: Icons.calendar_month,
     onTap: (context) {
       context.read<LibraryFilterModel>().clear();
       context.read<RefinementModel>().clear();
-      context.goNamed('years');
+      context.goNamed('calendar');
     },
   ),
   MenuItem(
@@ -76,6 +76,17 @@ List<MenuItem> espyMenuItems = [
         'label': formatter.format(now),
         'year': '${now.year}',
       });
+    },
+  ),
+  MenuItem(
+    requiresSignIn: false,
+    label: 'Years',
+    icon: Icons.history_outlined,
+    selectedIcon: Icons.history,
+    onTap: (context) {
+      context.read<LibraryFilterModel>().clear();
+      context.read<RefinementModel>().clear();
+      context.goNamed('years');
     },
   ),
   MenuItem(

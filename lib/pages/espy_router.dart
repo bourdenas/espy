@@ -10,6 +10,7 @@ import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
+import 'package:espy/pages/calendar/calendar_page.dart';
 import 'package:espy/pages/company/company_page.dart';
 import 'package:espy/pages/explore/explore_page.dart';
 import 'package:espy/pages/details/game_details_page.dart';
@@ -104,6 +105,19 @@ class EspyRouter extends StatelessWidget {
             body: LibraryPage(
               entries: context.watch<WishlistModel>().entries,
             ),
+            path: state.path!,
+          ),
+        ),
+      ),
+      GoRoute(
+        // Vertical timeline view that shows releases by month.
+        name: 'calendar',
+        path: '/calendar',
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          name: 'calendar',
+          child: EspyScaffold(
+            body: CalendarPage(),
             path: state.path!,
           ),
         ),

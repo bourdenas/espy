@@ -13,7 +13,6 @@ class TileShelve extends StatefulWidget {
     this.color,
     this.filter,
     this.expanded = true,
-    this.pushNavigation = true,
     this.grayOutMissing = false,
   });
 
@@ -23,7 +22,6 @@ class TileShelve extends StatefulWidget {
   final LibraryFilter? filter;
 
   final bool expanded;
-  final bool pushNavigation;
   final bool grayOutMissing;
 
   @override
@@ -45,7 +43,6 @@ class _TileShelveState extends State<TileShelve> {
       title: widget.title,
       expansion: LibraryEntriesView(
         entries: widget.entries,
-        pushNavigation: widget.pushNavigation,
         grayOutMissing: widget.grayOutMissing,
       ),
       color: widget.color,

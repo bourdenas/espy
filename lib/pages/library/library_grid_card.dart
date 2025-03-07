@@ -18,12 +18,10 @@ class LibraryGridCard extends StatefulWidget {
   const LibraryGridCard(
     this.libraryEntry, {
     super.key,
-    required this.pushNavigation,
     this.grayOutMissing = false,
   });
 
   final LibraryEntry libraryEntry;
-  final bool pushNavigation;
   final bool grayOutMissing;
 
   @override
@@ -70,11 +68,8 @@ class _LibraryGridCardState extends State<LibraryGridCard>
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: InkWell(
-        onTap: () => widget.pushNavigation
-            ? context.pushNamed('details',
-                pathParameters: {'gid': '${widget.libraryEntry.id}'})
-            : context.replaceNamed('details',
-                pathParameters: {'gid': '${widget.libraryEntry.id}'}),
+        onTap: () => context.pushNamed('details',
+            pathParameters: {'gid': '${widget.libraryEntry.id}'}),
         onSecondaryTap: () => userModel.isSignedIn
             ? EditEntryDialog.show(
                 context,

@@ -40,11 +40,8 @@ class LibraryEntriesView extends StatelessWidget {
       maxCrossAxisExtent: AppConfigModel.gridCardContraints.maxCardWidth,
       childAspectRatio: AppConfigModel.gridCardContraints.cardAspectRatio,
       children: matchedEntries
-          .map((libraryEntry) => LibraryGridCard(
-                libraryEntry,
-                pushNavigation: pushNavigation,
-                grayOutMissing: grayOutMissing,
-              ))
+          .map((libraryEntry) =>
+              LibraryGridCard(libraryEntry, grayOutMissing: grayOutMissing))
           .toList(),
     );
   }
