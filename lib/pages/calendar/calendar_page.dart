@@ -1,6 +1,5 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
@@ -29,7 +28,7 @@ class CalendarPage extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: calendarAppBar(context, appConfig, libraryView.length, filter),
+      appBar: calendarAppBar(context, appConfig, libraryView.length),
       body: CalendarView(libraryView.entries),
     );
   }
@@ -38,7 +37,6 @@ class CalendarPage extends StatelessWidget {
     BuildContext context,
     AppConfigModel appConfig,
     int libraryViewLength,
-    LibraryFilter filter,
   ) {
     return AppBar(
       leading: badges.Badge(

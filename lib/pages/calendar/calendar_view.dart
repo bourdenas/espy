@@ -2,19 +2,23 @@ import 'dart:collection';
 
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/library/library_grid_card.dart';
 import 'package:espy/pages/library/library_stats.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class CalendarView extends StatefulWidget {
   const CalendarView(
     this.entries, {
     super.key,
+    this.startDate,
   });
 
   final Iterable<LibraryEntry> entries;
+  final DateTime? startDate;
 
   @override
   State<CalendarView> createState() => _CalendarViewState();
@@ -25,14 +29,27 @@ class _CalendarViewState extends State<CalendarView> {
 
   @override
   Widget build(BuildContext context) {
-    final today = DateTime.now().toUtc(); // see note below
+    final today = widget.startDate ?? DateTime.now().toUtc();
     final todayLabel = DateFormat('yMMMd').format(today);
-    // Get to the Monday of this week.
-    var fromDate = today.subtract(Duration(days: today.weekday - 1));
-    fromDate = fromDate.subtract(Duration(days: pastWeeks * 7));
 
-    final entryMap = HashMap<String, LibraryEntry>.fromEntries(widget.entries
-        .map((entry) => MapEntry(
+    final fromDate = today
+        .subtract(Duration(
+            days: today.weekday - 1)) // Get to the Monday of this week.
+        .subtract(Duration(days: pastWeeks * 7 + 1));
+    final toDate = today
+        .subtract(Duration(days: today.weekday - 1))
+        .add(Duration(days: 16 * 7 + 1));
+
+    final entries = widget.entries.where((entry) {
+      final releaseDate = entry.digest.release;
+      return releaseDate.isAfter(fromDate) && releaseDate.isBefore(toDate);
+    });
+
+    final refinement = context.watch<RefinementModel>().refinement;
+    final refinedEntries = entries.where((e) => refinement.pass(e));
+
+    final entryMap = HashMap<String, LibraryEntry>.fromEntries(
+        refinedEntries.map((entry) => MapEntry(
             DateFormat('yMMMd').format(
                 DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000)),
             entry)));
@@ -49,7 +66,7 @@ class _CalendarViewState extends State<CalendarView> {
         slivers: [
           Shelve(
             title: 'Drill-down',
-            expansion: LibraryStats(widget.entries),
+            expansion: LibraryStats(entries),
             color: Colors.amber,
             expanded: true,
           ),
@@ -81,7 +98,7 @@ class _CalendarViewState extends State<CalendarView> {
             ),
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                final date = fromDate.add(Duration(days: index));
+                final date = fromDate.add(Duration(days: index + 1));
                 final dateLabel = DateFormat('yMMMd').format(date);
                 final libraryEntry = entryMap[dateLabel];
                 return Container(
