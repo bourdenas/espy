@@ -77,72 +77,105 @@ class _CalendarViewState extends State<CalendarView> {
             color: Colors.amber,
             expanded: true,
           ),
-          SliverAppBar(
-            pinned: true,
-            title: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 32, 0, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  'Monday',
-                  'Tuesday',
-                  'Wednesday',
-                  'Thursday',
-                  'Friday',
-                  'Saturday',
-                  'Sunday',
-                ].map((label) => Text(label)).toList(),
+          SliverCrossAxisGroup(
+            slivers: [
+              if (MediaQuery.of(context).size.width > kPaddingWidthLimit)
+                SliverToBoxAdapter(child: Container()),
+              SliverCrossAxisExpanded(
+                flex: 8,
+                sliver: SliverConstrainedCrossAxis(
+                  maxExtent: 2000,
+                  sliver: SliverAppBar(
+                    pinned: true,
+                    title: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 32, 0, 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          'Monday',
+                          'Tuesday',
+                          'Wednesday',
+                          'Thursday',
+                          'Friday',
+                          'Saturday',
+                          'Sunday',
+                        ].map((label) => Text(label)).toList(),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              if (MediaQuery.of(context).size.width > kPaddingWidthLimit)
+                SliverToBoxAdapter(child: Container()),
+            ],
           ),
-          SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              mainAxisSpacing: 10.0,
-              crossAxisSpacing: 10.0,
-              childAspectRatio:
-                  AppConfigModel.gridCardContraints.cardAspectRatio,
-              crossAxisCount: 7,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                final date = fromDate.add(Duration(days: index + 1));
-                final dateLabel = DateFormat('yMMMd').format(date);
-                final entries = entryMap[dateLabel];
-                return Container(
-                  alignment: Alignment.topLeft,
-                  color: dateLabel == todayLabel
-                      ? Theme.of(context).colorScheme.primaryContainer
-                      : null,
-                  child: entries != null
-                      ? LibraryGridCard(
-                          entries.first,
-                          overlays: [
-                            Positioned(
-                              top: -1,
-                              left: -1,
-                              child: Container(
-                                color: Color.fromRGBO(0, 0, 0, .7),
-                                padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-                                child: Text(DateFormat('MMMd').format(date)),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.all(7),
-                          child: Container(
-                            color: Color.fromRGBO(0, 0, 0, .7),
-                            padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
-                            child: Text(DateFormat('MMMd').format(date)),
-                          ),
-                        ),
-                );
-              },
-              childCount: (pastWeeks + 16) * 7,
-            ),
+          SliverCrossAxisGroup(
+            slivers: [
+              if (MediaQuery.of(context).size.width > kPaddingWidthLimit)
+                SliverToBoxAdapter(child: Container()),
+              SliverCrossAxisExpanded(
+                flex: 8,
+                sliver: SliverConstrainedCrossAxis(
+                  maxExtent: 2000,
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      mainAxisSpacing: 10.0,
+                      crossAxisSpacing: 10.0,
+                      childAspectRatio:
+                          AppConfigModel.gridCardContraints.cardAspectRatio,
+                      crossAxisCount: 7,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        final date = fromDate.add(Duration(days: index + 1));
+                        final dateLabel = DateFormat('yMMMd').format(date);
+                        final entries = entryMap[dateLabel];
+                        return Container(
+                          alignment: Alignment.topLeft,
+                          color: dateLabel == todayLabel
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : null,
+                          child: entries != null
+                              ? LibraryGridCard(
+                                  entries.first,
+                                  overlays: [
+                                    Positioned(
+                                      top: -1,
+                                      left: -1,
+                                      child: Container(
+                                        color: Color.fromRGBO(0, 0, 0, .7),
+                                        padding:
+                                            EdgeInsets.fromLTRB(8, 4, 8, 4),
+                                        child: Text(
+                                            DateFormat('MMMd').format(date)),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.all(7),
+                                  child: Container(
+                                    color: Color.fromRGBO(0, 0, 0, .7),
+                                    padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+                                    child:
+                                        Text(DateFormat('MMMd').format(date)),
+                                  ),
+                                ),
+                        );
+                      },
+                      childCount: (pastWeeks + 16) * 7,
+                    ),
+                  ),
+                ),
+              ),
+              if (MediaQuery.of(context).size.width > kPaddingWidthLimit)
+                SliverToBoxAdapter(child: Container()),
+            ],
           ),
         ],
       ),
     );
   }
 }
+
+const kPaddingWidthLimit = 2200;
