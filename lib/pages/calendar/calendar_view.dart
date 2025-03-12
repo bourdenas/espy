@@ -15,17 +15,28 @@ class CalendarView extends StatefulWidget {
     this.entries, {
     super.key,
     this.startDate,
+    this.leadingWeeks = 1,
+    this.trailingWeeks = 16,
   });
 
   final Iterable<LibraryEntry> entries;
   final DateTime? startDate;
+  final int leadingWeeks;
+  final int trailingWeeks;
 
   @override
   State<CalendarView> createState() => _CalendarViewState();
 }
 
 class _CalendarViewState extends State<CalendarView> {
-  int pastWeeks = 1;
+  @override
+  void initState() {
+    super.initState();
+
+    leadingWeeks = widget.leadingWeeks;
+  }
+
+  int leadingWeeks = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +46,10 @@ class _CalendarViewState extends State<CalendarView> {
     final fromDate = today
         .subtract(Duration(
             days: today.weekday - 1)) // Get to the Monday of this week.
-        .subtract(Duration(days: pastWeeks * 7 + 1));
+        .subtract(Duration(days: leadingWeeks * 7 + 1));
     final toDate = today
         .subtract(Duration(days: today.weekday - 1))
-        .add(Duration(days: 16 * 7 + 1));
+        .add(Duration(days: widget.trailingWeeks * 7 + 1));
 
     final entries = widget.entries.where((entry) {
       final releaseDate = entry.digest.release;
@@ -64,7 +75,7 @@ class _CalendarViewState extends State<CalendarView> {
     return RefreshIndicator(
       onRefresh: () async {
         setState(() {
-          pastWeeks += 4;
+          leadingWeeks += 4;
         });
       },
       child: CustomScrollView(
@@ -163,7 +174,7 @@ class _CalendarViewState extends State<CalendarView> {
                                 ),
                         );
                       },
-                      childCount: (pastWeeks + 16) * 7,
+                      childCount: (leadingWeeks + widget.trailingWeeks) * 7,
                     ),
                   ),
                 ),
