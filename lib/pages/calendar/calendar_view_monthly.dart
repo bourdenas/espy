@@ -7,44 +7,40 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class CalendarView extends StatefulWidget {
-  const CalendarView(
+class CalendarViewMonthly extends StatefulWidget {
+  const CalendarViewMonthly(
     this.libraryEntries, {
     super.key,
     this.startDate,
-    this.leadingWeeks = 1,
-    this.trailingWeeks = 15,
+    this.leadingYears = 0,
+    this.trailingYears = 1,
   });
 
   final Iterable<LibraryEntry> libraryEntries;
   final DateTime? startDate;
-  final int leadingWeeks;
-  final int trailingWeeks;
+  final int leadingYears;
+  final int trailingYears;
 
   @override
-  State<CalendarView> createState() => _CalendarViewState();
+  State<CalendarViewMonthly> createState() => _CalendarViewState();
 }
 
-class _CalendarViewState extends State<CalendarView> {
+class _CalendarViewState extends State<CalendarViewMonthly> {
   @override
   void initState() {
     super.initState();
 
-    leadingWeeks = widget.leadingWeeks;
+    leadingYears = widget.leadingYears;
   }
 
-  int leadingWeeks = 0;
+  int leadingYears = 0;
 
   @override
   Widget build(BuildContext context) {
     final today = widget.startDate ?? DateTime.now().toUtc();
-    final fromDate = today
-        .subtract(Duration(
-            days: today.weekday - 1)) // Get to the Monday of this week.
-        .subtract(Duration(days: leadingWeeks * 7 + 1));
-    final toDate = today
-        .subtract(Duration(days: today.weekday - 1))
-        .add(Duration(days: (widget.trailingWeeks + 1) * 7 + 1));
+
+    final fromDate = DateTime(today.year - leadingYears, 1, 1);
+    final toDate = DateTime(today.year + 1, 12, 31, 23, 59, 59);
 
     final libraryEntries = widget.libraryEntries.where((entry) {
       final releaseDate = entry.digest.release;
@@ -56,7 +52,7 @@ class _CalendarViewState extends State<CalendarView> {
 
     final entryMap = HashMap<String, List<LibraryEntry>>();
     for (final entry in refinedEntries) {
-      final key = DateFormat('yMMMd').format(
+      final key = DateFormat('MMM y').format(
           DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000));
       entryMap.putIfAbsent(key, () => []).add(entry);
     }
@@ -68,21 +64,27 @@ class _CalendarViewState extends State<CalendarView> {
     }
 
     final entries = <CalendarGridEntry>[];
-    final gridTiles = (leadingWeeks + 1 + widget.trailingWeeks) * 7;
+    final gridTiles = (leadingYears + 1 + widget.trailingYears) * 14;
     for (int i = 0; i < gridTiles; ++i) {
-      final label =
-          DateFormat('yMMMd').format(fromDate.add(Duration(days: i + 1)));
-      entries.add(CalendarGridEntry(label, entryMap[label]?.first));
+      final month = fromDate.month + i % 14;
+      final year = fromDate.year + i ~/ 14;
+
+      if (month > 12) {
+        entries.add(CalendarGridEntry.empty);
+      } else {
+        final label = DateFormat('MMM y').format(DateTime(year, month));
+        entries.add(CalendarGridEntry(label, entryMap[label]?.first));
+      }
     }
 
     return CalendarGrid(
       entries,
       onPull: () async {
         setState(() {
-          leadingWeeks += 2;
+          leadingYears += 1;
         });
       },
-      selectedLabel: DateFormat('yMMMd').format(today),
+      selectedLabel: DateFormat('MMM y').format(today),
     );
   }
 }
