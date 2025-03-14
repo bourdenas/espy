@@ -3,7 +3,8 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
-import 'package:espy/pages/calendar/calendar_view.dart';
+import 'package:espy/pages/calendar/annual_view.dart';
+import 'package:espy/pages/calendar/calendar_view_daily.dart';
 import 'package:espy/pages/calendar/calendar_view_monthly.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +17,7 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  CalendarViewLevel viewLevel = CalendarViewLevel.dialy;
+  CalendarViewLevel viewLevel = CalendarViewLevel.daily;
 
   @override
   Widget build(BuildContext context) {
@@ -35,32 +36,36 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       appBar: calendarAppBar(context, appConfig, libraryView.length),
       body: switch (viewLevel) {
-        CalendarViewLevel.dialy => CalendarView(libraryView.entries),
+        CalendarViewLevel.daily => CalendarViewDaily(libraryView.entries),
         CalendarViewLevel.monthly => CalendarViewMonthly(libraryView.entries),
-        CalendarViewLevel.annual => throw UnimplementedError(),
+        CalendarViewLevel.annual => AnnualView(),
       },
       floatingActionButton: Row(
         children: [
           SizedBox(width: 16),
           FloatingActionButton(
-            onPressed: viewLevel == CalendarViewLevel.monthly
+            onPressed: viewLevel != CalendarViewLevel.daily
                 ? () => setState(() {
-                      viewLevel = CalendarViewLevel.dialy;
+                      viewLevel = viewLevel == CalendarViewLevel.annual
+                          ? CalendarViewLevel.monthly
+                          : CalendarViewLevel.daily;
                     })
                 : null,
             backgroundColor:
-                viewLevel == CalendarViewLevel.dialy ? Colors.black : null,
+                viewLevel == CalendarViewLevel.daily ? Colors.black : null,
             child: Icon(Icons.zoom_in),
           ),
           SizedBox(width: 16),
           FloatingActionButton(
-            onPressed: viewLevel == CalendarViewLevel.dialy
+            onPressed: viewLevel != CalendarViewLevel.annual
                 ? () => setState(() {
-                      viewLevel = CalendarViewLevel.monthly;
+                      viewLevel = viewLevel == CalendarViewLevel.daily
+                          ? CalendarViewLevel.monthly
+                          : CalendarViewLevel.annual;
                     })
                 : null,
             backgroundColor:
-                viewLevel == CalendarViewLevel.monthly ? Colors.black : null,
+                viewLevel == CalendarViewLevel.annual ? Colors.black : null,
             child: Icon(Icons.zoom_out),
           ),
         ],
@@ -83,7 +88,7 @@ class _CalendarPageState extends State<CalendarPage> {
 }
 
 enum CalendarViewLevel {
-  dialy,
+  daily,
   monthly,
   annual,
 }

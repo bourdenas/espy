@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class CalendarView extends StatefulWidget {
-  const CalendarView(
+class CalendarViewDaily extends StatefulWidget {
+  const CalendarViewDaily(
     this.libraryEntries, {
     super.key,
     this.startDate,
@@ -22,10 +22,10 @@ class CalendarView extends StatefulWidget {
   final int trailingWeeks;
 
   @override
-  State<CalendarView> createState() => _CalendarViewState();
+  State<CalendarViewDaily> createState() => _CalendarViewDailyState();
 }
 
-class _CalendarViewState extends State<CalendarView> {
+class _CalendarViewDailyState extends State<CalendarViewDaily> {
   @override
   void initState() {
     super.initState();

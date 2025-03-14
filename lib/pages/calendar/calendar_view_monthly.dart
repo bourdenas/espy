@@ -12,7 +12,7 @@ class CalendarViewMonthly extends StatefulWidget {
     this.libraryEntries, {
     super.key,
     this.startDate,
-    this.leadingYears = 0,
+    this.leadingYears = 1,
     this.trailingYears = 1,
   });
 
