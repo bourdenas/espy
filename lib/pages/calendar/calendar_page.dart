@@ -3,7 +3,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/timeline_model.dart';
-import 'package:espy/pages/calendar/annual_view.dart';
+import 'package:espy/pages/calendar/calendar_view_annually.dart';
 import 'package:espy/pages/calendar/calendar_view_daily.dart';
 import 'package:espy/pages/calendar/calendar_view_monthly.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +38,7 @@ class _CalendarPageState extends State<CalendarPage> {
       body: switch (viewLevel) {
         CalendarViewLevel.daily => CalendarViewDaily(libraryView.entries),
         CalendarViewLevel.monthly => CalendarViewMonthly(libraryView.entries),
-        CalendarViewLevel.annual => AnnualView(),
+        CalendarViewLevel.annual => CalendarViewAnnually(),
       },
       floatingActionButton: Row(
         children: [

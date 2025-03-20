@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 
+// Unused timeline view for years. Consider repurposing.
 class AnnualView extends StatelessWidget {
   const AnnualView({super.key});
 

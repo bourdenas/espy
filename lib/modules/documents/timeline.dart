@@ -18,6 +18,23 @@ class Timeline {
   }
 }
 
+class Calendar {
+  final List<ReleaseEvent> years;
+
+  const Calendar({
+    this.years = const [],
+  });
+
+  Calendar.fromJson(Map<String, dynamic> json)
+      : this(years: [
+          for (final event in json['years'] ?? []) ReleaseEvent.fromJson(event),
+        ]);
+
+  Map<String, dynamic> toJson() {
+    return {};
+  }
+}
+
 class ReleaseEvent {
   final String label;
   final String year;

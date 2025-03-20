@@ -1,5 +1,6 @@
 import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/calendar_model.dart';
 import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
@@ -42,6 +43,7 @@ Future<void> main() async {
       appConfigProvider(),
       frontpageProvider(),
       timelineProvider(),
+      calendarProvider(),
       userProvider(),
       userLibraryProvider(),
       libraryIndexProvider(),
@@ -67,6 +69,9 @@ ChangeNotifierProvider<FrontpageModel> frontpageProvider() =>
 
 ChangeNotifierProvider<TimelineModel> timelineProvider() =>
     ChangeNotifierProvider(create: (_) => TimelineModel()..load());
+
+ChangeNotifierProvider<CalendarModel> calendarProvider() =>
+    ChangeNotifierProvider(create: (_) => CalendarModel());
 
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
