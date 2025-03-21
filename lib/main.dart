@@ -9,7 +9,6 @@ import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/remote_library_model.dart';
-import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/user_model.dart';
@@ -42,7 +41,6 @@ Future<void> main() async {
     providers: [
       appConfigProvider(),
       frontpageProvider(),
-      timelineProvider(),
       calendarProvider(),
       userProvider(),
       userLibraryProvider(),
@@ -66,9 +64,6 @@ ChangeNotifierProvider<AppConfigModel> appConfigProvider() =>
 
 ChangeNotifierProvider<FrontpageModel> frontpageProvider() =>
     ChangeNotifierProvider(create: (_) => FrontpageModel()..load());
-
-ChangeNotifierProvider<TimelineModel> timelineProvider() =>
-    ChangeNotifierProvider(create: (_) => TimelineModel()..load());
 
 ChangeNotifierProvider<CalendarModel> calendarProvider() =>
     ChangeNotifierProvider(create: (_) => CalendarModel());
@@ -218,15 +213,14 @@ ChangeNotifierProxyProvider5<
   );
 }
 
-ChangeNotifierProxyProvider5<AppConfigModel, TimelineModel, UserLibraryModel,
-    WishlistModel, GameTagsModel, HomeSlatesModel> homeSlatesProvider() {
-  return ChangeNotifierProxyProvider5<AppConfigModel, TimelineModel,
-      UserLibraryModel, WishlistModel, GameTagsModel, HomeSlatesModel>(
+ChangeNotifierProxyProvider4<AppConfigModel, UserLibraryModel, WishlistModel,
+    GameTagsModel, HomeSlatesModel> homeSlatesProvider() {
+  return ChangeNotifierProxyProvider4<AppConfigModel, UserLibraryModel,
+      WishlistModel, GameTagsModel, HomeSlatesModel>(
     create: (_) => HomeSlatesModel(),
     update: (
       _,
       appConfigModel,
-      timelineModel,
       libraryModel,
       wishlistModel,
       gameTagsModel,
@@ -235,7 +229,6 @@ ChangeNotifierProxyProvider5<AppConfigModel, TimelineModel, UserLibraryModel,
       return homeSlatesModel!
         ..update(
           appConfigModel,
-          timelineModel,
           libraryModel,
           wishlistModel,
           gameTagsModel,

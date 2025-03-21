@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/timeline_model.dart';
+import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -17,7 +17,7 @@ class AnnualView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
-    final releases = context.watch<TimelineModel>().releases;
+    final releases = context.watch<FrontpageModel>().timeline;
 
     final digests = releases.map((event) => event.games).expand((e) => e);
     final gamesByYear = HashMap<int, List<GameDigest>>();

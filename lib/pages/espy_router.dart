@@ -7,7 +7,6 @@ import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
-import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/calendar/calendar_page.dart';
@@ -169,8 +168,8 @@ class EspyRouter extends StatelessWidget {
                   .hyped
                   .map((digest) => LibraryEntry.fromGameDigest(digest)),
               _ => context
-                  .read<TimelineModel>()
-                  .releases
+                  .read<FrontpageModel>()
+                  .timeline
                   .firstWhere(
                     (e) =>
                         e.label == state.pathParameters['label'] &&

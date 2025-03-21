@@ -1,8 +1,8 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
-import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/pages/calendar/calendar_view_annually.dart';
 import 'package:espy/pages/calendar/calendar_view_daily.dart';
 import 'package:espy/pages/calendar/calendar_view_monthly.dart';
@@ -23,12 +23,13 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     final appConfig = context.watch<AppConfigModel>();
     final filter = context.watch<LibraryFilterModel>().filter;
-    final releases = context.watch<TimelineModel>().releases;
+
     final libraryView = LibraryViewModel.custom(
       appConfig,
-      releases
-          .map((event) => event.games)
-          .expand((e) => e)
+      context
+          .watch<FrontpageModel>()
+          .frontpage
+          .digests
           .map((digest) => LibraryEntry.fromGameDigest(digest)),
       filter: filter,
     );

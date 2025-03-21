@@ -1,7 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
@@ -18,7 +17,6 @@ class HomeSlatesModel extends ChangeNotifier {
 
   void update(
     AppConfigModel appConfigModel,
-    TimelineModel timeline,
     UserLibraryModel libraryModel,
     WishlistModel wishlistModel,
     GameTagsModel tagsModel,

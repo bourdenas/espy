@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/game_digest.dart';
-import 'package:espy/modules/documents/timeline.dart';
+import 'package:espy/modules/documents/calendar.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class CalendarModel extends ChangeNotifier {
