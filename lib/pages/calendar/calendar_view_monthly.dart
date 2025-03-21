@@ -1,7 +1,9 @@
 import 'dart:collection';
 
+import 'package:espy/modules/documents/calendar.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/years_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -50,8 +52,56 @@ class _CalendarViewState extends State<CalendarViewMonthly> {
     final refinement = context.watch<RefinementModel>().refinement;
     final refinedEntries = libraryEntries.where((e) => refinement.pass(e));
 
+    final gridTiles = (leadingYears + 1 + widget.trailingYears) * 14;
+
+    return FutureBuilder(
+      future: context.read<YearsModel>().getYears(
+          List.generate(leadingYears + 1, (i) => '${today.year - i}')),
+      builder: (BuildContext context,
+          AsyncSnapshot<List<AnnualReviewDoc>> snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Container();
+        }
+
+        final monthlyReleases = chunkByMonth(refinedEntries);
+        if (snapshot.hasData) {
+          for (final year in snapshot.data!) {
+            monthlyReleases.addAll(chunkByMonth(year.releases
+                .map((digest) => LibraryEntry.fromGameDigest(digest))));
+          }
+        }
+
+        final entries = <CalendarGridEntry>[];
+        for (int i = 0; i < gridTiles; ++i) {
+          final month = fromDate.month + i % 14;
+          final year = fromDate.year + i ~/ 14;
+
+          if (month > 12) {
+            entries.add(CalendarGridEntry.empty);
+          } else {
+            final label = DateFormat('MMM y').format(DateTime(year, month));
+            entries
+                .add(CalendarGridEntry(label, monthlyReleases[label]?.first));
+          }
+        }
+
+        return CalendarGrid(
+          entries,
+          onPull: () async {
+            setState(() {
+              leadingYears += 1;
+            });
+          },
+          selectedLabel: DateFormat('MMM y').format(today),
+        );
+      },
+    );
+  }
+
+  HashMap<String, List<LibraryEntry>> chunkByMonth(
+      Iterable<LibraryEntry> libraryEntries) {
     final entryMap = HashMap<String, List<LibraryEntry>>();
-    for (final entry in refinedEntries) {
+    for (final entry in libraryEntries) {
       final key = DateFormat('MMM y').format(
           DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000));
       entryMap.putIfAbsent(key, () => []).add(entry);
@@ -63,29 +113,7 @@ class _CalendarViewState extends State<CalendarViewMonthly> {
           0);
     }
 
-    final entries = <CalendarGridEntry>[];
-    final gridTiles = (leadingYears + 1 + widget.trailingYears) * 14;
-    for (int i = 0; i < gridTiles; ++i) {
-      final month = fromDate.month + i % 14;
-      final year = fromDate.year + i ~/ 14;
-
-      if (month > 12) {
-        entries.add(CalendarGridEntry.empty);
-      } else {
-        final label = DateFormat('MMM y').format(DateTime(year, month));
-        entries.add(CalendarGridEntry(label, entryMap[label]?.first));
-      }
-    }
-
-    return CalendarGrid(
-      entries,
-      onPull: () async {
-        setState(() {
-          leadingYears += 1;
-        });
-      },
-      selectedLabel: DateFormat('MMM y').format(today),
-    );
+    return entryMap;
   }
 }
 

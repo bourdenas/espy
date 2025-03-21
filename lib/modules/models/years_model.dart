@@ -25,5 +25,13 @@ class YearsModel extends ChangeNotifier {
     return review;
   }
 
+  Future<List<AnnualReviewDoc>> getYears(Iterable<String> years) async {
+    final reviews = <AnnualReviewDoc>[];
+    for (final year in years) {
+      reviews.add(await gamesIn(year));
+    }
+    return reviews;
+  }
+
   final Map<String, AnnualReviewDoc> _annualReviews = {};
 }

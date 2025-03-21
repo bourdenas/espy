@@ -13,6 +13,7 @@ import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
+import 'package:espy/modules/models/years_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
@@ -42,6 +43,7 @@ Future<void> main() async {
       appConfigProvider(),
       frontpageProvider(),
       calendarProvider(),
+      yearsProvider(),
       userProvider(),
       userLibraryProvider(),
       libraryIndexProvider(),
@@ -67,6 +69,9 @@ ChangeNotifierProvider<FrontpageModel> frontpageProvider() =>
 
 ChangeNotifierProvider<CalendarModel> calendarProvider() =>
     ChangeNotifierProvider(create: (_) => CalendarModel());
+
+ChangeNotifierProvider<YearsModel> yearsProvider() =>
+    ChangeNotifierProvider(create: (_) => YearsModel());
 
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
