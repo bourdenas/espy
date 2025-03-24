@@ -80,8 +80,7 @@ class _CalendarViewState extends State<CalendarViewMonthly> {
             entries.add(CalendarGridEntry.empty);
           } else {
             final label = DateFormat('MMM y').format(DateTime(year, month));
-            entries
-                .add(CalendarGridEntry(label, monthlyReleases[label]?.first));
+            entries.add(CalendarGridEntry(label, monthlyReleases[label] ?? []));
           }
         }
 

@@ -50,14 +50,19 @@ class _CalendarViewState extends State<CalendarViewAnnually> {
             ++year) {
           final games = calendar.gamesIn(year);
           entries.add(CalendarGridEntry(
-              '$year',
-              games.isNotEmpty
-                  ? LibraryEntry.fromGameDigest(games.first)
-                  : null));
+            '$year',
+            games
+                .map((digest) => LibraryEntry.fromGameDigest(digest))
+                .take(4)
+                .toList(),
+          ));
         }
         entries.add(CalendarGridEntry(
           'TBD',
-          LibraryEntry.fromGameDigest(calendar.gamesIn(1970).first),
+          calendar
+              .gamesIn(1970)
+              .map((digest) => LibraryEntry.fromGameDigest(digest))
+              .toList(),
         ));
 
         return CalendarGrid(

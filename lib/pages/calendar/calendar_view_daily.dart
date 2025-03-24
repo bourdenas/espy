@@ -54,13 +54,13 @@ class _CalendarViewDailyState extends State<CalendarViewDaily> {
     final refinement = context.watch<RefinementModel>().refinement;
     final refinedEntries = libraryEntries.where((e) => refinement.pass(e));
 
-    final entryMap = HashMap<String, List<LibraryEntry>>();
+    final dailyReleases = HashMap<String, List<LibraryEntry>>();
     for (final entry in refinedEntries) {
       final key = DateFormat('yMMMd').format(
           DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000));
-      entryMap.putIfAbsent(key, () => []).add(entry);
+      dailyReleases.putIfAbsent(key, () => []).add(entry);
     }
-    for (final entries in entryMap.values) {
+    for (final entries in dailyReleases.values) {
       entries.sort((a, b) =>
           b.scores.popularity?.compareTo(a.scores.popularity ?? 0) ??
           b.scores.hype?.compareTo(a.scores.hype ?? 0) ??
@@ -72,7 +72,7 @@ class _CalendarViewDailyState extends State<CalendarViewDaily> {
     for (int i = 0; i < gridTiles; ++i) {
       final label =
           DateFormat('yMMMd').format(fromDate.add(Duration(days: i + 1)));
-      entries.add(CalendarGridEntry(label, entryMap[label]?.first));
+      entries.add(CalendarGridEntry(label, dailyReleases[label] ?? []));
     }
 
     return CalendarGrid(
