@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:espy/modules/documents/calendar.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/years_model.dart';
@@ -97,13 +98,13 @@ class _CalendarViewState extends State<CalendarViewMonthly> {
     );
   }
 
-  HashMap<String, List<LibraryEntry>> chunkByMonth(
+  HashMap<String, List<GameDigest>> chunkByMonth(
       Iterable<LibraryEntry> libraryEntries) {
-    final entryMap = HashMap<String, List<LibraryEntry>>();
+    final entryMap = HashMap<String, List<GameDigest>>();
     for (final entry in libraryEntries) {
       final key = DateFormat('MMM y').format(
           DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000));
-      entryMap.putIfAbsent(key, () => []).add(entry);
+      entryMap.putIfAbsent(key, () => []).add(entry.digest);
     }
     for (final entries in entryMap.values) {
       entries.sort((a, b) =>

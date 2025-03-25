@@ -1,4 +1,3 @@
-import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/calendar_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:flutter/material.dart';
@@ -51,18 +50,12 @@ class _CalendarViewState extends State<CalendarViewAnnually> {
           final games = calendar.gamesIn(year);
           entries.add(CalendarGridEntry(
             '$year',
-            games
-                .map((digest) => LibraryEntry.fromGameDigest(digest))
-                .take(4)
-                .toList(),
+            games.take(4).toList(),
           ));
         }
         entries.add(CalendarGridEntry(
           'TBD',
-          calendar
-              .gamesIn(1970)
-              .map((digest) => LibraryEntry.fromGameDigest(digest))
-              .toList(),
+          calendar.gamesIn(1970).toList(),
         ));
 
         return CalendarGrid(

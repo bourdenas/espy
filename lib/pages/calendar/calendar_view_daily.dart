@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
@@ -12,7 +13,7 @@ class CalendarViewDaily extends StatefulWidget {
     this.libraryEntries, {
     super.key,
     this.startDate,
-    this.leadingWeeks = 1,
+    this.leadingWeeks = 2,
     this.trailingWeeks = 15,
   });
 
@@ -54,11 +55,11 @@ class _CalendarViewDailyState extends State<CalendarViewDaily> {
     final refinement = context.watch<RefinementModel>().refinement;
     final refinedEntries = libraryEntries.where((e) => refinement.pass(e));
 
-    final dailyReleases = HashMap<String, List<LibraryEntry>>();
+    final dailyReleases = HashMap<String, List<GameDigest>>();
     for (final entry in refinedEntries) {
       final key = DateFormat('yMMMd').format(
           DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000));
-      dailyReleases.putIfAbsent(key, () => []).add(entry);
+      dailyReleases.putIfAbsent(key, () => []).add(entry.digest);
     }
     for (final entries in dailyReleases.values) {
       entries.sort((a, b) =>

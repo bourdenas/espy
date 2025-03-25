@@ -1,15 +1,15 @@
-import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/pages/library/library_grid_card.dart';
+import 'package:espy/pages/calendar/calendar_card.dart';
 import 'package:flutter/material.dart';
 
 class CalendarGridEntry {
   static const CalendarGridEntry empty = CalendarGridEntry(null, []);
 
-  const CalendarGridEntry(this.label, this.libraryEntries);
+  const CalendarGridEntry(this.label, this.digests);
 
   final String? label;
-  final List<LibraryEntry> libraryEntries;
+  final List<GameDigest> digests;
 }
 
 class CalendarGrid extends StatelessWidget {
@@ -76,9 +76,9 @@ class CalendarGrid extends StatelessWidget {
   }
 
   Widget calendarTile(CalendarGridEntry entry) {
-    if (entry.libraryEntries.isNotEmpty) {
-      return LibraryGridCard(
-        entry.libraryEntries.first,
+    if (entry.digests.isNotEmpty) {
+      return CalendarCard(
+        entry.digests,
         overlays: [
           Positioned(
             top: -1,
