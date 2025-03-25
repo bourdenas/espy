@@ -174,12 +174,6 @@ class EspyRouter extends StatelessWidget {
                     (e) =>
                         e.label == state.pathParameters['label'] &&
                         e.year == state.pathParameters['year'],
-                    orElse: () => context
-                        .read<FrontpageModel>()
-                        .timeline
-                        .firstWhere((e) =>
-                            e.label == state.pathParameters['label'] &&
-                            e.year == state.pathParameters['year']),
                   )
                   .games
                   .map((digest) => LibraryEntry.fromGameDigest(digest))
