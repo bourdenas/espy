@@ -1,4 +1,5 @@
 import 'package:espy/modules/filtering/library_filter.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
@@ -41,7 +42,10 @@ List<MenuItem> espyMenuItems = [
     label: 'Library',
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
-    onTap: (context) => setLibraryView(context, LibraryFilter()),
+    onTap: (context) {
+      context.read<CustomViewModel>().clear();
+      setLibraryView(context, LibraryFilter());
+    },
   ),
   MenuItem(
     requiresSignIn: true,

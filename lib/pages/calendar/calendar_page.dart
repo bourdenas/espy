@@ -1,8 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/calendar/calendar_view_annually.dart';
 import 'package:espy/pages/calendar/calendar_view_daily.dart';
 import 'package:espy/pages/calendar/calendar_view_monthly.dart';
@@ -21,24 +18,17 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final appConfig = context.watch<AppConfigModel>();
-    final filter = context.watch<LibraryFilterModel>().filter;
-
-    final libraryView = LibraryViewModel.custom(
-      appConfig,
-      context
-          .watch<FrontpageModel>()
-          .frontpage
-          .digests
-          .map((digest) => LibraryEntry.fromGameDigest(digest)),
-      filter: filter,
-    );
+    final libraryEntries = context
+        .watch<FrontpageModel>()
+        .frontpage
+        .digests
+        .map((digest) => LibraryEntry.fromGameDigest(digest));
 
     return Scaffold(
-      appBar: calendarAppBar(context, appConfig, libraryView.length),
+      appBar: calendarAppBar(context),
       body: switch (viewLevel) {
-        CalendarViewLevel.daily => CalendarViewDaily(libraryView.entries),
-        CalendarViewLevel.monthly => CalendarViewMonthly(libraryView.entries),
+        CalendarViewLevel.daily => CalendarViewDaily(libraryEntries),
+        CalendarViewLevel.monthly => CalendarViewMonthly(libraryEntries),
         CalendarViewLevel.annual => CalendarViewAnnually(),
       },
       floatingActionButton: Row(
@@ -75,11 +65,7 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  AppBar calendarAppBar(
-    BuildContext context,
-    AppConfigModel appConfig,
-    int libraryViewLength,
-  ) {
+  AppBar calendarAppBar(BuildContext context) {
     return AppBar(
       title: Text('Release Calendar'),
       backgroundColor: Colors.black.withValues(alpha: 0.2),

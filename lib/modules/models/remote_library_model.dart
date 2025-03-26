@@ -13,7 +13,6 @@ class RemoteLibraryModel extends ChangeNotifier {
 
   Iterable<LibraryEntry> get entries => _libraryEntries;
 
-  bool _fetchExternal = false;
   LibraryFilter _filter = LibraryFilter();
 
   Future<void> update(
@@ -21,17 +20,16 @@ class RemoteLibraryModel extends ChangeNotifier {
     LibraryIndexModel libraryIndexModel,
     LibraryFilter filter,
   ) async {
-    if (_fetchExternal == appConfig.showExternal.value &&
-        _filter.equals(filter)) {
+    if (_filter.equals(filter)) {
       // Nothing of interest changed.
       return;
     }
-    _fetchExternal = appConfig.showExternal.value;
+
     _filter = LibraryFilter.fromParams(filter.params());
 
     _libraryEntries.clear();
 
-    if (libraryIndexModel.isNotEmpty && !appConfig.showExternal.value) {
+    if (libraryIndexModel.isNotEmpty) {
       return;
     }
 

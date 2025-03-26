@@ -14,7 +14,7 @@ class WishlistModel extends ChangeNotifier {
   // The user wishlist.
   Library _wishlist = const Library();
 
-  Iterable<LibraryEntry> get entries => _wishlist.entries;
+  List<LibraryEntry> get entries => _wishlist.entries;
 
   bool contains(int id) => entries.any((e) => e.id == id);
 

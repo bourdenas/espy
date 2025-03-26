@@ -1,10 +1,8 @@
 import 'package:badges/badges.dart' as badges;
-import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
-import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/pages/library/library_stats.dart';
 import 'package:espy/widgets/filters/categories_sliding_chip.dart';
@@ -15,17 +13,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LibraryPage extends StatelessWidget {
-  const LibraryPage({super.key, this.entries});
-
-  final Iterable<LibraryEntry>? entries;
+  const LibraryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final appConfig = context.watch<AppConfigModel>();
     final filter = context.watch<LibraryFilterModel>().filter;
-    final libraryViewModel = entries == null
-        ? context.watch<LibraryViewModel>()
-        : LibraryViewModel.custom(appConfig, entries!, filter: filter);
+    final libraryViewModel = context.watch<LibraryViewModel>();
 
     return Scaffold(
       appBar:
@@ -92,11 +86,6 @@ class LibraryPage extends StatelessWidget {
             // const SizedBox(width: 8.0),
             // const KeywordsSlidingChip(),
             const SizedBox(width: 8.0),
-            if (context.watch<UserModel>().isSignedIn &&
-                entries == null &&
-                filter.isNotEmpty)
-              CategoryFilterChip('External', appConfig.showExternal),
-            const SizedBox(width: 8),
             EspyChipsFilterBar(filter),
           ],
         ),

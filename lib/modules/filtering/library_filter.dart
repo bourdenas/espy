@@ -1,6 +1,4 @@
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/filtering/library_view.dart';
-import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/genres_mapping.dart';
 
 class LibraryFilter {
@@ -111,59 +109,6 @@ class LibraryFilter {
             entry.digest.espyGenres.any((e) => e == genre) ||
             (entry.digest.espyGenres.isEmpty && genre == 'Unknown')) &&
         (keyword == null || entry.digest.keywords.any((e) => e == keyword));
-  }
-
-  LibraryView apply(
-    GameTagsModel tagsModel,
-    LibraryEntry? Function(int) entriesIndex,
-  ) {
-    List<Set<int>> gameIdSets = [];
-
-    if (store != null) {
-      gameIdSets.add(Set.from(tagsModel.stores.gameIds(store!)));
-    }
-    if (developer != null) {
-      gameIdSets.add(Set.from(tagsModel.developers.gameIds(developer!)));
-    }
-    if (publisher != null) {
-      gameIdSets.add(Set.from(tagsModel.publishers.gameIds(publisher!)));
-    }
-    if (collection != null) {
-      gameIdSets.add(Set.from(tagsModel.collections.gameIds(collection!)));
-    }
-    if (franchise != null) {
-      gameIdSets.add(Set.from(tagsModel.franchises.gameIds(franchise!)));
-    }
-    // NOTE: Intentionally skipping score as we don't use it in filtering.
-    if (genreGroup != null) {
-      final groupSet = <int>{};
-      for (final genre in Genres.genresInGroup(genreGroup!) ?? []) {
-        groupSet.addAll(tagsModel.genres.gameIds(genre));
-      }
-      gameIdSets.add(groupSet);
-    }
-    if (genre != null) {
-      gameIdSets.add(Set.from(tagsModel.genres.gameIds(genre!)));
-    }
-    if (keyword != null) {
-      gameIdSets.add(Set.from(tagsModel.keywords.gameIds(keyword!)));
-    }
-    if (manualGenre != null) {
-      gameIdSets.add(Set.from(tagsModel.manualGenres.gameIds(manualGenre!)));
-    }
-    if (userTag != null) {
-      gameIdSets.add(Set.from(tagsModel.userTags.gameIdsByTag(userTag!)));
-    }
-
-    final gameIds =
-        gameIdSets.reduce((value, element) => value.intersection(element));
-
-    final filteredEntries = gameIds
-        .map((id) => entriesIndex(id))
-        .where((e) => e != null)
-        .map((e) => e!);
-
-    return LibraryView(filteredEntries.toList());
   }
 
   Map<String, String> params() {

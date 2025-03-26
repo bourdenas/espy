@@ -1,12 +1,14 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class HomeSlatesModel extends ChangeNotifier {
   List<SlateInfo> _slates = [];
@@ -23,14 +25,25 @@ class HomeSlatesModel extends ChangeNotifier {
   ) {
     _slates = [
       SlateInfo(
-          'New in library',
-          libraryModel.entries.take(16).where((e) =>
-              DateTime.now().difference(
-                  (DateTime.fromMillisecondsSinceEpoch(e.addedDate * 1000))) <
-              const Duration(days: 30)),
-          (context) => updateLibraryView(context, LibraryFilter())),
-      SlateInfo('Wishlist', wishlistModel.entries.take(16),
-          (context) => context.pushNamed('wishlist')),
+        'New in library',
+        libraryModel.entries.take(16).where((e) =>
+            DateTime.now().difference(
+                (DateTime.fromMillisecondsSinceEpoch(e.addedDate * 1000))) <
+            const Duration(days: 30)),
+        (context) {
+          context.read<CustomViewModel>().clear();
+          updateLibraryView(context, LibraryFilter());
+        },
+      ),
+      SlateInfo(
+        'Wishlist',
+        wishlistModel.entries.take(16),
+        (context) {
+          context.read<CustomViewModel>().games =
+              context.read<WishlistModel>().entries;
+          context.pushNamed('wishlist');
+        },
+      ),
     ];
 
     _stacks = [
