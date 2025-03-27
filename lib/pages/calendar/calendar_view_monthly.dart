@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class CalendarViewMonthly extends StatefulWidget {
+class CalendarViewMonthly extends StatelessWidget {
   const CalendarViewMonthly(
     this.libraryEntries, {
     super.key,
@@ -25,27 +25,13 @@ class CalendarViewMonthly extends StatefulWidget {
   final int trailingYears;
 
   @override
-  State<CalendarViewMonthly> createState() => _CalendarViewState();
-}
-
-class _CalendarViewState extends State<CalendarViewMonthly> {
-  @override
-  void initState() {
-    super.initState();
-
-    leadingYears = widget.leadingYears;
-  }
-
-  int leadingYears = 0;
-
-  @override
   Widget build(BuildContext context) {
-    final today = widget.startDate ?? DateTime.now().toUtc();
+    final today = startDate ?? DateTime.now().toUtc();
 
     final fromDate = DateTime(today.year - leadingYears, 1, 1);
     final toDate = DateTime(today.year + 1, 12, 31, 23, 59, 59);
 
-    final libraryEntries = widget.libraryEntries.where((entry) {
+    final libraryEntries = this.libraryEntries.where((entry) {
       final releaseDate = entry.digest.release;
       return releaseDate.isAfter(fromDate) && releaseDate.isBefore(toDate);
     });
@@ -53,7 +39,7 @@ class _CalendarViewState extends State<CalendarViewMonthly> {
     final refinement = context.watch<RefinementModel>().refinement;
     final refinedEntries = libraryEntries.where((e) => refinement.pass(e));
 
-    final gridTiles = (leadingYears + 1 + widget.trailingYears) * 14;
+    final gridTiles = (leadingYears + 1 + trailingYears) * 14;
 
     return FutureBuilder(
       future: context.read<YearsModel>().getYears(
@@ -87,11 +73,6 @@ class _CalendarViewState extends State<CalendarViewMonthly> {
 
         return CalendarGrid(
           entries,
-          onPull: () async {
-            setState(() {
-              leadingYears += 1;
-            });
-          },
           selectedLabel: DateFormat('MMM y').format(today),
         );
       },

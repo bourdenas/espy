@@ -14,7 +14,27 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  CalendarViewLevel viewLevel = CalendarViewLevel.daily;
+  CalendarView calendarView = CalendarView.day;
+  int leadingTime = 2;
+
+  void increaseLeading() {
+    leadingTime += switch (calendarView) {
+      CalendarView.day => 2,
+      CalendarView.month => 1,
+      CalendarView.year => 14,
+    };
+
+    final max = maxLeading();
+    leadingTime = leadingTime > max ? max : leadingTime;
+  }
+
+  int maxLeading() {
+    return switch (calendarView) {
+      CalendarView.day => 14,
+      CalendarView.month => 5,
+      CalendarView.year => DateTime.now().toUtc().year - 1979,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,58 +44,103 @@ class _CalendarPageState extends State<CalendarPage> {
         .digests
         .map((digest) => LibraryEntry.fromGameDigest(digest));
 
+    final maxLeadingTime = maxLeading();
     return Scaffold(
       appBar: calendarAppBar(context),
-      body: switch (viewLevel) {
-        CalendarViewLevel.daily => CalendarViewDaily(libraryEntries),
-        CalendarViewLevel.monthly => CalendarViewMonthly(libraryEntries),
-        CalendarViewLevel.annual => CalendarViewAnnually(),
-      },
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() => increaseLeading());
+        },
+        child: switch (calendarView) {
+          CalendarView.day =>
+            CalendarViewDaily(libraryEntries, leadingWeeks: leadingTime),
+          CalendarView.month =>
+            CalendarViewMonthly(libraryEntries, leadingYears: leadingTime),
+          CalendarView.year => CalendarViewAnnually(leadingYears: leadingTime),
+        },
+      ),
       floatingActionButton: Row(
         children: [
           SizedBox(width: 16),
           FloatingActionButton(
-            onPressed: viewLevel != CalendarViewLevel.daily
-                ? () => setState(() {
-                      viewLevel = viewLevel == CalendarViewLevel.annual
-                          ? CalendarViewLevel.monthly
-                          : CalendarViewLevel.daily;
-                    })
+            onPressed: leadingTime < maxLeadingTime
+                ? () {
+                    setState(() => increaseLeading());
+                  }
                 : null,
             backgroundColor:
-                viewLevel == CalendarViewLevel.daily ? Colors.black : null,
-            child: Icon(Icons.zoom_in),
+                leadingTime == maxLeadingTime ? Colors.black : null,
+            child: Icon(Icons.keyboard_arrow_up),
           ),
           SizedBox(width: 16),
           FloatingActionButton(
-            onPressed: viewLevel != CalendarViewLevel.annual
-                ? () => setState(() {
-                      viewLevel = viewLevel == CalendarViewLevel.daily
-                          ? CalendarViewLevel.monthly
-                          : CalendarViewLevel.annual;
-                    })
+            onPressed: leadingTime < maxLeadingTime
+                ? () {
+                    setState(() {
+                      leadingTime = maxLeadingTime;
+                    });
+                  }
                 : null,
             backgroundColor:
-                viewLevel == CalendarViewLevel.annual ? Colors.black : null,
-            child: Icon(Icons.zoom_out),
+                leadingTime == maxLeadingTime ? Colors.black : null,
+            child: Icon(Icons.keyboard_double_arrow_up),
           ),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 
   AppBar calendarAppBar(BuildContext context) {
     return AppBar(
-      title: Text('Release Calendar'),
+      title: Stack(
+        children: [
+          Text('Release Calendar'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SegmentedButton<CalendarView>(
+                segments: const <ButtonSegment<CalendarView>>[
+                  ButtonSegment<CalendarView>(
+                    value: CalendarView.day,
+                    label: Text('Day'),
+                    icon: Icon(Icons.calendar_view_day),
+                  ),
+                  ButtonSegment<CalendarView>(
+                    value: CalendarView.month,
+                    label: Text('Month'),
+                    icon: Icon(Icons.calendar_view_month),
+                  ),
+                  ButtonSegment<CalendarView>(
+                    value: CalendarView.year,
+                    label: Text('Year'),
+                    icon: Icon(Icons.calendar_today),
+                  ),
+                ],
+                selected: <CalendarView>{calendarView},
+                onSelectionChanged: (Set<CalendarView> newSelection) {
+                  setState(() {
+                    calendarView = newSelection.first;
+                    leadingTime = switch (calendarView) {
+                      CalendarView.day => 2,
+                      CalendarView.month => 1,
+                      CalendarView.year => 18,
+                    };
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
       backgroundColor: Colors.black.withValues(alpha: 0.2),
       elevation: 0.0,
     );
   }
 }
 
-enum CalendarViewLevel {
-  daily,
-  monthly,
-  annual,
+enum CalendarView {
+  day,
+  month,
+  year,
 }

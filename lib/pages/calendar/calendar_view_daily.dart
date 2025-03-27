@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class CalendarViewDaily extends StatefulWidget {
+class CalendarViewDaily extends StatelessWidget {
   const CalendarViewDaily(
     this.libraryEntries, {
     super.key,
@@ -23,31 +23,17 @@ class CalendarViewDaily extends StatefulWidget {
   final int trailingWeeks;
 
   @override
-  State<CalendarViewDaily> createState() => _CalendarViewDailyState();
-}
-
-class _CalendarViewDailyState extends State<CalendarViewDaily> {
-  @override
-  void initState() {
-    super.initState();
-
-    leadingWeeks = widget.leadingWeeks;
-  }
-
-  int leadingWeeks = 0;
-
-  @override
   Widget build(BuildContext context) {
-    final today = widget.startDate ?? DateTime.now().toUtc();
+    final today = startDate ?? DateTime.now().toUtc();
     final fromDate = today
         .subtract(Duration(
             days: today.weekday - 1)) // Get to the Monday of this week.
         .subtract(Duration(days: leadingWeeks * 7 + 1));
     final toDate = today
         .subtract(Duration(days: today.weekday - 1))
-        .add(Duration(days: (widget.trailingWeeks + 1) * 7 + 1));
+        .add(Duration(days: (trailingWeeks + 1) * 7 + 1));
 
-    final libraryEntries = widget.libraryEntries.where((entry) {
+    final libraryEntries = this.libraryEntries.where((entry) {
       final releaseDate = entry.digest.release;
       return releaseDate.isAfter(fromDate) && releaseDate.isBefore(toDate);
     });
@@ -69,7 +55,7 @@ class _CalendarViewDailyState extends State<CalendarViewDaily> {
     }
 
     final entries = <CalendarGridEntry>[];
-    final gridTiles = (leadingWeeks + 1 + widget.trailingWeeks) * 7;
+    final gridTiles = (leadingWeeks + 1 + trailingWeeks) * 7;
     for (int i = 0; i < gridTiles; ++i) {
       final label =
           DateFormat('yMMMd').format(fromDate.add(Duration(days: i + 1)));
@@ -78,11 +64,6 @@ class _CalendarViewDailyState extends State<CalendarViewDaily> {
 
     return CalendarGrid(
       entries,
-      onPull: () async {
-        setState(() {
-          leadingWeeks += 2;
-        });
-      },
       selectedLabel: DateFormat('yMMMd').format(today),
     );
   }
