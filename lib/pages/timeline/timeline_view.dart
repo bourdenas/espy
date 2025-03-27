@@ -1,5 +1,6 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/pages/timeline/timeline_utils.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
@@ -43,13 +44,10 @@ class TimelineView extends StatelessWidget {
           releases,
           index,
           now.round(),
-          () => context.pushNamed(
-            'view',
-            pathParameters: {
-              'label': releases[index].label,
-              'year': releases[index].year,
-            },
-          ),
+          () {
+            context.read<CustomViewModel>().digests = releases[index].games;
+            context.pushNamed('view');
+          },
         ),
         nodePositionBuilder: (context, index) => .02,
         contentsBuilder: (context, index) {

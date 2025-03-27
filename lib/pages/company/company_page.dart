@@ -2,14 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/backend_api.dart';
-import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/library/library_stats.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class CompanyPage extends StatelessWidget {
   const CompanyPage({super.key, required this.name});
@@ -45,8 +42,6 @@ class _CompanyContentState extends State<CompanyContent> {
 
   @override
   Widget build(BuildContext context) {
-    final appConfig = context.watch<AppConfigModel>();
-
     widget.companyDocs.sort((l, r) => -(l.developed.length + l.published.length)
         .compareTo(r.developed.length + r.published.length));
 
@@ -65,9 +60,6 @@ class _CompanyContentState extends State<CompanyContent> {
         if (!developed.containsKey(digest.id))
           digest.id: LibraryEntry.fromGameDigest(digest)
     };
-
-    final developedModel = LibraryViewModel.custom(appConfig, developed.values);
-    final publishedModel = LibraryViewModel.custom(appConfig, published.values);
 
     return CustomScrollView(
       primary: true,
@@ -145,19 +137,19 @@ class _CompanyContentState extends State<CompanyContent> {
           ),
         Shelve(
           title: 'Drill-down',
-          expansion: LibraryStats(developedModel.entries),
+          expansion: LibraryStats(developed.values),
           color: Colors.amber,
           expanded: false,
         ),
         TileShelve(
           title: 'Developed (${developed.length})',
           color: Colors.grey,
-          entries: developedModel.entries,
+          entries: developed.values,
         ),
         TileShelve(
           title: 'Published (${published.length})',
           color: Colors.grey,
-          entries: publishedModel.entries,
+          entries: published.values,
         ),
       ],
     );

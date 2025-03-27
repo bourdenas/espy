@@ -3,9 +3,11 @@ import 'package:espy/modules/documents/frontpage.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/calendar.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class FrontpageModel extends ChangeNotifier {
   Frontpage _frontpage = const Frontpage();
@@ -18,48 +20,37 @@ class FrontpageModel extends ChangeNotifier {
           'Releasing today',
           _frontpage.todayReleases
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
-          (context) => context.pushNamed(
-            'view',
-            pathParameters: {
-              'label': 'today',
-              'year': '2024',
-            },
-          ),
+          (context) {
+            context.read<CustomViewModel>().digests = _frontpage.todayReleases;
+            context.pushNamed('view');
+          },
         ),
         SlateInfo(
           'Recent releases',
           _frontpage.recentReleases
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
-          (context) => context.pushNamed(
-            'view',
-            pathParameters: {
-              'label': 'recent',
-              'year': '2024',
-            },
-          ),
+          (context) {
+            context.read<CustomViewModel>().digests = _frontpage.recentReleases;
+            context.pushNamed('view');
+          },
         ),
         SlateInfo(
           'Upcoming releases',
           _frontpage.upcomingReleases
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
-          (context) => context.pushNamed(
-            'view',
-            pathParameters: {
-              'label': 'upcoming',
-              'year': '2024',
-            },
-          ),
+          (context) {
+            context.read<CustomViewModel>().digests =
+                _frontpage.upcomingReleases;
+            context.pushNamed('view');
+          },
         ),
         SlateInfo(
           'Most anticipated',
           _frontpage.hyped.map((digest) => LibraryEntry.fromGameDigest(digest)),
-          (context) => context.pushNamed(
-            'view',
-            pathParameters: {
-              'label': 'hyped',
-              'year': '2024',
-            },
-          ),
+          (context) {
+            context.read<CustomViewModel>().digests = _frontpage.hyped;
+            context.pushNamed('view');
+          },
         ),
       ];
 

@@ -3,33 +3,29 @@ import 'package:espy/modules/documents/scores.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 
 class LibraryView {
-  LibraryView(this._libraryEntries);
-
-  final List<LibraryEntry> _libraryEntries;
-
   Iterable<LibraryEntry> get entries => _libraryEntries;
   int get length => _libraryEntries.length;
 
-  void addEntries(Iterable<LibraryEntry> entries) =>
-      _libraryEntries.addAll(entries);
+  late List<LibraryEntry> _libraryEntries;
+  final AppConfigModel _config;
 
-  void filterCategories(AppConfigModel config) {
-    _libraryEntries.retainWhere((e) =>
-        (config.showMains.value &&
-            e.isMain &&
-            !e.isEarlyAccess &&
-            !e.isCasual) ||
-        (config.showExpansions.value && e.isExpansion) ||
-        (config.showRemakes.value && (e.isRemake || e.isRemaster)) ||
-        (config.showEarlyAccess.value && e.isEarlyAccess) ||
-        (config.showDlcs.value && e.isDlc) ||
-        (config.showVersions.value && e.isVersion) ||
-        (config.showBundles.value && e.isBundle) ||
-        (config.showCasual.value && e.isCasual));
-  }
+  LibraryView(Iterable<LibraryEntry> libraryEntries, this._config) {
+    _libraryEntries = libraryEntries
+        .where((e) =>
+            (_config.showMains.value &&
+                e.isMain &&
+                !e.isEarlyAccess &&
+                !e.isCasual) ||
+            (_config.showExpansions.value && e.isExpansion) ||
+            (_config.showRemakes.value && (e.isRemake || e.isRemaster)) ||
+            (_config.showEarlyAccess.value && e.isEarlyAccess) ||
+            (_config.showDlcs.value && e.isDlc) ||
+            (_config.showVersions.value && e.isVersion) ||
+            (_config.showBundles.value && e.isBundle) ||
+            (_config.showCasual.value && e.isCasual))
+        .toList();
 
-  void sort(LibraryOrdering ordering) {
-    switch (ordering) {
+    switch (_config.libraryOrdering.value) {
       case LibraryOrdering.release:
         _libraryEntries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
         break;

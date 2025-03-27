@@ -2,7 +2,6 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -56,20 +55,12 @@ class EspyChipsGameCard extends StatelessWidget {
                 for (final collection in libraryEntry.collections)
                   Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: CollectionChip(
-                      collection,
-                      onPressed: () => addFilter(
-                          context, LibraryFilter(collection: collection)),
-                    ),
+                    child: CollectionChip(collection, onPressed: () {}),
                   ),
                 for (final franchise in libraryEntry.franchises)
                   Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: FranchiseChip(
-                      franchise,
-                      onPressed: () => addFilter(
-                          context, LibraryFilter(franchise: franchise)),
-                    ),
+                    child: FranchiseChip(franchise, onPressed: () {}),
                   ),
               ],
               for (final genre in libraryEntry.digest.espyGenres)
@@ -104,11 +95,6 @@ class EspyChipsGameCard extends StatelessWidget {
       ],
     );
   }
-}
-
-void addFilter(BuildContext context, LibraryFilter filter) {
-  final updatedFilter = context.read<LibraryFilterModel>().filter.add(filter);
-  updateLibraryView(context, updatedFilter);
 }
 
 void addRefinement(BuildContext context, LibraryFilter filter) {

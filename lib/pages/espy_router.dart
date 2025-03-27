@@ -1,14 +1,11 @@
 import 'dart:io';
 
-import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/user_model.dart';
-import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/calendar/calendar_page.dart';
 import 'package:espy/pages/company/company_page.dart';
 import 'package:espy/pages/explore/explore_page.dart';
@@ -101,9 +98,7 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'wishlist',
           child: EspyScaffold(
-            body: LibraryPage(
-              entries: context.watch<WishlistModel>().entries,
-            ),
+            body: const LibraryPage(),
             path: state.path!,
           ),
         ),
@@ -140,44 +135,12 @@ class EspyRouter extends StatelessWidget {
       GoRoute(
         // Library view month of game releases from a timeline view.
         name: 'view',
-        path: '/view/:label/:year',
+        path: '/view',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
           name: 'view',
           child: EspyScaffold(
-            body: LibraryPage(
-                entries: switch (state.pathParameters['label']) {
-              'today' => context
-                  .read<FrontpageModel>()
-                  .frontpage
-                  .todayReleases
-                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
-              'recent' => context
-                  .read<FrontpageModel>()
-                  .frontpage
-                  .recentReleases
-                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
-              'upcoming' => context
-                  .read<FrontpageModel>()
-                  .frontpage
-                  .upcomingReleases
-                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
-              'hyped' => context
-                  .read<FrontpageModel>()
-                  .frontpage
-                  .hyped
-                  .map((digest) => LibraryEntry.fromGameDigest(digest)),
-              _ => context
-                  .read<FrontpageModel>()
-                  .timeline
-                  .firstWhere(
-                    (e) =>
-                        e.label == state.pathParameters['label'] &&
-                        e.year == state.pathParameters['year'],
-                  )
-                  .games
-                  .map((digest) => LibraryEntry.fromGameDigest(digest))
-            }),
+            body: const LibraryPage(),
             path: state.path!,
           ),
         ),
