@@ -1,6 +1,9 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class CalendarCard extends StatefulWidget {
   const CalendarCard(
@@ -48,7 +51,10 @@ class _CalendarCardState extends State<CalendarCard>
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          context.read<CustomViewModel>().digests = widget.digests;
+          context.pushNamed('view');
+        },
         onHover: (val) => setState(() {
           hover = val;
           if (hover) {
