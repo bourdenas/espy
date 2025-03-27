@@ -1,4 +1,3 @@
-import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/unresolved_model.dart';
@@ -44,7 +43,7 @@ List<MenuItem> espyMenuItems = [
     selectedIcon: Icons.games,
     onTap: (context) {
       context.read<CustomViewModel>().clear();
-      setLibraryView(context, LibraryFilter());
+      setLibraryView(context);
     },
   ),
   MenuItem(
@@ -60,7 +59,6 @@ List<MenuItem> espyMenuItems = [
     icon: Icons.calendar_month_outlined,
     selectedIcon: Icons.calendar_month,
     onTap: (context) {
-      context.read<LibraryFilterModel>().clear();
       context.read<RefinementModel>().clear();
       context.goNamed('calendar');
     },
@@ -71,7 +69,6 @@ List<MenuItem> espyMenuItems = [
     icon: Icons.timeline_outlined,
     selectedIcon: Icons.timeline,
     onTap: (context) {
-      context.read<LibraryFilterModel>().clear();
       context.read<RefinementModel>().clear();
 
       final DateFormat formatter = DateFormat('MMM');
@@ -88,7 +85,6 @@ List<MenuItem> espyMenuItems = [
     icon: Icons.history_outlined,
     selectedIcon: Icons.history,
     onTap: (context) {
-      context.read<LibraryFilterModel>().clear();
       context.read<RefinementModel>().clear();
       context.goNamed('years');
     },

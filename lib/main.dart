@@ -52,7 +52,6 @@ Future<void> main() async {
       wishlistProvider(),
       gameTagsProvider(),
       userDataProvider(),
-      libraryFilterProvider(),
       refinementProvider(),
       libraryEntriesProvider(),
       homeSlatesProvider(),
@@ -78,9 +77,6 @@ ChangeNotifierProvider<CustomViewModel> customViewProvider() =>
 
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
-
-ChangeNotifierProvider<LibraryFilterModel> libraryFilterProvider() =>
-    ChangeNotifierProvider(create: (_) => LibraryFilterModel());
 
 ChangeNotifierProvider<RefinementModel> refinementProvider() =>
     ChangeNotifierProvider(create: (_) => RefinementModel());

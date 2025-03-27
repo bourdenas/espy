@@ -3,7 +3,6 @@ import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/user_model.dart';
-import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -38,17 +37,9 @@ class EspyChipsDetailsBar extends StatelessWidget {
                     .pushNamed('company', pathParameters: {'name': company}),
               ),
             for (final collection in libraryEntry.collections)
-              CollectionChip(
-                collection,
-                onPressed: () =>
-                    addFilter(context, LibraryFilter(collection: collection)),
-              ),
+              CollectionChip(collection, onPressed: () {}),
             for (final franchise in libraryEntry.franchises)
-              FranchiseChip(
-                franchise,
-                onPressed: () =>
-                    addFilter(context, LibraryFilter(franchise: franchise)),
-              ),
+              FranchiseChip(franchise, onPressed: () {}),
             for (final genre in libraryEntry.digest.espyGenres)
               EspyGenreChip(
                 genre,
@@ -58,32 +49,16 @@ class EspyChipsDetailsBar extends StatelessWidget {
             if (context.watch<UserModel>().isSignedIn)
               for (final tag
                   in tagsModel.userTags.tagsByGameId(libraryEntry.id))
-                ManualTagChip(
-                  tag,
-                  onPressed: () =>
-                      addFilter(context, LibraryFilter(userTag: tag)),
-                ),
+                ManualTagChip(tag, onPressed: () {}),
             if (context.watch<UserModel>().isSignedIn)
               for (final manualGenre
                   in tagsModel.manualGenres.byGameId(libraryEntry.id))
-                ManualGenreChip(
-                  manualGenre.label,
-                  onPressed: () => addFilter(context,
-                      LibraryFilter(manualGenre: manualGenre.encode())),
-                ),
+                ManualGenreChip(manualGenre.label, onPressed: () {}),
           ],
         ),
       ],
     );
   }
-}
-
-void addFilter(BuildContext context, LibraryFilter filter) {
-  if (context.canPop()) {
-    context.pop();
-  }
-  final updatedFilter = context.read<LibraryFilterModel>().filter.add(filter);
-  updateLibraryView(context, updatedFilter);
 }
 
 void addRefinement(BuildContext context, LibraryFilter filter) {

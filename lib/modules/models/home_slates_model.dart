@@ -32,7 +32,7 @@ class HomeSlatesModel extends ChangeNotifier {
             const Duration(days: 30)),
         (context) {
           context.read<CustomViewModel>().clear();
-          updateLibraryView(context, LibraryFilter());
+          updateLibraryView(context);
         },
       ),
       SlateInfo(

@@ -1,12 +1,9 @@
 import 'package:badges/badges.dart' as badges;
-import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/pages/library/library_stats.dart';
 import 'package:espy/widgets/filters/categories_sliding_chip.dart';
-import 'package:espy/widgets/gametags/espy_chips_filter_bar.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
@@ -18,12 +15,10 @@ class LibraryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appConfig = context.watch<AppConfigModel>();
-    final filter = context.watch<LibraryFilterModel>().filter;
     final libraryViewModel = context.watch<LibraryViewModel>();
 
     return Scaffold(
-      appBar:
-          libraryAppBar(context, appConfig, libraryViewModel.length, filter),
+      appBar: libraryAppBar(context, appConfig, libraryViewModel.length),
       body: libraryBody(appConfig, libraryViewModel),
     );
   }
@@ -57,11 +52,7 @@ class LibraryPage extends StatelessWidget {
   }
 
   AppBar libraryAppBar(
-    BuildContext context,
-    AppConfigModel appConfig,
-    int libraryViewLength,
-    LibraryFilter filter,
-  ) {
+      BuildContext context, AppConfigModel appConfig, int libraryViewLength) {
     return AppBar(
       leading: badges.Badge(
         badgeContent: Text(
@@ -85,8 +76,8 @@ class LibraryPage extends StatelessWidget {
             const CategoriesSlidingChip(),
             // const SizedBox(width: 8.0),
             // const KeywordsSlidingChip(),
-            const SizedBox(width: 8.0),
-            EspyChipsFilterBar(filter),
+            // const SizedBox(width: 8.0),
+            // EspyChipsFilterBar(filter),
           ],
         ),
       ),
