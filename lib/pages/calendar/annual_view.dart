@@ -1,57 +1,64 @@
+import 'dart:collection';
+
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
-import 'package:espy/pages/timeline/timeline_utils.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 
-class TimelineView extends StatelessWidget {
-  const TimelineView({super.key, this.scrollToLabel, this.year});
-
-  final String? scrollToLabel;
-  final String? year;
+// Unused timeline view for years. Consider repurposing.
+class AnnualView extends StatelessWidget {
+  const AnnualView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final isMobile = AppConfigModel.isMobile(context);
     final releases = context.watch<FrontpageModel>().timeline;
-    // final today = DateFormat('d MMM').format(DateTime.now());
 
-    int startIndex = 0;
-    for (final release in releases) {
-      if (release.label == scrollToLabel && release.year == year) {
-        break;
-      }
-      ++startIndex;
+    final digests = releases.map((event) => event.games).expand((e) => e);
+    final gamesByYear = HashMap<int, List<GameDigest>>();
+    for (final digest in digests) {
+      gamesByYear.putIfAbsent(digest.releaseYear, () => []).add(digest);
     }
 
-    final now = DateTime.now().millisecondsSinceEpoch / 1000;
-    final tileSize = isMobile ? 240.0 : 370.0;
+    final timeline = [TimelineEntry('TBA', gamesByYear[1970] ?? [])];
+    final (startYear, endYear) = (DateTime.now().year + 1, 1980);
+    for (int year = startYear; year >= endYear; --year) {
+      timeline.add(TimelineEntry('$year', gamesByYear[year] ?? []));
+    }
+
     return Timeline.tileBuilder(
+      primary: true,
       shrinkWrap: true,
-      controller: ScrollController(initialScrollOffset: startIndex * tileSize),
+      // reverse: true,
       builder: TimelineTileBuilder.connected(
         itemCount: releases.length,
-        itemExtent: tileSize,
-        connectorBuilder: (context, index, connectorType) =>
-            connectorBuilder(context, releases, index),
-        indicatorBuilder: (context, index) => buttonBuilder(
-          context,
-          releases,
-          index,
-          now.round(),
-          () {
-            context.read<CustomViewModel>().digests = releases[index].games;
-            context.pushNamed('view');
-          },
+        itemExtent: isMobile ? 240.0 : 370.0,
+        connectorBuilder: (context, index, connectorType) => SolidLineConnector(
+          thickness: 2,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        indicatorBuilder: (context, index) => SizedBox(
+          width: 64,
+          child: IconButton.outlined(
+            icon: Text(
+              timeline[index].label,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            // color: Theme.of(context).colorScheme.errorContainer,
+            color: Colors.red,
+            onPressed: () {},
+          ),
         ),
         nodePositionBuilder: (context, index) => .02,
         contentsBuilder: (context, index) {
-          final digests = releases[index].games;
+          final digests = timeline[index].digests;
           return Padding(
             padding: const EdgeInsets.all(24.0),
             child: TileCarousel(
@@ -88,4 +95,11 @@ class TimelineView extends StatelessWidget {
       ),
     );
   }
+}
+
+class TimelineEntry {
+  const TimelineEntry(this.label, this.digests);
+
+  final String label;
+  final List<GameDigest> digests;
 }

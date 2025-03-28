@@ -4,8 +4,8 @@ import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
-import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/pages/timeline/timeline_utils.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
@@ -64,13 +64,11 @@ class TimelineCarousel extends StatelessWidget {
                         releases,
                         index,
                         now.round(),
-                        () => context.pushNamed(
-                          'view',
-                          pathParameters: {
-                            'label': releases[index].label,
-                            'year': releases[index].year,
-                          },
-                        ),
+                        () {
+                          context.read<CustomViewModel>().digests =
+                              releases[index].games;
+                          context.pushNamed('view');
+                        },
                       ),
                       nodePositionBuilder: (context, index) => .85,
                       contentsBuilder: (context, index) => ReleaseStack(
@@ -122,12 +120,12 @@ class _ReleaseStackState extends State<ReleaseStack>
           for (final (index, game) in widget.games.indexed.take(5))
             Transform.translate(
               offset: _offset(
-                  index, context.read<TimelineModel>().highlightScore(game)),
+                  index, context.read<FrontpageModel>().highlightScore(game)),
               child: _gameCover(
                   context,
                   game,
                   widget.maxSize.width *
-                      context.read<TimelineModel>().highlightScore(game)),
+                      context.read<FrontpageModel>().highlightScore(game)),
             ),
         ].reversed.toList(),
       ),

@@ -67,7 +67,6 @@ class AppConfigModel extends ChangeNotifier {
   BoolOption showVersions = BoolOption();
   BoolOption showBundles = BoolOption();
   BoolOption showCasual = BoolOption();
-  BoolOption showExternal = BoolOption();
 
   AppConfigModel() {
     libraryLayout.onUpdate = _updateOptions;
@@ -83,7 +82,6 @@ class AppConfigModel extends ChangeNotifier {
     showVersions.onUpdate = _updateOptions;
     showBundles.onUpdate = _updateOptions;
     showCasual.onUpdate = _updateOptions;
-    showExternal.onUpdate = _updateOptions;
   }
 
   void _updateOptions() {
@@ -106,7 +104,6 @@ class AppConfigModel extends ChangeNotifier {
     showVersions.value = prefs.getBool('showVersions') ?? false;
     showBundles.value = prefs.getBool('showBundles') ?? false;
     showCasual.value = prefs.getBool('showCasual') ?? false;
-    showExternal.value = prefs.getBool('showExternal') ?? false;
     _seedColor = Color(prefs.getInt('seedColor') ?? 0);
 
     notifyListeners();
@@ -127,7 +124,6 @@ class AppConfigModel extends ChangeNotifier {
     prefs.setBool('showVersions', showVersions.value);
     prefs.setBool('showBundles', showBundles.value);
     prefs.setBool('showCasual', showCasual.value);
-    prefs.setBool('showExternal', showExternal.value);
     prefs.setInt('seedColor', _seedColor.value);
   }
 }

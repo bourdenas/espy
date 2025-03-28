@@ -1,8 +1,9 @@
 import 'dart:collection';
 
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/documents/timeline.dart';
-import 'package:espy/modules/models/timeline_model.dart';
+import 'package:espy/modules/documents/calendar.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
+import 'package:espy/modules/models/years_model.dart';
 import 'package:espy/pages/library/library_page.dart';
 import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
@@ -22,13 +23,15 @@ class _AnnualReviewState extends State<AnnualReview> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: context.watch<TimelineModel>().gamesIn(widget.year),
+      future: context.watch<YearsModel>().gamesIn(widget.year),
       builder: (BuildContext context, AsyncSnapshot<AnnualReviewDoc> snapshot) {
-        return snapshot.connectionState == ConnectionState.done &&
-                snapshot.hasData
-            // ? AnnualGameList(review: snapshot.data!)
-            ? AnnualLibaryView(review: snapshot.data!)
-            : Container();
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.hasData) {
+          // ? AnnualGameList(review: snapshot.data!)
+          context.read<CustomViewModel>().digests = snapshot.data!.releases;
+          return AnnualLibaryView(review: snapshot.data!);
+        }
+        return Container();
       },
     );
   }
@@ -42,15 +45,15 @@ class AnnualLibaryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LibraryPage(
-      entries: [
-        review.releases,
-        review.indies,
-        review.earlyAccess,
-        review.expansions,
-        review.remasters,
-        review.casual
-      ].expand((e) => e).map((digest) => LibraryEntry.fromGameDigest(digest)),
-    );
+        // entries: [
+        //   review.releases,
+        //   review.indies,
+        //   review.earlyAccess,
+        //   review.expansions,
+        //   review.remasters,
+        //   review.casual
+        // ].expand((e) => e).map((digest) => LibraryEntry.fromGameDigest(digest)),
+        );
   }
 }
 

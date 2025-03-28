@@ -24,6 +24,7 @@ class GameDigest {
   String get releaseDay =>
       releaseDate > 0 ? DateFormat('yMMMd').format(release) : 'TBA';
   String get releaseMonth => DateFormat('yMMM').format(release);
+  int get releaseYear => release.year;
   DateTime get release =>
       DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000);
 

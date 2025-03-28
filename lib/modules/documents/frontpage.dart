@@ -1,5 +1,5 @@
 import 'package:espy/modules/documents/game_digest.dart';
-import 'package:espy/modules/documents/timeline.dart';
+import 'package:espy/modules/documents/calendar.dart';
 
 class Frontpage {
   final List<ReleaseEvent> timeline;
@@ -7,6 +7,7 @@ class Frontpage {
   final List<GameDigest> upcomingReleases;
   final List<GameDigest> recentReleases;
   final List<GameDigest> hyped;
+  final List<GameDigest> digests;
 
   const Frontpage({
     this.timeline = const [],
@@ -14,6 +15,7 @@ class Frontpage {
     this.recentReleases = const [],
     this.upcomingReleases = const [],
     this.hyped = const [],
+    this.digests = const [],
   });
 
   Frontpage.fromJson(Map<String, dynamic> json)
@@ -36,6 +38,10 @@ class Frontpage {
           ],
           hyped: [
             for (final digest in json['hyped'] ?? [])
+              GameDigest.fromJson(digest),
+          ],
+          digests: [
+            for (final digest in json['digests'] ?? [])
               GameDigest.fromJson(digest),
           ],
         );

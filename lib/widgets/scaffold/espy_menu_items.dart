@@ -1,10 +1,9 @@
-import 'package:espy/modules/filtering/library_filter.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class MenuItem {
@@ -41,7 +40,10 @@ List<MenuItem> espyMenuItems = [
     label: 'Library',
     icon: Icons.games_outlined,
     selectedIcon: Icons.games,
-    onTap: (context) => setLibraryView(context, LibraryFilter()),
+    onTap: (context) {
+      context.read<CustomViewModel>().clear();
+      setLibraryView(context);
+    },
   ),
   MenuItem(
     requiresSignIn: true,
@@ -52,30 +54,12 @@ List<MenuItem> espyMenuItems = [
   ),
   MenuItem(
     requiresSignIn: false,
-    label: 'Years',
+    label: 'Calendar',
     icon: Icons.calendar_month_outlined,
     selectedIcon: Icons.calendar_month,
     onTap: (context) {
-      context.read<LibraryFilterModel>().clear();
       context.read<RefinementModel>().clear();
-      context.goNamed('years');
-    },
-  ),
-  MenuItem(
-    requiresSignIn: false,
-    label: 'Timeline',
-    icon: Icons.timeline_outlined,
-    selectedIcon: Icons.timeline,
-    onTap: (context) {
-      context.read<LibraryFilterModel>().clear();
-      context.read<RefinementModel>().clear();
-
-      final DateFormat formatter = DateFormat('MMM');
-      final now = DateTime.now();
-      context.goNamed('releases', pathParameters: {
-        'label': formatter.format(now),
-        'year': '${now.year}',
-      });
+      context.goNamed('calendar');
     },
   ),
   MenuItem(
@@ -85,5 +69,12 @@ List<MenuItem> espyMenuItems = [
     selectedIcon: Icons.task_alt,
     onTap: (context) => context.goNamed('unresolved'),
     badgeCount: (context) => context.watch<UnresolvedModel>().unknown.length,
+  ),
+  MenuItem(
+    requiresSignIn: false,
+    label: 'Search',
+    icon: Icons.search_outlined,
+    selectedIcon: Icons.search,
+    onTap: (context) => context.goNamed('search'),
   ),
 ];

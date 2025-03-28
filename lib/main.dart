@@ -1,5 +1,7 @@
 import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/calendar_model.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
@@ -7,12 +9,11 @@ import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
-import 'package:espy/modules/models/remote_library_model.dart';
-import 'package:espy/modules/models/timeline_model.dart';
 import 'package:espy/modules/models/user_data_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
+import 'package:espy/modules/models/years_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
@@ -41,7 +42,9 @@ Future<void> main() async {
     providers: [
       appConfigProvider(),
       frontpageProvider(),
-      timelineProvider(),
+      calendarProvider(),
+      yearsProvider(),
+      customViewProvider(),
       userProvider(),
       userLibraryProvider(),
       libraryIndexProvider(),
@@ -49,9 +52,7 @@ Future<void> main() async {
       wishlistProvider(),
       gameTagsProvider(),
       userDataProvider(),
-      libraryFilterProvider(),
       refinementProvider(),
-      remoteLibraryProvider(),
       libraryEntriesProvider(),
       homeSlatesProvider(),
     ],
@@ -65,14 +66,17 @@ ChangeNotifierProvider<AppConfigModel> appConfigProvider() =>
 ChangeNotifierProvider<FrontpageModel> frontpageProvider() =>
     ChangeNotifierProvider(create: (_) => FrontpageModel()..load());
 
-ChangeNotifierProvider<TimelineModel> timelineProvider() =>
-    ChangeNotifierProvider(create: (_) => TimelineModel()..load());
+ChangeNotifierProvider<CalendarModel> calendarProvider() =>
+    ChangeNotifierProvider(create: (_) => CalendarModel());
+
+ChangeNotifierProvider<YearsModel> yearsProvider() =>
+    ChangeNotifierProvider(create: (_) => YearsModel());
+
+ChangeNotifierProvider<CustomViewModel> customViewProvider() =>
+    ChangeNotifierProvider(create: (_) => CustomViewModel());
 
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
-
-ChangeNotifierProvider<LibraryFilterModel> libraryFilterProvider() =>
-    ChangeNotifierProvider(create: (_) => LibraryFilterModel());
 
 ChangeNotifierProvider<RefinementModel> refinementProvider() =>
     ChangeNotifierProvider(create: (_) => RefinementModel());
@@ -160,68 +164,36 @@ ChangeNotifierProxyProvider<UserModel, UserDataModel> userDataProvider() {
   );
 }
 
-ChangeNotifierProxyProvider3<AppConfigModel, LibraryIndexModel,
-    LibraryFilterModel, RemoteLibraryModel> remoteLibraryProvider() {
-  return ChangeNotifierProxyProvider3<AppConfigModel, LibraryIndexModel,
-      LibraryFilterModel, RemoteLibraryModel>(
-    create: (_) => RemoteLibraryModel(),
-    update: (
-      _,
-      appConfig,
-      libraryModel,
-      libraryFilter,
-      remoteLibraryModel,
-    ) =>
-        remoteLibraryModel!
-          ..update(appConfig, libraryModel, libraryFilter.filter),
-  );
-}
-
-ChangeNotifierProxyProvider5<
-    AppConfigModel,
-    GameTagsModel,
-    LibraryIndexModel,
-    RemoteLibraryModel,
-    LibraryFilterModel,
+ChangeNotifierProxyProvider3<AppConfigModel, LibraryIndexModel, CustomViewModel,
     LibraryViewModel> libraryEntriesProvider() {
-  return ChangeNotifierProxyProvider5<
-      AppConfigModel,
-      GameTagsModel,
-      LibraryIndexModel,
-      RemoteLibraryModel,
-      LibraryFilterModel,
-      LibraryViewModel>(
+  return ChangeNotifierProxyProvider3<AppConfigModel, LibraryIndexModel,
+      CustomViewModel, LibraryViewModel>(
     create: (_) => LibraryViewModel(),
     update: (
       _,
       appConfigModel,
-      gameTagsModel,
       libraryIndexModel,
-      remoteLibraryModel,
-      libraryFilterModel,
+      customViewModel,
       libraryViewModel,
     ) {
       return libraryViewModel!
         ..update(
           appConfigModel,
-          gameTagsModel,
           libraryIndexModel,
-          remoteLibraryModel,
-          libraryFilterModel,
+          customViewModel,
         );
     },
   );
 }
 
-ChangeNotifierProxyProvider5<AppConfigModel, TimelineModel, UserLibraryModel,
-    WishlistModel, GameTagsModel, HomeSlatesModel> homeSlatesProvider() {
-  return ChangeNotifierProxyProvider5<AppConfigModel, TimelineModel,
-      UserLibraryModel, WishlistModel, GameTagsModel, HomeSlatesModel>(
+ChangeNotifierProxyProvider4<AppConfigModel, UserLibraryModel, WishlistModel,
+    GameTagsModel, HomeSlatesModel> homeSlatesProvider() {
+  return ChangeNotifierProxyProvider4<AppConfigModel, UserLibraryModel,
+      WishlistModel, GameTagsModel, HomeSlatesModel>(
     create: (_) => HomeSlatesModel(),
     update: (
       _,
       appConfigModel,
-      timelineModel,
       libraryModel,
       wishlistModel,
       gameTagsModel,
@@ -230,7 +202,6 @@ ChangeNotifierProxyProvider5<AppConfigModel, TimelineModel, UserLibraryModel,
       return homeSlatesModel!
         ..update(
           appConfigModel,
-          timelineModel,
           libraryModel,
           wishlistModel,
           gameTagsModel,

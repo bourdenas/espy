@@ -34,7 +34,7 @@ class _ShelveState extends State<Shelve> {
   @override
   Widget build(BuildContext context) {
     return MultiSliver(
-      pushPinnedChildren: true,
+      pushPinnedChildren: false,
       children: [
         SliverPersistentHeader(
           pinned: true,

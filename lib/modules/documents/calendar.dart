@@ -1,16 +1,15 @@
 import 'package:espy/modules/documents/game_digest.dart';
 
-class Timeline {
-  final List<ReleaseEvent> releases;
+class Calendar {
+  final List<ReleaseEvent> years;
 
-  const Timeline({
-    this.releases = const [],
+  const Calendar({
+    this.years = const [],
   });
 
-  Timeline.fromJson(Map<String, dynamic> json)
-      : this(releases: [
-          for (final event in json['releases'] ?? [])
-            ReleaseEvent.fromJson(event),
+  Calendar.fromJson(Map<String, dynamic> json)
+      : this(years: [
+          for (final event in json['years'] ?? []) ReleaseEvent.fromJson(event),
         ]);
 
   Map<String, dynamic> toJson() {
