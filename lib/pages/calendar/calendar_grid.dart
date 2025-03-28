@@ -4,12 +4,13 @@ import 'package:espy/pages/calendar/calendar_card.dart';
 import 'package:flutter/material.dart';
 
 class CalendarGridEntry {
-  static const CalendarGridEntry empty = CalendarGridEntry(null, []);
+  static CalendarGridEntry empty = CalendarGridEntry(null, [], onClick: (_) {});
 
-  const CalendarGridEntry(this.label, this.digests);
+  const CalendarGridEntry(this.label, this.digests, {required this.onClick});
 
   final String? label;
   final List<GameDigest> digests;
+  final void Function(CalendarGridEntry) onClick;
 }
 
 class CalendarGrid extends StatelessWidget {
@@ -73,7 +74,7 @@ class CalendarGrid extends StatelessWidget {
   Widget calendarTile(CalendarGridEntry entry) {
     if (entry.digests.isNotEmpty) {
       return CalendarCard(
-        entry.digests,
+        entry,
         overlays: [
           Positioned(
             top: -1,

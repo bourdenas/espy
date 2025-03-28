@@ -1,18 +1,15 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/documents/game_digest.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
+import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 class CalendarCard extends StatefulWidget {
   const CalendarCard(
-    this.digests, {
+    this.calendarEntry, {
     super.key,
     this.overlays = const [],
   });
 
-  final List<GameDigest> digests;
+  final CalendarGridEntry calendarEntry;
   final List<Widget> overlays;
 
   @override
@@ -51,10 +48,7 @@ class _CalendarCardState extends State<CalendarCard>
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: InkWell(
-        onTap: () {
-          context.read<CustomViewModel>().digests = widget.digests;
-          context.pushNamed('view');
-        },
+        onTap: () => widget.calendarEntry.onClick(widget.calendarEntry),
         onHover: (val) => setState(() {
           hover = val;
           if (hover) {
@@ -87,7 +81,7 @@ class _CalendarCardState extends State<CalendarCard>
             children: [
               Row(
                 children: [
-                  for (final digest in widget.digests.take(2))
+                  for (final digest in widget.calendarEntry.digests.take(2))
                     Expanded(
                       child: Image.network(
                         '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg',
@@ -97,7 +91,8 @@ class _CalendarCardState extends State<CalendarCard>
               ),
               Row(
                 children: [
-                  for (final digest in widget.digests.skip(2).take(2))
+                  for (final digest
+                      in widget.calendarEntry.digests.skip(2).take(2))
                     Expanded(
                       child: Image.network(
                         '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg',

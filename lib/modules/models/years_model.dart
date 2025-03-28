@@ -11,7 +11,7 @@ class YearsModel extends ChangeNotifier {
 
     final doc = await FirebaseFirestore.instance
         .collection('espy')
-        .doc(year)
+        .doc(year == '1970' ? 'tba' : year)
         .withConverter<AnnualReviewDoc>(
           fromFirestore: (snapshot, _) =>
               AnnualReviewDoc.fromJson(snapshot.data()!),

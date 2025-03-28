@@ -3,10 +3,12 @@ import 'dart:collection';
 import 'package:espy/modules/documents/calendar.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/years_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -67,7 +69,14 @@ class CalendarViewMonthly extends StatelessWidget {
             entries.add(CalendarGridEntry.empty);
           } else {
             final label = DateFormat('MMM y').format(DateTime(year, month));
-            entries.add(CalendarGridEntry(label, monthlyReleases[label] ?? []));
+            entries.add(CalendarGridEntry(
+              label,
+              monthlyReleases[label] ?? [],
+              onClick: (CalendarGridEntry entry) {
+                context.read<CustomViewModel>().digests = entry.digests;
+                context.pushNamed('view');
+              },
+            ));
           }
         }
 

@@ -2,9 +2,11 @@ import 'dart:collection';
 
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -59,7 +61,14 @@ class CalendarViewDaily extends StatelessWidget {
     for (int i = 0; i < gridTiles; ++i) {
       final label =
           DateFormat('yMMMd').format(fromDate.add(Duration(days: i + 1)));
-      entries.add(CalendarGridEntry(label, dailyReleases[label] ?? []));
+      entries.add(CalendarGridEntry(
+        label,
+        dailyReleases[label] ?? [],
+        onClick: (CalendarGridEntry entry) {
+          context.read<CustomViewModel>().digests = entry.digests;
+          context.pushNamed('view');
+        },
+      ));
     }
 
     return CalendarGrid(
