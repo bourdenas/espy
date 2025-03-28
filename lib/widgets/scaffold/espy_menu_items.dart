@@ -4,7 +4,6 @@ import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class MenuItem {
@@ -64,37 +63,18 @@ List<MenuItem> espyMenuItems = [
     },
   ),
   MenuItem(
-    requiresSignIn: false,
-    label: 'Timeline',
-    icon: Icons.timeline_outlined,
-    selectedIcon: Icons.timeline,
-    onTap: (context) {
-      context.read<RefinementModel>().clear();
-
-      final DateFormat formatter = DateFormat('MMM');
-      final now = DateTime.now();
-      context.goNamed('releases', pathParameters: {
-        'label': formatter.format(now),
-        'year': '${now.year}',
-      });
-    },
-  ),
-  MenuItem(
-    requiresSignIn: false,
-    label: 'Years',
-    icon: Icons.history_outlined,
-    selectedIcon: Icons.history,
-    onTap: (context) {
-      context.read<RefinementModel>().clear();
-      context.goNamed('years');
-    },
-  ),
-  MenuItem(
     requiresSignIn: true,
     label: 'Unresolved',
     icon: Icons.task_alt_outlined,
     selectedIcon: Icons.task_alt,
     onTap: (context) => context.goNamed('unresolved'),
     badgeCount: (context) => context.watch<UnresolvedModel>().unknown.length,
+  ),
+  MenuItem(
+    requiresSignIn: false,
+    label: 'Search',
+    icon: Icons.search_outlined,
+    selectedIcon: Icons.search,
+    onTap: (context) => context.goNamed('search'),
   ),
 ];
