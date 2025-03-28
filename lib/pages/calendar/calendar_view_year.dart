@@ -1,31 +1,41 @@
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/calendar_model.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
-import 'package:espy/modules/models/years_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class CalendarViewAnnually extends StatelessWidget {
-  const CalendarViewAnnually({
+class CalendarViewYear extends StatelessWidget {
+  const CalendarViewYear({
     super.key,
     this.startDate,
     this.leadingYears = 25,
     this.trailingYears = 1,
+    this.gamesByYear,
+    this.onClick,
   });
 
   final DateTime? startDate;
   final int leadingYears;
   final int trailingYears;
+  final Map<String, List<GameDigest>>? gamesByYear;
+  final Future<void> Function(CalendarGridEntry)? onClick;
 
   @override
   Widget build(BuildContext context) {
-    final today = startDate ?? DateTime.now().toUtc();
+    final today = DateTime.now().toUtc();
+    final startDate = this.startDate ?? today;
 
     return FutureBuilder(
-      future: context.read<CalendarModel>().load(),
-      builder: (BuildContext context, AsyncSnapshot<CalendarModel> snapshot) {
+      future: gamesByYear == null
+          ? context.read<CalendarModel>().calendar
+          : () async {
+              return gamesByYear!;
+            }(),
+      builder: (BuildContext context,
+          AsyncSnapshot<Map<String, List<GameDigest>>> snapshot) {
         if (snapshot.connectionState != ConnectionState.done ||
             !snapshot.hasData) {
           return Container();
@@ -33,30 +43,26 @@ class CalendarViewAnnually extends StatelessWidget {
         final calendar = snapshot.data!;
 
         final entries = <CalendarGridEntry>[];
-        for (int year = today.year - leadingYears;
-            year < today.year + trailingYears + 1;
+        for (int year = startDate.year - leadingYears;
+            year < startDate.year + trailingYears + 1;
             ++year) {
           entries.add(CalendarGridEntry(
             '$year',
-            calendar.gamesIn(year),
-            onClick: (CalendarGridEntry entry) async {
-              final games = await context.read<YearsModel>().gamesIn('$year');
-              if (context.mounted) {
-                context.read<CustomViewModel>().digests = games.releases;
-                context.pushNamed('view');
-              }
-            },
+            calendar['$year'] ?? [],
+            onClick: onClick != null
+                ? onClick!
+                : (CalendarGridEntry entry) async {
+                    context.read<CustomViewModel>().digests = entry.digests;
+                    context.pushNamed('view');
+                  },
           ));
         }
         entries.add(CalendarGridEntry(
-          'TBD',
-          calendar.gamesIn(1970).toList(),
+          'TBA',
+          calendar['1970'] ?? [],
           onClick: (CalendarGridEntry entry) async {
-            final games = await context.read<YearsModel>().gamesIn('1970');
-            if (context.mounted) {
-              context.read<CustomViewModel>().digests = games.releases;
-              context.pushNamed('view');
-            }
+            context.read<CustomViewModel>().digests = entry.digests;
+            context.pushNamed('view');
           },
         ));
 

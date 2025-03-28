@@ -1,9 +1,13 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
-import 'package:espy/pages/calendar/calendar_view_annually.dart';
-import 'package:espy/pages/calendar/calendar_view_daily.dart';
-import 'package:espy/pages/calendar/calendar_view_monthly.dart';
+import 'package:espy/modules/models/years_model.dart';
+import 'package:espy/pages/calendar/calendar_grid.dart';
+import 'package:espy/pages/calendar/calendar_view_year.dart';
+import 'package:espy/pages/calendar/calendar_view_day.dart';
+import 'package:espy/pages/calendar/calendar_view_month.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class CalendarPage extends StatefulWidget {
@@ -53,10 +57,21 @@ class _CalendarPageState extends State<CalendarPage> {
         },
         child: switch (calendarView) {
           CalendarView.day =>
-            CalendarViewDaily(libraryEntries, leadingWeeks: leadingTime),
+            CalendarViewDay(libraryEntries, leadingWeeks: leadingTime),
           CalendarView.month =>
-            CalendarViewMonthly(libraryEntries, leadingYears: leadingTime),
-          CalendarView.year => CalendarViewAnnually(leadingYears: leadingTime),
+            CalendarViewMonth(libraryEntries, leadingYears: leadingTime),
+          CalendarView.year => CalendarViewYear(
+              leadingYears: leadingTime,
+              onClick: (CalendarGridEntry entry) async {
+                final games = await context
+                    .read<YearsModel>()
+                    .gamesIn('${entry.digests.first.releaseYear}');
+                if (context.mounted) {
+                  context.read<CustomViewModel>().digests = games.releases;
+                  context.pushNamed('view');
+                }
+              },
+            ),
         },
       ),
       floatingActionButton: Row(

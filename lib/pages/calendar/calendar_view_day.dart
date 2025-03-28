@@ -10,8 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class CalendarViewDaily extends StatelessWidget {
-  const CalendarViewDaily(
+class CalendarViewDay extends StatelessWidget {
+  const CalendarViewDay(
     this.libraryEntries, {
     super.key,
     this.startDate,

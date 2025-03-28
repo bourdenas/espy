@@ -10,6 +10,13 @@ class CalendarModel extends ChangeNotifier {
 
   Map<String, List<GameDigest>>? _calendar;
 
+  Future<Map<String, List<GameDigest>>> get calendar async {
+    if (_calendar == null) {
+      await load();
+    }
+    return _calendar ?? {};
+  }
+
   Future<CalendarModel> load() async {
     if (_calendar == null) {
       final doc = await FirebaseFirestore.instance

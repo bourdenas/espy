@@ -12,8 +12,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class CalendarViewMonthly extends StatelessWidget {
-  const CalendarViewMonthly(
+class CalendarViewMonth extends StatelessWidget {
+  const CalendarViewMonth(
     this.libraryEntries, {
     super.key,
     this.startDate,

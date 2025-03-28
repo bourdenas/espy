@@ -1,11 +1,14 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
+import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/library/library_stats.dart';
 import 'package:espy/widgets/shelve.dart';
-import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 
 class CompanyPage extends StatelessWidget {
@@ -37,6 +40,22 @@ class CompanyContent extends StatefulWidget {
   State<CompanyContent> createState() => _CompanyContentState();
 }
 
+Map<String, List<GameDigest>> groupBy(
+    Iterable<GameDigest> digests, String Function(GameDigest) getKey,
+    [int Function(GameDigest, GameDigest)? sortBy]) {
+  final groups = <String, List<GameDigest>>{};
+  for (final digest in digests) {
+    groups.putIfAbsent(getKey(digest), () => []).add(digest);
+  }
+
+  if (sortBy != null) {
+    for (final games in groups.values) {
+      games.sort(sortBy);
+    }
+  }
+  return groups;
+}
+
 class _CompanyContentState extends State<CompanyContent> {
   IgdbCompany? selectedCompany;
 
@@ -49,17 +68,54 @@ class _CompanyContentState extends State<CompanyContent> {
         ? '${Urls.imageProvider}/t_logo_med/${widget.companyDocs.first.logo!.imageId}.png'
         : null;
 
-    final developed = {
-      for (final digest in selectedCompany?.developed ??
-          widget.companyDocs.map((e) => e.developed).expand((e) => e).toList())
-        digest.id: LibraryEntry.fromGameDigest(digest)
-    };
-    final published = {
-      for (final digest in selectedCompany?.published ??
-          widget.companyDocs.map((e) => e.published).expand((e) => e).toList())
-        if (!developed.containsKey(digest.id))
-          digest.id: LibraryEntry.fromGameDigest(digest)
-    };
+    final developed = <GameDigest>[];
+    for (final digest in selectedCompany?.developed ??
+        widget.companyDocs.map((e) => e.developed).expand((e) => e).toList()) {
+      developed.add(digest);
+    }
+    final minDateDeveloped = developed.isEmpty
+        ? DateTime(1970)
+        : DateTime.fromMillisecondsSinceEpoch(developed
+                .map((digest) => digest.releaseDate)
+                .where((date) => date > 0)
+                .reduce(min) *
+            1000);
+    final maxDateDeveloped = developed.isEmpty
+        ? DateTime(1970)
+        : DateTime.fromMillisecondsSinceEpoch(developed
+                .map((digest) => digest.releaseDate)
+                .where((date) => date > 0)
+                .reduce(max) *
+            1000);
+
+    final published = <GameDigest>[];
+    for (final digest in selectedCompany?.published ??
+        widget.companyDocs.map((e) => e.published).expand((e) => e).toList()) {
+      published.add(digest);
+    }
+    final minDatePublished = published.isEmpty
+        ? DateTime(1970)
+        : DateTime.fromMillisecondsSinceEpoch(published
+                .map((digest) => digest.releaseDate)
+                .where((date) => date > 0)
+                .reduce(min) *
+            1000);
+    final maxDatePublished = published.isEmpty
+        ? DateTime(1970)
+        : DateTime.fromMillisecondsSinceEpoch(published
+                .map((digest) => digest.releaseDate)
+                .where((date) => date > 0)
+                .reduce(max) *
+            1000);
+
+    final developedGames = groupBy(
+        developed,
+        (digest) => '${digest.releaseYear}',
+        (l, r) => l.releaseDate.compareTo(r.releaseDate));
+    final publishedGames = groupBy(
+        published,
+        (digest) => '${digest.releaseYear}',
+        (l, r) => l.releaseDate.compareTo(r.releaseDate));
 
     return CustomScrollView(
       primary: true,
@@ -89,69 +145,86 @@ class _CompanyContentState extends State<CompanyContent> {
         if (widget.companyDocs.length > 1)
           Shelve(
             title: 'Subsidiaries',
-            expansion: Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  height: 120,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      for (final company in widget.companyDocs) ...[
-                        const SizedBox(width: 64),
-                        Column(
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  selectedCompany = selectedCompany != company
-                                      ? company
-                                      : null;
-                                });
-                              },
-                              child: SizedBox(
-                                height: 64,
-                                child: company.logo != null
-                                    ? CachedNetworkImage(
-                                        imageUrl:
-                                            '${Urls.imageProvider}/t_logo_med/${company.logo?.imageId}.png',
-                                      )
-                                    : const CircleAvatar(
-                                        child: Icon(Icons.question_mark),
-                                      ),
-                              ),
-                            ),
-                            const Expanded(child: SizedBox.shrink()),
-                            Text(
-                              company.name,
-                              style: const TextStyle(fontSize: 16.0),
-                            ),
-                            const SizedBox(width: 16),
-                          ],
-                        ),
-                      ]
-                    ],
-                  ),
-                )),
+            expansion: subsidiaries(),
             color: Colors.amber,
             expanded: true,
           ),
         Shelve(
           title: 'Drill-down',
-          expansion: LibraryStats(developed.values),
+          expansion: LibraryStats(
+              developed.map((digest) => LibraryEntry.fromGameDigest(digest))),
           color: Colors.amber,
           expanded: false,
         ),
-        TileShelve(
-          title: 'Developed (${developed.length})',
-          color: Colors.grey,
-          entries: developed.values,
-        ),
-        TileShelve(
-          title: 'Published (${published.length})',
-          color: Colors.grey,
-          entries: published.values,
-        ),
+        if (developedGames.isNotEmpty)
+          Shelve(
+            title: 'Developed (${developed.length})',
+            expansion: CalendarViewYear(
+              startDate: minDateDeveloped,
+              leadingYears: 0,
+              trailingYears: maxDateDeveloped.year - minDateDeveloped.year,
+              gamesByYear: developedGames,
+            ),
+            color: Colors.grey,
+          ),
+        if (publishedGames.isNotEmpty)
+          Shelve(
+            title: 'Published (${published.length})',
+            expansion: CalendarViewYear(
+              startDate: minDatePublished,
+              leadingYears: 0,
+              trailingYears: maxDatePublished.year - minDatePublished.year,
+              gamesByYear: publishedGames,
+            ),
+            color: Colors.grey,
+          ),
       ],
+    );
+  }
+
+  Padding subsidiaries() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: SizedBox(
+        height: 120,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: [
+            for (final company in widget.companyDocs) ...[
+              const SizedBox(width: 64),
+              Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        selectedCompany =
+                            selectedCompany != company ? company : null;
+                      });
+                    },
+                    child: SizedBox(
+                      height: 64,
+                      child: company.logo != null
+                          ? CachedNetworkImage(
+                              imageUrl:
+                                  '${Urls.imageProvider}/t_logo_med/${company.logo?.imageId}.png',
+                            )
+                          : const CircleAvatar(
+                              child: Icon(Icons.question_mark),
+                            ),
+                    ),
+                  ),
+                  const Expanded(child: SizedBox.shrink()),
+                  Text(
+                    company.name,
+                    style: const TextStyle(fontSize: 16.0),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+              ),
+            ]
+          ],
+        ),
+      ),
     );
   }
 }
