@@ -60,8 +60,8 @@ class HomeSlatesModel extends ChangeNotifier {
           SlateInfo(
             collection,
             tagsModel.collections.games(collection),
-            (context) => updateLibraryView(
-                context, LibraryFilter(collection: collection)),
+            (context) => context
+                .pushNamed('collection', pathParameters: {'name': collection}),
           ),
       if (appConfigModel.stacks.value == Stacks.developers)
         for (final company in tagsModel.developers.all)

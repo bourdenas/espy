@@ -145,3 +145,19 @@ bool _match(Iterable<String> left, Iterable<String> right) {
 
   return a.intersection(b).length == a.length;
 }
+
+Map<String, List<GameDigest>> groupDigestsBy(
+    Iterable<GameDigest> digests, String Function(GameDigest) getKey,
+    [int Function(GameDigest, GameDigest)? sortBy]) {
+  final groups = <String, List<GameDigest>>{};
+  for (final digest in digests) {
+    groups.putIfAbsent(getKey(digest), () => []).add(digest);
+  }
+
+  if (sortBy != null) {
+    for (final games in groups.values) {
+      games.sort(sortBy);
+    }
+  }
+  return groups;
+}

@@ -40,22 +40,6 @@ class CompanyContent extends StatefulWidget {
   State<CompanyContent> createState() => _CompanyContentState();
 }
 
-Map<String, List<GameDigest>> groupBy(
-    Iterable<GameDigest> digests, String Function(GameDigest) getKey,
-    [int Function(GameDigest, GameDigest)? sortBy]) {
-  final groups = <String, List<GameDigest>>{};
-  for (final digest in digests) {
-    groups.putIfAbsent(getKey(digest), () => []).add(digest);
-  }
-
-  if (sortBy != null) {
-    for (final games in groups.values) {
-      games.sort(sortBy);
-    }
-  }
-  return groups;
-}
-
 class _CompanyContentState extends State<CompanyContent> {
   IgdbCompany? selectedCompany;
 
@@ -108,11 +92,11 @@ class _CompanyContentState extends State<CompanyContent> {
                 .reduce(max) *
             1000);
 
-    final developedGames = groupBy(
+    final developedGames = groupDigestsBy(
         developed,
         (digest) => '${digest.releaseYear}',
         (l, r) => l.releaseDate.compareTo(r.releaseDate));
-    final publishedGames = groupBy(
+    final publishedGames = groupDigestsBy(
         published,
         (digest) => '${digest.releaseYear}',
         (l, r) => l.releaseDate.compareTo(r.releaseDate));

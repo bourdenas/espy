@@ -7,12 +7,12 @@ import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/pages/calendar/calendar_page.dart';
+import 'package:espy/pages/collection/collection_page.dart';
 import 'package:espy/pages/company/company_page.dart';
 import 'package:espy/pages/explore/explore_page.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/library/library_page.dart';
-import 'package:espy/pages/timeline/timeline_page.dart';
 import 'package:espy/pages/timeline/timeline_view.dart';
 import 'package:espy/widgets/scaffold/espy_scaffold.dart';
 import 'package:espy/pages/home/home_content.dart';
@@ -55,31 +55,6 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
-        // Annual releases.
-        name: 'years',
-        path: '/years',
-        pageBuilder: (context, state) => NoTransitionPage(
-          key: state.pageKey,
-          name: 'years',
-          child: EspyScaffold(
-            body: const TimelinePage(year: '2024'),
-            path: state.path!,
-          ),
-        ),
-      ),
-      GoRoute(
-        name: 'explore',
-        path: '/explore',
-        pageBuilder: (context, state) => NoTransitionPage(
-          key: state.pageKey,
-          name: 'explore',
-          child: EspyScaffold(
-            body: const ExplorePage(),
-            path: state.path!,
-          ),
-        ),
-      ),
-      GoRoute(
         name: 'games',
         path: '/games',
         pageBuilder: (context, state) => NoTransitionPage(
@@ -104,36 +79,18 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
-        // Vertical timeline view that shows releases by month.
-        name: 'calendar',
-        path: '/calendar',
+        name: 'explore',
+        path: '/explore',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
-          name: 'calendar',
+          name: 'explore',
           child: EspyScaffold(
-            body: CalendarPage(),
+            body: const ExplorePage(),
             path: state.path!,
           ),
         ),
       ),
       GoRoute(
-        // Vertical timeline view that shows releases by month.
-        name: 'releases',
-        path: '/releases/:label/:year',
-        pageBuilder: (context, state) => NoTransitionPage(
-          key: state.pageKey,
-          name: 'releases',
-          child: EspyScaffold(
-            body: TimelineView(
-              scrollToLabel: state.pathParameters['label'],
-              year: state.pathParameters['year'],
-            ),
-            path: state.path!,
-          ),
-        ),
-      ),
-      GoRoute(
-        // Library view month of game releases from a timeline view.
         name: 'view',
         path: '/view',
         pageBuilder: (context, state) => NoTransitionPage(
@@ -141,6 +98,18 @@ class EspyRouter extends StatelessWidget {
           name: 'view',
           child: EspyScaffold(
             body: const LibraryPage(),
+            path: state.path!,
+          ),
+        ),
+      ),
+      GoRoute(
+        name: 'calendar',
+        path: '/calendar',
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          name: 'calendar',
+          child: EspyScaffold(
+            body: CalendarPage(),
             path: state.path!,
           ),
         ),
@@ -166,13 +135,12 @@ class EspyRouter extends StatelessWidget {
         ],
       ),
       GoRoute(
-        name: 'company',
-        path: '/company/:name',
+        name: 'unresolved',
+        path: '/unresolved',
         pageBuilder: (context, state) => NoTransitionPage(
-          name: 'company',
-          arguments: state.pathParameters['name']!,
+          name: 'unresolved',
           child: EspyScaffold(
-            body: CompanyPage(name: state.pathParameters['name']!),
+            body: const UnresolvedPage(),
             path: state.path!,
           ),
         ),
@@ -189,12 +157,25 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
-        name: 'unresolved',
-        path: '/unresolved',
+        name: 'company',
+        path: '/company/:name',
         pageBuilder: (context, state) => NoTransitionPage(
-          name: 'unresolved',
+          name: 'company',
+          arguments: state.pathParameters['name']!,
           child: EspyScaffold(
-            body: const UnresolvedPage(),
+            body: CompanyPage(name: state.pathParameters['name']!),
+            path: state.path!,
+          ),
+        ),
+      ),
+      GoRoute(
+        name: 'collection',
+        path: '/collection/:name',
+        pageBuilder: (context, state) => NoTransitionPage(
+          name: 'collection',
+          arguments: state.pathParameters['name']!,
+          child: EspyScaffold(
+            body: CollectionPage(name: state.pathParameters['name']!),
             path: state.path!,
           ),
         ),

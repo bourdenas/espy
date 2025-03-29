@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
+import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:http/http.dart' as http;
 
@@ -88,5 +90,25 @@ class BackendApi {
 
     final jsonObj = jsonDecode(response.body) as List<dynamic>;
     return jsonObj.map((obj) => IgdbCompany.fromJson(obj)).toList();
+  }
+
+  static Future<IgdbCollection?> collectionFetch(String name) async {
+    if (name.isEmpty) {
+      return null;
+    }
+
+    final query = await FirebaseFirestore.instance
+        .collection('collections')
+        .where('name', isEqualTo: name)
+        .withConverter<IgdbCollection>(
+          fromFirestore: (snapshot, _) =>
+              IgdbCollection.fromJson(snapshot.data()!),
+          toFirestore: (entry, _) => {},
+        )
+        .get();
+    for (final doc in query.docs) {
+      return doc.data();
+    }
+    return null;
   }
 }
