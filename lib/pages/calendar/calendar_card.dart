@@ -71,6 +71,7 @@ class _CalendarCardState extends State<CalendarCard>
 
   Widget coverImage(BuildContext context) {
     final covers = widget.calendarEntry.getCovers();
+    final behindFoldGames = widget.calendarEntry.digests.length - covers.length;
     return Material(
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -102,7 +103,21 @@ class _CalendarCardState extends State<CalendarCard>
               ),
             ],
           ),
-          ...widget.overlays
+          ...widget.overlays,
+          if (behindFoldGames > 0)
+            Positioned(
+              bottom: 8,
+              right: 4,
+              child: SizedBox(
+                width: 64,
+                height: 64,
+                child: CircleAvatar(
+                  backgroundColor: Color.fromRGBO(0, 0, 0, .7),
+                  // padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+                  child: Text('+ $behindFoldGames'),
+                ),
+              ),
+            ),
         ],
       ),
     );
