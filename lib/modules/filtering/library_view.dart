@@ -25,17 +25,17 @@ class LibraryView {
             (_config.showCasual.value && e.isCasual))
         .toList();
 
-    switch (_config.libraryOrdering.value) {
-      case LibraryOrdering.release:
-        _libraryEntries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate));
-        break;
-      case LibraryOrdering.rating:
-        _libraryEntries.sort((a, b) => -a.espyScore.compareTo(b.espyScore));
-        break;
-      case LibraryOrdering.popularity:
-        _libraryEntries.sort((a, b) => -a.popularity.compareTo(b.popularity));
-        break;
-    }
+    final _ = switch (_config.libraryOrdering.value) {
+      LibraryOrdering.release =>
+        _libraryEntries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate)),
+      LibraryOrdering.rating =>
+        _libraryEntries.sort((a, b) => -a.espyScore.compareTo(b.espyScore)),
+      LibraryOrdering.popularity => _libraryEntries.sort((a, b) {
+          final cmp = -a.popularity.compareTo(b.popularity);
+          if (cmp != 0) return cmp;
+          return -a.hype.compareTo(b.hype);
+        }),
+    };
   }
 
   List<(String, List<LibraryEntry>)> group(LibraryGrouping grouping) {
