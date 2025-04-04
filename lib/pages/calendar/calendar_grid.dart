@@ -1,17 +1,7 @@
-import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/calendar/calendar_card.dart';
+import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:flutter/material.dart';
-
-class CalendarGridEntry {
-  static CalendarGridEntry empty = CalendarGridEntry(null, [], onClick: (_) {});
-
-  const CalendarGridEntry(this.label, this.digests, {required this.onClick});
-
-  final String? label;
-  final List<GameDigest> digests;
-  final void Function(CalendarGridEntry) onClick;
-}
 
 class CalendarGrid extends StatelessWidget {
   const CalendarGrid(

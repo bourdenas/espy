@@ -1,5 +1,5 @@
 import 'package:espy/constants/urls.dart';
-import 'package:espy/pages/calendar/calendar_grid.dart';
+import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:flutter/material.dart';
 
 class CalendarCard extends StatefulWidget {
@@ -70,6 +70,7 @@ class _CalendarCardState extends State<CalendarCard>
   }
 
   Widget coverImage(BuildContext context) {
+    final covers = widget.calendarEntry.getCovers();
     return Material(
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -81,7 +82,7 @@ class _CalendarCardState extends State<CalendarCard>
             children: [
               Row(
                 children: [
-                  for (final digest in widget.calendarEntry.digests.take(2))
+                  for (final digest in covers.take(2))
                     Expanded(
                       child: Image.network(
                         '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg',
@@ -91,8 +92,7 @@ class _CalendarCardState extends State<CalendarCard>
               ),
               Row(
                 children: [
-                  for (final digest
-                      in widget.calendarEntry.digests.skip(2).take(2))
+                  for (final digest in covers.skip(2).take(2))
                     Expanded(
                       child: Image.network(
                         '${Urls.imageProvider}/t_cover_big/${digest.cover}.jpg',

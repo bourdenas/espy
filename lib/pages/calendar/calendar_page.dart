@@ -2,7 +2,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/years_model.dart';
-import 'package:espy/pages/calendar/calendar_grid.dart';
+import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/calendar/calendar_view_day.dart';
 import 'package:espy/pages/calendar/calendar_view_month.dart';

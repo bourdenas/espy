@@ -2,6 +2,7 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/calendar_model.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
+import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -46,24 +47,46 @@ class CalendarViewYear extends StatelessWidget {
         for (int year = startDate.year - leadingYears;
             year < startDate.year + trailingYears + 1;
             ++year) {
+          final games = calendar['$year'] ?? [];
           entries.add(CalendarGridEntry(
             '$year',
-            calendar['$year'] ?? [],
+            games,
             onClick: onClick != null
                 ? onClick!
                 : (CalendarGridEntry entry) async {
                     context.read<CustomViewModel>().digests = entry.digests;
                     context.pushNamed('view');
                   },
+            coverExtractor: (games) {
+              final scored = games
+                  .where((digest) => (digest.scores.espyScore ?? 0) > 0)
+                  .toList()
+                ..sort((a, b) =>
+                    b.scores.espyScore!.compareTo(a.scores.espyScore!));
+              if (scored.isNotEmpty) {
+                final highlyScored = scored
+                    .where((digest) => digest.scores.espyScore! >= 80)
+                    .length;
+                if (highlyScored > 0 && highlyScored < 3) {
+                  return [scored[0]];
+                } else {
+                  return scored.take(4).toList();
+                }
+              }
+              return games;
+            },
           ));
         }
         entries.add(CalendarGridEntry(
           'TBA',
           calendar['1970'] ?? [],
-          onClick: (CalendarGridEntry entry) async {
-            context.read<CustomViewModel>().digests = entry.digests;
-            context.pushNamed('view');
-          },
+          onClick: onClick != null
+              ? onClick!
+              : (CalendarGridEntry entry) async {
+                  context.read<CustomViewModel>().digests = entry.digests;
+                  context.pushNamed('view');
+                },
+          coverExtractor: (games) => games.take(4).toList(),
         ));
 
         return CalendarGrid(
