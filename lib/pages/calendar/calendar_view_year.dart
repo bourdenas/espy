@@ -73,7 +73,7 @@ class CalendarViewYear extends StatelessWidget {
                   return scored.take(4).toList();
                 }
               }
-              return games;
+              return games.toList();
             },
           ));
         }

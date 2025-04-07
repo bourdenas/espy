@@ -177,18 +177,18 @@ class _SettingsState extends State<Settings> {
   Widget libraryStats(BuildContext context) {
     final entries = context.watch<UserLibraryModel>().entries;
 
-    final mainCount = entries.where((e) => e.isMain).length;
-    final dlcCount = entries.where((e) => e.isDlc).length;
-    final expansionCount = entries.where((e) => e.isExpansion).length;
-    final bundleCount = entries.where((e) => e.isBundle).length;
+    final mainCount = entries.where((e) => e.digest.isMain).length;
+    final dlcCount = entries.where((e) => e.digest.isDlc).length;
+    final expansionCount = entries.where((e) => e.digest.isExpansion).length;
+    final bundleCount = entries.where((e) => e.digest.isBundle).length;
     final standaloneExpansionCount =
-        entries.where((e) => e.isStandaloneExpansion).length;
-    final episodeCount = entries.where((e) => e.isEpisode).length;
-    final seasonCount = entries.where((e) => e.isSeason).length;
-    final remakeCount = entries.where((e) => e.isRemake).length;
-    final remasterCount = entries.where((e) => e.isRemaster).length;
-    final versionCount = entries.where((e) => e.isVersion).length;
-    final ignoreCount = entries.where((e) => e.isIgnore).length;
+        entries.where((e) => e.digest.isStandaloneExpansion).length;
+    final episodeCount = entries.where((e) => e.digest.isEpisode).length;
+    final seasonCount = entries.where((e) => e.digest.isSeason).length;
+    final remakeCount = entries.where((e) => e.digest.isRemake).length;
+    final remasterCount = entries.where((e) => e.digest.isRemaster).length;
+    final versionCount = entries.where((e) => e.digest.isVersion).length;
+    final ignoreCount = entries.where((e) => e.digest.isIgnore).length;
 
     return Column(
       children: [

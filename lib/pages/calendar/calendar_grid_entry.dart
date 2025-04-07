@@ -14,16 +14,23 @@ class CalendarGridEntry {
   final List<GameDigest> digests;
   final void Function(CalendarGridEntry) onClick;
 
-  final List<GameDigest> Function(List<GameDigest> games)? coverExtractor;
+  final List<GameDigest> Function(Iterable<GameDigest> games)? coverExtractor;
 
   List<GameDigest> getCovers() {
-    return coverExtractor != null
-        ? coverExtractor!(digests)
-        : _defaultExtractor();
+    final mainGames = digests.where((e) => e.isMain);
+    final covers = coverExtractor != null
+        ? coverExtractor!(mainGames)
+        : _defaultExtractor(mainGames);
+
+    return covers.isNotEmpty
+        ? covers
+        : coverExtractor != null
+            ? coverExtractor!(digests)
+            : _defaultExtractor(digests);
   }
 
-  List<GameDigest> _defaultExtractor() {
-    final mostPopular = digests
+  List<GameDigest> _defaultExtractor(Iterable<GameDigest> games) {
+    final mostPopular = games
         .where((digest) => (digest.scores.popularity ?? 0) > 0)
         .toList()
       ..sort((a, b) => b.scores.popularity!.compareTo(a.scores.popularity!));
@@ -37,7 +44,7 @@ class CalendarGridEntry {
       }
     }
 
-    final scored = digests
+    final scored = games
         .where((digest) => (digest.scores.espyScore ?? 0) > 0)
         .toList()
       ..sort((a, b) => b.scores.espyScore!.compareTo(a.scores.espyScore!));
@@ -51,7 +58,7 @@ class CalendarGridEntry {
       }
     }
 
-    final hyped = digests
+    final hyped = games
         .where((digest) => (digest.scores.hype ?? 0) > 0)
         .toList()
       ..sort((a, b) => b.scores.hype!.compareTo(a.scores.hype!));
@@ -64,6 +71,6 @@ class CalendarGridEntry {
       }
     }
 
-    return digests;
+    return games.toList();
   }
 }

@@ -19,8 +19,8 @@ class UserLibraryModel extends ChangeNotifier {
 
   bool get isNotEmpty => _library.entries.isNotEmpty;
   Iterable<LibraryEntry> get all => _library.entries;
-  Iterable<LibraryEntry> get entries =>
-      _library.entries.where((e) => e.isStandaloneGame || e.isExpansion);
+  Iterable<LibraryEntry> get entries => _library.entries
+      .where((e) => e.digest.isStandaloneGame || e.digest.isExpansion);
 
   set library(Library lib) {
     lib.entries.sort((a, b) => -a.addedDate.compareTo(b.addedDate));

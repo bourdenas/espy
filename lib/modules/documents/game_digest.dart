@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/scores.dart';
+import 'package:espy/modules/models/genres_mapping.dart';
 import 'package:intl/intl.dart' show DateFormat;
 
 class GameDigest {
@@ -27,6 +28,26 @@ class GameDigest {
   int get releaseYear => release.year;
   DateTime get release =>
       DateTime.fromMillisecondsSinceEpoch(releaseDate * 1000);
+
+  bool get isStandaloneGame =>
+      isMain || isRemake || isRemaster || isStandaloneExpansion;
+
+  bool get isMain => category == 'Main';
+  bool get isDlc => category == 'Dlc';
+  bool get isExpansion => category == 'Expansion';
+  bool get isBundle => category == 'Bundle';
+  bool get isStandaloneExpansion => category == 'StandaloneExpansion';
+  bool get isEpisode => category == 'Episode';
+  bool get isSeason => category == 'Season';
+  bool get isRemake => category == 'Remake';
+  bool get isRemaster => category == 'Remaster';
+  bool get isVersion => category == 'Version';
+  bool get isIgnore => category == 'Ignore';
+
+  bool get isEarlyAccess => status == 'EarlyAccess';
+  bool get isCasual =>
+      espyGenres.isNotEmpty &&
+      espyGenres.every((genre) => Genres.groupOfGenre(genre) == 'Casual');
 
   GameDigest({
     required this.id,

@@ -13,16 +13,17 @@ class LibraryView {
     _libraryEntries = libraryEntries
         .where((e) =>
             (_config.showMains.value &&
-                e.isMain &&
-                !e.isEarlyAccess &&
-                !e.isCasual) ||
-            (_config.showExpansions.value && e.isExpansion) ||
-            (_config.showRemakes.value && (e.isRemake || e.isRemaster)) ||
-            (_config.showEarlyAccess.value && e.isEarlyAccess) ||
-            (_config.showDlcs.value && e.isDlc) ||
-            (_config.showVersions.value && e.isVersion) ||
-            (_config.showBundles.value && e.isBundle) ||
-            (_config.showCasual.value && e.isCasual))
+                e.digest.isMain &&
+                !e.digest.isEarlyAccess &&
+                !e.digest.isCasual) ||
+            (_config.showExpansions.value && e.digest.isExpansion) ||
+            (_config.showRemakes.value &&
+                (e.digest.isRemake || e.digest.isRemaster)) ||
+            (_config.showEarlyAccess.value && e.digest.isEarlyAccess) ||
+            (_config.showDlcs.value && e.digest.isDlc) ||
+            (_config.showVersions.value && e.digest.isVersion) ||
+            (_config.showBundles.value && e.digest.isBundle) ||
+            (_config.showCasual.value && e.digest.isCasual))
         .toList();
 
     final _ = switch (_config.libraryOrdering.value) {
