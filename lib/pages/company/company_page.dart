@@ -93,13 +93,15 @@ class _CompanyContentState extends State<CompanyContent> {
             1000);
 
     final developedGames = groupDigestsBy(
-        developed,
-        (digest) => '${digest.releaseYear}',
-        (l, r) => l.releaseDate.compareTo(r.releaseDate));
+      developed,
+      byKey: (digest) => '${digest.releaseYear}',
+      sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
+    );
     final publishedGames = groupDigestsBy(
-        published,
-        (digest) => '${digest.releaseYear}',
-        (l, r) => l.releaseDate.compareTo(r.releaseDate));
+      published,
+      byKey: (digest) => '${digest.releaseYear}',
+      sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
+    );
 
     return CustomScrollView(
       primary: true,
@@ -144,9 +146,8 @@ class _CompanyContentState extends State<CompanyContent> {
           Shelve(
             title: 'Developed (${developed.length})',
             expansion: CalendarViewYear(
-              startDate: minDateDeveloped,
-              leadingYears: 0,
-              trailingYears: maxDateDeveloped.year - minDateDeveloped.year,
+              startYear: maxDateDeveloped.year,
+              endYear: minDateDeveloped.year,
               gamesByYear: developedGames,
             ),
             color: Colors.grey,
@@ -155,9 +156,8 @@ class _CompanyContentState extends State<CompanyContent> {
           Shelve(
             title: 'Published (${published.length})',
             expansion: CalendarViewYear(
-              startDate: minDatePublished,
-              leadingYears: 0,
-              trailingYears: maxDatePublished.year - minDatePublished.year,
+              startYear: maxDatePublished.year,
+              endYear: minDatePublished.year,
               gamesByYear: publishedGames,
             ),
             color: Colors.grey,

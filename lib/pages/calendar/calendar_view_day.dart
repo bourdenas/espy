@@ -17,7 +17,7 @@ class CalendarViewDay extends StatelessWidget {
     super.key,
     this.startDate,
     this.leadingWeeks = 2,
-    this.trailingWeeks = 15,
+    this.trailingWeeks = 2,
   });
 
   final Iterable<LibraryEntry> libraryEntries;
@@ -33,7 +33,8 @@ class CalendarViewDay extends StatelessWidget {
             days: today.weekday - 1)) // Get to the Monday of this week.
         .subtract(Duration(days: leadingWeeks * 7 + 1));
     final toDate = today
-        .subtract(Duration(days: today.weekday - 1))
+        .subtract(Duration(
+            days: today.weekday - 1)) // Get to the Monday of this week.
         .add(Duration(days: (trailingWeeks + 1) * 7 + 1));
 
     final libraryEntries = this.libraryEntries.where((entry) {
@@ -58,7 +59,8 @@ class CalendarViewDay extends StatelessWidget {
     }
 
     final entries = <CalendarGridEntry>[];
-    final gridTiles = (leadingWeeks + 1 + trailingWeeks) * 7;
+    final weeks = leadingWeeks + 1 + trailingWeeks;
+    final gridTiles = weeks * 7;
     for (int i = 0; i < gridTiles; ++i) {
       final label =
           DateFormat('yMMMd').format(fromDate.add(Duration(days: i + 1)));
@@ -72,8 +74,17 @@ class CalendarViewDay extends StatelessWidget {
       ));
     }
 
+    final finalEntries = <CalendarGridEntry>[];
+    for (int i = 0; i < weeks; ++i) {
+      final week = <CalendarGridEntry>[];
+      for (int j = 0; j < 7; ++j) {
+        week.add(entries.removeLast());
+      }
+      finalEntries.addAll(week.reversed);
+    }
+
     return CalendarGrid(
-      entries,
+      finalEntries,
       selectedLabel: DateFormat('yMMMd').format(today),
     );
   }

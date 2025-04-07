@@ -51,9 +51,10 @@ class CollectionContent extends StatelessWidget {
             1000);
 
     final games = groupDigestsBy(
-        collection.games,
-        (digest) => '${digest.releaseYear}',
-        (l, r) => l.releaseDate.compareTo(r.releaseDate));
+      collection.games,
+      byKey: (digest) => '${digest.releaseYear}',
+      sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
+    );
 
     return CustomScrollView(
       primary: true,
@@ -69,9 +70,8 @@ class CollectionContent extends StatelessWidget {
           Shelve(
             title: 'Developed (${games.length})',
             expansion: CalendarViewYear(
-              startDate: minDateDeveloped,
-              leadingYears: 0,
-              trailingYears: maxDateDeveloped.year - minDateDeveloped.year,
+              startYear: maxDateDeveloped.year,
+              endYear: minDateDeveloped.year,
               gamesByYear: games,
             ),
             color: Colors.grey,

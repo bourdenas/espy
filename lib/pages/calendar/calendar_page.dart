@@ -25,7 +25,7 @@ class _CalendarPageState extends State<CalendarPage> {
     leadingTime += switch (calendarView) {
       CalendarView.day => 2,
       CalendarView.month => 1,
-      CalendarView.year => 14,
+      CalendarView.year => 0,
     };
 
     final max = maxLeading();
@@ -56,12 +56,16 @@ class _CalendarPageState extends State<CalendarPage> {
           setState(() => increaseLeading());
         },
         child: switch (calendarView) {
-          CalendarView.day =>
-            CalendarViewDay(libraryEntries, leadingWeeks: leadingTime),
-          CalendarView.month =>
-            CalendarViewMonth(libraryEntries, leadingYears: leadingTime),
+          CalendarView.day => CalendarViewDay(
+              libraryEntries,
+              leadingWeeks: 17,
+              trailingWeeks: leadingTime,
+            ),
+          CalendarView.month => CalendarViewMonth(
+              libraryEntries,
+              yearsForward: leadingTime,
+            ),
           CalendarView.year => CalendarViewYear(
-              leadingYears: leadingTime,
               onClick: (CalendarGridEntry entry) async {
                 final games = await context
                     .read<YearsModel>()
@@ -138,8 +142,8 @@ class _CalendarPageState extends State<CalendarPage> {
                     calendarView = newSelection.first;
                     leadingTime = switch (calendarView) {
                       CalendarView.day => 2,
-                      CalendarView.month => 1,
-                      CalendarView.year => 18,
+                      CalendarView.month => 0,
+                      CalendarView.year => 0,
                     };
                   });
                 },

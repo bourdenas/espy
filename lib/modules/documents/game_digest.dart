@@ -168,11 +168,13 @@ bool _match(Iterable<String> left, Iterable<String> right) {
 }
 
 Map<String, List<GameDigest>> groupDigestsBy(
-    Iterable<GameDigest> digests, String Function(GameDigest) getKey,
-    [int Function(GameDigest, GameDigest)? sortBy]) {
+  Iterable<GameDigest> digests, {
+  required String Function(GameDigest) byKey,
+  int Function(GameDigest, GameDigest)? sortBy,
+}) {
   final groups = <String, List<GameDigest>>{};
   for (final digest in digests) {
-    groups.putIfAbsent(getKey(digest), () => []).add(digest);
+    groups.putIfAbsent(byKey(digest), () => []).add(digest);
   }
 
   if (sortBy != null) {

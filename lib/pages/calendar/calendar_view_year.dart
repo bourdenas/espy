@@ -11,23 +11,21 @@ import 'package:provider/provider.dart';
 class CalendarViewYear extends StatelessWidget {
   const CalendarViewYear({
     super.key,
-    this.startDate,
-    this.leadingYears = 25,
-    this.trailingYears = 1,
+    this.startYear,
+    this.endYear,
     this.gamesByYear,
     this.onClick,
   });
 
-  final DateTime? startDate;
-  final int leadingYears;
-  final int trailingYears;
+  final int? startYear;
+  final int? endYear;
   final Map<String, List<GameDigest>>? gamesByYear;
   final Future<void> Function(CalendarGridEntry)? onClick;
 
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now().toUtc();
-    final startDate = this.startDate ?? today;
+    final startYear = this.startYear ?? today.year + 1;
 
     return FutureBuilder(
       future: gamesByYear == null
@@ -43,10 +41,20 @@ class CalendarViewYear extends StatelessWidget {
         }
         final calendar = snapshot.data!;
 
-        final entries = <CalendarGridEntry>[];
-        for (int year = startDate.year - leadingYears;
-            year < startDate.year + trailingYears + 1;
-            ++year) {
+        final entries = [
+          CalendarGridEntry(
+            'TBA',
+            calendar['1970'] ?? [],
+            onClick: onClick != null
+                ? onClick!
+                : (CalendarGridEntry entry) async {
+                    context.read<CustomViewModel>().digests = entry.digests;
+                    context.pushNamed('view');
+                  },
+            coverExtractor: (games) => games.take(4).toList(),
+          ),
+        ];
+        for (int year = startYear; year >= (endYear ?? 1979); --year) {
           final games = calendar['$year'] ?? [];
           entries.add(CalendarGridEntry(
             '$year',
@@ -77,17 +85,6 @@ class CalendarViewYear extends StatelessWidget {
             },
           ));
         }
-        entries.add(CalendarGridEntry(
-          'TBA',
-          calendar['1970'] ?? [],
-          onClick: onClick != null
-              ? onClick!
-              : (CalendarGridEntry entry) async {
-                  context.read<CustomViewModel>().digests = entry.digests;
-                  context.pushNamed('view');
-                },
-          coverExtractor: (games) => games.take(4).toList(),
-        ));
 
         return CalendarGrid(
           entries,

@@ -18,21 +18,21 @@ class CalendarViewMonth extends StatelessWidget {
     this.libraryEntries, {
     super.key,
     this.startDate,
-    this.leadingYears = 1,
-    this.trailingYears = 1,
+    this.yearsBack = 3,
+    this.yearsForward = 0,
   });
 
   final Iterable<LibraryEntry> libraryEntries;
   final DateTime? startDate;
-  final int leadingYears;
-  final int trailingYears;
+  final int yearsBack;
+  final int yearsForward;
 
   @override
   Widget build(BuildContext context) {
     final today = startDate ?? DateTime.now().toUtc();
 
-    final fromDate = DateTime(today.year - leadingYears, 1, 1);
-    final toDate = DateTime(today.year + 1, 12, 31, 23, 59, 59);
+    final fromDate = DateTime(today.year - yearsBack, 1, 1);
+    final toDate = DateTime(today.year + yearsForward, 12, 31, 23, 59, 59);
 
     final libraryEntries = this.libraryEntries.where((entry) {
       final releaseDate = entry.digest.release;
@@ -42,11 +42,12 @@ class CalendarViewMonth extends StatelessWidget {
     final refinement = context.watch<RefinementModel>().refinement;
     final refinedEntries = libraryEntries.where((e) => refinement.pass(e));
 
-    final gridTiles = (leadingYears + 1 + trailingYears) * 14;
+    final gridTiles = (yearsBack + 1 + yearsForward) * 12;
 
     return FutureBuilder(
-      future: context.read<YearsModel>().getYears(
-          List.generate(leadingYears + 1, (i) => '${today.year - i}')),
+      future: context
+          .read<YearsModel>()
+          .getYears(List.generate(yearsBack + 1, (i) => '${today.year - i}')),
       builder: (BuildContext context,
           AsyncSnapshot<List<AnnualReviewDoc>> snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
@@ -63,26 +64,23 @@ class CalendarViewMonth extends StatelessWidget {
 
         final entries = <CalendarGridEntry>[];
         for (int i = 0; i < gridTiles; ++i) {
-          final month = fromDate.month + i % 14;
-          final year = fromDate.year + i ~/ 14;
+          final month = 12 - (i % 12);
+          final year = toDate.year - (i ~/ 12);
 
-          if (month > 12) {
-            entries.add(CalendarGridEntry.empty);
-          } else {
-            final label = DateFormat('MMM y').format(DateTime(year, month));
-            entries.add(CalendarGridEntry(
-              label,
-              monthlyReleases[label] ?? [],
-              onClick: (CalendarGridEntry entry) {
-                context.read<CustomViewModel>().digests = entry.digests;
-                context.pushNamed('view');
-              },
-            ));
-          }
+          final label = DateFormat('MMM y').format(DateTime(year, month));
+          entries.add(CalendarGridEntry(
+            label,
+            monthlyReleases[label] ?? [],
+            onClick: (CalendarGridEntry entry) {
+              context.read<CustomViewModel>().digests = entry.digests;
+              context.pushNamed('view');
+            },
+          ));
         }
 
         return CalendarGrid(
           entries,
+          gridCount: 6,
           selectedLabel: DateFormat('MMM y').format(today),
         );
       },
