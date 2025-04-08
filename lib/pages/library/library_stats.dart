@@ -13,16 +13,21 @@ class LibraryStats extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 260,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        shrinkWrap: true,
-        children: [
-          GenreStats(libraryEntries),
-          const SizedBox(width: 64),
-          KeywordCloud(libraryEntries),
-          const SizedBox(width: 64),
-          RatingStats(libraryEntries),
-        ],
+      child: Container(
+        alignment: AlignmentDirectional.topStart,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          shrinkWrap: true,
+          children: [
+            const SizedBox(width: 8),
+            GenreStats(libraryEntries),
+            const SizedBox(width: 64),
+            KeywordCloud(libraryEntries),
+            const SizedBox(width: 64),
+            RatingStats(libraryEntries),
+            Spacer(),
+          ],
+        ),
       ),
     );
   }

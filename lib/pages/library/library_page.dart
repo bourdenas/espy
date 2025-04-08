@@ -29,11 +29,13 @@ class LibraryPage extends StatelessWidget {
       primary: true,
       shrinkWrap: true,
       slivers: [
-        Shelve(
-          title: 'Drill-down',
-          expansion: LibraryStats(libraryViewModel.entries),
-          color: Colors.amber,
-          expanded: true,
+        SliverToBoxAdapter(
+          child: Shelve(
+            title: 'Drill-down',
+            expansion: LibraryStats(libraryViewModel.entries),
+            color: Colors.amber,
+            expanded: true,
+          ),
         ),
         if (appConfig.libraryGrouping.value == LibraryGrouping.none)
           LibraryEntriesView(

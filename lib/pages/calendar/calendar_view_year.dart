@@ -88,6 +88,7 @@ class CalendarViewYear extends StatelessWidget {
 
         return CalendarGrid(
           entries,
+          gridCount: 6,
           selectedLabel: DateFormat('y').format(today),
         );
       },

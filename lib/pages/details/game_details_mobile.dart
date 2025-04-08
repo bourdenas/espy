@@ -8,7 +8,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/pages/details/game_details_widgets.dart';
 import 'package:espy/widgets/gametags/espy_chips_details_bar.dart';
-import 'package:espy/widgets/shelve.dart';
+import 'package:espy/widgets/sliver_shelve.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -52,11 +52,11 @@ class GameDetailsContentMobile extends StatelessWidget {
           ),
         ),
         if (gameEntry != null) ...[
-          Shelve(
+          SliverShelve(
             title: 'Screenshots',
             expansion: screenshots(context, gameEntry!),
           ),
-          Shelve(
+          SliverShelve(
             title: 'Description',
             expansion: _GameDescription(gameEntry!),
           ),

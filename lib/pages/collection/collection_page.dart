@@ -56,26 +56,21 @@ class CollectionContent extends StatelessWidget {
       sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
     );
 
-    return CustomScrollView(
-      primary: true,
-      shrinkWrap: true,
-      slivers: [
+    return Column(
+      children: [
         Shelve(
           title: 'Drill-down',
           expansion: LibraryStats(collection.games
               .map((digest) => LibraryEntry.fromGameDigest(digest))),
           color: Colors.amber,
         ),
-        if (games.isNotEmpty)
-          Shelve(
-            title: 'Developed (${games.length})',
-            expansion: CalendarViewYear(
-              startYear: maxDateDeveloped.year,
-              endYear: minDateDeveloped.year,
-              gamesByYear: games,
-            ),
-            color: Colors.grey,
+        Expanded(
+          child: CalendarViewYear(
+            startYear: maxDateDeveloped.year,
+            endYear: minDateDeveloped.year,
+            gamesByYear: games,
           ),
+        ),
       ],
     );
   }

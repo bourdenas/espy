@@ -103,29 +103,25 @@ class _CompanyContentState extends State<CompanyContent> {
       sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
     );
 
-    return CustomScrollView(
-      primary: true,
-      shrinkWrap: true,
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                const SizedBox(width: 64),
-                logoUrl != null
-                    ? CachedNetworkImage(imageUrl: logoUrl)
-                    : Text(
-                        widget.companyDocs.first.name,
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                const SizedBox(width: 64),
-                Flexible(
-                    child: Text(selectedCompany?.description ??
-                        widget.companyDocs.first.description ??
-                        '')),
-              ],
-            ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const SizedBox(width: 64),
+              logoUrl != null
+                  ? CachedNetworkImage(imageUrl: logoUrl)
+                  : Text(
+                      widget.companyDocs.first.name,
+                      style: const TextStyle(fontSize: 24),
+                    ),
+              const SizedBox(width: 64),
+              Flexible(
+                  child: Text(selectedCompany?.description ??
+                      widget.companyDocs.first.description ??
+                      '')),
+            ],
           ),
         ),
         if (widget.companyDocs.length > 1)
@@ -142,26 +138,35 @@ class _CompanyContentState extends State<CompanyContent> {
           color: Colors.amber,
           expanded: false,
         ),
-        if (developedGames.isNotEmpty)
-          Shelve(
-            title: 'Developed (${developed.length})',
-            expansion: CalendarViewYear(
-              startYear: maxDateDeveloped.year,
-              endYear: minDateDeveloped.year,
-              gamesByYear: developedGames,
+        Expanded(
+          child: DefaultTabController(
+            length: 2,
+            child: Scaffold(
+              appBar: TabBar(
+                tabs: [
+                  Tab(
+                    text: 'Developed',
+                  ),
+                  Tab(text: 'Published'),
+                ],
+              ),
+              body: TabBarView(
+                children: [
+                  CalendarViewYear(
+                    startYear: maxDateDeveloped.year,
+                    endYear: minDateDeveloped.year,
+                    gamesByYear: developedGames,
+                  ),
+                  CalendarViewYear(
+                    startYear: maxDatePublished.year,
+                    endYear: minDatePublished.year,
+                    gamesByYear: publishedGames,
+                  ),
+                ],
+              ),
             ),
-            color: Colors.grey,
           ),
-        if (publishedGames.isNotEmpty)
-          Shelve(
-            title: 'Published (${published.length})',
-            expansion: CalendarViewYear(
-              startYear: maxDatePublished.year,
-              endYear: minDatePublished.year,
-              gamesByYear: publishedGames,
-            ),
-            color: Colors.grey,
-          ),
+        ),
       ],
     );
   }

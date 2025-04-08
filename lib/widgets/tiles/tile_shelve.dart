@@ -2,7 +2,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/pages/espy_navigator.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
-import 'package:espy/widgets/shelve.dart';
+import 'package:espy/widgets/sliver_shelve.dart';
 import 'package:flutter/material.dart';
 
 class TileShelve extends StatefulWidget {
@@ -39,7 +39,7 @@ class _TileShelveState extends State<TileShelve> {
 
   @override
   Widget build(BuildContext context) {
-    return Shelve(
+    return SliverShelve(
       title: widget.title,
       expansion: LibraryEntriesView(
         entries: widget.entries,

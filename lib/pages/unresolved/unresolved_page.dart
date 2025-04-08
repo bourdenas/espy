@@ -1,7 +1,7 @@
 import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/pages/unresolved/unknown_list_view.dart';
 import 'package:espy/pages/unresolved/unresolved_list_view.dart';
-import 'package:espy/widgets/shelve.dart';
+import 'package:espy/widgets/sliver_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,12 +17,12 @@ class UnresolvedPage extends StatelessWidget {
       shrinkWrap: true,
       slivers: [
         if (unresolved.needApproval.isNotEmpty)
-          Shelve(
+          SliverShelve(
             title: 'Pending Review',
             expansion: UnresolvedListView(unresolved.needApproval),
           ),
         if (unresolved.unknown.isNotEmpty)
-          Shelve(
+          SliverShelve(
             title: 'Unknown Entries',
             expansion: UnknownListView(unresolved.unknown),
             expanded: unresolved.needApproval.isEmpty,

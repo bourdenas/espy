@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sliver_tools/sliver_tools.dart';
 
 class Shelve extends StatefulWidget {
   const Shelve({
@@ -7,14 +6,14 @@ class Shelve extends StatefulWidget {
     required this.title,
     required this.expansion,
     this.color,
-    this.headerLink,
+    this.onTitleTap,
     this.expanded = true,
   });
 
   final String title;
   final Widget expansion;
   final Color? color;
-  final void Function()? headerLink;
+  final void Function()? onTitleTap;
 
   final bool expanded;
 
@@ -33,82 +32,35 @@ class _ShelveState extends State<Shelve> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiSliver(
-      pushPinnedChildren: false,
+    return Column(
       children: [
-        SliverPersistentHeader(
-          pinned: true,
-          floating: true,
-          delegate: header(widget.title, widget.color, widget.headerLink),
-        ),
+        header(context),
         if (expanded) widget.expansion,
       ],
     );
   }
 
-  HeaderDelegate header(
-    String title,
-    Color? color,
-    void Function()? headerLink,
-  ) {
-    return HeaderDelegate(
-      minHeight: 50.0,
-      maxHeight: 50.0,
-      child: GestureDetector(
-        onTap: () => setState(() => expanded = !expanded),
-        child: Material(
-          elevation: 10.0,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Icon(expanded ? Icons.arrow_drop_down : Icons.arrow_right),
-                TextButton(
-                  onPressed: headerLink,
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: color,
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
+  Widget header(BuildContext context) {
+    return GestureDetector(
+      onTap: () => setState(() => expanded = !expanded),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Icon(expanded ? Icons.arrow_drop_down : Icons.arrow_right),
+            TextButton(
+              onPressed: widget.onTitleTap,
+              child: Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: widget.color,
+                ),
+              ),
+            )
+          ],
         ),
       ),
     );
-  }
-}
-
-class HeaderDelegate extends SliverPersistentHeaderDelegate {
-  HeaderDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  bool shouldRebuild(HeaderDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
   }
 }
