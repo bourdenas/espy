@@ -35,8 +35,8 @@ class _CalendarPageState extends State<CalendarPage> {
   int maxLeading() {
     return switch (calendarView) {
       CalendarView.day => 14,
-      CalendarView.month => 5,
-      CalendarView.year => DateTime.now().toUtc().year - 1979,
+      CalendarView.month => 1,
+      CalendarView.year => 0,
     };
   }
 
@@ -78,35 +78,16 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
         },
       ),
-      floatingActionButton: Row(
-        children: [
-          SizedBox(width: 16),
-          FloatingActionButton(
-            onPressed: leadingTime < maxLeadingTime
-                ? () {
-                    setState(() => increaseLeading());
-                  }
-                : null,
-            backgroundColor:
-                leadingTime == maxLeadingTime ? Colors.black : null,
-            child: Icon(Icons.keyboard_arrow_up),
-          ),
-          SizedBox(width: 16),
-          FloatingActionButton(
-            onPressed: leadingTime < maxLeadingTime
-                ? () {
-                    setState(() {
-                      leadingTime = maxLeadingTime;
-                    });
-                  }
-                : null,
-            backgroundColor:
-                leadingTime == maxLeadingTime ? Colors.black : null,
-            child: Icon(Icons.keyboard_double_arrow_up),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: leadingTime < maxLeadingTime
+            ? () {
+                setState(() => increaseLeading());
+              }
+            : null,
+        backgroundColor: leadingTime == maxLeadingTime ? Colors.black : null,
+        child: Icon(Icons.keyboard_arrow_up),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 
