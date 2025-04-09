@@ -7,8 +7,8 @@ import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
-import 'package:espy/widgets/stats/library_stats.dart';
 import 'package:espy/widgets/shelve.dart';
+import 'package:espy/widgets/stats/stats_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 class CompanyPage extends StatelessWidget {
@@ -131,18 +131,14 @@ class _CompanyContentState extends State<CompanyContent> {
             color: Colors.amber,
             expanded: true,
           ),
-        Shelve(
-          title: 'Drill-down',
-          expansion: LibraryStats(
-              developed.map((digest) => LibraryEntry.fromGameDigest(digest))),
-          color: Colors.amber,
-          expanded: false,
-        ),
         Expanded(
           child: DefaultTabController(
             length: 2,
             child: Scaffold(
               appBar: TabBar(
+                onTap: (index) {
+                  // TODO: update stats bottom sheet.
+                },
                 tabs: [
                   Tab(
                     text: 'Developed',
@@ -150,18 +146,25 @@ class _CompanyContentState extends State<CompanyContent> {
                   Tab(text: 'Published'),
                 ],
               ),
-              body: TabBarView(
+              body: Stack(
                 children: [
-                  CalendarViewYear(
-                    startYear: maxDateDeveloped.year,
-                    endYear: minDateDeveloped.year,
-                    gamesByYear: developedGames,
+                  TabBarView(
+                    children: [
+                      CalendarViewYear(
+                        startYear: maxDateDeveloped.year,
+                        endYear: minDateDeveloped.year,
+                        gamesByYear: developedGames,
+                      ),
+                      CalendarViewYear(
+                        startYear: maxDatePublished.year,
+                        endYear: minDatePublished.year,
+                        gamesByYear: publishedGames,
+                      ),
+                    ],
                   ),
-                  CalendarViewYear(
-                    startYear: maxDatePublished.year,
-                    endYear: minDatePublished.year,
-                    gamesByYear: publishedGames,
-                  ),
+                  StatsBottomSheet(developedGames.values
+                      .expand((e) => e)
+                      .map((digest) => LibraryEntry.fromGameDigest(digest))),
                 ],
               ),
             ),

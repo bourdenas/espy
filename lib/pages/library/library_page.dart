@@ -2,9 +2,8 @@ import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
-import 'package:espy/widgets/stats/library_stats.dart';
 import 'package:espy/widgets/filters/categories_sliding_chip.dart';
-import 'package:espy/widgets/shelve.dart';
+import 'package:espy/widgets/stats/stats_bottom_sheet.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,24 +18,23 @@ class LibraryPage extends StatelessWidget {
 
     return Scaffold(
       appBar: libraryAppBar(context, appConfig, libraryViewModel.length),
-      body: libraryBody(appConfig, libraryViewModel),
+      body: Expanded(
+        child: Stack(
+          children: [
+            libraryBody(appConfig, libraryViewModel),
+            StatsBottomSheet(libraryViewModel.entries),
+          ],
+        ),
+      ),
     );
   }
 
-  CustomScrollView libraryBody(
+  Widget libraryBody(
       AppConfigModel appConfig, LibraryViewModel libraryViewModel) {
     return CustomScrollView(
       primary: true,
       shrinkWrap: true,
       slivers: [
-        SliverToBoxAdapter(
-          child: Shelve(
-            title: 'Drill-down',
-            expansion: LibraryStats(libraryViewModel.entries),
-            color: Colors.amber,
-            expanded: true,
-          ),
-        ),
         if (appConfig.libraryGrouping.value == LibraryGrouping.none)
           LibraryEntriesView(
             entries: libraryViewModel.entries,

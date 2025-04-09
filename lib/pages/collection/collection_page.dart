@@ -5,8 +5,7 @@ import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
-import 'package:espy/widgets/stats/library_stats.dart';
-import 'package:espy/widgets/shelve.dart';
+import 'package:espy/widgets/stats/stats_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 class CollectionPage extends StatelessWidget {
@@ -56,21 +55,15 @@ class CollectionContent extends StatelessWidget {
       sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
     );
 
-    return Column(
+    return Stack(
       children: [
-        Shelve(
-          title: 'Drill-down',
-          expansion: LibraryStats(collection.games
-              .map((digest) => LibraryEntry.fromGameDigest(digest))),
-          color: Colors.amber,
+        CalendarViewYear(
+          startYear: maxDateDeveloped.year,
+          endYear: minDateDeveloped.year,
+          gamesByYear: games,
         ),
-        Expanded(
-          child: CalendarViewYear(
-            startYear: maxDateDeveloped.year,
-            endYear: minDateDeveloped.year,
-            gamesByYear: games,
-          ),
-        ),
+        StatsBottomSheet(collection.games
+            .map((digest) => LibraryEntry.fromGameDigest(digest))),
       ],
     );
   }
