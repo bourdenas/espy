@@ -7,7 +7,7 @@ import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
-import 'package:espy/pages/library/library_stats.dart';
+import 'package:espy/widgets/stats/library_stats.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:flutter/material.dart';
 

@@ -2,7 +2,7 @@ import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
-import 'package:espy/pages/library/library_stats.dart';
+import 'package:espy/widgets/stats/library_stats.dart';
 import 'package:espy/widgets/filters/categories_sliding_chip.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
