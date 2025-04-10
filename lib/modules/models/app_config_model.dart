@@ -25,6 +25,14 @@ class AppConfigModel extends ChangeNotifier {
 
   Color _seedColor = Colors.blueGrey;
 
+  bool get showBottomSheet => _showBottomSheet;
+  set showBottomSheet(bool show) {
+    _showBottomSheet = show;
+    notifyListeners();
+  }
+
+  bool _showBottomSheet = false;
+
   static get gameDetailsBackgroundColor => const Color(0xFF1B2838);
 
   static bool isMobile(BuildContext context) =>

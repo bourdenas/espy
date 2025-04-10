@@ -1,41 +1,32 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/widgets/stats/library_stats.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class RefinementsBottomSheet extends StatefulWidget {
+class RefinementsBottomSheet extends StatelessWidget {
   const RefinementsBottomSheet(this.libraryEntries, {super.key});
 
   final Iterable<LibraryEntry> libraryEntries;
 
-  @override
-  State<RefinementsBottomSheet> createState() => _RefinementsBottomSheetState();
-}
-
-class _RefinementsBottomSheetState extends State<RefinementsBottomSheet> {
   static const speedThreshold = 100;
-
-  bool showBottomSheet = false;
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    // final height = MediaQuery.of(context).size.height;
+    final appConfig = context.watch<AppConfigModel>();
 
     return AnimatedPositioned(
       left: 0,
-      bottom: showBottomSheet ? -12 : -280,
+      bottom: appConfig.showBottomSheet ? -12 : -280,
       duration: Duration(milliseconds: 250),
       curve: Curves.easeInOut,
       child: GestureDetector(
         onPanEnd: (details) {
           if (details.velocity.pixelsPerSecond.dy > speedThreshold) {
-            setState(() {
-              showBottomSheet = false;
-            });
+            appConfig.showBottomSheet = false;
           } else if (details.velocity.pixelsPerSecond.dy < -speedThreshold) {
-            setState(() {
-              showBottomSheet = true;
-            });
+            appConfig.showBottomSheet = true;
           }
         },
         child: ClipRRect(
@@ -49,17 +40,15 @@ class _RefinementsBottomSheetState extends State<RefinementsBottomSheet> {
               child: Column(
                 children: [
                   IconButton(
-                    icon: Icon(showBottomSheet
+                    icon: Icon(appConfig.showBottomSheet
                         ? Icons.keyboard_arrow_down
                         : Icons.keyboard_arrow_up),
                     onPressed: () {
-                      setState(() {
-                        showBottomSheet = !showBottomSheet;
-                      });
+                      appConfig.showBottomSheet = !appConfig.showBottomSheet;
                     },
                   ),
                   SizedBox(height: 8),
-                  LibraryStats(widget.libraryEntries),
+                  LibraryStats(libraryEntries),
                 ],
               ),
             ),
