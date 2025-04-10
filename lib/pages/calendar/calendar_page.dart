@@ -6,7 +6,7 @@ import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/calendar/calendar_view_day.dart';
 import 'package:espy/pages/calendar/calendar_view_month.dart';
-import 'package:espy/widgets/stats/stats_bottom_sheet.dart';
+import 'package:espy/widgets/stats/refinements_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -58,30 +58,38 @@ class _CalendarPageState extends State<CalendarPage> {
             onRefresh: () async {
               setState(() => increaseLeading());
             },
-            child: switch (calendarView) {
-              CalendarView.day => CalendarViewDay(
-                  libraryEntries,
-                  leadingWeeks: 17,
-                  trailingWeeks: leadingTime,
-                ),
-              CalendarView.month => CalendarViewMonth(
-                  libraryEntries,
-                  yearsForward: leadingTime,
-                ),
-              CalendarView.year => CalendarViewYear(
-                  onClick: (CalendarGridEntry entry) async {
-                    final games = await context
-                        .read<YearsModel>()
-                        .gamesIn('${entry.digests.first.releaseYear}');
-                    if (context.mounted) {
-                      context.read<CustomViewModel>().digests = games.releases;
-                      context.pushNamed('view');
-                    }
+            child: Column(
+              children: [
+                Expanded(
+                  child: switch (calendarView) {
+                    CalendarView.day => CalendarViewDay(
+                        libraryEntries,
+                        leadingWeeks: 17,
+                        trailingWeeks: leadingTime,
+                      ),
+                    CalendarView.month => CalendarViewMonth(
+                        libraryEntries,
+                        yearsForward: leadingTime,
+                      ),
+                    CalendarView.year => CalendarViewYear(
+                        onClick: (CalendarGridEntry entry) async {
+                          final games = await context
+                              .read<YearsModel>()
+                              .gamesIn('${entry.digests.first.releaseYear}');
+                          if (context.mounted) {
+                            context.read<CustomViewModel>().digests =
+                                games.releases;
+                            context.pushNamed('view');
+                          }
+                        },
+                      ),
                   },
                 ),
-            },
+                SizedBox(height: 52),
+              ],
+            ),
           ),
-          StatsBottomSheet(libraryEntries),
+          RefinementsBottomSheet(libraryEntries),
         ],
       ),
       floatingActionButton: FloatingActionButton(

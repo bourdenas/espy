@@ -8,7 +8,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/widgets/shelve.dart';
-import 'package:espy/widgets/stats/stats_bottom_sheet.dart';
+import 'package:espy/widgets/stats/refinements_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 class CompanyPage extends StatelessWidget {
@@ -148,21 +148,29 @@ class _CompanyContentState extends State<CompanyContent> {
               ),
               body: Stack(
                 children: [
-                  TabBarView(
+                  Column(
                     children: [
-                      CalendarViewYear(
-                        startYear: maxDateDeveloped.year,
-                        endYear: minDateDeveloped.year,
-                        gamesByYear: developedGames,
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            CalendarViewYear(
+                              startYear: maxDateDeveloped.year,
+                              endYear: minDateDeveloped.year,
+                              gamesByYear: developedGames,
+                            ),
+                            CalendarViewYear(
+                              startYear: maxDatePublished.year,
+                              endYear: minDatePublished.year,
+                              gamesByYear: publishedGames,
+                            ),
+                          ],
+                        ),
                       ),
-                      CalendarViewYear(
-                        startYear: maxDatePublished.year,
-                        endYear: minDatePublished.year,
-                        gamesByYear: publishedGames,
-                      ),
+                      // Add some space for the bottom sheet.
+                      SizedBox(height: 52),
                     ],
                   ),
-                  StatsBottomSheet(developedGames.values
+                  RefinementsBottomSheet(developedGames.values
                       .expand((e) => e)
                       .map((digest) => LibraryEntry.fromGameDigest(digest))),
                 ],

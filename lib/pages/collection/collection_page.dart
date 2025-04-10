@@ -5,7 +5,7 @@ import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
-import 'package:espy/widgets/stats/stats_bottom_sheet.dart';
+import 'package:espy/widgets/stats/refinements_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 class CollectionPage extends StatelessWidget {
@@ -57,12 +57,20 @@ class CollectionContent extends StatelessWidget {
 
     return Stack(
       children: [
-        CalendarViewYear(
-          startYear: maxDateDeveloped.year,
-          endYear: minDateDeveloped.year,
-          gamesByYear: games,
+        Column(
+          children: [
+            Expanded(
+              child: CalendarViewYear(
+                startYear: maxDateDeveloped.year,
+                endYear: minDateDeveloped.year,
+                gamesByYear: games,
+              ),
+            ),
+            // Add some space for the bottom sheet.
+            SizedBox(height: 52),
+          ],
         ),
-        StatsBottomSheet(collection.games
+        RefinementsBottomSheet(collection.games
             .map((digest) => LibraryEntry.fromGameDigest(digest))),
       ],
     );

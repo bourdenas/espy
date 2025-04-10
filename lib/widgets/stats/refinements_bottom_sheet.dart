@@ -2,16 +2,16 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/widgets/stats/library_stats.dart';
 import 'package:flutter/material.dart';
 
-class StatsBottomSheet extends StatefulWidget {
-  const StatsBottomSheet(this.libraryEntries, {super.key});
+class RefinementsBottomSheet extends StatefulWidget {
+  const RefinementsBottomSheet(this.libraryEntries, {super.key});
 
   final Iterable<LibraryEntry> libraryEntries;
 
   @override
-  State<StatsBottomSheet> createState() => _StatsBottomSheetState();
+  State<RefinementsBottomSheet> createState() => _RefinementsBottomSheetState();
 }
 
-class _StatsBottomSheetState extends State<StatsBottomSheet> {
+class _RefinementsBottomSheetState extends State<RefinementsBottomSheet> {
   static const speedThreshold = 100;
 
   bool showBottomSheet = false;
