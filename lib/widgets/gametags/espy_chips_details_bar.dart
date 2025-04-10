@@ -37,9 +37,17 @@ class EspyChipsDetailsBar extends StatelessWidget {
                     .pushNamed('company', pathParameters: {'name': company}),
               ),
             for (final collection in libraryEntry.collections)
-              CollectionChip(collection, onPressed: () {}),
+              CollectionChip(
+                collection,
+                onPressed: () => context.pushNamed('collection',
+                    pathParameters: {'name': collection}),
+              ),
             for (final franchise in libraryEntry.franchises)
-              FranchiseChip(franchise, onPressed: () {}),
+              FranchiseChip(
+                franchise,
+                onPressed: () => context.pushNamed('collection',
+                    pathParameters: {'name': franchise}),
+              ),
             for (final genre in libraryEntry.digest.espyGenres)
               EspyGenreChip(
                 genre,

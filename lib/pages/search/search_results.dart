@@ -76,8 +76,8 @@ class TagSearchResults extends StatelessWidget {
               chips: collections.map(
                 (collection) => CollectionChip(
                   collection,
-                  onPressed: () => updateLibraryView(
-                      context, LibraryFilter(collection: collection)),
+                  onPressed: () => context.pushNamed('collection',
+                      pathParameters: {'name': collection}),
                 ),
               ),
             ),
@@ -88,8 +88,8 @@ class TagSearchResults extends StatelessWidget {
               chips: franchises.map(
                 (franchise) => FranchiseChip(
                   franchise,
-                  onPressed: () => updateLibraryView(
-                      context, LibraryFilter(franchise: franchise)),
+                  onPressed: () => context.pushNamed('collection',
+                      pathParameters: {'name': franchise}),
                 ),
               ),
             ),
