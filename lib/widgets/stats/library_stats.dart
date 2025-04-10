@@ -25,7 +25,6 @@ class LibraryStats extends StatelessWidget {
             KeywordCloud(libraryEntries),
             const SizedBox(width: 64),
             RatingStats(libraryEntries),
-            Spacer(),
           ],
         ),
       ),
