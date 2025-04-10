@@ -27,7 +27,7 @@ class LibraryEntriesView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final refinement = context.watch<RefinementModel>().refinement;
-    final refinedEntries = entries.where((e) => refinement.pass(e));
+    final refinedEntries = entries.where((e) => refinement.passLibraryEntry(e));
 
     return context.watch<AppConfigModel>().libraryLayout.value ==
             LibraryLayout.grid

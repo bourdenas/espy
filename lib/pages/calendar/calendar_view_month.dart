@@ -40,7 +40,8 @@ class CalendarViewMonth extends StatelessWidget {
     });
 
     final refinement = context.watch<RefinementModel>().refinement;
-    final refinedEntries = libraryEntries.where((e) => refinement.pass(e));
+    final refinedEntries =
+        libraryEntries.where((e) => refinement.passLibraryEntry(e));
 
     final gridTiles = (yearsBack + 1 + yearsForward) * 12;
 

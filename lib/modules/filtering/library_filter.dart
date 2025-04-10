@@ -1,3 +1,4 @@
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/genres_mapping.dart';
 
@@ -89,26 +90,27 @@ class LibraryFilter {
     );
   }
 
-  bool pass(LibraryEntry entry) {
-    return (store == null ||
-            entry.storeEntries.any((e) => e.storefront == store)) &&
-        (developer == null ||
-            entry.digest.developers.any((e) => e == developer)) &&
-        (publisher == null ||
-            entry.digest.publishers.any((e) => e == publisher)) &&
+  bool pass(GameDigest digest) {
+    return (developer == null ||
+            digest.developers.any((e) => e == developer)) &&
+        (publisher == null || digest.publishers.any((e) => e == publisher)) &&
         (collection == null ||
-            entry.digest.collections.any((e) => e == collection)) &&
-        (franchise == null ||
-            entry.digest.franchises.any((e) => e == franchise)) &&
-        (score == null || entry.scores.title == score) &&
+            digest.collections.any((e) => e == collection)) &&
+        (franchise == null || digest.franchises.any((e) => e == franchise)) &&
+        (score == null || digest.scores.title == score) &&
         (genreGroup == null ||
-            entry.digest.espyGenres
+            digest.espyGenres
                 .any((e) => Genres.groupOfGenre(e) == genreGroup) ||
-            (entry.digest.espyGenres.isEmpty && genreGroup == 'Unknown')) &&
+            (digest.espyGenres.isEmpty && genreGroup == 'Unknown')) &&
         (genre == null ||
-            entry.digest.espyGenres.any((e) => e == genre) ||
-            (entry.digest.espyGenres.isEmpty && genre == 'Unknown')) &&
-        (keyword == null || entry.digest.keywords.any((e) => e == keyword));
+            digest.espyGenres.any((e) => e == genre) ||
+            (digest.espyGenres.isEmpty && genre == 'Unknown')) &&
+        (keyword == null || digest.keywords.any((e) => e == keyword));
+  }
+
+  bool passLibraryEntry(LibraryEntry entry) {
+    return pass(entry.digest) &&
+        (store == null || entry.storeEntries.any((e) => e.storefront == store));
   }
 
   Map<String, String> params() {

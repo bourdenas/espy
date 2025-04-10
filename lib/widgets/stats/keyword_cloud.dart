@@ -25,7 +25,7 @@ class _KeywordCloudState extends State<KeywordCloud> {
     Map<String, int> kwGroupsPops = {};
     Map<String, int> kwPops = {};
     for (final entry
-        in widget.libraryEntries.where((e) => refinement.pass(e))) {
+        in widget.libraryEntries.where((e) => refinement.passLibraryEntry(e))) {
       final groups = <String>{};
       for (final kw in entry.digest.keywords) {
         if (kw == 'co-op' || kw == 'PvP') continue;

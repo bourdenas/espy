@@ -43,7 +43,8 @@ class CalendarViewDay extends StatelessWidget {
     });
 
     final refinement = context.watch<RefinementModel>().refinement;
-    final refinedEntries = libraryEntries.where((e) => refinement.pass(e));
+    final refinedEntries =
+        libraryEntries.where((e) => refinement.passLibraryEntry(e));
 
     final dailyReleases = HashMap<String, List<GameDigest>>();
     for (final entry in refinedEntries) {

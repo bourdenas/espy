@@ -24,7 +24,8 @@ class GenreStats extends StatelessWidget {
     Map<String, int> genresPops = {};
     int unknownPops = 0;
     refinement.genreGroup = refinement.genre = null;
-    for (final entry in libraryEntries.where((e) => refinement.pass(e))) {
+    for (final entry
+        in libraryEntries.where((e) => refinement.passLibraryEntry(e))) {
       if (entry.digest.espyGenres.isEmpty) {
         unknownPops += 1;
       }

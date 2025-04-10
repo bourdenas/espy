@@ -4,9 +4,11 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/widgets/stats/refinements_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CollectionPage extends StatelessWidget {
   const CollectionPage({super.key, required this.name});
@@ -34,6 +36,9 @@ class CollectionContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final refinement = context.watch<RefinementModel>().refinement;
+    final refinedEntries = collection.games.where((e) => refinement.pass(e));
+
     final minDateDeveloped = collection.games.isEmpty
         ? DateTime(1970)
         : DateTime.fromMillisecondsSinceEpoch(collection.games
@@ -50,7 +55,7 @@ class CollectionContent extends StatelessWidget {
             1000);
 
     final games = groupDigestsBy(
-      collection.games,
+      refinedEntries,
       byKey: (digest) => '${digest.releaseYear}',
       sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
     );
@@ -70,7 +75,7 @@ class CollectionContent extends StatelessWidget {
             SizedBox(height: 52),
           ],
         ),
-        RefinementsBottomSheet(collection.games
+        RefinementsBottomSheet(refinedEntries
             .map((digest) => LibraryEntry.fromGameDigest(digest))),
       ],
     );

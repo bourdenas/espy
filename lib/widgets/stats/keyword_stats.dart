@@ -36,7 +36,7 @@ class _KeywordStatsState extends State<KeywordStats> {
     kwPops.clear();
     int unknownPops = 0;
     for (final entry
-        in widget.libraryEntries.where((e) => refinement.pass(e))) {
+        in widget.libraryEntries.where((e) => refinement.passLibraryEntry(e))) {
       if (entry.digest.keywords.isEmpty) {
         unknownPops += 1;
       }

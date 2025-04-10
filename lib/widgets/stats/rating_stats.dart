@@ -23,7 +23,8 @@ class RatingStats extends StatelessWidget {
 
     // Build scores histograms.
     final ratingPops = <String, int>{};
-    for (final entry in libraryEntries.where((e) => refinement.pass(e))) {
+    for (final entry
+        in libraryEntries.where((e) => refinement.passLibraryEntry(e))) {
       final title = entry.scores.title;
       if (title != 'Unknown') {
         ratingPops[title] = (ratingPops[title] ?? 0) + 1;
