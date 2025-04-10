@@ -62,13 +62,13 @@ class _CalendarPageState extends State<CalendarPage> {
               children: [
                 Expanded(
                   child: switch (calendarView) {
+                    // TODO: Uplevel retrieval for entries at this level.
                     CalendarView.day => CalendarViewDay(
                         libraryEntries,
                         leadingWeeks: 17,
                         trailingWeeks: leadingTime,
                       ),
                     CalendarView.month => CalendarViewMonth(
-                        libraryEntries,
                         yearsForward: leadingTime,
                       ),
                     CalendarView.year => CalendarViewYear(

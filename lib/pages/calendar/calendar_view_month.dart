@@ -2,7 +2,6 @@ import 'dart:collection';
 
 import 'package:espy/modules/documents/calendar.dart';
 import 'package:espy/modules/documents/game_digest.dart';
-import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/years_model.dart';
@@ -14,15 +13,13 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class CalendarViewMonth extends StatelessWidget {
-  const CalendarViewMonth(
-    this.libraryEntries, {
+  const CalendarViewMonth({
     super.key,
     this.startDate,
     this.yearsBack = 3,
     this.yearsForward = 0,
   });
 
-  final Iterable<LibraryEntry> libraryEntries;
   final DateTime? startDate;
   final int yearsBack;
   final int yearsForward;
@@ -30,19 +27,9 @@ class CalendarViewMonth extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = startDate ?? DateTime.now().toUtc();
-
-    final fromDate = DateTime(today.year - yearsBack, 1, 1);
     final toDate = DateTime(today.year + yearsForward, 12, 31, 23, 59, 59);
 
-    final libraryEntries = this.libraryEntries.where((entry) {
-      final releaseDate = entry.digest.release;
-      return releaseDate.isAfter(fromDate) && releaseDate.isBefore(toDate);
-    });
-
     final refinement = context.watch<RefinementModel>().refinement;
-    final refinedEntries =
-        libraryEntries.where((e) => refinement.passLibraryEntry(e));
-
     final gridTiles = (yearsBack + 1 + yearsForward) * 12;
 
     return FutureBuilder(
@@ -55,13 +42,16 @@ class CalendarViewMonth extends StatelessWidget {
           return Container();
         }
 
-        final monthlyReleases = chunkByMonth(refinedEntries);
+        final gamesAcrossYears = <List<GameDigest>>[];
         if (snapshot.hasData) {
           for (final year in snapshot.data!) {
-            monthlyReleases.addAll(chunkByMonth(year.releases
-                .map((digest) => LibraryEntry.fromGameDigest(digest))));
+            gamesAcrossYears.add(year.releases);
           }
         }
+
+        final refinedEntries =
+            gamesAcrossYears.expand((e) => e).where((e) => refinement.pass(e));
+        final monthlyReleases = chunkByMonth(refinedEntries);
 
         final entries = <CalendarGridEntry>[];
         for (int i = 0; i < gridTiles; ++i) {
@@ -88,13 +78,12 @@ class CalendarViewMonth extends StatelessWidget {
     );
   }
 
-  HashMap<String, List<GameDigest>> chunkByMonth(
-      Iterable<LibraryEntry> libraryEntries) {
+  HashMap<String, List<GameDigest>> chunkByMonth(Iterable<GameDigest> games) {
     final entryMap = HashMap<String, List<GameDigest>>();
-    for (final entry in libraryEntries) {
-      final key = DateFormat('MMM y').format(
-          DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000));
-      entryMap.putIfAbsent(key, () => []).add(entry.digest);
+    for (final game in games) {
+      final key = DateFormat('MMM y')
+          .format(DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000));
+      entryMap.putIfAbsent(key, () => []).add(game);
     }
     for (final entries in entryMap.values) {
       entries.sort((a, b) =>
