@@ -127,24 +127,19 @@ class RatingStats extends StatelessWidget {
   }
 
   Widget getTitles(double value, TitleMeta meta) {
-    const style = TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.bold,
-      fontSize: 14,
-    );
-
-    Widget text = Text(
-      labels[value.toInt()],
-      style: style,
-    );
-
     return SideTitleWidget(
       meta: meta,
-      space: 16,
-      child: text,
+      space: 8,
+      child: Icon(icons[value.toInt()]),
     );
   }
 }
 
 const ratings = ['Excellent', 'Great', 'Good', 'Mixed', 'Bad'];
-const labels = ['⭐', '👍', '✔️', '🤨', '👎'];
+const icons = [
+  Icons.star,
+  Icons.thumb_up,
+  Icons.check,
+  Icons.sentiment_dissatisfied,
+  Icons.thumb_down
+];
