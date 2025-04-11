@@ -10,7 +10,7 @@ import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/calendar/calendar_view_day.dart';
 import 'package:espy/pages/calendar/calendar_view_month.dart';
-import 'package:espy/widgets/stats/refinements_bottom_sheet.dart';
+import 'package:espy/widgets/stats/filter_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -80,9 +80,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     snapshot.hasData)
                 ? snapshot.data!
                 : <GameDigest>[];
-
-            final refinement = context.watch<RefinementModel>().refinement;
-            final shownGames = games.where((e) => refinement.pass(e));
+            final shownGames = context.watch<FilterModel>().process(games);
 
             return Stack(
               children: [
@@ -120,7 +118,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     ],
                   ),
                 ),
-                RefinementsBottomSheet(
+                FilterBottomSheet(
                     games.map((digest) => LibraryEntry.fromGameDigest(digest))),
               ],
             );

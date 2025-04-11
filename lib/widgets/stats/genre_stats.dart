@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/genres_mapping.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/widgets/stats/pie_chart.dart';
@@ -13,19 +14,19 @@ class GenreStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final refinement =
-        context.watch<RefinementModel>().refinement.add(LibraryFilter());
+    final filter = context.watch<FilterModel>().filter.add(LibraryFilter());
     final selectedGroup =
-        refinement.genreGroup ?? Genres.groupOfGenre(refinement.genre);
-    final selectedGenre = refinement.genre;
+        filter.genreGroup ?? Genres.groupOfGenre(filter.genre);
+    final selectedGenre = filter.genre;
 
     // Build Genre histograms.
     Map<String, int> genreGroupsPops = {};
     Map<String, int> genresPops = {};
     int unknownPops = 0;
-    refinement.genreGroup = refinement.genre = null;
-    for (final entry
-        in libraryEntries.where((e) => refinement.passLibraryEntry(e))) {
+    // Create a filter model without the selected genre to keep the genre pie stable.
+    filter.genreGroup = filter.genre = null;
+    final model = FilterModel.create(filter, context.read<AppConfigModel>());
+    for (final entry in model.processLibraryEntries(libraryEntries)) {
       if (entry.digest.espyGenres.isEmpty) {
         unknownPops += 1;
       }
@@ -64,11 +65,10 @@ class GenreGroupPie extends StatelessWidget {
       itemPops: genreGroupsPops,
       selectedItem: selectedGroup,
       onItemTap: (selectedItem) {
-        final refinement = context.read<RefinementModel>().refinement;
-        refinement.genre = null;
-        refinement.genreGroup =
-            selectedGroup != selectedItem ? selectedItem : null;
-        context.read<RefinementModel>().refinement = refinement;
+        final filter = context.read<FilterModel>().filter;
+        filter.genre = null;
+        filter.genreGroup = selectedGroup != selectedItem ? selectedItem : null;
+        context.read<FilterModel>().filter = filter;
       },
     );
   }
@@ -106,13 +106,13 @@ class GenresPie extends StatelessWidget {
       onItemTap: (selectedItem) {
         final filter = LibraryFilter(genre: selectedItem);
         if (selectedGenre != selectedItem) {
-          context.read<RefinementModel>().add(filter);
+          context.read<FilterModel>().add(filter);
         } else {
-          context.read<RefinementModel>().subtract(filter);
+          context.read<FilterModel>().subtract(filter);
         }
       },
       backLabel: selectedGroup,
-      onBack: () => context.read<RefinementModel>().subtract(
+      onBack: () => context.read<FilterModel>().subtract(
             LibraryFilter(
               genreGroup: selectedGroup,
               genre: selectedGenre,

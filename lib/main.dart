@@ -46,13 +46,13 @@ Future<void> main() async {
       yearsProvider(),
       customViewProvider(),
       userProvider(),
+      filterProvider(),
       userLibraryProvider(),
       libraryIndexProvider(),
       failedMatchesProvider(),
       wishlistProvider(),
       gameTagsProvider(),
       userDataProvider(),
-      refinementProvider(),
       libraryEntriesProvider(),
       homeSlatesProvider(),
     ],
@@ -78,8 +78,12 @@ ChangeNotifierProvider<CustomViewModel> customViewProvider() =>
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
 
-ChangeNotifierProvider<RefinementModel> refinementProvider() =>
-    ChangeNotifierProvider(create: (_) => RefinementModel());
+ChangeNotifierProxyProvider<AppConfigModel, FilterModel> filterProvider() {
+  return ChangeNotifierProxyProvider<AppConfigModel, FilterModel>(
+      create: (_) => FilterModel(),
+      update: (_, configModel, filterModel) =>
+          filterModel!..update(configModel));
+}
 
 ChangeNotifierProxyProvider<UserModel, UserLibraryModel> userLibraryProvider() {
   return ChangeNotifierProxyProvider<UserModel, UserLibraryModel>(

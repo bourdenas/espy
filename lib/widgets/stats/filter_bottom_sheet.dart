@@ -4,8 +4,8 @@ import 'package:espy/widgets/stats/library_stats.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class RefinementsBottomSheet extends StatelessWidget {
-  const RefinementsBottomSheet(this.libraryEntries, {super.key});
+class FilterBottomSheet extends StatelessWidget {
+  const FilterBottomSheet(this.libraryEntries, {super.key});
 
   final Iterable<LibraryEntry> libraryEntries;
 

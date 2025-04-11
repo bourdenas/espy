@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 void setLibraryView(BuildContext context) {
-  context.read<RefinementModel>().clear();
+  context.read<FilterModel>().clear();
   context.goNamed('games');
 }
 
@@ -14,7 +14,7 @@ void updateLibraryView(
   LibraryFilter? filter,
 ]) {
   if (filter != null) {
-    context.read<RefinementModel>().refinement = filter;
+    context.read<FilterModel>().filter = filter;
   }
   context.pushNamed('games');
 }

@@ -18,7 +18,7 @@ class CalendarViewYear extends StatelessWidget {
     this.onClick,
   });
 
-  final List<GameDigest> games;
+  final Iterable<GameDigest> games;
   final int? startYear;
   final int? endYear;
   final Future<void> Function(CalendarGridEntry)? onClick;

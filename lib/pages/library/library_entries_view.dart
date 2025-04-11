@@ -26,13 +26,13 @@ class LibraryEntriesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final refinement = context.watch<RefinementModel>().refinement;
-    final refinedEntries = entries.where((e) => refinement.passLibraryEntry(e));
+    final shownEntries =
+        context.watch<FilterModel>().processLibraryEntries(entries);
 
     return context.watch<AppConfigModel>().libraryLayout.value ==
             LibraryLayout.grid
-        ? gridView(refinedEntries)
-        : listView(refinedEntries);
+        ? gridView(shownEntries)
+        : listView(shownEntries);
   }
 
   SliverGrid gridView(Iterable<LibraryEntry> matchedEntries) {

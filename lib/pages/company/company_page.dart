@@ -9,7 +9,7 @@ import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/widgets/shelve.dart';
-import 'package:espy/widgets/stats/refinements_bottom_sheet.dart';
+import 'package:espy/widgets/stats/filter_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -67,10 +67,9 @@ class _CompanyContentState extends State<CompanyContent> {
       published.add(digest);
     }
 
-    final refinement = context.watch<RefinementModel>().refinement;
-    final refinedEntries = (tabIndex == 0 ? developed : published)
-        .where((e) => refinement.pass(e))
-        .toList();
+    final refinedEntries = context
+        .watch<FilterModel>()
+        .process(tabIndex == 0 ? developed : published);
 
     final (startYear, endYear) = (
       [developed, published]
@@ -150,7 +149,7 @@ class _CompanyContentState extends State<CompanyContent> {
                       SizedBox(height: 52),
                     ],
                   ),
-                  RefinementsBottomSheet((tabIndex == 0 ? developed : published)
+                  FilterBottomSheet((tabIndex == 0 ? developed : published)
                       .map((digest) => LibraryEntry.fromGameDigest(digest))),
                 ],
               ),

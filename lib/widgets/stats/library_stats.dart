@@ -28,6 +28,7 @@ class LibraryStats extends StatelessWidget {
             RatingStats(libraryEntries),
             const SizedBox(width: 64),
             CategoryStats(),
+            const SizedBox(width: 16),
           ],
         ),
       ),

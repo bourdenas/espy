@@ -5,7 +5,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
-import 'package:espy/widgets/stats/refinements_bottom_sheet.dart';
+import 'package:espy/widgets/stats/filter_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,9 +35,7 @@ class CollectionContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final refinement = context.watch<RefinementModel>().refinement;
-    final refinedEntries =
-        collection.games.where((e) => refinement.pass(e)).toList();
+    final shownGames = context.watch<FilterModel>().process(collection.games);
 
     final (startYear, endYear) = (
       collection.games.map((digest) => digest.releaseYear).reduce(max),
@@ -50,7 +48,7 @@ class CollectionContent extends StatelessWidget {
           children: [
             Expanded(
               child: CalendarViewYear(
-                refinedEntries,
+                shownGames,
                 startYear: startYear,
                 endYear: endYear,
               ),
@@ -59,7 +57,7 @@ class CollectionContent extends StatelessWidget {
             SizedBox(height: 52),
           ],
         ),
-        RefinementsBottomSheet(collection.games
+        FilterBottomSheet(collection.games
             .map((digest) => LibraryEntry.fromGameDigest(digest))),
       ],
     );

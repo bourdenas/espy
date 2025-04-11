@@ -10,21 +10,7 @@ class LibraryView {
   final AppConfigModel _config;
 
   LibraryView(Iterable<LibraryEntry> libraryEntries, this._config) {
-    _libraryEntries = libraryEntries
-        .where((e) =>
-            (_config.showMains.value &&
-                e.digest.isMain &&
-                !e.digest.isEarlyAccess &&
-                !e.digest.isCasual) ||
-            (_config.showExpansions.value && e.digest.isExpansion) ||
-            (_config.showRemakes.value &&
-                (e.digest.isRemake || e.digest.isRemaster)) ||
-            (_config.showEarlyAccess.value && e.digest.isEarlyAccess) ||
-            (_config.showDlcs.value && e.digest.isDlc) ||
-            (_config.showVersions.value && e.digest.isVersion) ||
-            (_config.showBundles.value && e.digest.isBundle) ||
-            (_config.showCasual.value && e.digest.isCasual))
-        .toList();
+    _libraryEntries = libraryEntries.toList();
 
     final _ = switch (_config.libraryOrdering.value) {
       LibraryOrdering.release =>

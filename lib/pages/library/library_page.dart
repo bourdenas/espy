@@ -3,7 +3,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/filters/categories_sliding_chip.dart';
-import 'package:espy/widgets/stats/refinements_bottom_sheet.dart';
+import 'package:espy/widgets/stats/filter_bottom_sheet.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +21,7 @@ class LibraryPage extends StatelessWidget {
       body: Stack(
         children: [
           libraryBody(appConfig, libraryViewModel),
-          RefinementsBottomSheet(libraryViewModel.entries),
+          FilterBottomSheet(libraryViewModel.entries),
         ],
       ),
     );

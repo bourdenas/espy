@@ -1,5 +1,6 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/keyword_mapping.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/widgets/stats/word_cloud.dart';
@@ -18,14 +19,14 @@ class KeywordCloud extends StatefulWidget {
 class _KeywordCloudState extends State<KeywordCloud> {
   @override
   Widget build(BuildContext context) {
-    final refinement =
-        context.watch<RefinementModel>().refinement.add(LibraryFilter());
-    final selectedKeyword = refinement.keyword;
+    // Get a copy of the currect filter.
+    final filter = context.watch<FilterModel>().filter.add(LibraryFilter());
+    final selectedKeyword = filter.keyword;
 
     Map<String, int> kwGroupsPops = {};
     Map<String, int> kwPops = {};
-    for (final entry
-        in widget.libraryEntries.where((e) => refinement.passLibraryEntry(e))) {
+    final model = FilterModel.create(filter, context.read<AppConfigModel>());
+    for (final entry in model.processLibraryEntries(widget.libraryEntries)) {
       final groups = <String>{};
       for (final kw in entry.digest.keywords) {
         if (kw == 'co-op' || kw == 'PvP') continue;
@@ -58,10 +59,10 @@ class _KeywordCloudState extends State<KeywordCloud> {
             ),
             onClick: (String word) {
               final filter = LibraryFilter(keyword: word);
-              if (context.read<RefinementModel>().refinement.keyword != word) {
-                context.read<RefinementModel>().add(filter);
+              if (context.read<FilterModel>().filter.keyword != word) {
+                context.read<FilterModel>().add(filter);
               } else {
-                context.read<RefinementModel>().subtract(filter);
+                context.read<FilterModel>().subtract(filter);
               }
             },
           )

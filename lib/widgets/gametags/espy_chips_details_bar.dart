@@ -73,5 +73,5 @@ void addRefinement(BuildContext context, LibraryFilter filter) {
   if (context.canPop()) {
     context.pop();
   }
-  context.read<RefinementModel>().refinement = filter;
+  context.read<FilterModel>().filter = filter;
 }

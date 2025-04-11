@@ -98,5 +98,5 @@ class EspyChipsGameCard extends StatelessWidget {
 }
 
 void addRefinement(BuildContext context, LibraryFilter filter) {
-  context.read<RefinementModel>().refinement = filter;
+  context.read<FilterModel>().filter = filter;
 }

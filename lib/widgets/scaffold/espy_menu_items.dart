@@ -58,7 +58,7 @@ List<MenuItem> espyMenuItems = [
     icon: Icons.calendar_month_outlined,
     selectedIcon: Icons.calendar_month,
     onTap: (context) {
-      context.read<RefinementModel>().clear();
+      context.read<FilterModel>().clear();
       context.goNamed('calendar');
     },
   ),

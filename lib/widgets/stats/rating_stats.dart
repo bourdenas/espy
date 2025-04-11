@@ -1,6 +1,7 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/scores.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -14,17 +15,17 @@ class RatingStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get a copy of the currect refinement.
-    final refinement =
-        context.watch<RefinementModel>().refinement.add(LibraryFilter());
-    final selectedScore = refinement.score;
-    // Remove score from refinement to make the bar chart stable to selections.
-    refinement.score = null;
+    // Get a copy of the currect filter.
+    final filter = context.watch<FilterModel>().filter.add(LibraryFilter());
+    final selectedScore = filter.score;
+
+    // Remove score from filter to make the bar chart stable to selections.
+    filter.score = null;
+    final model = FilterModel.create(filter, context.read<AppConfigModel>());
 
     // Build scores histograms.
     final ratingPops = <String, int>{};
-    for (final entry
-        in libraryEntries.where((e) => refinement.passLibraryEntry(e))) {
+    for (final entry in model.processLibraryEntries(libraryEntries)) {
       final title = entry.scores.title;
       if (title != 'Unknown') {
         ratingPops[title] = (ratingPops[title] ?? 0) + 1;
@@ -60,11 +61,11 @@ class RatingStats extends StatelessWidget {
                       score:
                           ratings[barTouchResponse.spot!.touchedBarGroupIndex]);
 
-                  if (context.read<RefinementModel>().refinement.score !=
+                  if (context.read<FilterModel>().filter.score !=
                       filter.score) {
-                    context.read<RefinementModel>().add(filter);
+                    context.read<FilterModel>().add(filter);
                   } else {
-                    context.read<RefinementModel>().subtract(filter);
+                    context.read<FilterModel>().subtract(filter);
                   }
                 }),
             titlesData: FlTitlesData(
