@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
@@ -62,7 +63,10 @@ class CollectionContent extends StatelessWidget {
 
     final (startYear, endYear) = (
       collection.games.map((digest) => digest.releaseYear).reduce(max),
-      collection.games.map((digest) => digest.releaseYear).reduce(min),
+      collection.games
+          .map((digest) => digest.releaseYear)
+          .where((year) => year > 1970)
+          .reduce(min),
     );
 
     return Stack(
@@ -77,7 +81,10 @@ class CollectionContent extends StatelessWidget {
               ),
             ),
             // Add some space for the bottom sheet.
-            SizedBox(height: 52),
+            SizedBox(
+              height:
+                  context.watch<AppConfigModel>().showBottomSheet ? 320 : 52,
+            ),
           ],
         ),
         FilterBottomSheet(collection.games

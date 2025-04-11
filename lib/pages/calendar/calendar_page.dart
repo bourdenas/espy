@@ -1,6 +1,7 @@
 import 'package:espy/modules/documents/frontpage.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/calendar_model.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
@@ -114,7 +115,12 @@ class _CalendarPageState extends State<CalendarPage> {
                             ),
                         },
                       ),
-                      SizedBox(height: 52),
+                      // Add some space for the bottom sheet.
+                      SizedBox(
+                          height:
+                              context.watch<AppConfigModel>().showBottomSheet
+                                  ? 320
+                                  : 52),
                     ],
                   ),
                 ),

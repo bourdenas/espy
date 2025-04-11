@@ -5,6 +5,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
@@ -79,6 +80,7 @@ class _CompanyContentState extends State<CompanyContent> {
       [developed, published]
           .expand((e) => e)
           .map((digest) => digest.releaseYear)
+          .where((year) => year > 1970)
           .reduce(min),
     );
 
@@ -146,7 +148,11 @@ class _CompanyContentState extends State<CompanyContent> {
                         ),
                       ),
                       // Add some space for the bottom sheet.
-                      SizedBox(height: 52),
+                      SizedBox(
+                        height: context.watch<AppConfigModel>().showBottomSheet
+                            ? 320
+                            : 52,
+                      ),
                     ],
                   ),
                   FilterBottomSheet((tabIndex == 0 ? developed : published)

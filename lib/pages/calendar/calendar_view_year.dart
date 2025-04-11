@@ -30,7 +30,7 @@ class CalendarViewYear extends StatelessWidget {
     final years = chunkByYear(games);
     final (startYear, endYear) = (
       this.startYear ?? years.keys.reduce(max),
-      this.endYear ?? years.keys.reduce(min)
+      this.endYear ?? years.keys.where((year) => year > 1970).reduce(min)
     );
 
     final entries = <CalendarGridEntry>[];
