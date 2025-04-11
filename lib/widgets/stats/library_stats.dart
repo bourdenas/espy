@@ -1,4 +1,5 @@
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/widgets/stats/category_stats.dart';
 import 'package:espy/widgets/stats/genre_stats.dart';
 import 'package:espy/widgets/stats/keyword_cloud.dart';
 import 'package:espy/widgets/stats/rating_stats.dart';
@@ -25,6 +26,8 @@ class LibraryStats extends StatelessWidget {
             KeywordCloud(libraryEntries),
             const SizedBox(width: 64),
             RatingStats(libraryEntries),
+            const SizedBox(width: 64),
+            CategoryStats(),
           ],
         ),
       ),

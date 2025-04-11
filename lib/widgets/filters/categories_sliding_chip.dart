@@ -75,7 +75,7 @@ class CategoryFilterChip extends StatelessWidget {
         option.value = true;
       },
       child: ChoiceChip(
-        label: Text(label),
+        label: SizedBox(width: 82, child: Text(label)),
         selected: option.value,
         onSelected: (selected) => option.value = selected,
       ),
