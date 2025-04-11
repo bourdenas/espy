@@ -55,7 +55,6 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: company,
             entries: tagsModel.developers.games(company),
-            filter: LibraryFilter(developer: company),
             color: DeveloperChip.color,
           ),
         ],
@@ -63,7 +62,6 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: company,
             entries: tagsModel.publishers.games(company),
-            filter: LibraryFilter(publisher: company),
             color: PublisherChip.color,
           ),
         ],
@@ -71,7 +69,6 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: collection,
             entries: tagsModel.collections.games(collection),
-            filter: LibraryFilter(collection: collection),
             color: CollectionChip.color,
           ),
         ],
@@ -79,7 +76,6 @@ class _SearchPageState extends State<SearchPage> {
           TileShelve(
             title: franchise,
             entries: tagsModel.franchises.games(franchise),
-            filter: LibraryFilter(franchise: franchise),
             color: FranchiseChip.color,
           ),
         ],
@@ -91,19 +87,10 @@ class _SearchPageState extends State<SearchPage> {
             color: EspyGenreChip.color,
           ),
         ],
-        // for (final genreTag in tagsModel.genreTags.filterExact(ngrams)) ...[
-        //   TileShelve(
-        //     title: genreTag.name,
-        //     entries: tagsModel.genreTags.games(genreTag.name),
-        //     filter: LibraryFilter(genreTags: genreTagencode()}),
-        //     color: GenreTagChip.color,
-        //   ),
-        // ],
         for (final userTag in tagsModel.userTags.filterExact(ngrams)) ...[
           TileShelve(
             title: userTag,
             entries: tagsModel.manualGenres.games(userTag),
-            filter: LibraryFilter(userTag: userTag),
             color: ManualTagChip.color,
           ),
         ],

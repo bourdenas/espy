@@ -105,30 +105,30 @@ class TagSearchResults extends StatelessWidget {
                 ),
               ),
             ),
-          if (manualGenres.isNotEmpty)
-            _ChipResults(
-              title: 'User Genres',
-              color: ManualGenreChip.color,
-              chips: manualGenres.map(
-                (genreTag) => ManualGenreChip(
-                  genreTag.label,
-                  onPressed: () => updateLibraryView(
-                      context, LibraryFilter(manualGenre: genreTag.encode())),
-                ),
-              ),
-            ),
-          if (userTags.isNotEmpty)
-            _ChipResults(
-              title: 'Tags',
-              color: ManualTagChip.color,
-              chips: userTags.map(
-                (tag) => ManualTagChip(
-                  tag,
-                  onPressed: () =>
-                      updateLibraryView(context, LibraryFilter(userTag: tag)),
-                ),
-              ),
-            ),
+          // if (manualGenres.isNotEmpty)
+          //   _ChipResults(
+          //     title: 'User Genres',
+          //     color: ManualGenreChip.color,
+          //     chips: manualGenres.map(
+          //       (genreTag) => ManualGenreChip(
+          //         genreTag.label,
+          //         onPressed: () => updateLibraryView(
+          //             context, LibraryFilter(manualGenre: genreTag.encode())),
+          //       ),
+          //     ),
+          //   ),
+          // if (userTags.isNotEmpty)
+          //   _ChipResults(
+          //     title: 'Tags',
+          //     color: ManualTagChip.color,
+          //     chips: userTags.map(
+          //       (tag) => ManualTagChip(
+          //         tag,
+          //         onPressed: () =>
+          //             updateLibraryView(context, LibraryFilter(userTag: tag)),
+          //       ),
+          //     ),
+          //   ),
         ],
       ),
     );
