@@ -61,7 +61,7 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'games',
           child: EspyScaffold(
-            body: const LibraryPage(),
+            body: const LibraryPage(title: 'Game Library'),
             path: state.path!,
           ),
         ),
@@ -73,7 +73,7 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'wishlist',
           child: EspyScaffold(
-            body: const LibraryPage(),
+            body: const LibraryPage(title: 'Wishlist'),
             path: state.path!,
           ),
         ),
@@ -97,7 +97,7 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'view',
           child: EspyScaffold(
-            body: const LibraryPage(),
+            body: const LibraryPage(title: ''),
             path: state.path!,
           ),
         ),

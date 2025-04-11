@@ -45,15 +45,7 @@ class AnnualLibaryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LibraryPage(
-        // entries: [
-        //   review.releases,
-        //   review.indies,
-        //   review.earlyAccess,
-        //   review.expansions,
-        //   review.remasters,
-        //   review.casual
-        // ].expand((e) => e).map((digest) => LibraryEntry.fromGameDigest(digest)),
-        );
+        title: 'Releases in ${review.releases.first.releaseYear}');
   }
 }
 

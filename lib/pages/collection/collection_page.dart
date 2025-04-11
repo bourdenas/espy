@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
@@ -19,10 +20,32 @@ class CollectionPage extends StatelessWidget {
     return FutureBuilder(
       future: BackendApi.collectionFetch(name),
       builder: (BuildContext context, AsyncSnapshot<IgdbCollection?> snapshot) {
-        return snapshot.connectionState == ConnectionState.done &&
-                snapshot.hasData
-            ? CollectionContent(snapshot.data!)
-            : Container();
+        IgdbCollection? collection =
+            (snapshot.connectionState == ConnectionState.done &&
+                    snapshot.hasData)
+                ? snapshot.data
+                : null;
+
+        return Scaffold(
+          appBar: AppBar(
+            leading: badges.Badge(
+              badgeContent: Text(
+                '${collection?.games.length ?? 0}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              badgeStyle: badges.BadgeStyle(
+                shape: badges.BadgeShape.circle,
+                badgeColor: Theme.of(context).colorScheme.primaryContainer,
+                padding: const EdgeInsets.all(8),
+              ),
+              position: badges.BadgePosition.center(),
+              child: Container(),
+            ),
+            title: Text(name),
+          ),
+          body:
+              collection != null ? CollectionContent(collection) : Container(),
+        );
       },
     );
   }

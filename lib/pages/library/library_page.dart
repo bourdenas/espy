@@ -2,14 +2,15 @@ import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
-import 'package:espy/widgets/filters/categories_sliding_chip.dart';
 import 'package:espy/widgets/stats/filter_bottom_sheet.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LibraryPage extends StatelessWidget {
-  const LibraryPage({super.key});
+  const LibraryPage({super.key, required this.title});
+
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -73,22 +74,9 @@ class LibraryPage extends StatelessWidget {
         position: badges.BadgePosition.center(),
         child: Container(),
       ),
-      title: SizedBox(
-        height: 48,
-        child: ListView(
-          shrinkWrap: true,
-          scrollDirection: Axis.horizontal,
-          children: [
-            const CategoriesSlidingChip(),
-            // const SizedBox(width: 8.0),
-            // const KeywordsSlidingChip(),
-            // const SizedBox(width: 8.0),
-            // EspyChipsFilterBar(filter),
-          ],
-        ),
-      ),
-      backgroundColor: Colors.black.withOpacity(0.6),
-      elevation: 0.0,
+      title: Text(title),
+      // backgroundColor: Colors.black.withOpacity(0.6),
+      // elevation: 0.0,
     );
   }
 }
