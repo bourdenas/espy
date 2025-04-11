@@ -1,6 +1,10 @@
+import 'package:espy/modules/documents/frontpage.dart';
+import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/models/calendar_model.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/years_model.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
@@ -41,57 +45,86 @@ class _CalendarPageState extends State<CalendarPage> {
     };
   }
 
+  Future<List<GameDigest>> recentWeeks(Frontpage frontpage) async {
+    return frontpage.digests;
+  }
+
+  Future<List<GameDigest>> recentYears(YearsModel yearsModel) async {
+    final today = DateTime.now().toUtc();
+    final yearsBack = 3;
+    final allYears = await yearsModel
+        .getYears(List.generate(yearsBack + 1, (i) => '${today.year - i}'));
+
+    return allYears.map((year) => year.releases).expand((e) => e).toList();
+  }
+
+  Future<List<GameDigest>> allYears(CalendarModel calendarModel) async {
+    return (await calendarModel.calendar).values.expand((e) => e).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final libraryEntries = context
-        .watch<FrontpageModel>()
-        .frontpage
-        .digests
-        .map((digest) => LibraryEntry.fromGameDigest(digest));
-
     final maxLeadingTime = maxLeading();
+
     return Scaffold(
       appBar: calendarAppBar(context),
-      body: Stack(
-        children: [
-          RefreshIndicator(
-            onRefresh: () async {
-              setState(() => increaseLeading());
-            },
-            child: Column(
+      body: FutureBuilder(
+          future: switch (calendarView) {
+            CalendarView.day =>
+              recentWeeks(context.watch<FrontpageModel>().frontpage),
+            CalendarView.month => recentYears(context.read<YearsModel>()),
+            CalendarView.year => allYears(context.read<CalendarModel>()),
+          },
+          builder: (context, AsyncSnapshot<List<GameDigest>> snapshot) {
+            final games = (snapshot.connectionState == ConnectionState.done &&
+                    snapshot.hasData)
+                ? snapshot.data!
+                : <GameDigest>[];
+
+            final refinement = context.watch<RefinementModel>().refinement;
+            final shownGames = games.where((e) => refinement.pass(e));
+
+            return Stack(
               children: [
-                Expanded(
-                  child: switch (calendarView) {
-                    // TODO: Uplevel retrieval for entries at this level.
-                    CalendarView.day => CalendarViewDay(
-                        libraryEntries,
-                        leadingWeeks: 17,
-                        trailingWeeks: leadingTime,
-                      ),
-                    CalendarView.month => CalendarViewMonth(
-                        yearsForward: leadingTime,
-                      ),
-                    CalendarView.year => CalendarViewYear(
-                        onClick: (CalendarGridEntry entry) async {
-                          final games = await context
-                              .read<YearsModel>()
-                              .gamesIn('${entry.digests.first.releaseYear}');
-                          if (context.mounted) {
-                            context.read<CustomViewModel>().digests =
-                                games.releases;
-                            context.pushNamed('view');
-                          }
+                RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() => increaseLeading());
+                  },
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: switch (calendarView) {
+                          CalendarView.day => CalendarViewDay(
+                              shownGames,
+                              leadingWeeks: 17,
+                              trailingWeeks: leadingTime,
+                            ),
+                          CalendarView.month => CalendarViewMonth(shownGames),
+                          CalendarView.year => CalendarViewYear(
+                              games,
+                              onClick: (CalendarGridEntry entry) async {
+                                final games = await context
+                                    .read<YearsModel>()
+                                    .gamesIn(
+                                        '${entry.digests.first.releaseYear}');
+                                if (context.mounted) {
+                                  context.read<CustomViewModel>().digests =
+                                      games.releases;
+                                  context.pushNamed('view');
+                                }
+                              },
+                            ),
                         },
                       ),
-                  },
+                      SizedBox(height: 52),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 52),
+                RefinementsBottomSheet(
+                    games.map((digest) => LibraryEntry.fromGameDigest(digest))),
               ],
-            ),
-          ),
-          RefinementsBottomSheet(libraryEntries),
-        ],
-      ),
+            );
+          }),
       floatingActionButton: FloatingActionButton(
         onPressed: leadingTime < maxLeadingTime
             ? () {

@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
@@ -37,27 +36,12 @@ class CollectionContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final refinement = context.watch<RefinementModel>().refinement;
-    final refinedEntries = collection.games.where((e) => refinement.pass(e));
+    final refinedEntries =
+        collection.games.where((e) => refinement.pass(e)).toList();
 
-    final minDateDeveloped = collection.games.isEmpty
-        ? DateTime(1970)
-        : DateTime.fromMillisecondsSinceEpoch(collection.games
-                .map((digest) => digest.releaseDate)
-                .where((date) => date > 0)
-                .reduce(min) *
-            1000);
-    final maxDateDeveloped = collection.games.isEmpty
-        ? DateTime(1970)
-        : DateTime.fromMillisecondsSinceEpoch(collection.games
-                .map((digest) => digest.releaseDate)
-                .where((date) => date > 0)
-                .reduce(max) *
-            1000);
-
-    final games = groupDigestsBy(
-      refinedEntries,
-      byKey: (digest) => '${digest.releaseYear}',
-      sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
+    final (startYear, endYear) = (
+      collection.games.map((digest) => digest.releaseYear).reduce(max),
+      collection.games.map((digest) => digest.releaseYear).reduce(min),
     );
 
     return Stack(
@@ -66,16 +50,16 @@ class CollectionContent extends StatelessWidget {
           children: [
             Expanded(
               child: CalendarViewYear(
-                startYear: maxDateDeveloped.year,
-                endYear: minDateDeveloped.year,
-                gamesByYear: games,
+                refinedEntries,
+                startYear: startYear,
+                endYear: endYear,
               ),
             ),
             // Add some space for the bottom sheet.
             SizedBox(height: 52),
           ],
         ),
-        RefinementsBottomSheet(refinedEntries
+        RefinementsBottomSheet(collection.games
             .map((digest) => LibraryEntry.fromGameDigest(digest))),
       ],
     );

@@ -6,10 +6,12 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/igdb_company.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/backend_api.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:espy/widgets/stats/refinements_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CompanyPage extends StatelessWidget {
   const CompanyPage({super.key, required this.name});
@@ -42,6 +44,7 @@ class CompanyContent extends StatefulWidget {
 
 class _CompanyContentState extends State<CompanyContent> {
   IgdbCompany? selectedCompany;
+  int tabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -57,50 +60,27 @@ class _CompanyContentState extends State<CompanyContent> {
         widget.companyDocs.map((e) => e.developed).expand((e) => e).toList()) {
       developed.add(digest);
     }
-    final minDateDeveloped = developed.isEmpty
-        ? DateTime(1970)
-        : DateTime.fromMillisecondsSinceEpoch(developed
-                .map((digest) => digest.releaseDate)
-                .where((date) => date > 0)
-                .reduce(min) *
-            1000);
-    final maxDateDeveloped = developed.isEmpty
-        ? DateTime(1970)
-        : DateTime.fromMillisecondsSinceEpoch(developed
-                .map((digest) => digest.releaseDate)
-                .where((date) => date > 0)
-                .reduce(max) *
-            1000);
 
     final published = <GameDigest>[];
     for (final digest in selectedCompany?.published ??
         widget.companyDocs.map((e) => e.published).expand((e) => e).toList()) {
       published.add(digest);
     }
-    final minDatePublished = published.isEmpty
-        ? DateTime(1970)
-        : DateTime.fromMillisecondsSinceEpoch(published
-                .map((digest) => digest.releaseDate)
-                .where((date) => date > 0)
-                .reduce(min) *
-            1000);
-    final maxDatePublished = published.isEmpty
-        ? DateTime(1970)
-        : DateTime.fromMillisecondsSinceEpoch(published
-                .map((digest) => digest.releaseDate)
-                .where((date) => date > 0)
-                .reduce(max) *
-            1000);
 
-    final developedGames = groupDigestsBy(
-      developed,
-      byKey: (digest) => '${digest.releaseYear}',
-      sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
-    );
-    final publishedGames = groupDigestsBy(
-      published,
-      byKey: (digest) => '${digest.releaseYear}',
-      sortBy: (l, r) => l.releaseDate.compareTo(r.releaseDate),
+    final refinement = context.watch<RefinementModel>().refinement;
+    final refinedEntries = (tabIndex == 0 ? developed : published)
+        .where((e) => refinement.pass(e))
+        .toList();
+
+    final (startYear, endYear) = (
+      [developed, published]
+          .expand((e) => e)
+          .map((digest) => digest.releaseYear)
+          .reduce(max),
+      [developed, published]
+          .expand((e) => e)
+          .map((digest) => digest.releaseYear)
+          .reduce(min),
     );
 
     return Column(
@@ -137,12 +117,12 @@ class _CompanyContentState extends State<CompanyContent> {
             child: Scaffold(
               appBar: TabBar(
                 onTap: (index) {
-                  // TODO: update stats bottom sheet.
+                  setState(() {
+                    tabIndex = index;
+                  });
                 },
                 tabs: [
-                  Tab(
-                    text: 'Developed',
-                  ),
+                  Tab(text: 'Developed'),
                   Tab(text: 'Published'),
                 ],
               ),
@@ -154,14 +134,14 @@ class _CompanyContentState extends State<CompanyContent> {
                         child: TabBarView(
                           children: [
                             CalendarViewYear(
-                              startYear: maxDateDeveloped.year,
-                              endYear: minDateDeveloped.year,
-                              gamesByYear: developedGames,
+                              refinedEntries,
+                              startYear: startYear,
+                              endYear: endYear,
                             ),
                             CalendarViewYear(
-                              startYear: maxDatePublished.year,
-                              endYear: minDatePublished.year,
-                              gamesByYear: publishedGames,
+                              refinedEntries,
+                              startYear: startYear,
+                              endYear: endYear,
                             ),
                           ],
                         ),
@@ -170,8 +150,7 @@ class _CompanyContentState extends State<CompanyContent> {
                       SizedBox(height: 52),
                     ],
                   ),
-                  RefinementsBottomSheet(developedGames.values
-                      .expand((e) => e)
+                  RefinementsBottomSheet((tabIndex == 0 ? developed : published)
                       .map((digest) => LibraryEntry.fromGameDigest(digest))),
                 ],
               ),

@@ -1,9 +1,7 @@
 import 'dart:collection';
 
 import 'package:espy/modules/documents/game_digest.dart';
-import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:flutter/material.dart';
@@ -13,14 +11,14 @@ import 'package:provider/provider.dart';
 
 class CalendarViewDay extends StatelessWidget {
   const CalendarViewDay(
-    this.libraryEntries, {
+    this.games, {
     super.key,
     this.startDate,
     this.leadingWeeks = 2,
     this.trailingWeeks = 2,
   });
 
-  final Iterable<LibraryEntry> libraryEntries;
+  final Iterable<GameDigest> games;
   final DateTime? startDate;
   final int leadingWeeks;
   final int trailingWeeks;
@@ -32,25 +30,12 @@ class CalendarViewDay extends StatelessWidget {
         .subtract(Duration(
             days: today.weekday - 1)) // Get to the Monday of this week.
         .subtract(Duration(days: leadingWeeks * 7 + 1));
-    final toDate = today
-        .subtract(Duration(
-            days: today.weekday - 1)) // Get to the Monday of this week.
-        .add(Duration(days: (trailingWeeks + 1) * 7 + 1));
-
-    final libraryEntries = this.libraryEntries.where((entry) {
-      final releaseDate = entry.digest.release;
-      return releaseDate.isAfter(fromDate) && releaseDate.isBefore(toDate);
-    });
-
-    final refinement = context.watch<RefinementModel>().refinement;
-    final refinedEntries =
-        libraryEntries.where((e) => refinement.passLibraryEntry(e));
 
     final dailyReleases = HashMap<String, List<GameDigest>>();
-    for (final entry in refinedEntries) {
-      final key = DateFormat('yMMMd').format(
-          DateTime.fromMillisecondsSinceEpoch(entry.releaseDate * 1000));
-      dailyReleases.putIfAbsent(key, () => []).add(entry.digest);
+    for (final game in games) {
+      final key = DateFormat('yMMMd')
+          .format(DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000));
+      dailyReleases.putIfAbsent(key, () => []).add(game);
     }
     for (final entries in dailyReleases.values) {
       entries.sort((a, b) =>

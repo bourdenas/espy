@@ -1,10 +1,7 @@
 import 'dart:collection';
 
-import 'package:espy/modules/documents/calendar.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
-import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/modules/models/years_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:flutter/material.dart';
@@ -13,13 +10,15 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class CalendarViewMonth extends StatelessWidget {
-  const CalendarViewMonth({
+  const CalendarViewMonth(
+    this.games, {
     super.key,
     this.startDate,
     this.yearsBack = 3,
     this.yearsForward = 0,
   });
 
+  final Iterable<GameDigest> games;
   final DateTime? startDate;
   final int yearsBack;
   final int yearsForward;
@@ -29,52 +28,29 @@ class CalendarViewMonth extends StatelessWidget {
     final today = startDate ?? DateTime.now().toUtc();
     final toDate = DateTime(today.year + yearsForward, 12, 31, 23, 59, 59);
 
-    final refinement = context.watch<RefinementModel>().refinement;
     final gridTiles = (yearsBack + 1 + yearsForward) * 12;
+    final monthlyReleases = chunkByMonth(games);
 
-    return FutureBuilder(
-      future: context
-          .read<YearsModel>()
-          .getYears(List.generate(yearsBack + 1, (i) => '${today.year - i}')),
-      builder: (BuildContext context,
-          AsyncSnapshot<List<AnnualReviewDoc>> snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return Container();
-        }
+    final entries = <CalendarGridEntry>[];
+    for (int i = 0; i < gridTiles; ++i) {
+      final month = 12 - (i % 12);
+      final year = toDate.year - (i ~/ 12);
 
-        final gamesAcrossYears = <List<GameDigest>>[];
-        if (snapshot.hasData) {
-          for (final year in snapshot.data!) {
-            gamesAcrossYears.add(year.releases);
-          }
-        }
+      final label = DateFormat('MMM y').format(DateTime(year, month));
+      entries.add(CalendarGridEntry(
+        label,
+        monthlyReleases[label] ?? [],
+        onClick: (CalendarGridEntry entry) {
+          context.read<CustomViewModel>().digests = entry.digests;
+          context.pushNamed('view');
+        },
+      ));
+    }
 
-        final refinedEntries =
-            gamesAcrossYears.expand((e) => e).where((e) => refinement.pass(e));
-        final monthlyReleases = chunkByMonth(refinedEntries);
-
-        final entries = <CalendarGridEntry>[];
-        for (int i = 0; i < gridTiles; ++i) {
-          final month = 12 - (i % 12);
-          final year = toDate.year - (i ~/ 12);
-
-          final label = DateFormat('MMM y').format(DateTime(year, month));
-          entries.add(CalendarGridEntry(
-            label,
-            monthlyReleases[label] ?? [],
-            onClick: (CalendarGridEntry entry) {
-              context.read<CustomViewModel>().digests = entry.digests;
-              context.pushNamed('view');
-            },
-          ));
-        }
-
-        return CalendarGrid(
-          entries,
-          gridCount: 6,
-          selectedLabel: DateFormat('MMM y').format(today),
-        );
-      },
+    return CalendarGrid(
+      entries,
+      gridCount: 6,
+      selectedLabel: DateFormat('MMM y').format(today),
     );
   }
 
