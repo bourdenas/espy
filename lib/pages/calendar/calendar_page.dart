@@ -11,7 +11,7 @@ import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/calendar/calendar_view_day.dart';
 import 'package:espy/pages/calendar/calendar_view_month.dart';
-import 'package:espy/widgets/stats/filter_bottom_sheet.dart';
+import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -67,78 +67,82 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     final maxLeadingTime = maxLeading();
 
-    return Scaffold(
-      appBar: calendarAppBar(context),
-      body: FutureBuilder(
-          future: switch (calendarView) {
-            CalendarView.day =>
-              recentWeeks(context.watch<FrontpageModel>().frontpage),
-            CalendarView.month => recentYears(context.read<YearsModel>()),
-            CalendarView.year => allYears(context.read<CalendarModel>()),
-          },
-          builder: (context, AsyncSnapshot<List<GameDigest>> snapshot) {
-            final games = (snapshot.connectionState == ConnectionState.done &&
-                    snapshot.hasData)
-                ? snapshot.data!
-                : <GameDigest>[];
-            final shownGames = context.watch<FilterModel>().process(games);
+    return FutureBuilder(
+      future: switch (calendarView) {
+        CalendarView.day =>
+          recentWeeks(context.watch<FrontpageModel>().frontpage),
+        CalendarView.month => recentYears(context.read<YearsModel>()),
+        CalendarView.year => allYears(context.read<CalendarModel>()),
+      },
+      builder: (context, AsyncSnapshot<List<GameDigest>> snapshot) {
+        final games = (snapshot.connectionState == ConnectionState.done &&
+                snapshot.hasData)
+            ? snapshot.data!
+            : <GameDigest>[];
+        final shownGames = context.watch<FilterModel>().process(games);
 
-            return Stack(
+        return Stack(
+          children: [
+            Row(
               children: [
-                RefreshIndicator(
-                  onRefresh: () async {
-                    setState(() => increaseLeading());
-                  },
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: switch (calendarView) {
-                          CalendarView.day => CalendarViewDay(
-                              shownGames,
-                              leadingWeeks: 17,
-                              trailingWeeks: leadingTime,
-                            ),
-                          CalendarView.month => CalendarViewMonth(shownGames),
-                          CalendarView.year => CalendarViewYear(
-                              games,
-                              onClick: (CalendarGridEntry entry) async {
-                                final games = await context
-                                    .read<YearsModel>()
-                                    .gamesIn(
-                                        '${entry.digests.first.releaseYear}');
-                                if (context.mounted) {
-                                  context.read<CustomViewModel>().digests =
-                                      games.releases;
-                                  context.pushNamed('view');
-                                }
-                              },
-                            ),
-                        },
-                      ),
-                      // Add some space for the bottom sheet.
-                      SizedBox(
-                          height:
-                              context.watch<AppConfigModel>().showBottomSheet
-                                  ? 320
-                                  : 52),
-                    ],
+                Expanded(
+                  child: Scaffold(
+                    appBar: calendarAppBar(context),
+                    body: RefreshIndicator(
+                      onRefresh: () async {
+                        setState(() => increaseLeading());
+                      },
+                      child: switch (calendarView) {
+                        CalendarView.day => CalendarViewDay(
+                            shownGames,
+                            leadingWeeks: 17,
+                            trailingWeeks: leadingTime,
+                          ),
+                        CalendarView.month => CalendarViewMonth(shownGames),
+                        CalendarView.year => CalendarViewYear(
+                            games,
+                            onClick: (CalendarGridEntry entry) async {
+                              final games = await context
+                                  .read<YearsModel>()
+                                  .gamesIn(
+                                      '${entry.digests.first.releaseYear}');
+                              if (context.mounted) {
+                                context.read<CustomViewModel>().digests =
+                                    games.releases;
+                                context.pushNamed('view');
+                              }
+                            },
+                          ),
+                      },
+                    ),
+                    floatingActionButton: FloatingActionButton(
+                      onPressed: leadingTime < maxLeadingTime
+                          ? () {
+                              setState(() => increaseLeading());
+                            }
+                          : null,
+                      backgroundColor:
+                          leadingTime == maxLeadingTime ? Colors.black : null,
+                      child: Icon(Icons.keyboard_arrow_up),
+                    ),
+                    floatingActionButtonLocation:
+                        FloatingActionButtonLocation.startFloat,
                   ),
                 ),
-                FilterBottomSheet(
-                    games.map((digest) => LibraryEntry.fromGameDigest(digest))),
+                // Add some space for the side pane.
+                SizedBox(
+                  width: context.watch<AppConfigModel>().showBottomSheet
+                      ? 500
+                      : 40,
+                ),
               ],
-            );
-          }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: leadingTime < maxLeadingTime
-            ? () {
-                setState(() => increaseLeading());
-              }
-            : null,
-        backgroundColor: leadingTime == maxLeadingTime ? Colors.black : null,
-        child: Icon(Icons.keyboard_arrow_up),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+            ),
+            FilterSidePane(
+              games.map((digest) => LibraryEntry.fromGameDigest(digest)),
+            ),
+          ],
+        );
+      },
     );
   }
 

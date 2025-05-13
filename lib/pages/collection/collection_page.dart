@@ -7,7 +7,7 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
-import 'package:espy/widgets/stats/filter_bottom_sheet.dart';
+import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,25 +27,48 @@ class CollectionPage extends StatelessWidget {
                 ? snapshot.data
                 : null;
 
-        return Scaffold(
-          appBar: AppBar(
-            leading: badges.Badge(
-              badgeContent: Text(
-                '${collection?.games.length ?? 0}',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              badgeStyle: badges.BadgeStyle(
-                shape: badges.BadgeShape.circle,
-                badgeColor: Theme.of(context).colorScheme.primaryContainer,
-                padding: const EdgeInsets.all(8),
-              ),
-              position: badges.BadgePosition.center(),
-              child: Container(),
+        return Stack(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Scaffold(
+                    appBar: AppBar(
+                      leading: badges.Badge(
+                        badgeContent: Text(
+                          '${collection?.games.length ?? 0}',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        badgeStyle: badges.BadgeStyle(
+                          shape: badges.BadgeShape.circle,
+                          badgeColor:
+                              Theme.of(context).colorScheme.primaryContainer,
+                          padding: const EdgeInsets.all(8),
+                        ),
+                        position: badges.BadgePosition.center(),
+                        child: Container(),
+                      ),
+                      title: Text(name),
+                    ),
+                    body: collection != null
+                        ? CollectionContent(collection)
+                        : Container(),
+                  ),
+                ),
+                // Add some space for the bottom sheet.
+                SizedBox(
+                  width: context.watch<AppConfigModel>().showBottomSheet
+                      ? 500
+                      : 40,
+                ),
+              ],
             ),
-            title: Text(name),
-          ),
-          body:
-              collection != null ? CollectionContent(collection) : Container(),
+            FilterSidePane(
+              collection?.games
+                      .map((digest) => LibraryEntry.fromGameDigest(digest)) ??
+                  [],
+            ),
+          ],
         );
       },
     );
@@ -69,27 +92,10 @@ class CollectionContent extends StatelessWidget {
           .reduce(min),
     );
 
-    return Stack(
-      children: [
-        Column(
-          children: [
-            Expanded(
-              child: CalendarViewYear(
-                shownGames,
-                startYear: startYear,
-                endYear: endYear,
-              ),
-            ),
-            // Add some space for the bottom sheet.
-            SizedBox(
-              height:
-                  context.watch<AppConfigModel>().showBottomSheet ? 320 : 52,
-            ),
-          ],
-        ),
-        FilterBottomSheet(collection.games
-            .map((digest) => LibraryEntry.fromGameDigest(digest))),
-      ],
+    return CalendarViewYear(
+      shownGames,
+      startYear: startYear,
+      endYear: endYear,
     );
   }
 }

@@ -10,7 +10,7 @@ import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/widgets/shelve.dart';
-import 'package:espy/widgets/stats/filter_bottom_sheet.dart';
+import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -84,55 +84,55 @@ class _CompanyContentState extends State<CompanyContent> {
           .reduce(min),
     );
 
-    return Column(
+    return Stack(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              const SizedBox(width: 64),
-              logoUrl != null
-                  ? CachedNetworkImage(imageUrl: logoUrl)
-                  : Text(
-                      widget.companyDocs.first.name,
-                      style: const TextStyle(fontSize: 24),
-                    ),
-              const SizedBox(width: 64),
-              Flexible(
-                  child: Text(selectedCompany?.description ??
-                      widget.companyDocs.first.description ??
-                      '')),
-            ],
-          ),
-        ),
-        if (widget.companyDocs.length > 1)
-          Shelve(
-            title: 'Subsidiaries',
-            expansion: subsidiaries(),
-            color: Colors.amber,
-            expanded: true,
-          ),
-        Expanded(
-          child: DefaultTabController(
-            length: 2,
-            child: Scaffold(
-              appBar: TabBar(
-                onTap: (index) {
-                  setState(() {
-                    tabIndex = index;
-                  });
-                },
-                tabs: [
-                  Tab(text: 'Developed'),
-                  Tab(text: 'Published'),
-                ],
-              ),
-              body: Stack(
+        Row(
+          children: [
+            Expanded(
+              child: Column(
                 children: [
-                  Column(
-                    children: [
-                      Expanded(
-                        child: TabBarView(
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 64),
+                        logoUrl != null
+                            ? CachedNetworkImage(imageUrl: logoUrl)
+                            : Text(
+                                widget.companyDocs.first.name,
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                        const SizedBox(width: 64),
+                        Flexible(
+                            child: Text(selectedCompany?.description ??
+                                widget.companyDocs.first.description ??
+                                '')),
+                      ],
+                    ),
+                  ),
+                  if (widget.companyDocs.length > 1)
+                    Shelve(
+                      title: 'Subsidiaries',
+                      expansion: subsidiaries(),
+                      color: Colors.amber,
+                      expanded: false,
+                    ),
+                  Expanded(
+                    child: DefaultTabController(
+                      length: 2,
+                      child: Scaffold(
+                        appBar: TabBar(
+                          onTap: (index) {
+                            setState(() {
+                              tabIndex = index;
+                            });
+                          },
+                          tabs: [
+                            Tab(text: 'Developed'),
+                            Tab(text: 'Published'),
+                          ],
+                        ),
+                        body: TabBarView(
                           children: [
                             CalendarViewYear(
                               refinedEntries,
@@ -147,20 +147,20 @@ class _CompanyContentState extends State<CompanyContent> {
                           ],
                         ),
                       ),
-                      // Add some space for the bottom sheet.
-                      SizedBox(
-                        height: context.watch<AppConfigModel>().showBottomSheet
-                            ? 320
-                            : 52,
-                      ),
-                    ],
+                    ),
                   ),
-                  FilterBottomSheet((tabIndex == 0 ? developed : published)
-                      .map((digest) => LibraryEntry.fromGameDigest(digest))),
                 ],
               ),
             ),
-          ),
+            // Add some space for the bottom sheet.
+            SizedBox(
+              width: context.watch<AppConfigModel>().showBottomSheet ? 500 : 40,
+            ),
+          ],
+        ),
+        FilterSidePane(
+          (tabIndex == 0 ? developed : published)
+              .map((digest) => LibraryEntry.fromGameDigest(digest)),
         ),
       ],
     );

@@ -42,7 +42,7 @@ class GenreStats extends StatelessWidget {
     genreGroupsPops[unknownLabel] = unknownPops;
     genresPops[unknownLabel] = unknownPops;
 
-    return Row(
+    return Column(
       children: [
         GenreGroupPie(selectedGroup, genreGroupsPops),
         if (selectedGroup != null && selectedGroup != unknownLabel)

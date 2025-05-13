@@ -52,7 +52,7 @@ class _KeywordCloudState extends State<KeywordCloud> {
                 .toList(),
             config: WordCloudConfig(
               attempts: 30,
-              mapWidth: 500,
+              mapWidth: 460,
               mapHeight: 250,
               minTextSize: 12,
               maxTextSize: 42,

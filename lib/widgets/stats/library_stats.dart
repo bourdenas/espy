@@ -13,22 +13,22 @@ class LibraryStats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 260,
+      width: 480,
       child: Container(
-        alignment: AlignmentDirectional.topStart,
+        alignment: AlignmentDirectional.topCenter,
         child: ListView(
-          scrollDirection: Axis.horizontal,
+          scrollDirection: Axis.vertical,
           shrinkWrap: true,
           children: [
-            const SizedBox(width: 8),
-            GenreStats(libraryEntries),
-            const SizedBox(width: 64),
-            KeywordCloud(libraryEntries),
-            const SizedBox(width: 64),
-            RatingStats(libraryEntries),
-            const SizedBox(width: 64),
+            const SizedBox(height: 8),
             CategoryStats(),
-            const SizedBox(width: 16),
+            const SizedBox(height: 28),
+            GenreStats(libraryEntries),
+            const SizedBox(height: 24),
+            KeywordCloud(libraryEntries),
+            const SizedBox(height: 28),
+            RatingStats(libraryEntries),
+            const SizedBox(height: 28),
           ],
         ),
       ),

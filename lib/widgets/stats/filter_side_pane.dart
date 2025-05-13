@@ -4,8 +4,8 @@ import 'package:espy/widgets/stats/library_stats.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class FilterBottomSheet extends StatelessWidget {
-  const FilterBottomSheet(this.libraryEntries, {super.key});
+class FilterSidePane extends StatelessWidget {
+  const FilterSidePane(this.libraryEntries, {super.key});
 
   final Iterable<LibraryEntry> libraryEntries;
 
@@ -13,36 +13,36 @@ class FilterBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
     final appConfig = context.watch<AppConfigModel>();
 
     return AnimatedPositioned(
-      left: 0,
-      bottom: appConfig.showBottomSheet ? -12 : -280,
+      top: 0,
+      right: appConfig.showBottomSheet ? -20 : -480,
       duration: Duration(milliseconds: 250),
       curve: Curves.easeInOut,
       child: GestureDetector(
         onPanEnd: (details) {
-          if (details.velocity.pixelsPerSecond.dy > speedThreshold) {
+          if (details.velocity.pixelsPerSecond.dx > speedThreshold) {
             appConfig.showBottomSheet = false;
-          } else if (details.velocity.pixelsPerSecond.dy < -speedThreshold) {
+          } else if (details.velocity.pixelsPerSecond.dx < -speedThreshold) {
             appConfig.showBottomSheet = true;
           }
         },
         child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.circular(20)),
           child: Container(
-            width: width - 80,
-            height: 330,
+            width: 520,
+            height: height - 54,
             color: Theme.of(context).colorScheme.secondaryContainer,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
+              child: Row(
                 children: [
                   IconButton(
                     icon: Icon(appConfig.showBottomSheet
-                        ? Icons.keyboard_arrow_down
-                        : Icons.keyboard_arrow_up),
+                        ? Icons.keyboard_arrow_right
+                        : Icons.keyboard_arrow_left),
                     onPressed: () {
                       appConfig.showBottomSheet = !appConfig.showBottomSheet;
                     },

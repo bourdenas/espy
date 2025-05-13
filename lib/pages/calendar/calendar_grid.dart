@@ -17,47 +17,50 @@ class CalendarGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      primary: true,
-      shrinkWrap: true,
-      slivers: [
-        SliverCrossAxisGroup(
-          slivers: [
-            if (MediaQuery.of(context).size.width > kPaddingWidthLimit)
-              SliverToBoxAdapter(child: Container()),
-            SliverCrossAxisExpanded(
-              flex: 8,
-              sliver: SliverConstrainedCrossAxis(
-                maxExtent: 1800,
-                sliver: SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    mainAxisSpacing: 10.0,
-                    crossAxisSpacing: 10.0,
-                    childAspectRatio:
-                        AppConfigModel.gridCardContraints.cardAspectRatio,
-                    crossAxisCount: gridCount,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                      final entry = entries[index];
-                      return Container(
-                        alignment: Alignment.topLeft,
-                        color: entry.label == selectedLabel
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : null,
-                        child: calendarTile(entry),
-                      );
-                    },
-                    childCount: entries.length,
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+      child: CustomScrollView(
+        primary: true,
+        shrinkWrap: true,
+        slivers: [
+          SliverCrossAxisGroup(
+            slivers: [
+              if (MediaQuery.of(context).size.width > kPaddingWidthLimit)
+                SliverToBoxAdapter(child: Container()),
+              SliverCrossAxisExpanded(
+                flex: 8,
+                sliver: SliverConstrainedCrossAxis(
+                  maxExtent: 1800,
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      mainAxisSpacing: 10.0,
+                      crossAxisSpacing: 10.0,
+                      childAspectRatio:
+                          AppConfigModel.gridCardContraints.cardAspectRatio,
+                      crossAxisCount: gridCount,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        final entry = entries[index];
+                        return Container(
+                          alignment: Alignment.topLeft,
+                          color: entry.label == selectedLabel
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : null,
+                          child: calendarTile(entry),
+                        );
+                      },
+                      childCount: entries.length,
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (MediaQuery.of(context).size.width > kPaddingWidthLimit)
-              SliverToBoxAdapter(child: Container()),
-          ],
-        ),
-      ],
+              if (MediaQuery.of(context).size.width > kPaddingWidthLimit)
+                SliverToBoxAdapter(child: Container()),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

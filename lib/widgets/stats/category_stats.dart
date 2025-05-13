@@ -10,13 +10,12 @@ class CategoryStats extends StatelessWidget {
   Widget build(BuildContext context) {
     final appConfig = context.watch<AppConfigModel>();
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             CategoryFilterChip('Main Games', appConfig.showMains),
-            const SizedBox(width: 8),
-            CategoryFilterChip('Expansions', appConfig.showExpansions),
             const SizedBox(width: 8),
             CategoryFilterChip('Early Access', appConfig.showEarlyAccess),
             const SizedBox(width: 8),
@@ -28,11 +27,18 @@ class CategoryStats extends StatelessWidget {
           children: [
             CategoryFilterChip('Remakes', appConfig.showRemakes),
             const SizedBox(width: 8),
-            CategoryFilterChip('DLCs', appConfig.showDlcs),
-            const SizedBox(width: 8),
             CategoryFilterChip('Casual', appConfig.showCasual),
             const SizedBox(width: 8),
             CategoryFilterChip('Bundles', appConfig.showBundles),
+          ],
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            CategoryFilterChip('Expansions', appConfig.showExpansions),
+            const SizedBox(width: 8),
+            CategoryFilterChip('DLCs', appConfig.showDlcs),
+            const SizedBox(width: 8),
           ],
         ),
       ],

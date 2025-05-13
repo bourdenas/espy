@@ -2,7 +2,7 @@ import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
-import 'package:espy/widgets/stats/filter_bottom_sheet.dart';
+import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,14 +17,25 @@ class LibraryPage extends StatelessWidget {
     final appConfig = context.watch<AppConfigModel>();
     final libraryViewModel = context.watch<LibraryViewModel>();
 
-    return Scaffold(
-      appBar: libraryAppBar(context, appConfig, libraryViewModel.length),
-      body: Stack(
-        children: [
-          libraryBody(appConfig, libraryViewModel),
-          FilterBottomSheet(libraryViewModel.entries),
-        ],
-      ),
+    return Stack(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Scaffold(
+                appBar:
+                    libraryAppBar(context, appConfig, libraryViewModel.length),
+                body: libraryBody(appConfig, libraryViewModel),
+              ),
+            ),
+            // Add some space for the bottom sheet.
+            SizedBox(
+              width: context.watch<AppConfigModel>().showBottomSheet ? 500 : 40,
+            ),
+          ],
+        ),
+        FilterSidePane(libraryViewModel.entries),
+      ],
     );
   }
 

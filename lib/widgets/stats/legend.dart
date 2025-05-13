@@ -11,7 +11,7 @@ class Legend extends StatelessWidget {
     this.onItemTap,
     this.backLabel,
     this.onBack,
-    this.width = 180,
+    this.width = 170,
   });
 
   final List<String> items;
