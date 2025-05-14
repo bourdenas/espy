@@ -3,6 +3,7 @@ class Scores {
   final int? popularity;
   final int? hype;
   final int? metacritic;
+  final String? metacriticSource;
   final int? espyScore;
 
   final String? espyTier;
@@ -21,6 +22,7 @@ class Scores {
     this.popularity,
     this.hype,
     this.metacritic,
+    this.metacriticSource,
     this.espyScore,
     this.espyTier,
   });
@@ -31,6 +33,7 @@ class Scores {
           popularity: json['popularity'],
           hype: json['hype'],
           metacritic: json['metacritic'],
+          metacriticSource: json['metacritic_source'],
           espyScore: json['espy_score'],
           espyTier: json['espy_tier'],
         );
@@ -41,6 +44,7 @@ class Scores {
       if (popularity != null) 'popularity': popularity,
       if (hype != null) 'hype': hype,
       if (metacritic != null) 'metacritic': metacritic,
+      if (metacriticSource != null) 'metacritic_source': metacriticSource,
       if (espyScore != null) 'espy_score': espyScore,
       if (espyTier != null) 'espy_tier': espyTier,
     };
