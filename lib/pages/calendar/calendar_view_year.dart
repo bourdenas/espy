@@ -34,19 +34,18 @@ class CalendarViewYear extends StatelessWidget {
     );
 
     final entries = <CalendarGridEntry>[];
-    if (years[1970] != null) {
-      entries.add(CalendarGridEntry(
-        'TBA',
-        years[1970]!,
-        onClick: onClick != null
-            ? onClick!
-            : (CalendarGridEntry entry) async {
-                context.read<CustomViewModel>().digests = entry.digests;
-                context.pushNamed('view');
-              },
-        coverExtractor: (games) => games.take(4).toList(),
-      ));
-    }
+    entries.add(CalendarGridEntry(
+      'TBA',
+      years[1970] ?? [],
+      onClick: onClick != null
+          ? onClick!
+          : (CalendarGridEntry entry) async {
+              context.read<CustomViewModel>().digests = entry.digests;
+              context.pushNamed('view');
+            },
+      coverExtractor: (games) => games.take(4).toList(),
+    ));
+
     for (int year = startYear; year >= endYear; --year) {
       final games = years[year] ?? [];
       entries.add(CalendarGridEntry(

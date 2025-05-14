@@ -100,7 +100,9 @@ class _CalendarPageState extends State<CalendarPage> {
                           ),
                         CalendarView.month => CalendarViewMonth(shownGames),
                         CalendarView.year => CalendarViewYear(
-                            games,
+                            shownGames,
+                            startYear: DateTime.now().toUtc().year + 1,
+                            endYear: 1979,
                             onClick: (CalendarGridEntry entry) async {
                               final games = await context
                                   .read<YearsModel>()
