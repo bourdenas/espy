@@ -40,12 +40,12 @@ const Map<String, List<String>> _genresInGroup = {
     'Action',
     'ActionRpg',
     'IsometricAction',
+    'SurvivalAdventure',
     'JRPG',
   ],
   'Adventure': [
     'PointAndClick',
     'NarrativeAdventure',
-    'SurvivalAdventure',
     'PuzzleAdventure',
     'WalkingSimulator',
   ],
