@@ -55,7 +55,7 @@ class CollectionPage extends StatelessWidget {
                         : Container(),
                   ),
                 ),
-                // Add some space for the bottom sheet.
+                // Add some space for the side pane.
                 SizedBox(
                   width: context.watch<AppConfigModel>().showBottomSheet
                       ? 500

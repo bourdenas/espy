@@ -152,7 +152,7 @@ class _CompanyContentState extends State<CompanyContent> {
                 ],
               ),
             ),
-            // Add some space for the bottom sheet.
+            // Add some space for the side pane.
             SizedBox(
               width: context.watch<AppConfigModel>().showBottomSheet ? 500 : 40,
             ),

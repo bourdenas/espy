@@ -28,7 +28,7 @@ class LibraryPage extends StatelessWidget {
                 body: libraryBody(appConfig, libraryViewModel),
               ),
             ),
-            // Add some space for the bottom sheet.
+            // Add some space for the side pane.
             SizedBox(
               width: context.watch<AppConfigModel>().showBottomSheet ? 500 : 40,
             ),
@@ -63,8 +63,6 @@ class LibraryPage extends StatelessWidget {
             ],
           ),
         ),
-        // Add some space for the bottom sheet.
-        SizedBox(height: 52),
       ],
     );
   }
