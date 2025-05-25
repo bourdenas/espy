@@ -164,8 +164,8 @@ class EspyScaffold extends StatelessWidget {
   ];
 
   final List<_GroupingView> _groupingViews = const [
-    _GroupingView(LibraryGrouping.none, Icons.block),
-    _GroupingView(LibraryGrouping.year, Icons.calendar_month),
+    _GroupingView(LibraryGrouping.grid, Icons.view_stream),
+    _GroupingView(LibraryGrouping.calendar, Icons.calendar_month),
     _GroupingView(LibraryGrouping.genre, Icons.class_),
     _GroupingView(LibraryGrouping.keywords, Icons.tag),
     _GroupingView(LibraryGrouping.rating, Icons.star),

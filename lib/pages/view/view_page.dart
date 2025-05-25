@@ -1,28 +1,26 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_view_model.dart';
-import 'package:espy/pages/calendar/calendar_view_month.dart';
-import 'package:espy/pages/calendar/calendar_view_year.dart';
+import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class LibraryPage extends StatefulWidget {
-  const LibraryPage({super.key, required this.title});
+class ViewPage extends StatefulWidget {
+  const ViewPage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<LibraryPage> createState() => _LibraryPageState();
+  State<ViewPage> createState() => _ViewPageState();
 }
 
-class _LibraryPageState extends State<LibraryPage> {
+class _ViewPageState extends State<ViewPage> {
   LibraryView libraryView = LibraryView.stream;
 
   @override
   Widget build(BuildContext context) {
-    final libraryViewModel = context.watch<LibraryViewModel>();
+    final viewModel = context.watch<CustomViewModel>();
 
     return Stack(
       children: [
@@ -30,8 +28,8 @@ class _LibraryPageState extends State<LibraryPage> {
           children: [
             Expanded(
               child: Scaffold(
-                appBar: libraryAppBar(context, libraryViewModel.length),
-                body: libraryBody(libraryViewModel),
+                appBar: libraryAppBar(context, viewModel.length),
+                body: libraryBody(viewModel),
               ),
             ),
             // Add some space for the side pane.
@@ -40,12 +38,12 @@ class _LibraryPageState extends State<LibraryPage> {
             ),
           ],
         ),
-        FilterSidePane(libraryViewModel.entries),
+        FilterSidePane(viewModel.entries),
       ],
     );
   }
 
-  Widget libraryBody(LibraryViewModel libraryViewModel) {
+  Widget libraryBody(CustomViewModel viewModel) {
     return Column(
       children: [
         Expanded(
@@ -54,27 +52,8 @@ class _LibraryPageState extends State<LibraryPage> {
                 primary: true,
                 shrinkWrap: true,
                 slivers: [
-                  LibraryEntriesView(libraryViewModel.entries),
+                  LibraryEntriesView(viewModel.entries),
                 ],
-              ),
-            LibraryView.month => CalendarViewMonth(
-                libraryViewModel.entries.map((e) => e.digest),
-                startDate: DateTime.now(),
-                yearsBack: 45,
-              ),
-            LibraryView.year => CalendarViewYear(
-                libraryViewModel.entries.map((e) => e.digest),
-                startYear: DateTime.now().toUtc().year + 1,
-                endYear: 1979,
-                // onClick: (CalendarGridEntry entry) async {
-                //   final games = await context
-                //       .read<YearsModel>()
-                //       .gamesIn('${entry.digests.first.releaseYear}');
-                //   if (context.mounted) {
-                //     context.read<CustomViewModel>().digests = games.releases;
-                //     context.pushNamed('view');
-                //   }
-                // },
               ),
           },
         ),
@@ -110,16 +89,6 @@ class _LibraryPageState extends State<LibraryPage> {
                     label: Text('Stream'),
                     icon: Icon(Icons.view_stream),
                   ),
-                  ButtonSegment<LibraryView>(
-                    value: LibraryView.month,
-                    label: Text('Month'),
-                    icon: Icon(Icons.calendar_view_month),
-                  ),
-                  ButtonSegment<LibraryView>(
-                    value: LibraryView.year,
-                    label: Text('Year'),
-                    icon: Icon(Icons.calendar_month),
-                  ),
                 ],
                 selected: <LibraryView>{libraryView},
                 onSelectionChanged: (Set<LibraryView> newSelection) {
@@ -140,6 +109,4 @@ class _LibraryPageState extends State<LibraryPage> {
 
 enum LibraryView {
   stream,
-  month,
-  year,
 }

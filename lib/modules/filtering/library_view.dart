@@ -3,16 +3,17 @@ import 'package:espy/modules/documents/scores.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 
 class LibraryView {
-  Iterable<LibraryEntry> get entries => _libraryEntries;
+  List<LibraryEntry> get entries => _libraryEntries;
   int get length => _libraryEntries.length;
 
-  late List<LibraryEntry> _libraryEntries;
-  final AppConfigModel _config;
+  final List<LibraryEntry> _libraryEntries;
+  final LibraryOrdering ordering;
 
-  LibraryView(Iterable<LibraryEntry> libraryEntries, this._config) {
-    _libraryEntries = libraryEntries.toList();
-
-    final _ = switch (_config.libraryOrdering.value) {
+  LibraryView(
+    this._libraryEntries, {
+    this.ordering = LibraryOrdering.release,
+  }) {
+    final _ = switch (ordering) {
       LibraryOrdering.release =>
         _libraryEntries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate)),
       LibraryOrdering.rating =>
@@ -27,9 +28,9 @@ class LibraryView {
 
   List<(String, List<LibraryEntry>)> group(LibraryGrouping grouping) {
     switch (grouping) {
-      case LibraryGrouping.none:
+      case LibraryGrouping.grid:
         return [('', _libraryEntries)];
-      case LibraryGrouping.year:
+      case LibraryGrouping.calendar:
         return _groupBy(
           _libraryEntries,
           (e) => [

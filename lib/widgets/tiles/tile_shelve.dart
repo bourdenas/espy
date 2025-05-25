@@ -42,7 +42,7 @@ class _TileShelveState extends State<TileShelve> {
     return SliverShelve(
       title: widget.title,
       expansion: LibraryEntriesView(
-        entries: widget.entries,
+        widget.entries,
         grayOutMissing: widget.grayOutMissing,
       ),
       color: widget.color,

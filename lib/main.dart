@@ -44,8 +44,8 @@ Future<void> main() async {
       frontpageProvider(),
       calendarProvider(),
       yearsProvider(),
-      customViewProvider(),
       userProvider(),
+      customViewProvider(),
       filterProvider(),
       userLibraryProvider(),
       libraryIndexProvider(),
@@ -72,17 +72,21 @@ ChangeNotifierProvider<CalendarModel> calendarProvider() =>
 ChangeNotifierProvider<YearsModel> yearsProvider() =>
     ChangeNotifierProvider(create: (_) => YearsModel());
 
-ChangeNotifierProvider<CustomViewModel> customViewProvider() =>
-    ChangeNotifierProvider(create: (_) => CustomViewModel());
-
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
 
+ChangeNotifierProxyProvider<AppConfigModel, CustomViewModel>
+    customViewProvider() => ChangeNotifierProxyProvider(
+          create: (_) => CustomViewModel(),
+          update: (_, configModel, customViewModel) =>
+              customViewModel!..update(configModel),
+        );
+
 ChangeNotifierProxyProvider<AppConfigModel, FilterModel> filterProvider() {
   return ChangeNotifierProxyProvider<AppConfigModel, FilterModel>(
-      create: (_) => FilterModel(),
-      update: (_, configModel, filterModel) =>
-          filterModel!..update(configModel));
+    create: (_) => FilterModel(),
+    update: (_, configModel, filterModel) => filterModel!..update(configModel),
+  );
 }
 
 ChangeNotifierProxyProvider<UserModel, UserLibraryModel> userLibraryProvider() {
@@ -168,23 +172,21 @@ ChangeNotifierProxyProvider<UserModel, UserDataModel> userDataProvider() {
   );
 }
 
-ChangeNotifierProxyProvider3<AppConfigModel, LibraryIndexModel, CustomViewModel,
+ChangeNotifierProxyProvider2<AppConfigModel, LibraryIndexModel,
     LibraryViewModel> libraryEntriesProvider() {
-  return ChangeNotifierProxyProvider3<AppConfigModel, LibraryIndexModel,
-      CustomViewModel, LibraryViewModel>(
+  return ChangeNotifierProxyProvider2<AppConfigModel, LibraryIndexModel,
+      LibraryViewModel>(
     create: (_) => LibraryViewModel(),
     update: (
       _,
       appConfigModel,
       libraryIndexModel,
-      customViewModel,
       libraryViewModel,
     ) {
       return libraryViewModel!
         ..update(
           appConfigModel,
           libraryIndexModel,
-          customViewModel,
         );
     },
   );

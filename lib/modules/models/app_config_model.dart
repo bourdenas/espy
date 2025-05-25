@@ -168,8 +168,8 @@ enum LibraryOrdering {
 }
 
 enum LibraryGrouping {
-  none,
-  year,
+  grid,
+  calendar,
   genre,
   keywords,
   rating,

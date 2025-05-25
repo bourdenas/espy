@@ -1,14 +1,36 @@
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
+import 'package:espy/modules/filtering/library_view.dart';
+import 'package:espy/modules/models/app_config_model.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
-/// Model that represents what is visible in a library screen.
+/// Model that builds a LibraryView.
 class CustomViewModel extends ChangeNotifier {
-  List<LibraryEntry> get games => _games;
-  int get length => _games.length;
+  AppConfigModel _appConfigModel = AppConfigModel();
+  LibraryView _view = LibraryView([]);
+  List<LibraryEntry> _libraryEntries = [];
 
-  set games(List<LibraryEntry> games) {
-    _games = games;
+  Iterable<LibraryEntry> get entries => _view.entries;
+  int get length => _libraryEntries.length;
+
+  void update(AppConfigModel appConfigModel) {
+    _appConfigModel = appConfigModel;
+
+    _view = LibraryView(
+      _libraryEntries,
+      ordering: _appConfigModel.libraryOrdering.value,
+    );
+
+    notifyListeners();
+  }
+
+  set games(List<LibraryEntry> libraryEntries) {
+    _libraryEntries = libraryEntries;
+    _view = LibraryView(
+      _libraryEntries,
+      ordering: _appConfigModel.libraryOrdering.value,
+    );
+
     notifyListeners();
   }
 
@@ -17,10 +39,5 @@ class CustomViewModel extends ChangeNotifier {
         digests.map((digest) => LibraryEntry.fromGameDigest(digest)).toList();
   }
 
-  void clear() {
-    _games.clear();
-    notifyListeners();
-  }
-
-  List<LibraryEntry> _games = [];
+  void clear() => games = [];
 }

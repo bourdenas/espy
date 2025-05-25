@@ -14,6 +14,7 @@ import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/library/library_page.dart';
 import 'package:espy/pages/timeline/timeline_view.dart';
+import 'package:espy/pages/view/view_page.dart';
 import 'package:espy/widgets/scaffold/espy_scaffold.dart';
 import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/pages/profile/login_page.dart';
@@ -73,7 +74,7 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'wishlist',
           child: EspyScaffold(
-            body: const LibraryPage(title: 'Wishlist'),
+            body: const ViewPage(title: 'Wishlist'),
             path: state.path!,
           ),
         ),
@@ -97,7 +98,7 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'view',
           child: EspyScaffold(
-            body: const LibraryPage(title: ''),
+            body: const ViewPage(title: ''),
             path: state.path!,
           ),
         ),
