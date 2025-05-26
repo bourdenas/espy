@@ -18,7 +18,11 @@ class LibraryView {
       LibraryOrdering.rating =>
         _libraryEntries.sort((a, b) => -a.espyScore.compareTo(b.espyScore)),
       LibraryOrdering.popularity => _libraryEntries.sort((a, b) {
-          final cmp = -a.popularity.compareTo(b.popularity);
+          final popA =
+              a.scores.metacritic != null ? a.popularity : a.popularity / 10;
+          final popB =
+              b.scores.metacritic != null ? b.popularity : b.popularity / 10;
+          final cmp = -popA.compareTo(popB);
           if (cmp != 0) return cmp;
           return -a.hype.compareTo(b.hype);
         }),
