@@ -16,7 +16,7 @@ class ViewPage extends StatefulWidget {
 }
 
 class _ViewPageState extends State<ViewPage> {
-  LibraryView libraryView = LibraryView.stream;
+  CustomLibraryViewMode libraryView = CustomLibraryViewMode.flat;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class _ViewPageState extends State<ViewPage> {
       children: [
         Expanded(
           child: switch (libraryView) {
-            LibraryView.stream => CustomScrollView(
+            CustomLibraryViewMode.flat => CustomScrollView(
                 primary: true,
                 shrinkWrap: true,
                 slivers: [
@@ -82,16 +82,16 @@ class _ViewPageState extends State<ViewPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SegmentedButton<LibraryView>(
-                segments: const <ButtonSegment<LibraryView>>[
-                  ButtonSegment<LibraryView>(
-                    value: LibraryView.stream,
-                    label: Text('Stream'),
+              SegmentedButton<CustomLibraryViewMode>(
+                segments: const <ButtonSegment<CustomLibraryViewMode>>[
+                  ButtonSegment<CustomLibraryViewMode>(
+                    value: CustomLibraryViewMode.flat,
+                    label: Text('Flat'),
                     icon: Icon(Icons.view_stream),
                   ),
                 ],
-                selected: <LibraryView>{libraryView},
-                onSelectionChanged: (Set<LibraryView> newSelection) {
+                selected: <CustomLibraryViewMode>{libraryView},
+                onSelectionChanged: (Set<CustomLibraryViewMode> newSelection) {
                   setState(() {
                     libraryView = newSelection.first;
                   });
@@ -107,6 +107,6 @@ class _ViewPageState extends State<ViewPage> {
   }
 }
 
-enum LibraryView {
-  stream,
+enum CustomLibraryViewMode {
+  flat,
 }

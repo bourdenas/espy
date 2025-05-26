@@ -18,8 +18,6 @@ class LibraryPage extends StatefulWidget {
 }
 
 class _LibraryPageState extends State<LibraryPage> {
-  LibraryView libraryView = LibraryView.stream;
-
   @override
   Widget build(BuildContext context) {
     final libraryViewModel = context.watch<LibraryViewModel>();
@@ -31,7 +29,7 @@ class _LibraryPageState extends State<LibraryPage> {
             Expanded(
               child: Scaffold(
                 appBar: libraryAppBar(context, libraryViewModel.length),
-                body: libraryBody(libraryViewModel),
+                body: libraryBody(context, libraryViewModel),
               ),
             ),
             // Add some space for the side pane.
@@ -45,36 +43,29 @@ class _LibraryPageState extends State<LibraryPage> {
     );
   }
 
-  Widget libraryBody(LibraryViewModel libraryViewModel) {
+  Widget libraryBody(BuildContext context, LibraryViewModel libraryViewModel) {
+    final libraryView = context.watch<AppConfigModel>().libraryViewMode.value;
+
     return Column(
       children: [
         Expanded(
           child: switch (libraryView) {
-            LibraryView.stream => CustomScrollView(
+            LibraryViewMode.flat => CustomScrollView(
                 primary: true,
                 shrinkWrap: true,
                 slivers: [
                   LibraryEntriesView(libraryViewModel.entries),
                 ],
               ),
-            LibraryView.month => CalendarViewMonth(
+            LibraryViewMode.month => CalendarViewMonth(
                 libraryViewModel.entries.map((e) => e.digest),
                 startDate: DateTime.now(),
                 yearsBack: 45,
               ),
-            LibraryView.year => CalendarViewYear(
+            LibraryViewMode.year => CalendarViewYear(
                 libraryViewModel.entries.map((e) => e.digest),
                 startYear: DateTime.now().toUtc().year + 1,
                 endYear: 1979,
-                // onClick: (CalendarGridEntry entry) async {
-                //   final games = await context
-                //       .read<YearsModel>()
-                //       .gamesIn('${entry.digests.first.releaseYear}');
-                //   if (context.mounted) {
-                //     context.read<CustomViewModel>().digests = games.releases;
-                //     context.pushNamed('view');
-                //   }
-                // },
               ),
           },
         ),
@@ -83,6 +74,8 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 
   AppBar libraryAppBar(BuildContext context, int libraryViewLength) {
+    final libraryView = context.watch<AppConfigModel>().libraryViewMode;
+
     return AppBar(
       leading: badges.Badge(
         badgeContent: Text(
@@ -103,28 +96,28 @@ class _LibraryPageState extends State<LibraryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SegmentedButton<LibraryView>(
-                segments: const <ButtonSegment<LibraryView>>[
-                  ButtonSegment<LibraryView>(
-                    value: LibraryView.stream,
-                    label: Text('Stream'),
+              SegmentedButton<LibraryViewMode>(
+                segments: const <ButtonSegment<LibraryViewMode>>[
+                  ButtonSegment<LibraryViewMode>(
+                    value: LibraryViewMode.flat,
+                    label: Text('Flat'),
                     icon: Icon(Icons.view_stream),
                   ),
-                  ButtonSegment<LibraryView>(
-                    value: LibraryView.month,
+                  ButtonSegment<LibraryViewMode>(
+                    value: LibraryViewMode.month,
                     label: Text('Month'),
                     icon: Icon(Icons.calendar_view_month),
                   ),
-                  ButtonSegment<LibraryView>(
-                    value: LibraryView.year,
+                  ButtonSegment<LibraryViewMode>(
+                    value: LibraryViewMode.year,
                     label: Text('Year'),
                     icon: Icon(Icons.calendar_month),
                   ),
                 ],
-                selected: <LibraryView>{libraryView},
-                onSelectionChanged: (Set<LibraryView> newSelection) {
+                selected: <LibraryViewMode>{libraryView.value},
+                onSelectionChanged: (Set<LibraryViewMode> newSelection) {
                   setState(() {
-                    libraryView = newSelection.first;
+                    libraryView.value = newSelection.first;
                   });
                 },
               ),
@@ -136,10 +129,4 @@ class _LibraryPageState extends State<LibraryPage> {
       elevation: 0.0,
     );
   }
-}
-
-enum LibraryView {
-  stream,
-  month,
-  year,
 }
