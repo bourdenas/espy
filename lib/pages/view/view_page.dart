@@ -1,6 +1,8 @@
 import 'package:badges/badges.dart' as badges;
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/custom_view_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +23,8 @@ class _ViewPageState extends State<ViewPage> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<CustomViewModel>();
+    final libraryEntries =
+        context.watch<FilterModel>().processLibraryEntries(viewModel.entries);
 
     return Stack(
       children: [
@@ -28,8 +32,8 @@ class _ViewPageState extends State<ViewPage> {
           children: [
             Expanded(
               child: Scaffold(
-                appBar: libraryAppBar(context, viewModel.length),
-                body: libraryBody(viewModel),
+                appBar: libraryAppBar(context, libraryEntries.length),
+                body: libraryBody(libraryEntries),
               ),
             ),
             // Add some space for the side pane.
@@ -43,7 +47,7 @@ class _ViewPageState extends State<ViewPage> {
     );
   }
 
-  Widget libraryBody(CustomViewModel viewModel) {
+  Widget libraryBody(Iterable<LibraryEntry> libraryEntries) {
     return Column(
       children: [
         Expanded(
@@ -52,7 +56,7 @@ class _ViewPageState extends State<ViewPage> {
                 primary: true,
                 shrinkWrap: true,
                 slivers: [
-                  LibraryEntriesView(viewModel.entries),
+                  LibraryEntriesView(libraryEntries),
                 ],
               ),
           },

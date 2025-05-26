@@ -1,5 +1,7 @@
 import 'package:badges/badges.dart' as badges;
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/calendar/calendar_view_month.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
@@ -21,6 +23,9 @@ class _LibraryPageState extends State<LibraryPage> {
   @override
   Widget build(BuildContext context) {
     final libraryViewModel = context.watch<LibraryViewModel>();
+    final libraryEntries = context
+        .watch<FilterModel>()
+        .processLibraryEntries(libraryViewModel.entries);
 
     return Stack(
       children: [
@@ -28,8 +33,8 @@ class _LibraryPageState extends State<LibraryPage> {
           children: [
             Expanded(
               child: Scaffold(
-                appBar: libraryAppBar(context, libraryViewModel.length),
-                body: libraryBody(context, libraryViewModel),
+                appBar: libraryAppBar(context, libraryEntries.length),
+                body: libraryBody(context, libraryEntries),
               ),
             ),
             // Add some space for the side pane.
@@ -43,7 +48,10 @@ class _LibraryPageState extends State<LibraryPage> {
     );
   }
 
-  Widget libraryBody(BuildContext context, LibraryViewModel libraryViewModel) {
+  Widget libraryBody(
+    BuildContext context,
+    Iterable<LibraryEntry> libraryEntries,
+  ) {
     final libraryView = context.watch<AppConfigModel>().libraryViewMode.value;
 
     return Column(
@@ -54,16 +62,16 @@ class _LibraryPageState extends State<LibraryPage> {
                 primary: true,
                 shrinkWrap: true,
                 slivers: [
-                  LibraryEntriesView(libraryViewModel.entries),
+                  LibraryEntriesView(libraryEntries),
                 ],
               ),
             LibraryViewMode.month => CalendarViewMonth(
-                libraryViewModel.entries.map((e) => e.digest),
+                libraryEntries.map((e) => e.digest),
                 startDate: DateTime.now(),
                 yearsBack: 45,
               ),
             LibraryViewMode.year => CalendarViewYear(
-                libraryViewModel.entries.map((e) => e.digest),
+                libraryEntries.map((e) => e.digest),
                 startYear: DateTime.now().toUtc().year + 1,
                 endYear: 1979,
               ),
