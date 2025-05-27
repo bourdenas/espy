@@ -2,17 +2,17 @@ import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
-import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/calendar/calendar_view_month.dart';
-import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
+import 'package:espy/pages/timeline/timeline_view.dart';
 import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LibraryPage extends StatefulWidget {
-  const LibraryPage({super.key, required this.title});
+  const LibraryPage(this.libraryEntries, {super.key, required this.title});
 
+  final Iterable<LibraryEntry> libraryEntries;
   final String title;
 
   @override
@@ -22,10 +22,9 @@ class LibraryPage extends StatefulWidget {
 class _LibraryPageState extends State<LibraryPage> {
   @override
   Widget build(BuildContext context) {
-    final libraryViewModel = context.watch<LibraryViewModel>();
-    final libraryEntries = context
+    final filteredEntries = context
         .watch<FilterModel>()
-        .processLibraryEntries(libraryViewModel.entries);
+        .processLibraryEntries(widget.libraryEntries);
 
     return Stack(
       children: [
@@ -33,8 +32,8 @@ class _LibraryPageState extends State<LibraryPage> {
           children: [
             Expanded(
               child: Scaffold(
-                appBar: libraryAppBar(context, libraryEntries.length),
-                body: libraryBody(context, libraryEntries),
+                appBar: libraryAppBar(context, filteredEntries.length),
+                body: libraryBody(context, filteredEntries),
               ),
             ),
             // Add some space for the side pane.
@@ -43,7 +42,7 @@ class _LibraryPageState extends State<LibraryPage> {
             ),
           ],
         ),
-        FilterSidePane(libraryViewModel.entries),
+        FilterSidePane(widget.libraryEntries),
       ],
     );
   }
@@ -70,11 +69,7 @@ class _LibraryPageState extends State<LibraryPage> {
                 startDate: DateTime.now(),
                 yearsBack: 45,
               ),
-            LibraryViewMode.year => CalendarViewYear(
-                libraryEntries.map((e) => e.digest),
-                startYear: DateTime.now().toUtc().year + 1,
-                endYear: 1979,
-              ),
+            LibraryViewMode.year => TimelineView(libraryEntries, libraryView),
           },
         ),
       ],

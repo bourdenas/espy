@@ -41,7 +41,7 @@ class HomeSlatesModel extends ChangeNotifier {
         (context) {
           context.read<CustomViewModel>().games =
               context.read<WishlistModel>().entries;
-          context.pushNamed('wishlist');
+          context.pushNamed('games', pathParameters: {'title': 'Wishlist'});
         },
       ),
     ];

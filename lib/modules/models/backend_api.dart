@@ -106,6 +106,7 @@ class BackendApi {
           toFirestore: (entry, _) => {},
         )
         .get();
+
     for (final doc in query.docs) {
       return doc.data();
     }
