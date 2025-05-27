@@ -66,16 +66,14 @@ class EspyRouter extends StatelessWidget {
         ),
       ),
       GoRoute(
-        name: 'wishlist',
-        path: '/wishlist',
+        name: 'view',
+        path: '/view:title',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
-          name: 'wishlist',
+          name: 'view',
+          arguments: state.pathParameters['title'],
           child: EspyScaffold(
-            body: LibraryPage(
-              context.watch<CustomViewModel>().entries,
-              title: 'Wishlist',
-            ),
+            body: ViewPage(title: state.pathParameters['title']!),
             path: state.path!,
           ),
         ),
@@ -88,18 +86,6 @@ class EspyRouter extends StatelessWidget {
           name: 'explore',
           child: EspyScaffold(
             body: const ExplorePage(),
-            path: state.path!,
-          ),
-        ),
-      ),
-      GoRoute(
-        name: 'view',
-        path: '/view',
-        pageBuilder: (context, state) => NoTransitionPage(
-          key: state.pageKey,
-          name: 'view',
-          child: EspyScaffold(
-            body: const ViewPage(title: ''),
             path: state.path!,
           ),
         ),

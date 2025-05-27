@@ -42,7 +42,7 @@ class CalendarViewMonth extends StatelessWidget {
         monthlyReleases[label] ?? [],
         onClick: (CalendarGridEntry entry) {
           context.read<CustomViewModel>().digests = entry.digests;
-          context.pushNamed('view');
+          context.pushNamed('view', pathParameters: {'title': label});
         },
       ));
     }

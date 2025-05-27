@@ -17,39 +17,43 @@ class FrontpageModel extends ChangeNotifier {
 
   List<SlateInfo> get slates => [
         SlateInfo(
-          'Releasing today',
+          'Releasing Today',
           _frontpage.todayReleases
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
           (context) {
             context.read<CustomViewModel>().digests = _frontpage.todayReleases;
-            context.pushNamed('view');
+            context.pushNamed('games',
+                pathParameters: {'title': 'Releasing Today'});
           },
         ),
         SlateInfo(
-          'Recent releases',
+          'Recent Releases',
           _frontpage.recentReleases
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
           (context) {
             context.read<CustomViewModel>().digests = _frontpage.recentReleases;
-            context.pushNamed('view');
+            context.pushNamed('games',
+                pathParameters: {'title': 'Recent Releases'});
           },
         ),
         SlateInfo(
-          'Upcoming releases',
+          'Upcoming Releases',
           _frontpage.upcomingReleases
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
           (context) {
             context.read<CustomViewModel>().digests =
                 _frontpage.upcomingReleases;
-            context.pushNamed('view');
+            context.pushNamed('games',
+                pathParameters: {'title': 'Upcoming Releases'});
           },
         ),
         SlateInfo(
-          'Most anticipated',
+          'Most Anticipated',
           _frontpage.hyped.map((digest) => LibraryEntry.fromGameDigest(digest)),
           (context) {
             context.read<CustomViewModel>().digests = _frontpage.hyped;
-            context.pushNamed('view');
+            context.pushNamed('games',
+                pathParameters: {'title': 'Most Anticipated'});
           },
         ),
       ];

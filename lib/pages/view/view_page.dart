@@ -8,17 +8,10 @@ import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class ViewPage extends StatefulWidget {
+class ViewPage extends StatelessWidget {
   const ViewPage({super.key, required this.title});
 
   final String title;
-
-  @override
-  State<ViewPage> createState() => _ViewPageState();
-}
-
-class _ViewPageState extends State<ViewPage> {
-  CustomLibraryViewMode libraryView = CustomLibraryViewMode.flat;
 
   @override
   Widget build(BuildContext context) {
@@ -51,15 +44,13 @@ class _ViewPageState extends State<ViewPage> {
     return Column(
       children: [
         Expanded(
-          child: switch (libraryView) {
-            CustomLibraryViewMode.flat => CustomScrollView(
-                primary: true,
-                shrinkWrap: true,
-                slivers: [
-                  LibraryEntriesView(libraryEntries),
-                ],
-              ),
-          },
+          child: CustomScrollView(
+            primary: true,
+            shrinkWrap: true,
+            slivers: [
+              LibraryEntriesView(libraryEntries),
+            ],
+          ),
         ),
       ],
     );
@@ -80,37 +71,9 @@ class _ViewPageState extends State<ViewPage> {
         position: badges.BadgePosition.center(),
         child: Container(),
       ),
-      title: Stack(
-        children: [
-          Text(widget.title),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SegmentedButton<CustomLibraryViewMode>(
-                segments: const <ButtonSegment<CustomLibraryViewMode>>[
-                  ButtonSegment<CustomLibraryViewMode>(
-                    value: CustomLibraryViewMode.flat,
-                    label: Text('Flat'),
-                    icon: Icon(Icons.view_stream),
-                  ),
-                ],
-                selected: <CustomLibraryViewMode>{libraryView},
-                onSelectionChanged: (Set<CustomLibraryViewMode> newSelection) {
-                  setState(() {
-                    libraryView = newSelection.first;
-                  });
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
+      title: Text(title),
       backgroundColor: Colors.black.withValues(alpha: 0.2),
       elevation: 0.0,
     );
   }
-}
-
-enum CustomLibraryViewMode {
-  flat,
 }

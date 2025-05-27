@@ -41,7 +41,7 @@ class CalendarViewYear extends StatelessWidget {
           ? onClick!
           : (CalendarGridEntry entry) async {
               context.read<CustomViewModel>().digests = entry.digests;
-              context.pushNamed('view');
+              context.pushNamed('view', pathParameters: {'title': 'TBA'});
             },
       coverExtractor: (games) => games.take(4).toList(),
     ));
@@ -55,7 +55,7 @@ class CalendarViewYear extends StatelessWidget {
             ? onClick!
             : (CalendarGridEntry entry) async {
                 context.read<CustomViewModel>().digests = entry.digests;
-                context.pushNamed('view');
+                context.pushNamed('view', pathParameters: {'title': '$year'});
               },
         coverExtractor: (games) {
           final scored = games

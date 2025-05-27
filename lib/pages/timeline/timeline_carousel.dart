@@ -67,7 +67,8 @@ class TimelineCarousel extends StatelessWidget {
                         () {
                           context.read<CustomViewModel>().digests =
                               releases[index].games;
-                          context.pushNamed('view');
+                          context.pushNamed('view',
+                              pathParameters: {'title': releases[index].label});
                         },
                       ),
                       nodePositionBuilder: (context, index) => .85,

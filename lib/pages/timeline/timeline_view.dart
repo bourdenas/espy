@@ -43,9 +43,9 @@ class TimelineView extends StatelessWidget {
           context,
           nodes[index],
           now,
-          () {
+          (String label) {
             context.read<CustomViewModel>().games = nodes[index].libraryEntries;
-            context.pushNamed('view');
+            context.pushNamed('view', pathParameters: {'title': label});
           },
         ),
         nodePositionBuilder: (context, index) => .02,
@@ -114,7 +114,7 @@ Widget buttonBuilder(
   BuildContext context,
   Node node,
   DateTime now,
-  void Function()? onPressed,
+  void Function(String) onPressed,
 ) {
   final label = DateFormat('y').format(node.date);
 
@@ -126,11 +126,11 @@ Widget buttonBuilder(
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onPrimary,
                 )),
-            onPressed: onPressed,
+            onPressed: () => onPressed(label),
           )
         : IconButton.outlined(
             icon: Text(label),
-            onPressed: onPressed,
+            onPressed: () => onPressed(label),
           ),
   );
 }

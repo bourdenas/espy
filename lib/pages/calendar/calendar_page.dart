@@ -111,7 +111,9 @@ class _CalendarPageState extends State<CalendarPage> {
                               if (context.mounted) {
                                 context.read<CustomViewModel>().digests =
                                     games.releases;
-                                context.pushNamed('view');
+                                context.pushNamed('view', pathParameters: {
+                                  'title': '${entry.digests.first.releaseYear}'
+                                });
                               }
                             },
                           ),
