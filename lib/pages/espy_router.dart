@@ -5,7 +5,6 @@ import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/calendar/calendar_page.dart';
 import 'package:espy/pages/collection/collection_page.dart';
@@ -49,17 +48,18 @@ class EspyRouter extends StatelessWidget {
       ),
       GoRoute(
         name: 'games',
-        path: '/games/:title',
+        path: '/games',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
           name: 'games',
-          arguments: state.pathParameters['title'],
           child: EspyScaffold(
             body: LibraryPage(
-              state.pathParameters['title'] == 'Library'
-                  ? context.watch<LibraryViewModel>().entries
-                  : context.watch<CustomViewModel>().entries,
-              title: state.pathParameters['title']!,
+              state.uri.queryParameters['view'] == 'library'
+                  ? context.watch<LibraryViewModel>().library
+                  : context
+                      .watch<LibraryViewModel>()
+                      .getEntries(state.uri.queryParameters['view'] ?? ''),
+              title: state.uri.queryParameters['title'] ?? '',
             ),
             path: state.path!,
           ),
@@ -67,13 +67,15 @@ class EspyRouter extends StatelessWidget {
       ),
       GoRoute(
         name: 'view',
-        path: '/view:title',
+        path: '/view',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
           name: 'view',
-          arguments: state.pathParameters['title'],
           child: EspyScaffold(
-            body: ViewPage(title: state.pathParameters['title']!),
+            body: ViewPage(
+              title: state.uri.queryParameters['title'] ?? '',
+              viewId: state.uri.queryParameters['view'] ?? '',
+            ),
             path: state.path!,
           ),
         ),

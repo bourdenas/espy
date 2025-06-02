@@ -1,13 +1,14 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
+import 'package:uuid/uuid.dart';
 
 class TimelineView extends StatelessWidget {
   const TimelineView(this.libraryEntries, this.libraryView, {super.key});
@@ -44,8 +45,14 @@ class TimelineView extends StatelessWidget {
           nodes[index],
           now,
           (String label) {
-            context.read<CustomViewModel>().games = nodes[index].libraryEntries;
-            context.pushNamed('view', pathParameters: {'title': label});
+            final id = Uuid().v4();
+            context
+                .read<LibraryViewModel>()
+                .addEntries(id, nodes[index].libraryEntries);
+            context.pushNamed(
+              'view',
+              queryParameters: {'title': label, 'view': id},
+            );
           },
         ),
         nodePositionBuilder: (context, index) => .02,

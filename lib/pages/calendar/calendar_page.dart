@@ -3,9 +3,9 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/calendar_model.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/years_model.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
@@ -15,6 +15,7 @@ import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -109,11 +110,18 @@ class _CalendarPageState extends State<CalendarPage> {
                                   .gamesIn(
                                       '${entry.digests.first.releaseYear}');
                               if (context.mounted) {
-                                context.read<CustomViewModel>().digests =
-                                    games.releases;
-                                context.pushNamed('view', pathParameters: {
-                                  'title': '${entry.digests.first.releaseYear}'
-                                });
+                                final id = Uuid().v4();
+                                context
+                                    .read<LibraryViewModel>()
+                                    .add(id, games.releases);
+                                context.pushNamed(
+                                  'view',
+                                  queryParameters: {
+                                    'title':
+                                        '${entry.digests.first.releaseYear}',
+                                    'view': id,
+                                  },
+                                );
                               }
                             },
                           ),

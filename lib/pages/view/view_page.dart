@@ -1,23 +1,24 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ViewPage extends StatelessWidget {
-  const ViewPage({super.key, required this.title});
+  const ViewPage({super.key, required this.title, required this.viewId});
 
   final String title;
+  final String viewId;
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<CustomViewModel>();
+    final entries = context.watch<LibraryViewModel>().getEntries(viewId);
     final libraryEntries =
-        context.watch<FilterModel>().processLibraryEntries(viewModel.entries);
+        context.watch<FilterModel>().processLibraryEntries(entries);
 
     return Stack(
       children: [
@@ -35,7 +36,7 @@ class ViewPage extends StatelessWidget {
             ),
           ],
         ),
-        FilterSidePane(viewModel.entries),
+        FilterSidePane(entries),
       ],
     );
   }

@@ -1,13 +1,14 @@
 import 'dart:collection';
 
 import 'package:espy/modules/documents/game_digest.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class CalendarViewMonth extends StatelessWidget {
   const CalendarViewMonth(
@@ -41,8 +42,12 @@ class CalendarViewMonth extends StatelessWidget {
         label,
         monthlyReleases[label] ?? [],
         onClick: (CalendarGridEntry entry) {
-          context.read<CustomViewModel>().digests = entry.digests;
-          context.pushNamed('view', pathParameters: {'title': label});
+          final id = Uuid().v4();
+          context.read<LibraryViewModel>().add(id, entry.digests);
+          context.pushNamed(
+            'view',
+            queryParameters: {'title': label, 'view': id},
+          );
         },
       ));
     }

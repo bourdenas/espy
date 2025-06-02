@@ -1,7 +1,6 @@
 import 'package:espy/firebase_options.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/calendar_model.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/unresolved_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
@@ -45,7 +44,6 @@ Future<void> main() async {
       calendarProvider(),
       yearsProvider(),
       userProvider(),
-      customViewProvider(),
       filterProvider(),
       userLibraryProvider(),
       libraryIndexProvider(),
@@ -74,13 +72,6 @@ ChangeNotifierProvider<YearsModel> yearsProvider() =>
 
 ChangeNotifierProvider<UserModel> userProvider() =>
     ChangeNotifierProvider(create: (_) => UserModel());
-
-ChangeNotifierProxyProvider<AppConfigModel, CustomViewModel>
-    customViewProvider() => ChangeNotifierProxyProvider(
-          create: (_) => CustomViewModel(),
-          update: (_, configModel, customViewModel) =>
-              customViewModel!..update(configModel),
-        );
 
 ChangeNotifierProxyProvider<AppConfigModel, FilterModel> filterProvider() {
   return ChangeNotifierProxyProvider<AppConfigModel, FilterModel>(

@@ -1,13 +1,14 @@
 import 'dart:math';
 
 import 'package:espy/modules/documents/game_digest.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class CalendarViewYear extends StatelessWidget {
   const CalendarViewYear(
@@ -40,8 +41,12 @@ class CalendarViewYear extends StatelessWidget {
       onClick: onClick != null
           ? onClick!
           : (CalendarGridEntry entry) async {
-              context.read<CustomViewModel>().digests = entry.digests;
-              context.pushNamed('view', pathParameters: {'title': 'TBA'});
+              final id = Uuid().v4();
+              context.read<LibraryViewModel>().add(id, entry.digests);
+              context.pushNamed(
+                'view',
+                queryParameters: {'title': 'TBA', 'view': id},
+              );
             },
       coverExtractor: (games) => games.take(4).toList(),
     ));
@@ -54,8 +59,12 @@ class CalendarViewYear extends StatelessWidget {
         onClick: onClick != null
             ? onClick!
             : (CalendarGridEntry entry) async {
-                context.read<CustomViewModel>().digests = entry.digests;
-                context.pushNamed('view', pathParameters: {'title': '$year'});
+                final id = Uuid().v4();
+                context.read<LibraryViewModel>().add(id, entry.digests);
+                context.pushNamed(
+                  'view',
+                  queryParameters: {'title': '$year', 'view': id},
+                );
               },
         coverExtractor: (games) {
           final scored = games

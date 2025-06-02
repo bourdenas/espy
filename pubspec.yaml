@@ -39,6 +39,7 @@ dependencies:
   sliver_tools: 0.2.12
   timelines_plus: 1.0.6
   url_launcher: 6.3.1
+  uuid: 4.4.2
   video_player: 2.9.5
   
 dev_dependencies:
