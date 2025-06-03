@@ -11,10 +11,14 @@ import 'package:timelines_plus/timelines_plus.dart';
 import 'package:uuid/uuid.dart';
 
 class TimelineView extends StatelessWidget {
-  const TimelineView(this.libraryEntries, this.libraryView, {super.key});
+  const TimelineView(
+    this.libraryEntries, {
+    super.key,
+    this.libraryView,
+  });
 
   final Iterable<LibraryEntry> libraryEntries;
-  final LibraryViewMode libraryView;
+  final LibraryViewMode? libraryView;
 
   @override
   Widget build(BuildContext context) {

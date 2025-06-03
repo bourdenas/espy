@@ -3,6 +3,7 @@ import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_month.dart';
+import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
 import 'package:espy/pages/timeline/timeline_view.dart';
 import 'package:espy/widgets/stats/filter_side_pane.dart';
@@ -69,7 +70,14 @@ class _LibraryPageState extends State<LibraryPage> {
                 startDate: DateTime.now(),
                 yearsBack: 45,
               ),
-            LibraryViewMode.year => TimelineView(libraryEntries, libraryView),
+            LibraryViewMode.year => switch (
+                  context.watch<AppConfigModel>().libraryLayout.value) {
+                LibraryLayout.grid => CalendarViewYear(
+                    libraryEntries.map((e) => e.digest),
+                  ),
+                LibraryLayout.list =>
+                  TimelineView(libraryEntries, libraryView: libraryView),
+              },
           },
         ),
       ],
