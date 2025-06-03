@@ -23,20 +23,33 @@ class TimelineView extends StatelessWidget {
 
     final groups = <int, List<LibraryEntry>>{};
     for (final entry in libraryEntries) {
-      groups.putIfAbsent(entry.digest.releaseYear, () => []).add(entry);
+      final releaseYear = entry.digest.releaseYear;
+      groups.putIfAbsent(releaseYear, () => []).add(entry);
     }
-    final years = List.generate(now.year - 1979, (index) => (now.year - index));
+    final years = groups.keys.toList()..sort((a, b) => -a.compareTo(b));
 
-    final nodes = years
-        .map((year) => Node(DateTime.utc(year), groups[year] ?? []))
-        .toList();
+    final nodes = <Node>[];
+    if (years.last == 1970) {
+      years.removeLast();
+      nodes.add(Node(DateTime.utc(1970), groups[1970] ?? []));
+    }
+
+    for (int i = 0; i < years.length; ++i) {
+      final (curr, next) =
+          (years[i], i + 1 < years.length ? years[i + 1] : years[i] - 1);
+      nodes.add(Node(DateTime.utc(curr), groups[curr] ?? []));
+
+      if (curr - next == 2) {
+        nodes.add(Node(DateTime.utc((curr + next) ~/ 2), []));
+      }
+    }
 
     final tileSize = isMobile ? 240.0 : 370.0;
     return Timeline.tileBuilder(
       primary: true,
       shrinkWrap: true,
       builder: TimelineTileBuilder.connected(
-        itemCount: years.length,
+        itemCount: nodes.length,
         itemExtent: tileSize,
         connectorBuilder: (context, index, connectorType) =>
             connectorBuilder(context, nodes[index], nodes[index + 1]),
@@ -104,7 +117,7 @@ Widget connectorBuilder(BuildContext context, Node src, Node? dst) {
   final color = Theme.of(context).colorScheme.primary;
 
   final diff = src.date.difference(dst?.date ?? DateTime.utc(1970));
-  return diff.inDays > 370
+  return src.date.year == 1970 || diff.inDays > 370
       ? DashedLineConnector(
           dash: 8,
           gap: 6,
@@ -123,7 +136,8 @@ Widget buttonBuilder(
   DateTime now,
   void Function(String) onPressed,
 ) {
-  final label = DateFormat('y').format(node.date);
+  final label =
+      node.date.year > 1970 ? DateFormat('y').format(node.date) : 'TBA';
 
   return SizedBox(
     width: 64,
