@@ -5,6 +5,7 @@ import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_index_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
+import 'package:espy/widgets/loading_spinner.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +39,7 @@ class GameDetailsPage extends StatelessWidget {
 
             return libraryEntry != null
                 ? GameDetailsContent(libraryEntry, null)
-                : retrieveIndicator();
+                : LoadingSpinner(message: 'Retrieving game info');
           }
 
           final jsonObj = snapshot.data!.data();
@@ -53,7 +54,7 @@ class GameDetailsPage extends StatelessWidget {
             // will force a new retrieval from IGDB and produce a document with
             // the updated format.
             BackendApi.retrieveGameEntry(int.tryParse(id) ?? 0);
-            return retrieveIndicator();
+            return LoadingSpinner(message: 'Retrieving game info');
           }
 
           final gameEntrySummary = LibraryEntry.fromGameEntry(gameEntry);
@@ -63,7 +64,7 @@ class GameDetailsPage extends StatelessWidget {
         }
 
         if (libraryEntry == null && gameEntry == null) {
-          return retrieveIndicator();
+          return LoadingSpinner(message: 'Retrieving game info');
         }
 
         return GameDetailsContent(
@@ -71,19 +72,6 @@ class GameDetailsPage extends StatelessWidget {
           gameEntry,
         );
       },
-    );
-  }
-
-  Widget retrieveIndicator() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Retrieving game info'),
-          SizedBox(height: 16),
-          CircularProgressIndicator(),
-        ],
-      ),
     );
   }
 }

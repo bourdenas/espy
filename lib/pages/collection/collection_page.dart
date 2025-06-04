@@ -7,6 +7,7 @@ import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/timeline/timeline_view.dart';
+import 'package:espy/widgets/loading_spinner.dart';
 import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,21 +41,10 @@ class _CollectionPageState extends State<CollectionPage> {
                 ? snapshot.data
                 : null;
 
-        return collection != null ? CollectionContent(collection) : loading();
+        return collection != null
+            ? CollectionContent(collection)
+            : LoadingSpinner(message: 'Retrieving collection...');
       },
-    );
-  }
-
-  Widget loading() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Retrieving collection...'),
-          SizedBox(height: 16),
-          CircularProgressIndicator(),
-        ],
-      ),
     );
   }
 }

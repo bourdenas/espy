@@ -9,26 +9,41 @@ import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
+import 'package:espy/pages/timeline/timeline_view.dart';
+import 'package:espy/widgets/loading_spinner.dart';
 import 'package:espy/widgets/shelve.dart';
 import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class CompanyPage extends StatelessWidget {
+class CompanyPage extends StatefulWidget {
   const CompanyPage({super.key, required this.name});
 
   final String name;
 
   @override
+  State<CompanyPage> createState() => _CompanyPageState();
+}
+
+class _CompanyPageState extends State<CompanyPage> {
+  late Future<List<IgdbCompany>> _companies;
+
+  @override
+  void initState() {
+    super.initState();
+    _companies = BackendApi.companyFetch(widget.name);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: BackendApi.companyFetch(name),
+      future: _companies,
       builder:
           (BuildContext context, AsyncSnapshot<List<IgdbCompany>> snapshot) {
         return snapshot.connectionState == ConnectionState.done &&
                 snapshot.hasData
             ? CompanyContent(snapshot.data!)
-            : Container();
+            : LoadingSpinner(message: 'Retrieving company...');
       },
     );
   }
@@ -45,7 +60,7 @@ class CompanyContent extends StatefulWidget {
 
 class _CompanyContentState extends State<CompanyContent> {
   IgdbCompany? selectedCompany;
-  int tabIndex = 0;
+  CompanyRole selectedRole = CompanyRole.developed;
 
   @override
   Widget build(BuildContext context) {
@@ -68,9 +83,11 @@ class _CompanyContentState extends State<CompanyContent> {
       published.add(digest);
     }
 
-    final refinedEntries = context
-        .watch<FilterModel>()
-        .process(tabIndex == 0 ? developed : published);
+    final shownGames =
+        context.watch<FilterModel>().process(switch (selectedRole) {
+              CompanyRole.developed => developed,
+              CompanyRole.published => published,
+            });
 
     final (startYear, endYear) = (
       [developed, published]
@@ -89,67 +106,9 @@ class _CompanyContentState extends State<CompanyContent> {
         Row(
           children: [
             Expanded(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 64),
-                        logoUrl != null
-                            ? CachedNetworkImage(imageUrl: logoUrl)
-                            : Text(
-                                widget.companyDocs.first.name,
-                                style: const TextStyle(fontSize: 24),
-                              ),
-                        const SizedBox(width: 64),
-                        Flexible(
-                            child: Text(selectedCompany?.description ??
-                                widget.companyDocs.first.description ??
-                                '')),
-                      ],
-                    ),
-                  ),
-                  if (widget.companyDocs.length > 1)
-                    Shelve(
-                      title: 'Subsidiaries',
-                      expansion: subsidiaries(),
-                      color: Colors.amber,
-                      expanded: false,
-                    ),
-                  Expanded(
-                    child: DefaultTabController(
-                      length: 2,
-                      child: Scaffold(
-                        appBar: TabBar(
-                          onTap: (index) {
-                            setState(() {
-                              tabIndex = index;
-                            });
-                          },
-                          tabs: [
-                            Tab(text: 'Developed'),
-                            Tab(text: 'Published'),
-                          ],
-                        ),
-                        body: TabBarView(
-                          children: [
-                            CalendarViewYear(
-                              refinedEntries,
-                              startYear: startYear,
-                              endYear: endYear,
-                            ),
-                            CalendarViewYear(
-                              refinedEntries,
-                              startYear: startYear,
-                              endYear: endYear,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: Scaffold(
+                appBar: appbar(context),
+                body: content(context, logoUrl, shownGames, startYear, endYear),
               ),
             ),
             // Add some space for the side pane.
@@ -159,8 +118,99 @@ class _CompanyContentState extends State<CompanyContent> {
           ],
         ),
         FilterSidePane(
-          (tabIndex == 0 ? developed : published)
+          switch (selectedRole) {
+            CompanyRole.developed => developed,
+            CompanyRole.published => published,
+          }
               .map((digest) => LibraryEntry.fromGameDigest(digest)),
+        ),
+      ],
+    );
+  }
+
+  AppBar appbar(BuildContext context) {
+    return AppBar(
+      leading: Container(),
+      title: Stack(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SegmentedButton<CompanyRole>(
+                segments: const <ButtonSegment<CompanyRole>>[
+                  ButtonSegment<CompanyRole>(
+                    value: CompanyRole.developed,
+                    label: Text('Developed'),
+                  ),
+                  ButtonSegment<CompanyRole>(
+                    value: CompanyRole.published,
+                    label: Text('Published'),
+                  ),
+                ],
+                selected: <CompanyRole>{selectedRole},
+                onSelectionChanged: (Set<CompanyRole> newSelection) {
+                  setState(() {
+                    selectedRole = newSelection.first;
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget content(
+    BuildContext context,
+    String? logoUrl,
+    Iterable<GameDigest> shownGames,
+    int startYear,
+    int endYear,
+  ) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 256),
+                child: Container(
+                  color: Theme.of(context).colorScheme.inverseSurface,
+                  padding: EdgeInsets.all(8),
+                  child: logoUrl != null
+                      ? CachedNetworkImage(imageUrl: logoUrl)
+                      : Container(),
+                ),
+              ),
+              const SizedBox(width: 64),
+              Expanded(
+                  child: Text(selectedCompany?.description ??
+                      widget.companyDocs.first.description ??
+                      '')),
+            ],
+          ),
+        ),
+        SizedBox(height: 16),
+        if (widget.companyDocs.length > 1)
+          Shelve(
+            title: 'Subsidiaries',
+            expansion: subsidiaries(),
+            color: Colors.amber,
+            expanded: false,
+          ),
+        Expanded(
+          child: switch (context.watch<AppConfigModel>().libraryLayout.value) {
+            LibraryLayout.grid => CalendarViewYear(
+                shownGames,
+                startYear: startYear,
+                endYear: endYear,
+              ),
+            LibraryLayout.list => TimelineView(
+                shownGames.map((digest) => LibraryEntry.fromGameDigest(digest)))
+          },
         ),
       ],
     );
@@ -187,14 +237,18 @@ class _CompanyContentState extends State<CompanyContent> {
                     },
                     child: SizedBox(
                       height: 64,
-                      child: company.logo != null
-                          ? CachedNetworkImage(
-                              imageUrl:
-                                  '${Urls.imageProvider}/t_logo_med/${company.logo?.imageId}.png',
-                            )
-                          : const CircleAvatar(
-                              child: Icon(Icons.question_mark),
-                            ),
+                      child: Container(
+                        color: Theme.of(context).colorScheme.inverseSurface,
+                        padding: EdgeInsets.all(4),
+                        child: company.logo != null
+                            ? CachedNetworkImage(
+                                imageUrl:
+                                    '${Urls.imageProvider}/t_logo_med/${company.logo?.imageId}.png',
+                              )
+                            : const CircleAvatar(
+                                child: Icon(Icons.question_mark),
+                              ),
+                      ),
                     ),
                   ),
                   const Expanded(child: SizedBox.shrink()),
@@ -211,4 +265,9 @@ class _CompanyContentState extends State<CompanyContent> {
       ),
     );
   }
+}
+
+enum CompanyRole {
+  developed,
+  published,
 }
