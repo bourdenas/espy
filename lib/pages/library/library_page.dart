@@ -53,6 +53,7 @@ class _LibraryPageState extends State<LibraryPage> {
     Iterable<LibraryEntry> libraryEntries,
   ) {
     final libraryView = context.watch<AppConfigModel>().libraryViewMode.value;
+    final libraryLayout = context.watch<AppConfigModel>().libraryLayout.value;
 
     return Column(
       children: [
@@ -65,8 +66,7 @@ class _LibraryPageState extends State<LibraryPage> {
                   LibraryEntriesView(libraryEntries),
                 ],
               ),
-            LibraryViewMode.month => switch (
-                  context.watch<AppConfigModel>().libraryLayout.value) {
+            LibraryViewMode.month => switch (libraryLayout) {
                 LibraryLayout.grid => CalendarViewMonth(
                     libraryEntries.map((e) => e.digest),
                     startDate: DateTime.now(),
@@ -75,8 +75,7 @@ class _LibraryPageState extends State<LibraryPage> {
                 LibraryLayout.list =>
                   TimelineView(libraryEntries, libraryView: libraryView),
               },
-            LibraryViewMode.year => switch (
-                  context.watch<AppConfigModel>().libraryLayout.value) {
+            LibraryViewMode.year => switch (libraryLayout) {
                 LibraryLayout.grid => CalendarViewYear(
                     libraryEntries.map((e) => e.digest),
                   ),

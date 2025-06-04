@@ -176,7 +176,7 @@ class TimelineView extends StatelessWidget {
 
     return SizedBox(
       width: 64,
-      child: node.date.compareTo(now) < 0
+      child: node.date.compareTo(now) < 0 && node.date.year != 1970
           ? IconButton.filled(
               icon: Text(
                 label,
@@ -189,7 +189,13 @@ class TimelineView extends StatelessWidget {
               onPressed: () => onPressed(label),
             )
           : IconButton.outlined(
-              icon: Text(label),
+              icon: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
               onPressed: () => onPressed(label),
             ),
     );
