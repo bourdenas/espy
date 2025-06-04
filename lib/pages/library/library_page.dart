@@ -65,11 +65,16 @@ class _LibraryPageState extends State<LibraryPage> {
                   LibraryEntriesView(libraryEntries),
                 ],
               ),
-            LibraryViewMode.month => CalendarViewMonth(
-                libraryEntries.map((e) => e.digest),
-                startDate: DateTime.now(),
-                yearsBack: 45,
-              ),
+            LibraryViewMode.month => switch (
+                  context.watch<AppConfigModel>().libraryLayout.value) {
+                LibraryLayout.grid => CalendarViewMonth(
+                    libraryEntries.map((e) => e.digest),
+                    startDate: DateTime.now(),
+                    yearsBack: 45,
+                  ),
+                LibraryLayout.list =>
+                  TimelineView(libraryEntries, libraryView: libraryView),
+              },
             LibraryViewMode.year => switch (
                   context.watch<AppConfigModel>().libraryLayout.value) {
                 LibraryLayout.grid => CalendarViewYear(

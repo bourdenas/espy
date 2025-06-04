@@ -14,17 +14,13 @@ class TimelineView extends StatelessWidget {
   const TimelineView(
     this.libraryEntries, {
     super.key,
-    this.libraryView,
+    this.libraryView = LibraryViewMode.year,
   });
 
   final Iterable<LibraryEntry> libraryEntries;
-  final LibraryViewMode? libraryView;
+  final LibraryViewMode libraryView;
 
-  @override
-  Widget build(BuildContext context) {
-    final isMobile = AppConfigModel.isMobile(context);
-    final now = DateTime.now();
-
+  List<Node> createAnnualNodes() {
     final groups = <int, List<LibraryEntry>>{};
     for (final entry in libraryEntries) {
       final releaseYear = entry.digest.releaseYear;
@@ -47,6 +43,51 @@ class TimelineView extends StatelessWidget {
         nodes.add(Node(DateTime.utc((curr + next) ~/ 2), []));
       }
     }
+
+    return nodes;
+  }
+
+  List<Node> createMonthlyNodes() {
+    final groups = <int, List<LibraryEntry>>{};
+    for (final entry in libraryEntries) {
+      final releaseYear = entry.digest.releaseYear;
+      groups.putIfAbsent(releaseYear, () => []).add(entry);
+    }
+    final years = groups.keys.toList()..sort((a, b) => -a.compareTo(b));
+
+    final nodes = <Node>[];
+    if (years.last == 1970) {
+      years.removeLast();
+      nodes.add(Node(DateTime.utc(1970), groups[1970] ?? []));
+    }
+
+    for (final year in years) {
+      final monthlyGroups = <int, List<LibraryEntry>>{};
+      for (final entry in groups[year] ?? <LibraryEntry>[]) {
+        final releaseMonth = entry.digest.release.month;
+        monthlyGroups.putIfAbsent(releaseMonth, () => []).add(entry);
+      }
+      final months = monthlyGroups.keys.toList()
+        ..sort((a, b) => -a.compareTo(b));
+
+      for (final month in months) {
+        nodes.add(Node(DateTime.utc(year, month), monthlyGroups[month] ?? []));
+      }
+    }
+
+    return nodes;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = AppConfigModel.isMobile(context);
+    final now = DateTime.now();
+
+    final nodes = switch (libraryView) {
+      LibraryViewMode.flat => throw UnimplementedError(),
+      LibraryViewMode.month => createMonthlyNodes(),
+      LibraryViewMode.year => createAnnualNodes(),
+    };
 
     final tileSize = isMobile ? 240.0 : 370.0;
     return Timeline.tileBuilder(
@@ -92,20 +133,65 @@ class TimelineView extends StatelessWidget {
             ),
           );
         },
-        // oppositeContentsBuilder: (context, index) {
-        //   final now = DateTime.now().millisecondsSinceEpoch / 1000;
-        //
-        //   return Padding(
-        //     padding: const EdgeInsets.symmetric(horizontal: 8),
-        //     child: releases[index].games.first.releaseDate <= now
-        //         ? SizedBox(
-        //             width: 4,
-        //             child: Container(color: Colors.orangeAccent),
-        //           )
-        //         : Container(),
-        //   );
-        // },
       ),
+    );
+  }
+
+  Widget connectorBuilder(BuildContext context, Node src, Node? dst) {
+    final color = Theme.of(context).colorScheme.primary;
+
+    final diff = src.date.difference(dst?.date ?? DateTime.utc(1970));
+    return src.date.year == 1970 ||
+            diff.inDays >
+                switch (libraryView) {
+                  LibraryViewMode.flat => 1,
+                  LibraryViewMode.month => 31,
+                  LibraryViewMode.year => 370,
+                }
+        ? DashedLineConnector(
+            dash: 8,
+            gap: 6,
+            thickness: 4,
+            color: color,
+          )
+        : SolidLineConnector(
+            thickness: 4,
+            color: color,
+          );
+  }
+
+  Widget buttonBuilder(
+    BuildContext context,
+    Node node,
+    DateTime now,
+    void Function(String) onPressed,
+  ) {
+    final label = node.date.year > 1970
+        ? switch (libraryView) {
+            LibraryViewMode.flat => throw UnimplementedError(),
+            LibraryViewMode.month => DateFormat('MMM y').format(node.date),
+            LibraryViewMode.year => DateFormat('y').format(node.date),
+          }
+        : 'TBA';
+
+    return SizedBox(
+      width: 64,
+      child: node.date.compareTo(now) < 0
+          ? IconButton.filled(
+              icon: Text(
+                label,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              onPressed: () => onPressed(label),
+            )
+          : IconButton.outlined(
+              icon: Text(label),
+              onPressed: () => onPressed(label),
+            ),
     );
   }
 }
@@ -115,47 +201,4 @@ class Node {
   final List<LibraryEntry> libraryEntries;
 
   const Node(this.date, this.libraryEntries);
-}
-
-Widget connectorBuilder(BuildContext context, Node src, Node? dst) {
-  final color = Theme.of(context).colorScheme.primary;
-
-  final diff = src.date.difference(dst?.date ?? DateTime.utc(1970));
-  return src.date.year == 1970 || diff.inDays > 370
-      ? DashedLineConnector(
-          dash: 8,
-          gap: 6,
-          thickness: 4,
-          color: color,
-        )
-      : SolidLineConnector(
-          thickness: 4,
-          color: color,
-        );
-}
-
-Widget buttonBuilder(
-  BuildContext context,
-  Node node,
-  DateTime now,
-  void Function(String) onPressed,
-) {
-  final label =
-      node.date.year > 1970 ? DateFormat('y').format(node.date) : 'TBA';
-
-  return SizedBox(
-    width: 64,
-    child: node.date.compareTo(now) < 0
-        ? IconButton.filled(
-            icon: Text(label,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                )),
-            onPressed: () => onPressed(label),
-          )
-        : IconButton.outlined(
-            icon: Text(label),
-            onPressed: () => onPressed(label),
-          ),
-  );
 }
