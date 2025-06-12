@@ -1,6 +1,7 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
+import 'package:espy/widgets/hover_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quiver/iterables.dart';
@@ -33,7 +34,7 @@ class CalendarCard extends StatelessWidget {
           .map((_) => GameDigest(id: 0, name: 'padding')));
     }
 
-    return ExpandingWidget(
+    return HoverAnimation(
       scale: 1.1,
       child: Material(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -56,13 +57,13 @@ class CalendarCard extends StatelessWidget {
     return Positioned(
       bottom: 8,
       right: 4,
-      child: ExpandingWidget(
+      child: HoverAnimation(
         scale: 1.2,
-        child: InkWell(
-          onTap: () => calendarEntry.onClick(calendarEntry),
-          child: SizedBox(
-            width: 64,
-            height: 64,
+        child: SizedBox(
+          width: 64,
+          height: 64,
+          child: InkWell(
+            onTap: () => calendarEntry.onClick(calendarEntry),
             child: CircleAvatar(
               backgroundColor: Color.fromRGBO(0, 0, 0, .7),
               child: Text('+ $behindFoldGames'),
@@ -135,60 +136,6 @@ class CalendarCard extends StatelessWidget {
               ),
             )
           : Container(),
-    );
-  }
-}
-
-class ExpandingWidget extends StatefulWidget {
-  final Widget child;
-  final double scale;
-
-  const ExpandingWidget({super.key, required this.child, this.scale = 1.1});
-
-  @override
-  State<ExpandingWidget> createState() => _ExpandingWidgetState();
-}
-
-class _ExpandingWidgetState extends State<ExpandingWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController controller;
-  late Animation<double> animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    animation = Tween(begin: 1.0, end: widget.scale).animate(CurvedAnimation(
-      parent: controller,
-      curve: Curves.ease,
-      reverseCurve: Curves.easeIn,
-    ));
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => controller.forward(),
-      onExit: (_) => controller.reverse(),
-      child: AnimatedBuilder(
-        animation: animation,
-        builder: (context, child) {
-          return ScaleTransition(
-            scale: animation,
-            child: widget.child,
-          );
-        },
-      ),
     );
   }
 }
