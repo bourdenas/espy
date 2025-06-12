@@ -45,7 +45,8 @@ class CalendarCard extends StatelessWidget {
             children: [
               tiledCovers(context, covers),
               ...overlays,
-              if (behindFoldGames > 0) behindFoldBadge(behindFoldGames),
+              if (behindFoldGames > 0)
+                behindFoldBadge(context, behindFoldGames),
             ],
           ),
         ),
@@ -53,22 +54,18 @@ class CalendarCard extends StatelessWidget {
     );
   }
 
-  Positioned behindFoldBadge(int behindFoldGames) {
+  Widget behindFoldBadge(BuildContext context, int behindFoldGames) {
     return Positioned(
-      bottom: 8,
-      right: 4,
-      child: HoverAnimation(
-        scale: 1.2,
-        child: SizedBox(
-          width: 64,
-          height: 64,
-          child: InkWell(
-            onTap: () => calendarEntry.onClick(calendarEntry),
-            child: CircleAvatar(
-              backgroundColor: Color.fromRGBO(0, 0, 0, .7),
-              child: Text('+ $behindFoldGames'),
-            ),
-          ),
+      bottom: 12,
+      right: 8,
+      child: FloatingActionButton(
+        mini: true,
+        backgroundColor: const Color(0x00FFFFFF),
+        onPressed: () => calendarEntry.onClick(calendarEntry),
+        child: Icon(
+          Icons.arrow_circle_right_outlined,
+          color: Theme.of(context).colorScheme.primary,
+          size: 42,
         ),
       ),
     );
