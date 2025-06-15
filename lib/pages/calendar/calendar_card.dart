@@ -45,27 +45,9 @@ class CalendarCard extends StatelessWidget {
             children: [
               tiledCovers(context, covers),
               ...overlays,
-              if (behindFoldGames > 0)
-                behindFoldBadge(context, behindFoldGames),
+              if (behindFoldGames > 0) BehindFoldBadge(calendarEntry),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget behindFoldBadge(BuildContext context, int behindFoldGames) {
-    return Positioned(
-      bottom: 12,
-      right: 8,
-      child: FloatingActionButton(
-        mini: true,
-        backgroundColor: const Color(0x00FFFFFF),
-        onPressed: () => calendarEntry.onClick(calendarEntry),
-        child: Icon(
-          Icons.arrow_circle_right_outlined,
-          color: Theme.of(context).colorScheme.primary,
-          size: 42,
         ),
       ),
     );
@@ -133,6 +115,47 @@ class CalendarCard extends StatelessWidget {
               ),
             )
           : Container(),
+    );
+  }
+}
+
+class BehindFoldBadge extends StatefulWidget {
+  const BehindFoldBadge(this.calendarEntry, {super.key});
+
+  final CalendarGridEntry calendarEntry;
+
+  @override
+  State<BehindFoldBadge> createState() => _BehindFoldBadgeState();
+}
+
+class _BehindFoldBadgeState extends State<BehindFoldBadge> {
+  bool hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: 24,
+      left: 4,
+      child: MouseRegion(
+        onEnter: (_) => setState(() {
+          hover = true;
+        }),
+        onExit: (_) => setState(() {
+          hover = false;
+        }),
+        child: FloatingActionButton(
+          mini: true,
+          backgroundColor: const Color(0x00FFFFFF),
+          onPressed: () => widget.calendarEntry.onClick(widget.calendarEntry),
+          child: Icon(
+            hover
+                ? Icons.arrow_circle_right
+                : Icons.arrow_circle_right_outlined,
+            color: Theme.of(context).colorScheme.primary,
+            size: 56,
+          ),
+        ),
+      ),
     );
   }
 }
