@@ -1,94 +1,80 @@
-import 'dart:math' as math;
+import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/documents/game_digest.dart';
+import 'package:espy/modules/models/frontpage_model.dart';
+import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-class TileStack extends StatefulWidget {
-  final String title;
-  final VoidCallback? onExpand;
-  final Iterable<String> tileImages;
+class TileStack extends StatelessWidget {
+  const TileStack(this.games, {super.key, required this.maxSize});
 
-  const TileStack({
-    super.key,
-    required this.title,
-    required this.tileImages,
-    this.onExpand,
-  });
-
-  @override
-  State<TileStack> createState() => _TileStackState();
-}
-
-class _TileStackState extends State<TileStack> {
-  List<double> deckAngles = narrowDeckAngles;
-  List<Offset> deckOffsets = narrowDeckOffsets;
-
-  static const wideDeckAngles = <double>[
-    math.pi / 12,
-    -math.pi / 12,
-    math.pi / 24,
-    -math.pi / 24,
-    0,
-  ];
-  static const narrowDeckAngles = <double>[
-    math.pi / 32,
-    -math.pi / 32,
-    math.pi / 48,
-    -math.pi / 48,
-    0,
-  ];
-
-  static const narrowDeckOffsets = [
-    Offset(16, 0),
-    Offset(-16, 0),
-    Offset(8, 0),
-    Offset(-8, 0),
-    Offset(0, -8),
-  ];
-  static const wideDeckOffsets = [
-    Offset(32, 0),
-    Offset(-32, 0),
-    Offset(16, 0),
-    Offset(-16, 0),
-    Offset(0, -16),
-  ];
+  final Iterable<GameDigest> games;
+  final TileSize maxSize;
 
   @override
   Widget build(BuildContext context) {
-    final tiles = widget.tileImages.take(5).toList().reversed.toList().asMap();
-    return InkWell(
-      onTap: () => widget.onExpand!(),
-      onHover: (isHovering) => setState(() {
-        deckAngles = isHovering ? wideDeckAngles : narrowDeckAngles;
-        deckOffsets = isHovering ? wideDeckOffsets : narrowDeckOffsets;
-      }),
-      child: Column(
+    return SizedBox(
+      width: maxSize.width,
+      height: maxSize.height,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Stack(
-            children: [
-              for (final indexImage in tiles.entries)
-                Transform.translate(
-                  offset: deckOffsets[indexImage.key],
-                  child: Transform.rotate(
-                    angle: deckAngles[indexImage.key],
-                    origin: const Offset(0, 150),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      child: Image.network(indexImage.value),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(
-            height: 24,
-          ),
-          Text(
-            widget.title,
-            style: Theme.of(context).textTheme.titleLarge,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          for (final (index, game) in games.indexed.take(5))
+            Transform.translate(
+              offset: _offset(
+                  index, context.read<FrontpageModel>().highlightScore(game)),
+              child: _gameCover(
+                  context,
+                  game,
+                  maxSize.width *
+                      context.read<FrontpageModel>().highlightScore(game)),
+            ),
+        ].reversed.toList(),
       ),
     );
+  }
+
+  Widget _gameCover(BuildContext context, GameDigest game, double width) {
+    return SizedBox(
+      width: width,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+        child: GestureDetector(
+          onTap: () => context
+              .pushNamed('details', pathParameters: {'gid': '${game.id}'}),
+          child: Center(
+            child: CachedNetworkImage(
+              fit: BoxFit.cover,
+              imageUrl: '${Urls.imageProvider}/t_cover_big/${game.cover}.jpg',
+              errorWidget: (context, url, error) =>
+                  const Center(child: Icon(Icons.error_outline)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Offset _offset(int index, double pop) {
+    final coverWidth = maxSize.width * pop;
+    final coverHeight = maxSize.height * pop;
+
+    if (games.length == 1) {
+      return const Offset(0, 0);
+    } else if (games.length == 2) {
+      return index == 0
+          ? Offset(-((maxSize.width - coverWidth) / 2),
+              -((maxSize.height - coverHeight) / 2))
+          : Offset((maxSize.width - coverWidth) / 2,
+              ((maxSize.height - coverHeight) / 2));
+    }
+
+    double progress = (index as double) / min(games.length, 5);
+    return Offset(((maxSize.width - coverWidth) / 2) * sin(progress * 2 * pi),
+        -((maxSize.height - coverHeight) / 2) * cos(progress * 2 * pi));
   }
 }

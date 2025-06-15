@@ -1,13 +1,9 @@
-import 'dart:math';
-
 import 'package:animate_do/animate_do.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:espy/constants/urls.dart';
-import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/timeline/timeline_utils.dart';
-import 'package:espy/widgets/tiles/tile_carousel.dart';
+import 'package:espy/widgets/tiles/tile_size.dart';
+import 'package:espy/widgets/tiles/tile_stack.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -80,105 +76,13 @@ class TimelineCarousel extends StatelessWidget {
                         },
                       ),
                       nodePositionBuilder: (context, index) => .85,
-                      contentsBuilder: (context, index) => ReleaseStack(
-                          releases[index].games,
-                          maxSize: tileSize),
+                      contentsBuilder: (context, index) =>
+                          TileStack(releases[index].games, maxSize: tileSize),
                     ),
                   ),
                 ),
               ],
             ),
           );
-  }
-}
-
-class ReleaseStack extends StatefulWidget {
-  const ReleaseStack(this.games, {super.key, required this.maxSize});
-
-  final Iterable<GameDigest> games;
-  final TileSize maxSize;
-
-  @override
-  State<ReleaseStack> createState() => _ReleaseStackState();
-}
-
-class _ReleaseStackState extends State<ReleaseStack>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: widget.maxSize.width,
-      height: widget.maxSize.height,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          for (final (index, game) in widget.games.indexed.take(5))
-            Transform.translate(
-              offset: _offset(
-                  index, context.read<FrontpageModel>().highlightScore(game)),
-              child: _gameCover(
-                  context,
-                  game,
-                  widget.maxSize.width *
-                      context.read<FrontpageModel>().highlightScore(game)),
-            ),
-        ].reversed.toList(),
-      ),
-    );
-  }
-
-  Widget _gameCover(BuildContext context, GameDigest game, double width) {
-    return SizedBox(
-      width: width,
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-        child: GestureDetector(
-          onTap: () => context
-              .pushNamed('details', pathParameters: {'gid': '${game.id}'}),
-          child: Center(
-            child: CachedNetworkImage(
-              fit: BoxFit.cover,
-              imageUrl: '${Urls.imageProvider}/t_cover_big/${game.cover}.jpg',
-              errorWidget: (context, url, error) =>
-                  const Center(child: Icon(Icons.error_outline)),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Offset _offset(int index, double pop) {
-    final coverWidth = widget.maxSize.width * pop;
-    final coverHeight = widget.maxSize.height * pop;
-
-    if (widget.games.length == 1) {
-      return const Offset(0, 0);
-    } else if (widget.games.length == 2) {
-      return index == 0
-          ? Offset(-((widget.maxSize.width - coverWidth) / 2),
-              -((widget.maxSize.height - coverHeight) / 2))
-          : Offset((widget.maxSize.width - coverWidth) / 2,
-              ((widget.maxSize.height - coverHeight) / 2));
-    }
-
-    double progress = (index as double) / min(widget.games.length, 5);
-    return Offset(
-        ((widget.maxSize.width - coverWidth) / 2) * sin(progress * 2 * pi),
-        -((widget.maxSize.height - coverHeight) / 2) * cos(progress * 2 * pi));
   }
 }

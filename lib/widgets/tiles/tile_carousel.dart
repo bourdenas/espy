@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/widgets/cards/footers.dart';
+import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -22,16 +23,6 @@ class TileData {
   final VoidCallback? onTap;
   final VoidCallback? onLongTap;
   final Widget? overlay;
-}
-
-class TileSize {
-  const TileSize({
-    required this.width,
-    required this.height,
-  });
-
-  final double width;
-  final double height;
 }
 
 class TileCarousel extends StatefulWidget {

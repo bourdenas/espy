@@ -5,6 +5,7 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
+import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
