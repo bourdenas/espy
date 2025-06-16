@@ -7,33 +7,76 @@ import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
-class TileStack extends StatelessWidget {
+class TileStack extends StatefulWidget {
   const TileStack(this.games, {super.key, required this.maxSize});
 
   final Iterable<GameDigest> games;
   final TileSize maxSize;
 
   @override
+  State<TileStack> createState() => _TileStackState();
+}
+
+class _TileStackState extends State<TileStack>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+  late Animation<double> animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    animation = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+      parent: controller,
+      curve: Curves.ease,
+      reverseCurve: Curves.easeIn,
+    ));
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: maxSize.width,
-      height: maxSize.height,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          for (final (index, game) in games.indexed.take(5))
-            Transform.translate(
-              offset: _offset(
-                  index, context.read<FrontpageModel>().highlightScore(game)),
-              child: _gameCover(
-                  context,
-                  game,
-                  maxSize.width *
-                      context.read<FrontpageModel>().highlightScore(game)),
-            ),
-        ].reversed.toList(),
+    return MouseRegion(
+      onEnter: (_) => controller.forward(),
+      onExit: (_) => controller.reverse(),
+      child: SizedBox(
+        width: widget.maxSize.width,
+        height: widget.maxSize.height,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            for (final (index, game) in widget.games.indexed.take(5))
+              AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  final coverScale = FrontpageModel.coverScale(game);
+                  return switch (widget.games.length) {
+                    1 => Transform.scale(
+                        scale: 1 + .2 * animation.value,
+                        child: _gameCover(
+                            context, game, widget.maxSize.width * coverScale),
+                      ),
+                    _ => Transform.translate(
+                        offset: _offset(index, coverScale),
+                        child: _gameCover(
+                            context, game, widget.maxSize.width * coverScale),
+                      ),
+                  };
+                },
+              ),
+          ].reversed.toList(),
+        ),
       ),
     );
   }
@@ -59,22 +102,25 @@ class TileStack extends StatelessWidget {
     );
   }
 
-  Offset _offset(int index, double pop) {
-    final coverWidth = maxSize.width * pop;
-    final coverHeight = maxSize.height * pop;
+  Offset _offset(int index, double scale) {
+    final coverWidth = widget.maxSize.width * scale;
+    final coverHeight = widget.maxSize.height * scale;
 
-    if (games.length == 1) {
-      return const Offset(0, 0);
-    } else if (games.length == 2) {
+    if (widget.games.length == 2) {
+      final animationOffset = -32 + 32 * animation.value;
       return index == 0
-          ? Offset(-((maxSize.width - coverWidth) / 2 - 32),
-              -((maxSize.height - coverHeight) / 2 - 32))
-          : Offset((maxSize.width - coverWidth) / 2 - 32,
-              ((maxSize.height - coverHeight) / 2 - 32));
+          ? Offset(-((widget.maxSize.width - coverWidth) / 2 + animationOffset),
+              -((widget.maxSize.height - coverHeight) / 2 + animationOffset))
+          : Offset((widget.maxSize.width - coverWidth) / 2 + animationOffset,
+              ((widget.maxSize.height - coverHeight) / 2 + animationOffset));
     }
 
-    double progress = (index as double) / min(games.length, 5);
-    return Offset(((maxSize.width - coverWidth) / 2) * sin(progress * 2 * pi),
-        -((maxSize.height - coverHeight) / 2) * cos(progress * 2 * pi));
+    final animationOffset = 32 * animation.value;
+    double progress = (index as double) / min(widget.games.length, 5);
+    return Offset(
+        ((widget.maxSize.width - coverWidth) / 2 + animationOffset) *
+            sin(progress * 2 * pi),
+        -((widget.maxSize.height - coverHeight) / 2 + animationOffset) *
+            cos(progress * 2 * pi));
   }
 }

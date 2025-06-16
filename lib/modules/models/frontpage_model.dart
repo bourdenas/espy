@@ -89,13 +89,13 @@ class FrontpageModel extends ChangeNotifier {
     });
   }
 
-  double highlightScore(GameDigest game) {
+  static double coverScale(GameDigest game) {
     return game.isReleased
         ? _scale(game.scores.espyScore)
         : _scaleFuture(game.scores.hype);
   }
 
-  double _scale(int? score) => switch (score) {
+  static double _scale(int? score) => switch (score) {
         int x when x >= 95 => 1,
         int x when x >= 90 => .9,
         int x when x >= 80 => .8,
@@ -104,7 +104,7 @@ class FrontpageModel extends ChangeNotifier {
         _ => .5,
       };
 
-  double _scaleFuture(int? popularity) => switch (popularity) {
+  static double _scaleFuture(int? popularity) => switch (popularity) {
         int x when x >= 100 => 1,
         int x when x >= 50 => .9,
         int x when x >= 30 => .8,
