@@ -1,7 +1,8 @@
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
-import 'package:espy/widgets/hover_animation.dart';
+import 'package:espy/widgets/tiles/tile_size.dart';
+import 'package:espy/widgets/tiles/tile_stack.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quiver/iterables.dart';
@@ -34,20 +35,18 @@ class CalendarCard extends StatelessWidget {
           .map((_) => GameDigest(id: 0, name: 'padding')));
     }
 
-    return HoverAnimation(
-      scale: 1.1,
-      child: Material(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        clipBehavior: Clip.antiAlias,
-        child: Center(
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              tiledCovers(context, covers),
-              ...overlays,
-              if (behindFoldGames > 0) BehindFoldBadge(calendarEntry),
-            ],
-          ),
+    return Material(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      clipBehavior: Clip.antiAlias,
+      child: Center(
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // tiledCovers(context, covers),
+            TileStack(covers, maxSize: TileSize(width: 227.0, height: 320.0)),
+            ...overlays,
+            if (behindFoldGames > 0) BehindFoldBadge(calendarEntry),
+          ],
         ),
       ),
     );

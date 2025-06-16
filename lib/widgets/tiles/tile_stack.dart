@@ -67,10 +67,10 @@ class TileStack extends StatelessWidget {
       return const Offset(0, 0);
     } else if (games.length == 2) {
       return index == 0
-          ? Offset(-((maxSize.width - coverWidth) / 2),
-              -((maxSize.height - coverHeight) / 2))
-          : Offset((maxSize.width - coverWidth) / 2,
-              ((maxSize.height - coverHeight) / 2));
+          ? Offset(-((maxSize.width - coverWidth) / 2 - 32),
+              -((maxSize.height - coverHeight) / 2 - 32))
+          : Offset((maxSize.width - coverWidth) / 2 - 32,
+              ((maxSize.height - coverHeight) / 2 - 32));
     }
 
     double progress = (index as double) / min(games.length, 5);
