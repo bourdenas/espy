@@ -52,57 +52,6 @@ class CalendarCard extends StatelessWidget {
     );
   }
 
-  Widget tiledCovers(BuildContext context, List<GameDigest> covers) {
-    return Column(
-      children: switch (covers.length) {
-        1 => [cardTile(context, covers.first)],
-        2 => [
-            Expanded(
-              child: Row(
-                children: [
-                  for (final digest in covers.take(2)) cardTile(context, digest)
-                ],
-              ),
-            ),
-          ],
-        3 => [
-            Expanded(
-              child: Row(
-                children: [
-                  for (final digest in covers.take(1)) cardTile(context, digest)
-                ],
-              ),
-            ),
-            Flexible(
-              child: Row(
-                children: [
-                  for (final digest in covers.skip(1).take(2))
-                    cardTile(context, digest)
-                ],
-              ),
-            ),
-          ],
-        _ => [
-            Expanded(
-              child: Row(
-                children: [
-                  for (final digest in covers.take(2)) cardTile(context, digest)
-                ],
-              ),
-            ),
-            Expanded(
-              child: Row(
-                children: [
-                  for (final digest in covers.skip(2).take(2))
-                    cardTile(context, digest)
-                ],
-              ),
-            ),
-          ],
-      },
-    );
-  }
-
   Widget cardTile(BuildContext context, GameDigest digest) {
     return Expanded(
       child: digest.id != 0
@@ -143,7 +92,6 @@ class _BehindFoldBadgeState extends State<BehindFoldBadge> {
           hover = false;
         }),
         child: FloatingActionButton(
-          mini: true,
           backgroundColor: const Color(0x00FFFFFF),
           onPressed: () => widget.calendarEntry.onClick(widget.calendarEntry),
           child: Icon(

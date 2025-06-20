@@ -60,7 +60,15 @@ class _TilePileState extends State<TilePile>
               AnimatedBuilder(
                 animation: animation,
                 builder: (context, child) {
-                  final coverScale = FrontpageModel.coverScale(game);
+                  final coverScale = widget.games.length == 1
+                      ? FrontpageModel.coverScale(game)
+                      : FrontpageModel.coverScale(game) *
+                              (1 - animation.value) +
+                          .6 * animation.value;
+
+                  final groupCoverScale =
+                      coverScale * (1 - animation.value) + .6 * animation.value;
+
                   return switch (widget.games.length) {
                     1 => Transform.scale(
                         scale: 1 + .2 * animation.value,
@@ -68,9 +76,12 @@ class _TilePileState extends State<TilePile>
                             context, game, widget.maxSize.width * coverScale),
                       ),
                     _ => Transform.translate(
-                        offset: _offset(index, coverScale),
+                        offset: _offset(index, groupCoverScale),
                         child: _gameCover(
-                            context, game, widget.maxSize.width * coverScale),
+                          context,
+                          game,
+                          widget.maxSize.width * groupCoverScale,
+                        ),
                       ),
                   };
                 },
