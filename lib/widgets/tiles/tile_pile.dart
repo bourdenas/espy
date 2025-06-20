@@ -8,17 +8,17 @@ import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class TileStack extends StatefulWidget {
-  const TileStack(this.games, {super.key, required this.maxSize});
+class TilePile extends StatefulWidget {
+  const TilePile(this.games, {super.key, required this.maxSize});
 
   final Iterable<GameDigest> games;
   final TileSize maxSize;
 
   @override
-  State<TileStack> createState() => _TileStackState();
+  State<TilePile> createState() => _TilePileState();
 }
 
-class _TileStackState extends State<TileStack>
+class _TilePileState extends State<TilePile>
     with SingleTickerProviderStateMixin {
   late AnimationController controller;
   late Animation<double> animation;

@@ -3,7 +3,7 @@ import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/timeline/timeline_utils.dart';
 import 'package:espy/widgets/tiles/tile_size.dart';
-import 'package:espy/widgets/tiles/tile_stack.dart';
+import 'package:espy/widgets/tiles/tile_pile.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -77,7 +77,7 @@ class TimelineCarousel extends StatelessWidget {
                       ),
                       nodePositionBuilder: (context, index) => .85,
                       contentsBuilder: (context, index) =>
-                          TileStack(releases[index].games, maxSize: tileSize),
+                          TilePile(releases[index].games, maxSize: tileSize),
                     ),
                   ),
                 ),

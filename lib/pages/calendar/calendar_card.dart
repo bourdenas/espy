@@ -2,7 +2,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:espy/widgets/tiles/tile_size.dart';
-import 'package:espy/widgets/tiles/tile_stack.dart';
+import 'package:espy/widgets/tiles/tile_pile.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quiver/iterables.dart';
@@ -43,7 +43,7 @@ class CalendarCard extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             // tiledCovers(context, covers),
-            TileStack(covers, maxSize: TileSize(width: 227.0, height: 320.0)),
+            TilePile(covers, maxSize: TileSize(width: 227.0, height: 320.0)),
             ...overlays,
             if (behindFoldGames > 0) BehindFoldBadge(calendarEntry),
           ],
