@@ -6,7 +6,10 @@ import 'package:provider/provider.dart';
 
 void setLibraryView(BuildContext context) {
   context.read<FilterModel>().clear();
-  context.goNamed('games');
+  context.goNamed(
+    'games',
+    queryParameters: {'title': 'Library', 'view': 'library'},
+  );
 }
 
 void updateLibraryView(
@@ -16,5 +19,8 @@ void updateLibraryView(
   if (filter != null) {
     context.read<FilterModel>().filter = filter;
   }
-  context.pushNamed('games');
+  context.pushNamed(
+    'games',
+    queryParameters: {'title': 'Library', 'view': 'library'},
+  );
 }

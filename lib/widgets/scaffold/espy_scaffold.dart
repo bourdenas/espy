@@ -101,12 +101,6 @@ class EspyScaffold extends StatelessWidget {
             splashRadius: 20.0,
             onPressed: () => appConfig.libraryOrdering.nextValue(),
           ),
-          IconButton(
-            icon: Icon(
-                _groupingViews[appConfig.libraryGrouping.value.index].iconData),
-            splashRadius: 20.0,
-            onPressed: () => appConfig.libraryGrouping.nextValue(),
-          ),
         ] else ...[
           ToggleButtons(
             renderBorder: false,
@@ -131,14 +125,6 @@ class EspyScaffold extends StatelessWidget {
             onPressed: (index) => appConfig.libraryOrdering.valueIndex = index,
             children: _orderingViews.map((e) => Icon(e.iconData)).toList(),
           ),
-          const SizedBox(width: 24),
-          ToggleButtons(
-            renderBorder: false,
-            isSelected: List.generate(_groupingViews.length,
-                (i) => i == appConfig.libraryGrouping.value.index),
-            onPressed: (index) => appConfig.libraryGrouping.valueIndex = index,
-            children: _groupingViews.map((e) => Icon(e.iconData)).toList(),
-          ),
           const SizedBox(width: 8),
         ],
       ],
@@ -162,14 +148,6 @@ class EspyScaffold extends StatelessWidget {
     _OrderingView(LibraryOrdering.rating, Icons.star),
     _OrderingView(LibraryOrdering.popularity, Icons.people),
   ];
-
-  final List<_GroupingView> _groupingViews = const [
-    _GroupingView(LibraryGrouping.none, Icons.block),
-    _GroupingView(LibraryGrouping.year, Icons.calendar_month),
-    _GroupingView(LibraryGrouping.genre, Icons.class_),
-    _GroupingView(LibraryGrouping.keywords, Icons.tag),
-    _GroupingView(LibraryGrouping.rating, Icons.star),
-  ];
 }
 
 class _LibraryView {
@@ -191,11 +169,4 @@ class _OrderingView {
   final IconData iconData;
 
   const _OrderingView(this.ordering, this.iconData);
-}
-
-class _GroupingView {
-  final LibraryGrouping grouping;
-  final IconData iconData;
-
-  const _GroupingView(this.grouping, this.iconData);
 }

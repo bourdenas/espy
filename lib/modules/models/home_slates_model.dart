@@ -1,8 +1,9 @@
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/filtering/library_filter.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/pages/espy_navigator.dart';
@@ -30,18 +31,19 @@ class HomeSlatesModel extends ChangeNotifier {
             DateTime.now().difference(
                 (DateTime.fromMillisecondsSinceEpoch(e.addedDate * 1000))) <
             const Duration(days: 30)),
-        (context) {
-          context.read<CustomViewModel>().clear();
-          updateLibraryView(context);
-        },
+        (context) => updateLibraryView(context),
       ),
       SlateInfo(
         'Wishlist',
         wishlistModel.entries.take(16),
         (context) {
-          context.read<CustomViewModel>().games =
-              context.read<WishlistModel>().entries;
-          context.pushNamed('wishlist');
+          context
+              .read<LibraryViewModel>()
+              .addEntries('wishlist', context.read<WishlistModel>().entries);
+          context.pushNamed(
+            'games',
+            queryParameters: {'title': 'Wishlist', 'view': 'wishlist'},
+          );
         },
       ),
     ];
@@ -60,8 +62,11 @@ class HomeSlatesModel extends ChangeNotifier {
           SlateInfo(
             collection,
             tagsModel.collections.games(collection),
-            (context) => context
-                .pushNamed('collection', pathParameters: {'name': collection}),
+            (context) {
+              context.read<FilterModel>().clear();
+              context.pushNamed('collection',
+                  pathParameters: {'name': collection});
+            },
           ),
       if (appConfigModel.stacks.value == Stacks.developers)
         for (final company in tagsModel.developers.all)

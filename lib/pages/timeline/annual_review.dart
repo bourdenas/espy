@@ -2,13 +2,13 @@ import 'dart:collection';
 
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/calendar.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/years_model.dart';
-import 'package:espy/pages/library/library_page.dart';
 import 'package:espy/widgets/gametags/espy_chips.dart';
 import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class AnnualReview extends StatefulWidget {
   const AnnualReview({super.key, required this.year});
@@ -27,8 +27,8 @@ class _AnnualReviewState extends State<AnnualReview> {
       builder: (BuildContext context, AsyncSnapshot<AnnualReviewDoc> snapshot) {
         if (snapshot.connectionState == ConnectionState.done &&
             snapshot.hasData) {
-          // ? AnnualGameList(review: snapshot.data!)
-          context.read<CustomViewModel>().digests = snapshot.data!.releases;
+          final id = Uuid().v4();
+          context.read<LibraryViewModel>().add(id, snapshot.data!.releases);
           return AnnualLibaryView(review: snapshot.data!);
         }
         return Container();
@@ -44,8 +44,7 @@ class AnnualLibaryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LibraryPage(
-        title: 'Releases in ${review.releases.first.releaseYear}');
+    return Container();
   }
 }
 

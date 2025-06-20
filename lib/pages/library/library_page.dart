@@ -1,21 +1,31 @@
 import 'package:badges/badges.dart' as badges;
+import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/library_view_model.dart';
+import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/pages/calendar/calendar_view_month.dart';
+import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/library/library_entries_view.dart';
+import 'package:espy/pages/timeline/timeline_view.dart';
 import 'package:espy/widgets/stats/filter_side_pane.dart';
-import 'package:espy/widgets/tiles/tile_shelve.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class LibraryPage extends StatelessWidget {
-  const LibraryPage({super.key, required this.title});
+class LibraryPage extends StatefulWidget {
+  const LibraryPage(this.libraryEntries, {super.key, required this.title});
 
+  final Iterable<LibraryEntry> libraryEntries;
   final String title;
 
   @override
+  State<LibraryPage> createState() => _LibraryPageState();
+}
+
+class _LibraryPageState extends State<LibraryPage> {
+  @override
   Widget build(BuildContext context) {
-    final appConfig = context.watch<AppConfigModel>();
-    final libraryViewModel = context.watch<LibraryViewModel>();
+    final filteredEntries = context
+        .watch<FilterModel>()
+        .processLibraryEntries(widget.libraryEntries);
 
     return Stack(
       children: [
@@ -23,9 +33,8 @@ class LibraryPage extends StatelessWidget {
           children: [
             Expanded(
               child: Scaffold(
-                appBar:
-                    libraryAppBar(context, appConfig, libraryViewModel.length),
-                body: libraryBody(appConfig, libraryViewModel),
+                appBar: libraryAppBar(context, filteredEntries.length),
+                body: libraryBody(context, filteredEntries),
               ),
             ),
             // Add some space for the side pane.
@@ -34,41 +43,54 @@ class LibraryPage extends StatelessWidget {
             ),
           ],
         ),
-        FilterSidePane(libraryViewModel.entries),
+        FilterSidePane(widget.libraryEntries),
       ],
     );
   }
 
   Widget libraryBody(
-      AppConfigModel appConfig, LibraryViewModel libraryViewModel) {
+    BuildContext context,
+    Iterable<LibraryEntry> libraryEntries,
+  ) {
+    final libraryView = context.watch<AppConfigModel>().libraryViewMode.value;
+    final libraryLayout = context.watch<AppConfigModel>().libraryLayout.value;
+
     return Column(
       children: [
         Expanded(
-          child: CustomScrollView(
-            primary: true,
-            shrinkWrap: true,
-            slivers: [
-              if (appConfig.libraryGrouping.value == LibraryGrouping.none)
-                LibraryEntriesView(
-                  entries: libraryViewModel.entries,
-                )
-              else ...[
-                for (final (label, entries) in libraryViewModel.groups)
-                  TileShelve(
-                    title: '$label (${entries.length})',
-                    color: Colors.grey,
-                    entries: entries,
+          child: switch (libraryView) {
+            LibraryViewMode.flat => CustomScrollView(
+                primary: true,
+                shrinkWrap: true,
+                slivers: [
+                  LibraryEntriesView(libraryEntries),
+                ],
+              ),
+            LibraryViewMode.month => switch (libraryLayout) {
+                LibraryLayout.grid => CalendarViewMonth(
+                    libraryEntries.map((e) => e.digest),
+                    startDate: DateTime.now(),
+                    yearsBack: 45,
                   ),
-              ],
-            ],
-          ),
+                LibraryLayout.list =>
+                  TimelineView(libraryEntries, libraryView: libraryView),
+              },
+            LibraryViewMode.year => switch (libraryLayout) {
+                LibraryLayout.grid => CalendarViewYear(
+                    libraryEntries.map((e) => e.digest),
+                  ),
+                LibraryLayout.list =>
+                  TimelineView(libraryEntries, libraryView: libraryView),
+              },
+          },
         ),
       ],
     );
   }
 
-  AppBar libraryAppBar(
-      BuildContext context, AppConfigModel appConfig, int libraryViewLength) {
+  AppBar libraryAppBar(BuildContext context, int libraryViewLength) {
+    final libraryView = context.watch<AppConfigModel>().libraryViewMode;
+
     return AppBar(
       leading: badges.Badge(
         badgeContent: Text(
@@ -83,9 +105,43 @@ class LibraryPage extends StatelessWidget {
         position: badges.BadgePosition.center(),
         child: Container(),
       ),
-      title: Text(title),
-      // backgroundColor: Colors.black.withOpacity(0.6),
-      // elevation: 0.0,
+      title: Stack(
+        children: [
+          Text(widget.title),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SegmentedButton<LibraryViewMode>(
+                segments: const <ButtonSegment<LibraryViewMode>>[
+                  ButtonSegment<LibraryViewMode>(
+                    value: LibraryViewMode.flat,
+                    label: Text('Flat'),
+                    icon: Icon(Icons.view_stream),
+                  ),
+                  ButtonSegment<LibraryViewMode>(
+                    value: LibraryViewMode.month,
+                    label: Text('Month'),
+                    icon: Icon(Icons.calendar_view_month),
+                  ),
+                  ButtonSegment<LibraryViewMode>(
+                    value: LibraryViewMode.year,
+                    label: Text('Year'),
+                    icon: Icon(Icons.calendar_month),
+                  ),
+                ],
+                selected: <LibraryViewMode>{libraryView.value},
+                onSelectionChanged: (Set<LibraryViewMode> newSelection) {
+                  setState(() {
+                    libraryView.value = newSelection.first;
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+      backgroundColor: Colors.black.withValues(alpha: 0.2),
+      elevation: 0.0,
     );
   }
 }

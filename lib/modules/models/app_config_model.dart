@@ -58,9 +58,9 @@ class AppConfigModel extends ChangeNotifier {
     (index) => LibraryOrdering.values[index],
     LibraryOrdering.values.length,
   );
-  EnumOption<LibraryGrouping> libraryGrouping = EnumOption<LibraryGrouping>(
-    (index) => LibraryGrouping.values[index],
-    LibraryGrouping.values.length,
+  EnumOption<LibraryViewMode> libraryViewMode = EnumOption<LibraryViewMode>(
+    (index) => LibraryViewMode.values[index],
+    LibraryViewMode.values.length,
   );
   EnumOption<Stacks> stacks = EnumOption<Stacks>(
     (index) => Stacks.values[index],
@@ -80,7 +80,7 @@ class AppConfigModel extends ChangeNotifier {
     libraryLayout.onUpdate = _updateOptions;
     cardDecoration.onUpdate = _updateOptions;
     libraryOrdering.onUpdate = _updateOptions;
-    libraryGrouping.onUpdate = _updateOptions;
+    libraryViewMode.onUpdate = _updateOptions;
     stacks.onUpdate = _updateOptions;
     showMains.onUpdate = _updateOptions;
     showExpansions.onUpdate = _updateOptions;
@@ -102,7 +102,7 @@ class AppConfigModel extends ChangeNotifier {
     libraryLayout.valueIndex = prefs.getInt('libraryLayout') ?? 0;
     cardDecoration.valueIndex = prefs.getInt('cardDecoration') ?? 1;
     libraryOrdering.valueIndex = prefs.getInt('orderBy') ?? 0;
-    libraryGrouping.valueIndex = prefs.getInt('groupBy') ?? 0;
+    libraryViewMode.valueIndex = prefs.getInt('libraryViewMode') ?? 0;
     stacks.valueIndex = prefs.getInt('stacks') ?? 0;
     showMains.value = prefs.getBool('showMains') ?? true;
     showExpansions.value = prefs.getBool('showExpansions') ?? false;
@@ -122,7 +122,7 @@ class AppConfigModel extends ChangeNotifier {
     prefs.setInt('libraryLayout', libraryLayout.value.index);
     prefs.setInt('cardDecoration', cardDecoration.value.index);
     prefs.setInt('orderBy', libraryOrdering.value.index);
-    prefs.setInt('groupBy', libraryGrouping.value.index);
+    prefs.setInt('libraryViewMode', libraryViewMode.value.index);
     prefs.setInt('stacks', stacks.value.index);
     prefs.setBool('showMains', showMains.value);
     prefs.setBool('showExpansions', showExpansions.value);
@@ -154,25 +154,16 @@ enum Stacks {
   developers,
 }
 
-enum LibraryClass {
-  all,
-  inLibrary,
-  wishlist,
-  untagged,
-}
-
 enum LibraryOrdering {
   release,
   rating,
   popularity,
 }
 
-enum LibraryGrouping {
-  none,
+enum LibraryViewMode {
+  flat,
+  month,
   year,
-  genre,
-  keywords,
-  rating,
 }
 
 class EnumOption<EnumType> {
@@ -187,6 +178,11 @@ class EnumOption<EnumType> {
         _valueIndex = 0;
 
   EnumType get value => _value;
+
+  set value(EnumType v) {
+    _value = v;
+    onUpdate?.call();
+  }
 
   set valueIndex(int index) {
     _valueIndex = index % _valuesLen;

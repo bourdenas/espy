@@ -3,18 +3,20 @@ import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/calendar_model.dart';
-import 'package:espy/modules/models/custom_view_model.dart';
 import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/modules/models/years_model.dart';
 import 'package:espy/pages/calendar/calendar_grid_entry.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/calendar/calendar_view_day.dart';
 import 'package:espy/pages/calendar/calendar_view_month.dart';
+import 'package:espy/pages/timeline/timeline_view.dart';
 import 'package:espy/widgets/stats/filter_side_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -81,6 +83,8 @@ class _CalendarPageState extends State<CalendarPage> {
             : <GameDigest>[];
         final shownGames = context.watch<FilterModel>().process(games);
 
+        final libraryLayout =
+            context.watch<AppConfigModel>().libraryLayout.value;
         return Stack(
           children: [
             Row(
@@ -98,23 +102,44 @@ class _CalendarPageState extends State<CalendarPage> {
                             leadingWeeks: 17,
                             trailingWeeks: leadingTime,
                           ),
-                        CalendarView.month => CalendarViewMonth(shownGames),
-                        CalendarView.year => CalendarViewYear(
-                            shownGames,
-                            startYear: DateTime.now().toUtc().year + 1,
-                            endYear: 1979,
-                            onClick: (CalendarGridEntry entry) async {
-                              final games = await context
-                                  .read<YearsModel>()
-                                  .gamesIn(
-                                      '${entry.digests.first.releaseYear}');
-                              if (context.mounted) {
-                                context.read<CustomViewModel>().digests =
-                                    games.releases;
-                                context.pushNamed('view');
-                              }
-                            },
-                          ),
+                        CalendarView.month => switch (libraryLayout) {
+                            LibraryLayout.grid => CalendarViewMonth(shownGames),
+                            LibraryLayout.list => TimelineView(
+                                shownGames.map((digest) =>
+                                    LibraryEntry.fromGameDigest(digest)),
+                                libraryView: LibraryViewMode.month),
+                          },
+                        CalendarView.year => switch (libraryLayout) {
+                            LibraryLayout.grid => CalendarViewYear(
+                                shownGames,
+                                startYear: DateTime.now().toUtc().year + 1,
+                                endYear: 1979,
+                                onClick: (CalendarGridEntry entry) async {
+                                  final games = await context
+                                      .read<YearsModel>()
+                                      .gamesIn(
+                                          '${entry.digests.first.releaseYear}');
+                                  if (context.mounted) {
+                                    final id = Uuid().v4();
+                                    context
+                                        .read<LibraryViewModel>()
+                                        .add(id, games.releases);
+                                    context.pushNamed(
+                                      'view',
+                                      queryParameters: {
+                                        'title':
+                                            '${entry.digests.first.releaseYear}',
+                                        'view': id,
+                                      },
+                                    );
+                                  }
+                                },
+                              ),
+                            LibraryLayout.list => TimelineView(
+                                shownGames.map((digest) =>
+                                    LibraryEntry.fromGameDigest(digest)),
+                                libraryView: LibraryViewMode.year),
+                          },
                       },
                     ),
                     floatingActionButton: FloatingActionButton(

@@ -2,12 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-class TileStack extends StatefulWidget {
+class TileFan extends StatefulWidget {
   final String title;
   final VoidCallback? onExpand;
   final Iterable<String> tileImages;
 
-  const TileStack({
+  const TileFan({
     super.key,
     required this.title,
     required this.tileImages,
@@ -15,10 +15,10 @@ class TileStack extends StatefulWidget {
   });
 
   @override
-  State<TileStack> createState() => _TileStackState();
+  State<TileFan> createState() => _TileFanState();
 }
 
-class _TileStackState extends State<TileStack> {
+class _TileFanState extends State<TileFan> {
   List<double> deckAngles = narrowDeckAngles;
   List<Offset> deckOffsets = narrowDeckOffsets;
 

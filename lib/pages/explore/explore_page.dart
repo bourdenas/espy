@@ -2,7 +2,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
 import 'package:espy/pages/home/home_headline.dart';
-import 'package:espy/widgets/tiles/tile_stack.dart';
+import 'package:espy/widgets/tiles/tile_fan.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -55,7 +55,7 @@ class ExplorePage extends StatelessWidget {
             childAspectRatio: .7,
             children: [
               for (final stack in stacks)
-                TileStack(
+                TileFan(
                   title: stack.title,
                   tileImages: stack.entries.map((libraryEntry) =>
                       '${Urls.imageProvider}/t_cover_big/${libraryEntry.cover}.jpg'),

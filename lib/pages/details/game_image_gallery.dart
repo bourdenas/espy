@@ -2,6 +2,7 @@ import 'package:espy/modules/dialogs/image_dialog.dart';
 import 'package:espy/modules/dialogs/video_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
+import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:flutter/material.dart';
 
 class GameImageGallery extends StatelessWidget {

@@ -5,7 +5,7 @@ import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/user_model.dart';
+import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/calendar/calendar_page.dart';
 import 'package:espy/pages/collection/collection_page.dart';
 import 'package:espy/pages/company/company_page.dart';
@@ -13,7 +13,7 @@ import 'package:espy/pages/explore/explore_page.dart';
 import 'package:espy/pages/details/game_details_page.dart';
 import 'package:espy/pages/edit/edit_entry_page.dart';
 import 'package:espy/pages/library/library_page.dart';
-import 'package:espy/pages/timeline/timeline_view.dart';
+import 'package:espy/pages/view/view_page.dart';
 import 'package:espy/widgets/scaffold/espy_scaffold.dart';
 import 'package:espy/pages/home/home_content.dart';
 import 'package:espy/pages/profile/login_page.dart';
@@ -40,18 +40,10 @@ class EspyRouter extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
           name: 'home',
-          child: context.read<UserModel>().isSignedIn
-              ? EspyScaffold(
-                  body: const HomeContent(),
-                  path: state.path!,
-                )
-              : EspyScaffold(
-                  body: const TimelineView(
-                    scrollToLabel: 'Mar',
-                    year: '2024',
-                  ),
-                  path: state.path!,
-                ),
+          child: EspyScaffold(
+            body: const HomeContent(),
+            path: state.path!,
+          ),
         ),
       ),
       GoRoute(
@@ -61,19 +53,29 @@ class EspyRouter extends StatelessWidget {
           key: state.pageKey,
           name: 'games',
           child: EspyScaffold(
-            body: const LibraryPage(title: 'Game Library'),
+            body: LibraryPage(
+              state.uri.queryParameters['view'] == 'library'
+                  ? context.watch<LibraryViewModel>().library
+                  : context
+                      .watch<LibraryViewModel>()
+                      .getEntries(state.uri.queryParameters['view'] ?? ''),
+              title: state.uri.queryParameters['title'] ?? '',
+            ),
             path: state.path!,
           ),
         ),
       ),
       GoRoute(
-        name: 'wishlist',
-        path: '/wishlist',
+        name: 'view',
+        path: '/view',
         pageBuilder: (context, state) => NoTransitionPage(
           key: state.pageKey,
-          name: 'wishlist',
+          name: 'view',
           child: EspyScaffold(
-            body: const LibraryPage(title: 'Wishlist'),
+            body: ViewPage(
+              title: state.uri.queryParameters['title'] ?? '',
+              viewId: state.uri.queryParameters['view'] ?? '',
+            ),
             path: state.path!,
           ),
         ),
@@ -86,18 +88,6 @@ class EspyRouter extends StatelessWidget {
           name: 'explore',
           child: EspyScaffold(
             body: const ExplorePage(),
-            path: state.path!,
-          ),
-        ),
-      ),
-      GoRoute(
-        name: 'view',
-        path: '/view',
-        pageBuilder: (context, state) => NoTransitionPage(
-          key: state.pageKey,
-          name: 'view',
-          child: EspyScaffold(
-            body: const LibraryPage(title: ''),
             path: state.path!,
           ),
         ),

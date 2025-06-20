@@ -10,6 +10,7 @@ import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/cards/cover.dart';
 import 'package:espy/widgets/cards/footers.dart';
 import 'package:espy/widgets/expandable_fab.dart';
+import 'package:espy/widgets/hover_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -30,32 +31,8 @@ class LibraryGridCard extends StatefulWidget {
   State<LibraryGridCard> createState() => _LibraryGridCardState();
 }
 
-class _LibraryGridCardState extends State<LibraryGridCard>
-    with SingleTickerProviderStateMixin {
+class _LibraryGridCardState extends State<LibraryGridCard> {
   bool hover = false;
-  late AnimationController _controller;
-  late Animation _animation;
-  late Animation padding;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _animation = Tween(begin: 1.0, end: 1.1).animate(CurvedAnimation(
-        parent: _controller, curve: Curves.ease, reverseCurve: Curves.easeIn));
-    padding = Tween(begin: 0.0, end: -12.5).animate(CurvedAnimation(
-        parent: _controller, curve: Curves.ease, reverseCurve: Curves.easeIn));
-    _controller.addListener(() => setState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,17 +66,11 @@ class _LibraryGridCardState extends State<LibraryGridCard>
                     gameId: widget.libraryEntry.id,
                   )
             : null,
-        onHover: (val) => setState(() {
-          hover = val;
-          if (hover) {
-            _controller.forward();
-          } else {
-            _controller.reverse();
-          }
-        }),
-        child: Container(
-          transform: Matrix4(_animation.value, 0, 0, 0, 0, _animation.value, 0,
-              0, 0, 0, 1, 0, padding.value, padding.value, 0, 1),
+        child: HoverAnimation(
+          scale: 1.1,
+          onHover: (val) => setState(() {
+            hover = val;
+          }),
           child: GridTile(
             footer: cardFooter(appConfig),
             child: coverImage(context, hover, grayedOut),
@@ -114,7 +85,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
     if (showAddButton) {
       List<Widget> storeButtons = [
         if (widget.libraryEntry.storeEntries.isEmpty &&
-            !context.read<WishlistModel>().contains(widget.libraryEntry.id))
+            !context.watch<WishlistModel>().contains(widget.libraryEntry.id))
           FloatingActionButton(
             mini: true,
             backgroundColor: const Color(0x00FFFFFF),
@@ -128,7 +99,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
               size: 32,
             ),
           ),
-        ...Stores.ids.map((id) => storeButton(id)),
+        ...Stores.ids.map((id) => storeButton(context, id)),
       ].where((e) => e != null).map((e) => e!).toList();
 
       storeFAB = Positioned(
@@ -151,7 +122,7 @@ class _LibraryGridCardState extends State<LibraryGridCard>
     );
   }
 
-  Widget? storeButton(String storeId) {
+  Widget? storeButton(BuildContext context, String storeId) {
     return !widget.libraryEntry.storeEntries.any((e) => e.storefront == storeId)
         ? SizedBox(
             width: 32,
