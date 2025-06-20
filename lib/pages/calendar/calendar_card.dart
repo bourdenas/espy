@@ -42,10 +42,10 @@ class CalendarCard extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // tiledCovers(context, covers),
             TilePile(covers, maxSize: TileSize(width: 227.0, height: 320.0)),
             ...overlays,
-            if (behindFoldGames > 0) BehindFoldBadge(calendarEntry),
+            if (covers.length + behindFoldGames > 1)
+              BehindFoldBadge(calendarEntry),
           ],
         ),
       ),
@@ -82,7 +82,7 @@ class _BehindFoldBadgeState extends State<BehindFoldBadge> {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: 24,
+      bottom: 4,
       left: 4,
       child: MouseRegion(
         onEnter: (_) => setState(() {
