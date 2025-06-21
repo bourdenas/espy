@@ -17,15 +17,8 @@ class LibraryView {
         _libraryEntries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate)),
       LibraryOrdering.rating =>
         _libraryEntries.sort((a, b) => -a.espyScore.compareTo(b.espyScore)),
-      LibraryOrdering.popularity => _libraryEntries.sort((a, b) {
-          final popA =
-              a.scores.metacritic != null ? a.popularity : a.popularity / 10;
-          final popB =
-              b.scores.metacritic != null ? b.popularity : b.popularity / 10;
-          final cmp = -popA.compareTo(popB);
-          if (cmp != 0) return cmp;
-          return -a.hype.compareTo(b.hype);
-        }),
+      LibraryOrdering.popularity =>
+        _libraryEntries.sort((a, b) => -a.prominence.compareTo(b.prominence)),
     };
   }
 }

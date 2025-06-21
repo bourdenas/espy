@@ -8,6 +8,24 @@ class Scores {
 
   final String? espyTier;
 
+  // Prominence is a single number that mixes other metrics to determine
+  // relative ranking among titles.
+  int get prominence {
+    int pop = popularity ?? 0;
+    if (metacritic == null) {
+      pop ~/= 2;
+    }
+
+    final score = switch (espyScore) {
+      int x when x >= 95 => 300000 + (x - 90) * 10000,
+      int x when x >= 90 => 200000 + (x - 90) * 10000,
+      int x when x >= 80 => 100000 + (x - 80) * 10000,
+      int x when x >= 0 => x * 1000,
+      _ => 0,
+    };
+    return score + pop;
+  }
+
   String get title => switch (metacritic) {
         int x when x >= 90 => 'Excellent',
         int x when x >= 80 => 'Great',

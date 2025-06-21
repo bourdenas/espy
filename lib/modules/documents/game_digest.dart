@@ -22,6 +22,9 @@ class GameDigest {
   final List<String> espyGenres;
   final List<String> keywords;
 
+  int get prominence =>
+      isReleased ? scores.prominence : ((scores.hype ?? 0) * 2000);
+
   String get releaseDay =>
       releaseDate > 0 ? DateFormat('yMMMd').format(release) : 'TBA';
   String get releaseMonth => DateFormat('yMMM').format(release);
