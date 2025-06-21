@@ -2,10 +2,11 @@ class Scores {
   final int? thumbs;
   final int? popularity;
   final int? hype;
+
   final int? metacritic;
   final String? metacriticSource;
-  final int? espyScore;
 
+  final int? espyScore;
   final String? espyTier;
 
   // Prominence is a single number that mixes other metrics to determine

@@ -48,7 +48,6 @@ class CalendarViewYear extends StatelessWidget {
                 queryParameters: {'title': 'TBA', 'view': id},
               );
             },
-      coverExtractor: (games) => games.take(4).toList(),
     ));
 
     for (int year = startYear; year >= endYear; --year) {
@@ -66,23 +65,6 @@ class CalendarViewYear extends StatelessWidget {
                   queryParameters: {'title': '$year', 'view': id},
                 );
               },
-        coverExtractor: (games) {
-          final scored = games
-              .where((digest) => (digest.scores.espyScore ?? 0) > 0)
-              .toList()
-            ..sort(
-                (a, b) => b.scores.espyScore!.compareTo(a.scores.espyScore!));
-          if (scored.isNotEmpty) {
-            final highlyScored =
-                scored.where((digest) => digest.scores.espyScore! >= 80).length;
-            if (highlyScored > 0 && highlyScored < 3) {
-              return [scored[0]];
-            } else {
-              return scored.take(4).toList();
-            }
-          }
-          return games.toList();
-        },
       ));
     }
 
@@ -99,14 +81,9 @@ Map<int, List<GameDigest>> chunkByYear(Iterable<GameDigest> games) {
   for (final game in games) {
     years.putIfAbsent(game.releaseYear, () => []).add(game);
   }
-
   for (final games in years.values) {
-    games.sort((a, b) =>
-        b.scores.popularity?.compareTo(a.scores.popularity ?? 0) ??
-        b.scores.hype?.compareTo(a.scores.hype ?? 0) ??
-        0);
+    games.sort((l, r) => r.prominence.compareTo(l.prominence));
   }
-
   return years;
 }
 

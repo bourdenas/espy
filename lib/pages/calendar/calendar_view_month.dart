@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
@@ -59,21 +57,17 @@ class CalendarViewMonth extends StatelessWidget {
     );
   }
 
-  HashMap<String, List<GameDigest>> chunkByMonth(Iterable<GameDigest> games) {
-    final entryMap = HashMap<String, List<GameDigest>>();
+  Map<String, List<GameDigest>> chunkByMonth(Iterable<GameDigest> games) {
+    final months = <String, List<GameDigest>>{};
     for (final game in games) {
       final key = DateFormat('MMM y')
           .format(DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000));
-      entryMap.putIfAbsent(key, () => []).add(game);
+      months.putIfAbsent(key, () => []).add(game);
     }
-    for (final entries in entryMap.values) {
-      entries.sort((a, b) =>
-          b.scores.popularity?.compareTo(a.scores.popularity ?? 0) ??
-          b.scores.hype?.compareTo(a.scores.hype ?? 0) ??
-          0);
+    for (final digests in months.values) {
+      digests.sort((l, r) => r.prominence.compareTo(l.prominence));
     }
-
-    return entryMap;
+    return months;
   }
 }
 

@@ -14,11 +14,11 @@ class LibraryView {
   }) {
     final _ = switch (ordering) {
       LibraryOrdering.release =>
-        _libraryEntries.sort((a, b) => -a.releaseDate.compareTo(b.releaseDate)),
-      LibraryOrdering.rating =>
-        _libraryEntries.sort((a, b) => -a.espyScore.compareTo(b.espyScore)),
-      LibraryOrdering.popularity =>
-        _libraryEntries.sort((a, b) => -a.prominence.compareTo(b.prominence)),
+        _libraryEntries.sort((l, r) => r.releaseDate.compareTo(l.releaseDate)),
+      LibraryOrdering.rating => _libraryEntries.sort((l, r) =>
+          -(l.scores.espyScore?.compareTo(r.scores.espyScore ?? 0) ?? -1)),
+      LibraryOrdering.popularity => _libraryEntries
+          .sort((l, r) => r.digest.prominence.compareTo(l.digest.prominence)),
     };
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/models/library_view_model.dart';
 import 'package:espy/pages/calendar/calendar_grid.dart';
@@ -31,19 +29,7 @@ class CalendarViewDay extends StatelessWidget {
         .subtract(Duration(
             days: today.weekday - 1)) // Get to the Monday of this week.
         .subtract(Duration(days: leadingWeeks * 7 + 1));
-
-    final dailyReleases = HashMap<String, List<GameDigest>>();
-    for (final game in games) {
-      final key = DateFormat('yMMMd')
-          .format(DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000));
-      dailyReleases.putIfAbsent(key, () => []).add(game);
-    }
-    for (final entries in dailyReleases.values) {
-      entries.sort((a, b) =>
-          b.scores.popularity?.compareTo(a.scores.popularity ?? 0) ??
-          b.scores.hype?.compareTo(a.scores.hype ?? 0) ??
-          0);
-    }
+    final dailyReleases = chunkByDay(games);
 
     final entries = <CalendarGridEntry>[];
     final weeks = leadingWeeks + 1 + trailingWeeks;
@@ -78,6 +64,19 @@ class CalendarViewDay extends StatelessWidget {
       finalEntries,
       selectedLabel: DateFormat('yMMMd').format(today),
     );
+  }
+
+  Map<String, List<GameDigest>> chunkByDay(Iterable<GameDigest> games) {
+    final days = <String, List<GameDigest>>{};
+    for (final game in games) {
+      final key = DateFormat('yMMMd')
+          .format(DateTime.fromMillisecondsSinceEpoch(game.releaseDate * 1000));
+      days.putIfAbsent(key, () => []).add(game);
+    }
+    for (final digests in days.values) {
+      digests.sort((l, r) => r.prominence.compareTo(l.prominence));
+    }
+    return days;
   }
 }
 
