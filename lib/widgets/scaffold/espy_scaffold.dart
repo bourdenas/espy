@@ -52,6 +52,11 @@ class EspyScaffold extends StatelessWidget {
                 appBar: appBar(context),
                 drawer:
                     AppConfigModel.isMobile(context) ? EspyDrawer(path) : null,
+                floatingActionButton: FloatingActionButton(
+                  heroTag: 'searchButton',
+                  child: Icon(Icons.search),
+                  onPressed: () => context.pushNamed('search'),
+                ),
                 body: ScrollConfiguration(
                   behavior: ScrollConfiguration.of(context).copyWith(
                     dragDevices: {
