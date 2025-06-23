@@ -11,7 +11,11 @@ class Scores {
 
   // Prominence is a single number that mixes other metrics to determine
   // relative ranking among titles.
-  int get prominence {
+  int prominenceScore(bool isReleased) {
+    if (!isReleased) {
+      return (hype ?? 0) * 2000;
+    }
+
     int pop = popularity ?? 0;
     if (metacritic == null) {
       pop ~/= 2;
