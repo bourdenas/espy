@@ -85,6 +85,8 @@ class FrontpageModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<Frontpage> snapshot) {
       _frontpage = snapshot.data() ?? const Frontpage();
+      _frontpage.recentReleases
+          .sort((l, r) => r.prominence.compareTo(l.prominence));
       notifyListeners();
     });
   }
