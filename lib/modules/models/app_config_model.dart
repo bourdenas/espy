@@ -156,8 +156,7 @@ enum Stacks {
 
 enum LibraryOrdering {
   release,
-  rating,
-  popularity,
+  prominence,
 }
 
 enum LibraryViewMode {

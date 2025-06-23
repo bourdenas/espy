@@ -144,14 +144,13 @@ class EspyScaffold extends StatelessWidget {
   final List<_CardsView> _cardViews = const [
     _CardsView(CardDecoration.empty, Icons.block),
     _CardsView(CardDecoration.info, Icons.info),
-    _CardsView(CardDecoration.info, Icons.trending_up),
+    _CardsView(CardDecoration.info, Icons.monitor_heart),
     _CardsView(CardDecoration.tags, Icons.collections_bookmark),
   ];
 
   final List<_OrderingView> _orderingViews = const [
     _OrderingView(LibraryOrdering.release, Icons.calendar_month),
-    _OrderingView(LibraryOrdering.rating, Icons.star),
-    _OrderingView(LibraryOrdering.popularity, Icons.people),
+    _OrderingView(LibraryOrdering.prominence, Icons.trending_up),
   ];
 }
 
