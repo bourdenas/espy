@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
-import 'package:espy/modules/models/frontpage_model.dart';
 import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -60,12 +59,7 @@ class _TilePileState extends State<TilePile>
               AnimatedBuilder(
                 animation: animation,
                 builder: (context, child) {
-                  final coverScale = widget.games.length == 1
-                      ? FrontpageModel.coverScale(game)
-                      : FrontpageModel.coverScale(game) *
-                              (1 - animation.value) +
-                          .6 * animation.value;
-
+                  final coverScale = game.coverScale;
                   final groupCoverScale =
                       coverScale * (1 - animation.value) + .6 * animation.value;
 

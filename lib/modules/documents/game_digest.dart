@@ -24,6 +24,17 @@ class GameDigest {
 
   int get prominence => scores.prominenceScore(isReleased);
 
+  double get coverScale {
+    return switch (prominence) {
+      int x when x >= 300000 => 1,
+      int x when x >= 200000 => .9,
+      int x when x >= 100000 => .8,
+      int x when x >= 70000 => .7,
+      int x when x >= 60000 => .6,
+      _ => .5,
+    };
+  }
+
   String get releaseDay =>
       releaseDate > 0 ? DateFormat('yMMMd').format(release) : 'TBA';
   String get releaseMonth => DateFormat('yMMM').format(release);
