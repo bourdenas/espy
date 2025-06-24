@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/frontpage.dart';
-import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/calendar.dart';
 import 'package:espy/modules/models/home_slates_model.dart';
@@ -85,31 +84,9 @@ class FrontpageModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<Frontpage> snapshot) {
       _frontpage = snapshot.data() ?? const Frontpage();
+      _frontpage.recentReleases
+          .sort((l, r) => r.prominence.compareTo(l.prominence));
       notifyListeners();
     });
   }
-
-  static double coverScale(GameDigest game) {
-    return game.isReleased
-        ? _scale(game.scores.espyScore)
-        : _scaleFuture(game.scores.hype);
-  }
-
-  static double _scale(int? score) => switch (score) {
-        int x when x >= 95 => 1,
-        int x when x >= 90 => .9,
-        int x when x >= 80 => .8,
-        int x when x >= 70 => .7,
-        int x when x >= 60 => .6,
-        _ => .5,
-      };
-
-  static double _scaleFuture(int? popularity) => switch (popularity) {
-        int x when x >= 100 => 1,
-        int x when x >= 50 => .9,
-        int x when x >= 30 => .8,
-        int x when x >= 10 => .7,
-        int x when x >= 3 => .6,
-        _ => .5,
-      };
 }

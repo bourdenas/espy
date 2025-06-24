@@ -5,7 +5,6 @@ import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:espy/widgets/tiles/tile_pile.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quiver/iterables.dart';
 
 class CalendarCard extends StatelessWidget {
   const CalendarCard(
@@ -28,12 +27,8 @@ class CalendarCard extends StatelessWidget {
   }
 
   Widget coverImage(BuildContext context) {
-    final covers = calendarEntry.getCovers();
+    final covers = calendarEntry.covers;
     final behindFoldGames = calendarEntry.digests.length - covers.length;
-    if (covers.length < 4 && !covers.first.isMain) {
-      covers.addAll(range(4 - covers.length)
-          .map((_) => GameDigest(id: 0, name: 'padding')));
-    }
 
     return Material(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

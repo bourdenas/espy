@@ -14,11 +14,7 @@ class LibraryEntry {
   String? get cover => digest.cover;
   int get releaseDate => digest.releaseDate;
   Scores get scores => digest.scores;
-  int get thumbs => digest.scores.thumbs ?? 0;
-  int get popularity => digest.scores.popularity ?? 0;
-  int get hype => digest.scores.hype ?? 0;
-  int get metacritic => digest.scores.metacritic ?? 0;
-  int get espyScore => digest.scores.espyScore ?? 0;
+
   List<String> get collections => digest.collections;
   List<String> get franchises => digest.franchises;
   List<String> get developers => digest.developers;

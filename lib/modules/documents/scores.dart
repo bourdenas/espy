@@ -2,11 +2,34 @@ class Scores {
   final int? thumbs;
   final int? popularity;
   final int? hype;
+
   final int? metacritic;
   final String? metacriticSource;
-  final int? espyScore;
 
+  final int? espyScore;
   final String? espyTier;
+
+  // Prominence is a single number that mixes other metrics to determine
+  // relative ranking among titles.
+  int prominenceScore(bool isReleased) {
+    if (!isReleased) {
+      return (hype ?? 0) * 2000;
+    }
+
+    int pop = popularity ?? 0;
+    if (metacritic == null) {
+      pop ~/= 2;
+    }
+
+    final score = switch (espyScore) {
+      int x when x >= 95 => 300000 + (x - 90) * 10000,
+      int x when x >= 90 => 200000 + (x - 90) * 10000,
+      int x when x >= 80 => 100000 + (x - 80) * 10000,
+      int x when x >= 0 => x * 1000,
+      _ => 0,
+    };
+    return score + pop;
+  }
 
   String get title => switch (metacritic) {
         int x when x >= 90 => 'Excellent',
