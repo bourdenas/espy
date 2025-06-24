@@ -26,8 +26,15 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
+  late Future<List<GameDigest>> games;
   CalendarView calendarView = CalendarView.day;
   int leadingTime = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    games = fetchGames(CalendarView.day);
+  }
 
   void increaseLeading() {
     leadingTime += switch (calendarView) {
@@ -45,6 +52,14 @@ class _CalendarPageState extends State<CalendarPage> {
       CalendarView.day => 14,
       CalendarView.month => 1,
       CalendarView.year => 0,
+    };
+  }
+
+  Future<List<GameDigest>> fetchGames(CalendarView calendarView) {
+    return switch (calendarView) {
+      CalendarView.day => recentWeeks(context.read<FrontpageModel>().frontpage),
+      CalendarView.month => recentYears(context.read<YearsModel>()),
+      CalendarView.year => allYears(context.read<CalendarModel>()),
     };
   }
 
@@ -70,12 +85,7 @@ class _CalendarPageState extends State<CalendarPage> {
     final maxLeadingTime = maxLeading();
 
     return FutureBuilder(
-      future: switch (calendarView) {
-        CalendarView.day =>
-          recentWeeks(context.watch<FrontpageModel>().frontpage),
-        CalendarView.month => recentYears(context.read<YearsModel>()),
-        CalendarView.year => allYears(context.read<CalendarModel>()),
-      },
+      future: games,
       builder: (context, AsyncSnapshot<List<GameDigest>> snapshot) {
         final games = (snapshot.connectionState == ConnectionState.done &&
                 snapshot.hasData)
@@ -208,6 +218,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       CalendarView.month => 0,
                       CalendarView.year => 0,
                     };
+                    games = fetchGames(calendarView);
                   });
                 },
               ),

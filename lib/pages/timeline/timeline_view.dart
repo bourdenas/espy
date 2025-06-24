@@ -2,6 +2,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_view_model.dart';
+import 'package:espy/widgets/loading_spinner.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:flutter/material.dart';
@@ -81,6 +82,10 @@ class TimelineView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (libraryEntries.isEmpty) {
+      return LoadingSpinner(message: 'Retrieving data...');
+    }
+
     final isMobile = AppConfigModel.isMobile(context);
     final now = DateTime.now();
 
