@@ -28,7 +28,8 @@ class Scores {
       int x when x >= 0 => x * 1000,
       _ => 0,
     };
-    return score + pop;
+
+    return ((score + pop) * (thumbs ?? 100) * 0.01).toInt();
   }
 
   String get title => switch (metacritic) {
@@ -70,6 +71,8 @@ class Scores {
       if (metacriticSource != null) 'metacritic_source': metacriticSource,
       if (espyScore != null) 'espy_score': espyScore,
       if (espyTier != null) 'espy_tier': espyTier,
+      'prominence_released': prominenceScore(true),
+      'prominence_unreleased': prominenceScore(false),
     };
   }
 

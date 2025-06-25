@@ -18,17 +18,18 @@ class GamePulse extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userRating = context.watch<UserDataModel>().rating(libraryEntry.id);
-    final thumbs = gameEntry?.scores.thumbs ?? libraryEntry.thumbs;
-    final popularity = gameEntry?.scores.popularity ?? libraryEntry.popularity;
-    final hype = gameEntry?.scores.hype ?? libraryEntry.hype;
+    final thumbs = gameEntry?.scores.thumbs ?? libraryEntry.scores.thumbs;
+    final popularity =
+        gameEntry?.scores.popularity ?? libraryEntry.scores.popularity;
+    final hype = gameEntry?.scores.hype ?? libraryEntry.scores.hype;
     final metacritic = userRating > 0
         ? userRating * 20
-        : gameEntry?.scores.metacritic ?? libraryEntry.metacritic;
+        : gameEntry?.scores.metacritic ?? libraryEntry.scores.metacritic;
 
     return Row(
       children: [
         criticsScore(metacritic, userRating),
-        if (thumbs > 0) userScore(thumbs, popularity),
+        if (thumbs != null) userScore(thumbs, popularity),
         if (gameEntry?.isReleased ?? libraryEntry.isReleased)
           popScore(popularity)
         else
@@ -37,7 +38,7 @@ class GamePulse extends StatelessWidget {
     );
   }
 
-  Widget criticsScore(int metacritic, int userRating) {
+  Widget criticsScore(int? metacritic, int userRating) {
     return ExpandableButton(
       offset: const Offset(0, 42),
       collapsedWidget: Row(
@@ -45,12 +46,12 @@ class GamePulse extends StatelessWidget {
         children: [
           Icon(
             Icons.star,
-            color: metacritic > 0 ? Colors.amber : Colors.grey,
+            color: metacritic != null ? Colors.amber : Colors.grey,
             size: 18.0,
           ),
           const SizedBox(width: 4.0),
           Text(
-            metacritic > 0 ? (metacritic / 10.0).toStringAsFixed(1) : '--',
+            metacritic != null ? (metacritic / 10.0).toStringAsFixed(1) : '--',
             style: userRating > 0 ? const TextStyle(color: Colors.green) : null,
           ),
         ],
@@ -61,7 +62,7 @@ class GamePulse extends StatelessWidget {
     );
   }
 
-  Widget userScore(int thumbs, int popularity) {
+  Widget userScore(int thumbs, int? popularity) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -74,10 +75,10 @@ class GamePulse extends StatelessWidget {
           },
           color: switch (thumbs) {
             int x when x >= 70 =>
-              popularity >= 5000 ? Colors.green : Colors.green[200],
+              (popularity ?? 0) >= 5000 ? Colors.green : Colors.green[200],
             int x when x >= 60 =>
-              popularity >= 5000 ? Colors.orange : Colors.yellow,
-            _ => popularity >= 5000 ? Colors.red : Colors.red[200],
+              (popularity ?? 0) >= 5000 ? Colors.orange : Colors.yellow,
+            _ => (popularity ?? 0) >= 5000 ? Colors.red : Colors.red[200],
           },
           size: 18.0,
         ),
@@ -87,38 +88,48 @@ class GamePulse extends StatelessWidget {
     );
   }
 
-  Widget popScore(int popularity) {
+  Widget popScore(int? popularity) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(width: 8),
         Icon(
           Icons.people,
-          color: popularity > 0 ? Colors.blueAccent : Colors.grey,
+          color: popularity != null ? Colors.blueAccent : Colors.grey,
           size: 18.0,
         ),
         const SizedBox(width: 4),
-        Text(popularity >= 1000
-            ? popularity >= 1000000
-                ? '${popularity ~/ 1000000}M'
-                : '${popularity ~/ 1000}K'
-            : popularity.toString()),
+        Text(
+          switch (popularity) {
+            int x when x >= 1000000 =>
+              '${x ~/ 1000000}.${x % 1000000 ~/ 100000}M',
+            int x when x >= 1000 => '${x ~/ 1000}K',
+            int x => '$x',
+            null => '--',
+          },
+        ),
       ],
     );
   }
 
-  Widget hypeScore(int hype) {
+  Widget hypeScore(int? hype) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const SizedBox(width: 8),
         Icon(
           Icons.upcoming,
-          color: hype > 0 ? Colors.redAccent : Colors.grey,
+          color: hype != null ? Colors.redAccent : Colors.grey,
           size: 18.0,
         ),
         const SizedBox(width: 4),
-        Text(hype >= 1000 ? '${hype ~/ 1000}K' : hype.toString()),
+        Text(
+          switch (hype) {
+            int x when x >= 1000 => '${x ~/ 1000}K',
+            int x => '$x',
+            null => '--',
+          },
+        ),
       ],
     );
   }
