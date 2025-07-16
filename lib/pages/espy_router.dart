@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/edit_dialog_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
@@ -23,7 +21,6 @@ import 'package:espy/pages/unresolved/unresolved_page.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -213,7 +210,7 @@ class EspyRouter extends StatelessWidget {
           }
 
           if (snapshot.connectionState == ConnectionState.active) {
-            if (snapshot.hasData || (!kIsWeb && Platform.isAndroid)) {
+            if (snapshot.hasData) {
               return MaterialApp.router(
                 theme: context.watch<AppConfigModel>().theme,
                 routeInformationProvider: _router.routeInformationProvider,

@@ -14,37 +14,39 @@ class HomeHeadline extends StatelessWidget {
   Widget build(BuildContext context) {
     final entries = context.watch<WishlistModel>().entries;
 
-    return FadeIn(
-      duration: const Duration(milliseconds: 500),
-      child: CarouselSlider(
-        options: CarouselOptions(
-          height: 480.0,
-          viewportFraction: 0.8,
-          enlargeCenterPage: true,
-          onPageChanged: (index, reason) {},
-        ),
-        items: [
-          for (final entry in entries.take(16))
-            GestureDetector(
-              onTap: () => context
-                  .pushNamed('details', pathParameters: {'gid': '${entry.id}'}),
-              child: Stack(
-                children: [
-                  _fadeShader(
-                    CachedNetworkImage(
-                      height: 560.0,
-                      imageUrl:
-                          '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
-                      fit: BoxFit.cover,
+    return entries.isNotEmpty
+        ? FadeIn(
+            duration: const Duration(milliseconds: 500),
+            child: CarouselSlider(
+              options: CarouselOptions(
+                height: 480.0,
+                viewportFraction: 0.8,
+                enlargeCenterPage: true,
+                onPageChanged: (index, reason) {},
+              ),
+              items: [
+                for (final entry in entries.take(16))
+                  GestureDetector(
+                    onTap: () => context.pushNamed('details',
+                        pathParameters: {'gid': '${entry.id}'}),
+                    child: Stack(
+                      children: [
+                        _fadeShader(
+                          CachedNetworkImage(
+                            height: 560.0,
+                            imageUrl:
+                                '${Urls.imageProvider}/t_cover_big/${entry.cover}.jpg',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        _carouselLabel(),
+                      ],
                     ),
                   ),
-                  _carouselLabel(),
-                ],
-              ),
+              ],
             ),
-        ],
-      ),
-    );
+          )
+        : Container();
   }
 
   Widget _carouselLabel() {

@@ -88,7 +88,7 @@ class EspyPieChart extends StatelessWidget {
                 PieChartSectionData(
                   color: palette?[item.index % items.length] ??
                       defaultPalette[item.index % items.length],
-                  value: itemPops![item.value] as double?,
+                  value: itemPops![item.value]?.toDouble() ?? 0,
                   title: '${itemPops![item.value]}',
                   radius: selectedItem == item.value ? 72 : 60,
                   titleStyle: sliceStyle,
