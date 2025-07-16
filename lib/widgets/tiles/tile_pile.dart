@@ -121,7 +121,7 @@ class _TilePileState extends State<TilePile>
     }
 
     final animationOffset = 32 * animation.value;
-    double progress = (index as double) / min(widget.games.length, 5);
+    double progress = index.toDouble() / min(widget.games.length, 5);
     return Offset(
         ((widget.maxSize.width - coverWidth) / 2 + animationOffset) *
             sin(progress * 2 * pi),

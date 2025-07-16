@@ -28,7 +28,7 @@ class MenuItem {
 
 List<MenuItem> espyMenuItems = [
   MenuItem(
-    requiresSignIn: true,
+    requiresSignIn: false,
     label: 'Home',
     icon: Icons.home_outlined,
     selectedIcon: Icons.home,
