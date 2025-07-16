@@ -213,8 +213,7 @@ class EspyRouter extends StatelessWidget {
           }
 
           if (snapshot.connectionState == ConnectionState.active) {
-            if (snapshot.hasData || (!kIsWeb && Platform.isAndroid)) {
-              // if (snapshot.hasData) {
+            if (snapshot.hasData) {
               return MaterialApp.router(
                 theme: context.watch<AppConfigModel>().theme,
                 routeInformationProvider: _router.routeInformationProvider,

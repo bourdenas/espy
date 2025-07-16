@@ -44,29 +44,23 @@ class LoginPage extends StatelessWidget {
 
                   if (googleSignInAccount == null) {
                     print('Failed googleSignInAccount');
+                    return;
                   }
 
-                  final user = await _getUser(googleSignInAccount!);
-                  if (user == null) {
-                    print('Failed _getUser()');
+                  try {
+                    final user = await _getUser(googleSignInAccount);
+                    if (user == null) {
+                      print('Failed _getUser()');
+                      return;
+                    }
+                  } catch (e) {
+                    print('Error during Firebase authentication: $e');
+                    return;
                   }
 
-                  //   // Obtain the auth details from the request
-                  //   final GoogleSignInAuthentication? googleAuth =
-                  //       await googleUser?.authentication;
-                  //   print('skata #3');
-
-                  //   // Create a new credential
-                  //   final credential = GoogleAuthProvider.credential(
-                  //     accessToken: googleAuth?.accessToken,
-                  //     idToken: googleAuth?.idToken,
-                  //   );
-                  //   print('skata #4');
-
-                  //   // Once signed in, return the UserCredential
-                  //   await FirebaseAuth.instance.signInWithCredential(credential);
-                  //   context.read<UserModel>().login();
-                  //   context.goNamed('home');
+                  // Update user model and navigate to home
+                  context.read<UserModel>().login();
+                  context.goNamed('home');
                 }
               : () async {
                   GoogleAuthProvider googleProvider = GoogleAuthProvider();
