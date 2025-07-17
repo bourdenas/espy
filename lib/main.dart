@@ -25,7 +25,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     // NOTE: Bug in the Firebase library. Adding the name attibute fails to connect.
-    name: 'espy',
+    // name: 'espy',
     options: DefaultFirebaseOptions.currentPlatform,
   );
 

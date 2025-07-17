@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,6 +11,7 @@ import 'package:http/http.dart' as http;
 
 class WishlistModel extends ChangeNotifier {
   String _userId = '';
+  StreamSubscription? _subscription;
 
   // The user wishlist.
   Library _wishlist = const Library();
@@ -18,10 +20,18 @@ class WishlistModel extends ChangeNotifier {
 
   bool contains(int id) => entries.any((e) => e.id == id);
 
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
   void update(UserData? userData) async {
     if (userData == null) {
       _userId = '';
       _wishlist = const Library();
+      _subscription = null;
+      notifyListeners();
       return;
     }
 
@@ -30,11 +40,12 @@ class WishlistModel extends ChangeNotifier {
     }
 
     _userId = userData.uid;
+    await _subscription?.cancel();
     _loadWishlist(_userId);
   }
 
   Future<void> _loadWishlist(String userId) async {
-    FirebaseFirestore.instance
+    _subscription = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
         .collection('games')

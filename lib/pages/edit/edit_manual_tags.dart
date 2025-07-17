@@ -18,8 +18,15 @@ class EditManualTags extends StatefulWidget {
 }
 
 class _EditManualTagsState extends State<EditManualTags> {
+  final TextEditingController _textController = TextEditingController();
   Set<String> selectedTags = {};
   String filter = '';
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +120,4 @@ class _EditManualTagsState extends State<EditManualTags> {
       ],
     );
   }
-
-  final TextEditingController _textController = TextEditingController();
 }

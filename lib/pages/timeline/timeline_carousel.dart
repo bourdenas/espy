@@ -10,13 +10,26 @@ import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import 'package:uuid/uuid.dart';
 
-class TimelineCarousel extends StatelessWidget {
+class TimelineCarousel extends StatefulWidget {
   final TileSize tileSize;
 
   const TimelineCarousel({
     super.key,
     this.tileSize = const TileSize(width: 227.0, height: 320.0),
   });
+
+  @override
+  State<TimelineCarousel> createState() => _TimelineCarouselState();
+}
+
+class _TimelineCarouselState extends State<TimelineCarousel> {
+  ScrollController? _scrollController;
+
+  @override
+  void dispose() {
+    _scrollController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +44,11 @@ class TimelineCarousel extends StatelessWidget {
       ++startIndex;
     }
 
+    if (startIndex > 0 && _scrollController == null) {
+      _scrollController = ScrollController(
+          initialScrollOffset: (startIndex - 2) * widget.tileSize.width);
+    }
+
     return startIndex == 0
         ? const Column()
         : FadeIn(
@@ -38,10 +56,9 @@ class TimelineCarousel extends StatelessWidget {
             child: Column(
               children: [
                 SizedBox(
-                  height: tileSize.height * 1.5,
+                  height: widget.tileSize.height * 1.5,
                   child: Timeline.tileBuilder(
-                    controller: ScrollController(
-                        initialScrollOffset: (startIndex - 2) * tileSize.width),
+                    controller: _scrollController,
                     theme: TimelineThemeData(
                       direction: Axis.horizontal,
                       connectorTheme: const ConnectorThemeData(
@@ -53,7 +70,7 @@ class TimelineCarousel extends StatelessWidget {
                     builder: TimelineTileBuilder.connected(
                       contentsAlign: ContentsAlign.reverse,
                       itemCount: releases.length,
-                      itemExtent: tileSize.width + 16,
+                      itemExtent: widget.tileSize.width + 16,
                       connectorBuilder: (context, index, connectorType) =>
                           connectorBuilder(context, releases, index),
                       indicatorBuilder: (context, index) => buttonBuilder(
@@ -62,7 +79,7 @@ class TimelineCarousel extends StatelessWidget {
                         index,
                         now.round(),
                         () {
-                          final id = Uuid().v4();
+                          final id = const Uuid().v4();
                           context
                               .read<LibraryViewModel>()
                               .add(id, releases[index].games);
@@ -77,7 +94,7 @@ class TimelineCarousel extends StatelessWidget {
                       ),
                       nodePositionBuilder: (context, index) => .85,
                       contentsBuilder: (context, index) =>
-                          TilePile(releases[index].games, maxSize: tileSize),
+                          TilePile(releases[index].games, maxSize: widget.tileSize),
                     ),
                   ),
                 ),

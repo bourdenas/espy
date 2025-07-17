@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/user_ratings.dart';
 import 'package:flutter/material.dart' show ChangeNotifier;
 
 class UserDataModel extends ChangeNotifier {
   String _userId = '';
+  StreamSubscription? _subscription;
   UserRatings _ratings = UserRatings(ratings: {});
 
   int rating(int gameId) => _ratings.ratings[gameId] ?? 0;
+
   void updateRating(int gameId, int rating) async {
     if (rating != 0) {
       _ratings.ratings[gameId] = rating;
@@ -22,15 +26,22 @@ class UserDataModel extends ChangeNotifier {
         .set(_ratings.toJson());
   }
 
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
   void update(String userId) async {
     if (userId.isNotEmpty && _userId != userId) {
       _userId = userId;
+      await _subscription?.cancel();
       _loadUserData(userId);
     }
   }
 
   Future<void> _loadUserData(String userId) async {
-    FirebaseFirestore.instance
+    _subscription = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
         .collection('user_data')

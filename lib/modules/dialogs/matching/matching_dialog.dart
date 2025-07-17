@@ -61,6 +61,9 @@ class MatchingDialogAnimation extends StatefulWidget {
 
 class _MatchingDialogAnimationState extends State<MatchingDialogAnimation>
     with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scalingAnimation;
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +79,12 @@ class _MatchingDialogAnimationState extends State<MatchingDialogAnimation>
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ScaleTransition(
       scale: _scalingAnimation,
@@ -86,7 +95,4 @@ class _MatchingDialogAnimationState extends State<MatchingDialogAnimation>
       ),
     );
   }
-
-  late AnimationController _animationController;
-  late Animation<double> _scalingAnimation;
 }

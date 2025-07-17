@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Model that handles interactions with remote library data store.
 class UserLibraryModel extends ChangeNotifier {
   String userId = '';
+  StreamSubscription? _subscription;
 
   // The user library.
   Library _library = const Library();
@@ -27,10 +29,18 @@ class UserLibraryModel extends ChangeNotifier {
     _library = lib;
   }
 
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
   void update(UserData? userData) async {
     if (userData == null) {
       userId = '';
       _library = const Library();
+      _subscription?.cancel();
+      _subscription = null;
       notifyListeners();
       return;
     }
@@ -40,6 +50,7 @@ class UserLibraryModel extends ChangeNotifier {
     }
     userId = userData.uid;
 
+    await _subscription?.cancel();
     await _loadLibrary();
   }
 
@@ -64,7 +75,7 @@ class UserLibraryModel extends ChangeNotifier {
   }
 
   Future<void> _fetch() async {
-    FirebaseFirestore.instance
+    _subscription = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
         .collection('games')

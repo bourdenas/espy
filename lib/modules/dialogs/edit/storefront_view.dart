@@ -19,10 +19,13 @@ class StorefrontView extends StatefulWidget {
 class StorefrontViewState extends State<StorefrontView>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
+  late final List<TextEditingController> _textControllers;
   int tabIndex = 0;
 
   @override
   void initState() {
+    super.initState();
+
     _tabController = TabController(
       initialIndex: 0,
       length: widget.libraryEntry.storeEntries.length,
@@ -33,7 +36,19 @@ class StorefrontViewState extends State<StorefrontView>
         tabIndex = _tabController!.index;
       });
     });
-    super.initState();
+
+    _textControllers = widget.libraryEntry.storeEntries
+        .map((entry) => TextEditingController(text: entry.title))
+        .toList();
+  }
+
+  @override
+  void dispose() {
+    _tabController?.dispose();
+    for (final controller in _textControllers) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -58,14 +73,13 @@ class StorefrontViewState extends State<StorefrontView>
           child: TabBarView(
             controller: _tabController,
             children: [
-              for (final storeEntry in widget.libraryEntry.storeEntries)
+              for (var i = 0; i < widget.libraryEntry.storeEntries.length; i++)
                 Column(
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextField(
-                        controller: TextEditingController()
-                          ..text = storeEntry.title,
+                        controller: _textControllers[i],
                         readOnly: true,
                         decoration: const InputDecoration(
                           labelText: 'Store Title',
@@ -80,15 +94,18 @@ class StorefrontViewState extends State<StorefrontView>
                         children: [
                           FilledButton(
                             child: const Text('Re-match'),
-                            onPressed: () => onRematch(context, storeEntry),
+                            onPressed: () => onRematch(
+                                context, widget.libraryEntry.storeEntries[i]),
                           ),
                           FilledButton(
                             child: const Text('Unmatch'),
-                            onPressed: () => onUnmatch(context, storeEntry),
+                            onPressed: () => onUnmatch(
+                                context, widget.libraryEntry.storeEntries[i]),
                           ),
                           FilledButton(
                             child: const Text('Delete'),
-                            onPressed: () => onDelete(context, storeEntry),
+                            onPressed: () => onDelete(
+                                context, widget.libraryEntry.storeEntries[i]),
                           ),
                         ],
                       ),

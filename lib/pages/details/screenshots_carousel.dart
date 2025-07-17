@@ -4,10 +4,30 @@ import 'package:espy/modules/dialogs/image_dialog.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:flutter/material.dart';
 
-class ScreenshotsCarousel extends StatelessWidget {
+class ScreenshotsCarousel extends StatefulWidget {
   const ScreenshotsCarousel(this.gameEntry, {super.key});
 
   final GameEntry gameEntry;
+
+  @override
+  State<ScreenshotsCarousel> createState() => _ScreenshotsCarouselState();
+}
+
+class _ScreenshotsCarouselState extends State<ScreenshotsCarousel> {
+  late final CarouselController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = CarouselController(
+        initialItem: Random().nextInt(widget.gameEntry.screenshotData.length));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,28 +35,26 @@ class ScreenshotsCarousel extends StatelessWidget {
       child: Column(
         children: [
           header(context),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           SizedBox(
             height: 380,
             child: CarouselView.weighted(
               itemSnapping: true,
               enableSplash: false,
-              flexWeights: [1, 7, 1],
-              controller: CarouselController(
-                  initialItem:
-                      Random().nextInt(gameEntry.screenshotData.length)),
+              flexWeights: const [1, 7, 1],
+              controller: _controller,
               onTap: (index) => showDialog(
                 context: context,
-                builder: (context) =>
-                    ImageDialog(imageUrl: gameEntry.screenshotData[index].full),
+                builder: (context) => ImageDialog(
+                    imageUrl: widget.gameEntry.screenshotData[index].full),
               ),
               children: [
-                for (final image in gameEntry.screenshotData)
+                for (final image in widget.gameEntry.screenshotData)
                   CarouselTile(image.thumbnail),
               ],
             ),
           ),
-          SizedBox(height: 32),
+          const SizedBox(height: 32),
         ],
       ),
     );

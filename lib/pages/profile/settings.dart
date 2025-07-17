@@ -14,7 +14,19 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final _gogTextController = TextEditingController();
+  final _steamTextController = TextEditingController();
+  final _egsTextController = TextEditingController();
   bool _syncLoading = false;
+
+  @override
+  void dispose() {
+    _gogTextController.dispose();
+    _steamTextController.dispose();
+    _egsTextController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,11 +68,6 @@ class _SettingsState extends State<Settings> {
       ),
     );
   }
-
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final _gogTextController = TextEditingController();
-  final _steamTextController = TextEditingController();
-  final _egsTextController = TextEditingController();
 
   Widget storefrontCodeBoxes(BuildContext context) {
     final user = context.watch<UserModel>();
