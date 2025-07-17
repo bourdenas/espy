@@ -80,6 +80,32 @@ class TimelineView extends StatelessWidget {
     return nodes;
   }
 
+  List<Node> createWeeklyNodes() {
+    final today = DateTime.now().toUtc();
+    final entries = libraryEntries
+        .where((entry) => entry.digest.release.difference(today).inDays < 15)
+        .toList()
+      ..sort((l, r) => l.releaseDate.compareTo(r.releaseDate));
+
+    final groups = <int, List<LibraryEntry>>{};
+    for (final entry in entries) {
+      final daysOff = entry.digest.release.weekday - 1;
+      final hoursOff = entry.digest.release.hour;
+      final week = entry.digest.release
+          .subtract(Duration(days: daysOff, hours: hoursOff));
+      groups.putIfAbsent(week.millisecondsSinceEpoch, () => []).add(entry);
+    }
+
+    final nodes = <Node>[];
+    for (final group in groups.entries) {
+      nodes.add(
+          Node(DateTime.fromMillisecondsSinceEpoch(group.key), group.value));
+    }
+    nodes.sort((l, r) => -l.date.compareTo(r.date));
+
+    return nodes;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (libraryEntries.isEmpty) {
@@ -90,7 +116,7 @@ class TimelineView extends StatelessWidget {
     final now = DateTime.now();
 
     final nodes = switch (libraryView) {
-      LibraryViewMode.flat => throw UnimplementedError(),
+      LibraryViewMode.flat => createWeeklyNodes(),
       LibraryViewMode.month => createMonthlyNodes(),
       LibraryViewMode.year => createAnnualNodes(),
     };
@@ -150,7 +176,7 @@ class TimelineView extends StatelessWidget {
     return src.date.year == 1970 ||
             diff.inDays >
                 switch (libraryView) {
-                  LibraryViewMode.flat => 1,
+                  LibraryViewMode.flat => 7,
                   LibraryViewMode.month => 31,
                   LibraryViewMode.year => 370,
                 }
@@ -174,7 +200,7 @@ class TimelineView extends StatelessWidget {
   ) {
     final label = node.date.year > 1970
         ? switch (libraryView) {
-            LibraryViewMode.flat => throw UnimplementedError(),
+            LibraryViewMode.flat => DateFormat('MMM d').format(node.date),
             LibraryViewMode.month => DateFormat('MMM y').format(node.date),
             LibraryViewMode.year => DateFormat('y').format(node.date),
           }

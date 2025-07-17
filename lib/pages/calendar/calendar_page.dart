@@ -107,11 +107,18 @@ class _CalendarPageState extends State<CalendarPage> {
                         setState(() => increaseLeading());
                       },
                       child: switch (calendarView) {
-                        CalendarView.day => CalendarViewDay(
-                            shownGames,
-                            leadingWeeks: 17,
-                            trailingWeeks: leadingTime,
-                          ),
+                        CalendarView.day => switch (libraryLayout) {
+                            LibraryLayout.grid => CalendarViewDay(
+                                shownGames,
+                                leadingWeeks: 17,
+                                trailingWeeks: leadingTime,
+                              ),
+                            LibraryLayout.list => TimelineView(
+                                shownGames.map((digest) =>
+                                    LibraryEntry.fromGameDigest(digest)),
+                                libraryView: LibraryViewMode.flat,
+                              ),
+                          },
                         CalendarView.month => switch (libraryLayout) {
                             LibraryLayout.grid => CalendarViewMonth(shownGames),
                             LibraryLayout.list => TimelineView(
@@ -195,7 +202,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 segments: const <ButtonSegment<CalendarView>>[
                   ButtonSegment<CalendarView>(
                     value: CalendarView.day,
-                    label: Text('Day'),
+                    label: Text('Week'),
                     icon: Icon(Icons.calendar_view_day),
                   ),
                   ButtonSegment<CalendarView>(
