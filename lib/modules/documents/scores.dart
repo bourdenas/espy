@@ -7,30 +7,7 @@ class Scores {
   final String? metacriticSource;
 
   final int? espyScore;
-  final String? espyTier;
-
-  // Prominence is a single number that mixes other metrics to determine
-  // relative ranking among titles.
-  int prominenceScore(bool isReleased) {
-    if (!isReleased) {
-      return (hype ?? 0) * 2000;
-    }
-
-    int pop = popularity ?? 0;
-    if (metacritic == null) {
-      pop ~/= 2;
-    }
-
-    final score = switch (espyScore) {
-      int x when x >= 95 => 300000 + (x - 90) * 10000,
-      int x when x >= 90 => 200000 + (x - 90) * 10000,
-      int x when x >= 80 => 100000 + (x - 80) * 10000,
-      int x when x >= 0 => x * 1000,
-      _ => 0,
-    };
-
-    return ((score + pop) * (thumbs ?? 100) * 0.01).toInt();
-  }
+  final int? prominence;
 
   String get title => switch (metacritic) {
         int x when x >= 90 => 'Excellent',
@@ -48,7 +25,7 @@ class Scores {
     this.metacritic,
     this.metacriticSource,
     this.espyScore,
-    this.espyTier,
+    this.prominence,
   });
 
   Scores.fromJson(Map<String, dynamic> json)
@@ -59,7 +36,7 @@ class Scores {
           metacritic: json['metacritic'],
           metacriticSource: json['metacritic_source'],
           espyScore: json['espy_score'],
-          espyTier: json['espy_tier'],
+          prominence: json['prominence'],
         );
 
   Map<String, dynamic> toJson() {
@@ -70,9 +47,7 @@ class Scores {
       if (metacritic != null) 'metacritic': metacritic,
       if (metacriticSource != null) 'metacritic_source': metacriticSource,
       if (espyScore != null) 'espy_score': espyScore,
-      if (espyTier != null) 'espy_tier': espyTier,
-      'prominence_released': prominenceScore(true),
-      'prominence_unreleased': prominenceScore(false),
+      if (prominence != null) 'prominence': prominence,
     };
   }
 
@@ -82,7 +57,7 @@ class Scores {
         hype != other.hype ||
         metacritic != other.metacritic ||
         espyScore != other.espyScore ||
-        espyTier != other.espyTier;
+        prominence != other.prominence;
   }
 }
 

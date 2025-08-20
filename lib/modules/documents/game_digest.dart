@@ -22,7 +22,7 @@ class GameDigest {
   final List<String> espyGenres;
   final List<String> keywords;
 
-  int get prominence => scores.prominenceScore(isReleased);
+  int get prominence => scores.prominence ?? 0;
 
   double get coverScale {
     return switch (prominence) {
