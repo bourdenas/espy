@@ -57,17 +57,15 @@ const Map<String, List<String>> _genresInGroup = {
   ],
   'Casual': [
     'LifeSim',
-    'FarmingSim',
     'DatingSim',
-    'Puzzle',
     'VisualNovel',
-    'Rhythm',
+    'Puzzle',
     'PartyGame',
+    'Rhythm',
   ],
   'Platformer': [
     'SideScroller',
     'Platformer3d',
-    'ShooterPlatformer',
     'PuzzlePlatformer',
   ],
   'RPG': [
@@ -82,18 +80,15 @@ const Map<String, List<String>> _genresInGroup = {
     'ThirdPersonShooter',
     'SpaceShooter',
     'Shmup',
-    'BattleRoyale',
   ],
   'Simulator': [
     'CityBuilder',
     'Tycoon',
-    'GodGame',
     'Racing',
     'Sports',
     'Survival',
+    'BusinessSimulator',
     'FlightSimulator',
-    'CombatSimulator',
-    'DrivingSimulator',
     'NavalSimulator',
   ],
   'Strategy': [
@@ -116,12 +111,12 @@ const Map<String, String> _genreToLabel = {
   'Action': 'Action',
   'ActionRpg': 'Action RPG',
   'IsometricAction': 'Isometric Action',
+  'SurvivalAdventure': 'Survival Adventure',
   'JRPG': 'JRPG',
 
   // Adventure
   'PointAndClick': 'Point & Click',
   'NarrativeAdventure': 'Narrative Adventure',
-  'SurvivalAdventure': 'Survival Adventure',
   'PuzzleAdventure': 'Puzzle Adventure',
   'WalkingSimulator': 'Walking Simulator',
 
@@ -130,55 +125,42 @@ const Map<String, String> _genreToLabel = {
   'Fighting': 'Fighting',
   'BeatEmUp': "Beat'em Up",
   'CardAndBoard': 'Card & Board Game',
-  'Deckbuilder': 'Deckbuilder',
 
   // Casual
   'LifeSim': 'Life Sim',
-  'FarmingSim': 'Farming Sim',
-  'FishingSim': 'Fishing Sim',
-  'SailingSim': 'Sailing Sim',
   'DatingSim': 'Dating Sim',
+  'VisualNovel': 'Visual Novel',
   'Puzzle': 'Puzzle',
   'Rhythm': 'Rhythm',
   'PartyGame': 'Party Game',
-  'VisualNovel': 'Visual Novel',
 
   // Platformer
   'SideScroller': 'Side Scroller',
-  'Metroidvania': 'Metroidvania',
   'Platformer3d': '3D Platformer',
-  'ShooterPlatformer': 'Shooter Platformer',
-  'PrecisionPlatformer': 'Precision Platformer',
   'PuzzlePlatformer': 'Puzzle Platformer',
 
   // RPG
   'CRPG': 'CRPG',
   'ARPG': 'ARPG',
   'FirstPersonRpg': 'First Person RPG',
-  'TurnBasedRpg': 'Turn Based RPG',
-  'RTwPRPG': 'RTwP RPG',
-  'DungeonCrawler': 'Dungeon Crawler',
   'MMORPG': 'MMORPG',
 
   // Shooter
   'FirstPersonShooter': 'First Person Shooter',
   'TopDownShooter': 'Top-Down Shooter',
-  'ThirdPersonShooter': '3rd Person Shooter',
+  'ThirdPersonShooter': 'Third Person Shooter',
   'SpaceShooter': 'Space Shooter',
   'Shmup': 'Shmup',
-  'BattleRoyale': 'Battle Royale',
 
   // Simulator
   'CityBuilder': 'City Builder',
   'Tycoon': 'Tycoon',
-  'GodGame': 'God Game',
   'Racing': 'Racing',
   'Sports': 'Sports',
-  'FlightSimulator': 'Flight Simulator',
-  'CombatSimulator': 'Combat Simulator',
-  'NavalSimulator': 'Naval Simulator',
-  'DrivingSimulator': 'Driving Simulator',
   'Survival': 'Survival',
+  'BusinessSimulator': 'Business Simulator',
+  'FlightSimulator': 'Flight Simulator',
+  'NavalSimulator': 'Naval Simulator',
 
   // Strategy
   'TurnBasedStrategy': 'Turn Based Strategy',
@@ -196,12 +178,12 @@ const Map<String, String> _labelToGenre = {
   'Action': 'Action',
   'Action RPG': 'ActionRpg',
   'Isometric Action': 'IsometricAction',
+  'Survival Adventure': 'SurvivalAdventure',
   'JRPG': 'JRPG',
 
   // Adventure
   'Point & Click': 'PointAndClick',
   'Narrative Adventure': 'NarrativeAdventure',
-  'Survival Adventure': 'SurvivalAdventure',
   'Puzzle Adventure': 'PuzzleAdventure',
   'Walking Simulator': 'WalkingSimulator',
 
@@ -210,34 +192,24 @@ const Map<String, String> _labelToGenre = {
   "Beat'em Up": 'BeatEmUp',
   'Arcade': 'Arcade',
   'Card & Board Game': 'CardAndBoard',
-  'Deckbuilder': 'Deckbuilder',
 
   // Casual
   'Life Sim': 'LifeSim',
-  'Farming Sim': 'FarmingSim',
-  'Fishing Sim': 'FishingSim',
-  'Sailing Sim': 'SailingSim',
   'Dating Sim': 'DatingSim',
-  'Puzzle': 'Puzzle',
-  'Rhythm': 'Rhythm',
-  'Party Game': 'PartyGame',
   'Visual Novel': 'VisualNovel',
+  'Puzzle': 'Puzzle',
+  'Party Game': 'PartyGame',
+  'Rhythm': 'Rhythm',
 
   // Platformer
   'Side Scroller': 'SideScroller',
-  'Metroidvania': 'Metroidvania',
   '3D Platformer': 'Platformer3d',
-  'Shooter Platformer': 'ShooterPlatformer',
-  'Precision Platformer': 'PrecisionPlatformer',
   'Puzzle Platformer': 'PuzzlePlatformer',
 
   // RPG
   'CRPG': 'CRPG',
   'ARPG': 'ARPG',
   'First Person RPG': 'FirstPersonRpg',
-  'Turn Based RPG': 'TurnBasedRpg',
-  'RTwP RPG': 'RTwPRPG',
-  'Dungeon Crawler': 'DungeonCrawler',
   'MMORPG': 'MMORPG',
 
   // Shooter
@@ -246,19 +218,16 @@ const Map<String, String> _labelToGenre = {
   '3rd Person Shooter': 'ThirdPersonShooter',
   'Space Shooter': 'SpaceShooter',
   'Shmup': 'Shmup',
-  'Battle Royale': 'BattleRoyale',
 
   // Simulator
   'City Builder': 'CityBuilder',
   'Tycoon': 'Tycoon',
-  'God Game': 'GodGame',
   'Racing': 'Racing',
   'Sports': 'Sports',
-  'Flight Simulator': 'FlightSimulator',
-  'Combat Simulator': 'CombatSimulator',
-  'Naval Simulator': 'NavalSimulator',
-  'Driving Simulator': 'DrivingSimulator',
   'Survival': 'Survival',
+  'Business Simulator': 'BusinessSimulator',
+  'Flight Simulator': 'FlightSimulator',
+  'Naval Simulator': 'NavalSimulator',
 
   // Strategy
   'Turn Based Strategy': 'TurnBasedStrategy',
