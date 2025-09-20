@@ -3,7 +3,7 @@ import 'package:espy/modules/documents/igdb_collection.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/backend_api.dart';
+import 'package:espy/modules/api/backend_api.dart';
 import 'package:espy/modules/models/library_filter_model.dart';
 import 'package:espy/pages/calendar/calendar_view_year.dart';
 import 'package:espy/pages/timeline/timeline_view.dart';

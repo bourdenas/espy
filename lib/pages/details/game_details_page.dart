@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:espy/modules/api/auth_user_api.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/models/backend_api.dart';
+import 'package:espy/modules/api/backend_api.dart';
 import 'package:espy/modules/models/library_index_model.dart';
-import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/pages/details/game_details_content.dart';
 import 'package:espy/widgets/loading_spinner.dart';
 import 'package:flutter/foundation.dart';
@@ -59,7 +59,7 @@ class GameDetailsPage extends StatelessWidget {
 
           final gameEntrySummary = LibraryEntry.fromGameEntry(gameEntry);
           if (libraryEntry?.digest.hasDiff(gameEntrySummary.digest) ?? false) {
-            context.read<UserLibraryModel>().updateEntry(libraryEntry!);
+            AuthUserApi.updateEntry(libraryEntry!);
           }
         }
 

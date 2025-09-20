@@ -51,24 +51,6 @@ class BackendApi {
     return true;
   }
 
-  static Future<bool> deleteGameEntry(int gameId) async {
-    final response = await http.post(
-      Uri.parse('${Urls.espyBackend}/delete'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({
-        'game_id': gameId,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      return false;
-    }
-
-    return true;
-  }
-
   static Future<List<IgdbCompany>> companyFetch(String name) async {
     if (name.isEmpty) {
       return [];

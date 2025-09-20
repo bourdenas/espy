@@ -1,13 +1,12 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/api/auth_user_api.dart';
 import 'package:espy/modules/documents/unresolved.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/widgets/cards/cover.dart';
 import 'package:espy/widgets/cards/footers.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 class CandidatesList extends StatelessWidget {
   const CandidatesList(this.unresolved, {super.key});
@@ -58,9 +57,8 @@ class CandidatesList extends StatelessWidget {
                         child: IconButton(
                           iconSize: 32,
                           hoverColor: Colors.green.withOpacity(0.5),
-                          onPressed: () => context
-                              .read<UserLibraryModel>()
-                              .matchEntry(unresolved.storeEntry, digest.id),
+                          onPressed: () => AuthUserApi.matchEntry(
+                              unresolved.storeEntry, digest.id),
                           icon: const Icon(Icons.check_circle_outline),
                         ),
                       ),

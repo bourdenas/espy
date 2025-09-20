@@ -1,11 +1,10 @@
 import 'package:espy/constants/stores.dart';
+import 'package:espy/modules/api/auth_user_api.dart';
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:espy/modules/models/user_library_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 class StorefrontView extends StatefulWidget {
   const StorefrontView(this.libraryEntry, {super.key});
@@ -124,9 +123,7 @@ class StorefrontViewState extends State<StorefrontView>
       context,
       storeEntry: storeEntry,
       onMatch: (storeEntry, digest) {
-        context
-            .read<UserLibraryModel>()
-            .rematchEntry(storeEntry, widget.libraryEntry, digest.id);
+        AuthUserApi.rematchEntry(storeEntry, widget.libraryEntry, digest.id);
         context.pushNamed('details', pathParameters: {'gid': '${digest.id}'});
       },
     );
@@ -151,9 +148,7 @@ class StorefrontViewState extends State<StorefrontView>
                   Navigator.pop(context);
                 }
 
-                context
-                    .read<UserLibraryModel>()
-                    .unmatchEntry(storeEntry, widget.libraryEntry);
+                AuthUserApi.unmatchEntry(storeEntry, widget.libraryEntry);
                 Navigator.pop(context);
               },
             ),
@@ -186,11 +181,11 @@ class StorefrontViewState extends State<StorefrontView>
                   Navigator.pop(context);
                 }
 
-                context.read<UserLibraryModel>().unmatchEntry(
-                      storeEntry,
-                      widget.libraryEntry,
-                      delete: true,
-                    );
+                AuthUserApi.unmatchEntry(
+                  storeEntry,
+                  widget.libraryEntry,
+                  delete: true,
+                );
                 Navigator.pop(context);
               },
             ),

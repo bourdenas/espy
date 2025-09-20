@@ -1,9 +1,9 @@
+import 'package:espy/modules/api/auth_user_api.dart';
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/intents/add_game_intent.dart';
 import 'package:espy/modules/intents/home_intent.dart';
 import 'package:espy/modules/intents/search_intent.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/widgets/scaffold/espy_drawer.dart';
 import 'package:espy/widgets/scaffold/espy_rail.dart';
 import 'package:flutter/gestures.dart';
@@ -33,9 +33,7 @@ class EspyScaffold extends StatelessWidget {
             onInvoke: (intent) => MatchingDialog.show(
                   context,
                   onMatch: (storeEntry, gameDigest) {
-                    context
-                        .read<UserLibraryModel>()
-                        .matchEntry(storeEntry, gameDigest.id);
+                    AuthUserApi.matchEntry(storeEntry, gameDigest.id);
                     context.pushNamed('details',
                         pathParameters: {'gid': '${gameDigest.id}'});
                   },

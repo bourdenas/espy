@@ -1,11 +1,10 @@
+import 'package:espy/modules/api/auth_user_api.dart';
 import 'package:espy/modules/dialogs/matching/matching_dialog.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/widgets/cards/cover.dart';
 import 'package:espy/widgets/cards/footers.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 class UnknownCard extends StatelessWidget {
   const UnknownCard(this.entry, {super.key});
@@ -19,7 +18,7 @@ class UnknownCard extends StatelessWidget {
         context,
         storeEntry: entry,
         onMatch: (storeEntry, digest) {
-          context.read<UserLibraryModel>().matchEntry(storeEntry, digest.id);
+          AuthUserApi.matchEntry(storeEntry, digest.id);
           context.pushNamed('details', pathParameters: {'gid': '${digest.id}'});
         },
       ),

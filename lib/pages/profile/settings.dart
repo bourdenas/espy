@@ -1,3 +1,4 @@
+import 'package:espy/modules/api/auth_user_api.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_model.dart';
@@ -133,8 +134,7 @@ class _SettingsState extends State<Settings> {
             child: IconButton(
               icon: const Icon(Icons.link_off),
               splashRadius: 16,
-              onPressed: () async =>
-                  await context.read<UserModel>().unlink(storefrontId),
+              onPressed: () async => await AuthUserApi.unlink(storefrontId),
             ),
           ),
         ],
@@ -164,7 +164,7 @@ class _SettingsState extends State<Settings> {
 
                     final userModel = context.read<UserModel>();
                     await userModel.setUserKeys(keys);
-                    final response = await userModel.syncLibrary(keys);
+                    final response = await AuthUserApi.syncLibrary(keys);
 
                     setState(() {
                       _syncLoading = false;

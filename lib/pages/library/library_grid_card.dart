@@ -1,10 +1,10 @@
 import 'package:espy/constants/stores.dart';
+import 'package:espy/modules/api/auth_user_api.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/library_index_model.dart';
-import 'package:espy/modules/models/user_library_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/wishlist_model.dart';
 import 'package:espy/widgets/cards/cover.dart';
@@ -89,9 +89,7 @@ class _LibraryGridCardState extends State<LibraryGridCard> {
           FloatingActionButton(
             mini: true,
             backgroundColor: const Color(0x00FFFFFF),
-            onPressed: () => context
-                .read<WishlistModel>()
-                .addToWishlist(widget.libraryEntry),
+            onPressed: () => AuthUserApi.addToWishlist(widget.libraryEntry),
             tooltip: 'wishlist',
             child: const Icon(
               Icons.favorite,
@@ -130,14 +128,14 @@ class _LibraryGridCardState extends State<LibraryGridCard> {
               mini: true,
               backgroundColor: Colors.transparent,
               onPressed: () {
-                context.read<UserLibraryModel>().matchEntry(
-                      StoreEntry(
-                        id: '',
-                        title: widget.libraryEntry.name,
-                        storefront: storeId,
-                      ),
-                      widget.libraryEntry.id,
-                    );
+                AuthUserApi.matchEntry(
+                  StoreEntry(
+                    id: '',
+                    title: widget.libraryEntry.name,
+                    storefront: storeId,
+                  ),
+                  widget.libraryEntry.id,
+                );
               },
               child: Stores.getIcon(storeId),
             ),

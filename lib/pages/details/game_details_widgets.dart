@@ -1,4 +1,5 @@
 import 'package:espy/constants/urls.dart';
+import 'package:espy/modules/api/auth_user_api.dart';
 import 'package:espy/modules/dialogs/edit/edit_entry_dialog.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/game_entry.dart';
@@ -70,11 +71,9 @@ class GameEntryActionBar extends StatelessWidget {
           IconButton(
             onPressed: () {
               if (inWishlist) {
-                context
-                    .read<WishlistModel>()
-                    .removeFromWishlist(libraryEntry.id);
+                AuthUserApi.removeFromWishlist(libraryEntry.id);
               } else {
-                context.read<WishlistModel>().addToWishlist(libraryEntry);
+                AuthUserApi.addToWishlist(libraryEntry);
               }
             },
             icon: Icon(

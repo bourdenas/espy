@@ -2,7 +2,7 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/models/app_config_model.dart';
-import 'package:espy/modules/models/backend_api.dart';
+import 'package:espy/modules/api/backend_api.dart';
 import 'package:espy/widgets/tiles/tile_carousel.dart';
 import 'package:espy/widgets/tiles/tile_size.dart';
 import 'package:flutter/material.dart';

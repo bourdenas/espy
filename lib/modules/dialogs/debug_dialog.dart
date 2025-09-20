@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:espy/modules/models/backend_api.dart';
+import 'package:espy/modules/api/auth_user_api.dart';
+import 'package:espy/modules/api/backend_api.dart';
 import 'package:flutter_json_view/flutter_json_view.dart';
 import 'package:espy/modules/documents/game_entry.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class DebugDialog extends StatelessWidget {
                   onPressed: () {
                     context.pop();
                     context.pop();
-                    BackendApi.deleteGameEntry(gameEntry.id);
+                    AuthUserApi.deleteGameEntry(gameEntry.id);
                   },
                   child: const Text('Delete'),
                 ),

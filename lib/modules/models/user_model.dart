@@ -1,12 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/documents/user_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier, kDebugMode;
-import 'package:http/http.dart' as http;
 
 /// Model that handles user profile data.
 class UserModel extends ChangeNotifier {
@@ -63,40 +60,6 @@ class UserModel extends ChangeNotifier {
       keys: keys,
       version: _userData!.version,
     );
-  }
-
-  /// Unlinks a storefront from the account.
-  Future<void> unlink(String storefrontId) async {
-    var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/unlink'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({'user_id': _userId, 'storefront_id': storefrontId}),
-    );
-
-    if (response.statusCode != 200) {
-      if (kDebugMode) {
-        print('Failed to unlink storefront:\n${response.statusCode}');
-      }
-    }
-  }
-
-  /// Initiates the library sync process to the espy backend for the user.
-  Future<String> syncLibrary(Keys keys) async {
-    var response = await http.post(
-      Uri.parse('${Urls.espyBackend}/library/sync'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({'user_id': _userId}),
-    );
-
-    if (response.statusCode == 200) {
-      return 'Done';
-    } else {
-      return 'Failed to post updated user information:\n${response.statusCode}';
-    }
   }
 
   /// Retrieves UserData from Firestore.

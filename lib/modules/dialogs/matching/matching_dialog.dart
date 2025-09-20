@@ -1,7 +1,7 @@
 import 'package:espy/modules/dialogs/matching/matching_dialog_content.dart';
 import 'package:espy/modules/documents/game_digest.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:espy/modules/models/backend_api.dart';
+import 'package:espy/modules/api/backend_api.dart';
 import 'package:flutter/material.dart';
 
 class MatchingDialog extends StatefulWidget {
