@@ -21,7 +21,7 @@ class GameTagsModel extends ChangeNotifier {
   late LabelManager _genresManager;
   late LabelManager _keywordsManager;
   ManualGenreManager _manualGenresManager =
-      ManualGenreManager('', UserAnnotations(), (_) => null);
+      ManualGenreManager(UserAnnotations(), (_) => null);
   UserTagManager _userTagsManager =
       UserTagManager('', UserAnnotations(), (_) => null);
 
@@ -92,7 +92,7 @@ class GameTagsModel extends ChangeNotifier {
         .snapshots()
         .listen((DocumentSnapshot<UserAnnotations> snapshot) {
       final userTags = snapshot.data() ?? UserAnnotations();
-      _manualGenresManager = ManualGenreManager(userId, userTags, _getEntryById)
+      _manualGenresManager = ManualGenreManager(userTags, _getEntryById)
         ..build();
       _userTagsManager = UserTagManager(userId, userTags, _getEntryById)
         ..build();

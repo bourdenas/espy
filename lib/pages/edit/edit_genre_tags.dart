@@ -1,5 +1,4 @@
 import 'package:badges/badges.dart' as badges;
-import 'package:espy/modules/documents/user_annotations.dart';
 import 'package:espy/modules/models/game_tags_model.dart';
 import 'package:espy/modules/models/genres_mapping.dart';
 import 'package:espy/utils/edit_distance.dart';
@@ -121,10 +120,8 @@ class _EditGenreTagsState extends State<EditGenreTags>
               .byGameId(widget.libraryEntry.id)
               .any((e) => e.label == genreLabel),
           onSelected: (selected) => selected
-              ? tagsModel.manualGenres
-                  .add(Genre(label: genreLabel), widget.libraryEntry.id)
-              : tagsModel.manualGenres
-                  .remove(Genre(label: genreLabel), widget.libraryEntry.id),
+              ? tagsModel.manualGenres.add(widget.libraryEntry.id, genreLabel)
+              : tagsModel.manualGenres.remove(widget.libraryEntry.id),
         ),
     ];
 

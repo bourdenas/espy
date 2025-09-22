@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:espy/modules/api/auth_user_api.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_annotations.dart';
 
 class ManualGenreManager {
-  ManualGenreManager(this._userId, this._userTags, this._getEntryById);
+  ManualGenreManager(this._userTags, this._getEntryById);
 
   Iterable<Genre> byGameId(int gameId) => _gameIdToGenres[gameId] ?? [];
 
@@ -29,55 +29,14 @@ class ManualGenreManager {
         );
   }
 
-  void add(Genre genre, int gameId) async {
-    _addTag(genre, gameId);
-
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(_userId)
-        .collection('user_data')
-        .doc('tags')
-        .set(_userTags.toJson());
+  void add(int gameId, String genre) async {
+    await AuthUserApi.updateGenre(gameId, genre);
   }
 
-  void remove(Genre genre, int gameId) async {
-    _removeTag(genre, gameId);
-
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(_userId)
-        .collection('user_data')
-        .doc('tags')
-        .set(_userTags.toJson());
+  void remove(int gameId) async {
+    await AuthUserApi.updateGenre(gameId, null);
   }
 
-  void _addTag(Genre genre, int gameId) {
-    for (final value in _userTags.genres) {
-      if (value.label == genre.label) {
-        value.gameIds.add(gameId);
-        return;
-      }
-    }
-
-    // New Genre, add new Genre in UserTags.
-    _userTags.genres.add(
-      Genre(
-        label: genre.label,
-        gameIds: [gameId],
-      ),
-    );
-  }
-
-  void _removeTag(Genre genre, int gameId) {
-    for (final value in _userTags.genres) {
-      if (value.label == genre.label) {
-        value.gameIds.remove(gameId);
-        return;
-      }
-    }
-  }
-
-  final String _userId;
   final UserAnnotations _userTags;
   final LibraryEntry? Function(int) _getEntryById;
 

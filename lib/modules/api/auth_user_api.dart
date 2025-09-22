@@ -44,24 +44,6 @@ class AuthUserApi {
     }
   }
 
-  static Future<bool> deleteGameEntry(int gameId) async {
-    final response = await _authClient.post(
-      Uri.parse('${Urls.espyBackend}/delete'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({
-        'game_id': gameId,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      return false;
-    }
-
-    return true;
-  }
-
   static Future<bool> matchEntry(StoreEntry storeEntry, int gameId) async {
     final response = await _authClient.post(
       Uri.parse('${Urls.espyBackend}/library/match'),
@@ -167,6 +149,37 @@ class AuthUserApi {
       },
       body: jsonEncode({
         'remove_game': gameId,
+      }),
+    );
+  }
+
+  static Future<bool> deleteGameEntry(int gameId) async {
+    final response = await _authClient.post(
+      Uri.parse('${Urls.espyBackend}/delete'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'game_id': gameId,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      return false;
+    }
+
+    return true;
+  }
+
+  static Future<void> updateGenre(int gameId, String? genre) async {
+    await _authClient.post(
+      Uri.parse('${Urls.espyBackend}/update_genre'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'game_id': gameId,
+        if (genre != null) 'genre': genre,
       }),
     );
   }
