@@ -80,7 +80,7 @@ ChangeNotifierProxyProvider<UserModel, UserLibraryModel> userLibraryProvider() {
       userModel,
       userLibraryModel,
     ) =>
-        userLibraryModel!..update(userModel.userData),
+        userLibraryModel!..update(userModel.userId),
   );
 }
 
@@ -106,7 +106,7 @@ ChangeNotifierProxyProvider<UserModel, UnresolvedModel>
       userModel,
       failedModel,
     ) =>
-        failedModel!..update(userModel.userData),
+        failedModel!..update(userModel.userId),
   );
 }
 
@@ -118,7 +118,7 @@ ChangeNotifierProxyProvider<UserModel, WishlistModel> wishlistProvider() {
       userModel,
       wishlistModel,
     ) =>
-        wishlistModel!..update(userModel.userData),
+        wishlistModel!..update(userModel.userId),
   );
 }
 

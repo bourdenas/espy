@@ -1,40 +1,51 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/store_entry.dart';
 import 'package:espy/modules/documents/unresolved.dart';
-import 'package:espy/modules/documents/user_data.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Model that handles interactions with remote library data store.
 class UnresolvedModel extends ChangeNotifier {
+  String _userId = '';
+  StreamSubscription? _subscription;
+
   UnresolvedEntries _unresolved = UnresolvedEntries();
-  String userId = '';
 
   List<Unresolved> get needApproval => _unresolved.needApproval;
   List<StoreEntry> get unknown => _unresolved.unknown;
 
-  void update(UserData? userData) async {
-    if (userData == null) {
-      userId = '';
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  void update(String? uid) async {
+    if (uid == null) {
+      _userId = '';
       _unresolved = UnresolvedEntries();
+      _subscription?.cancel();
+      _subscription = null;
       notifyListeners();
       return;
     }
 
-    if (userData.uid == userId) {
+    if (uid == _userId) {
       return;
     }
-    userId = userData.uid;
+    _userId = uid;
 
-    await _loadUnresolved();
+    await _subscription?.cancel();
+    _loadUnresolved();
   }
 
   Future<void> _loadUnresolved() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final encodedFailed = prefs.getString('${userId}_unresolved');
+    final encodedFailed = prefs.getString('${_userId}_unresolved');
     if (encodedFailed != null) {
       _unresolved = UnresolvedEntries.fromJson(
           jsonDecode(encodedFailed) as Map<String, dynamic>);
@@ -46,13 +57,13 @@ class UnresolvedModel extends ChangeNotifier {
 
   Future<void> _saveLocally() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('${userId}_unresolved', jsonEncode(_unresolved));
+    await prefs.setString('${_userId}_unresolved', jsonEncode(_unresolved));
   }
 
   Future<void> _fetch() async {
-    FirebaseFirestore.instance
+    _subscription = FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
+        .doc(_userId)
         .collection('games')
         .doc('unresolved')
         .withConverter<UnresolvedEntries>(

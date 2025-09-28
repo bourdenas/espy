@@ -4,13 +4,12 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library.dart';
 import 'package:espy/modules/documents/library_entry.dart';
-import 'package:espy/modules/documents/user_data.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Model that handles interactions with remote library data store.
 class UserLibraryModel extends ChangeNotifier {
-  String userId = '';
+  String _userId = '';
   StreamSubscription? _subscription;
 
   // The user library.
@@ -32,9 +31,9 @@ class UserLibraryModel extends ChangeNotifier {
     super.dispose();
   }
 
-  void update(UserData? userData) async {
-    if (userData == null) {
-      userId = '';
+  void update(String? uid) async {
+    if (uid == null) {
+      _userId = '';
       _library = const Library();
       _subscription?.cancel();
       _subscription = null;
@@ -42,19 +41,19 @@ class UserLibraryModel extends ChangeNotifier {
       return;
     }
 
-    if (userData.uid == userId) {
+    if (uid == _userId) {
       return;
     }
-    userId = userData.uid;
+    _userId = uid;
 
     await _subscription?.cancel();
-    await _loadLibrary();
+    _loadLibrary();
   }
 
   Future<void> _loadLibrary() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final encodedLibrary = prefs.getString('${userId}_library');
+    final encodedLibrary = prefs.getString('${_userId}_library');
     if (encodedLibrary != null) {
       try {
         library = Library.fromJson(
@@ -68,13 +67,13 @@ class UserLibraryModel extends ChangeNotifier {
 
   Future<void> _saveLocally() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('${userId}_library', jsonEncode(_library));
+    await prefs.setString('${_userId}_library', jsonEncode(_library));
   }
 
   Future<void> _fetch() async {
     _subscription = FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
+        .doc(_userId)
         .collection('games')
         .doc('library')
         .withConverter<Library>(

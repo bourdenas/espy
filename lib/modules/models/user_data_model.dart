@@ -32,12 +32,23 @@ class UserDataModel extends ChangeNotifier {
     super.dispose();
   }
 
-  void update(String userId) async {
-    if (userId.isNotEmpty && _userId != userId) {
-      _userId = userId;
-      await _subscription?.cancel();
-      _loadUserData(userId);
+  void update(String? uid) async {
+    if (uid == null) {
+      _userId = '';
+      _ratings = UserRatings(ratings: {});
+      _subscription?.cancel();
+      _subscription = null;
+      notifyListeners();
+      return;
     }
+
+    if (uid == _userId) {
+      return;
+    }
+    _userId = uid;
+
+    await _subscription?.cancel();
+    _loadUserData(_userId);
   }
 
   Future<void> _loadUserData(String userId) async {

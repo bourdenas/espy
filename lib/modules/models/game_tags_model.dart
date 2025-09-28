@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/user_annotations.dart';
@@ -12,6 +14,7 @@ import 'package:flutter/material.dart' show ChangeNotifier;
 /// The index is computed on-the-fly in the client.
 class GameTagsModel extends ChangeNotifier {
   String _userId = '';
+  StreamSubscription? _subscription;
 
   late LabelManager _storesManager;
   late LabelManager _developersManager;
@@ -35,8 +38,14 @@ class GameTagsModel extends ChangeNotifier {
   ManualGenreManager get manualGenres => _manualGenresManager;
   UserTagManager get userTags => _userTagsManager;
 
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
   void update(
-    String userId,
+    String? uid,
     LibraryIndexModel indexModel,
   ) async {
     _indexModel = indexModel;
@@ -72,14 +81,25 @@ class GameTagsModel extends ChangeNotifier {
       (entry) => entry.digest.keywords,
     );
 
-    if (userId.isNotEmpty && _userId != userId) {
-      _userId = userId;
-      _loadUserTags(userId);
+    if (uid == null) {
+      _userId = '';
+      _subscription?.cancel();
+      _subscription = null;
+      notifyListeners();
+      return;
     }
+
+    if (_userId == uid) {
+      return;
+    }
+    _userId = uid;
+
+    await _subscription?.cancel();
+    _loadUserTags(uid);
   }
 
   Future<void> _loadUserTags(String userId) async {
-    FirebaseFirestore.instance
+    _subscription = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
         .collection('user_data')

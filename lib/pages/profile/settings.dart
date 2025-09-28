@@ -3,6 +3,7 @@ import 'package:espy/modules/documents/user_data.dart';
 import 'package:espy/modules/models/app_config_model.dart';
 import 'package:espy/modules/models/user_model.dart';
 import 'package:espy/modules/models/user_library_model.dart';
+import 'package:espy/widgets/loading_spinner.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -18,15 +19,25 @@ class _SettingsState extends State<Settings> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _gogTextController = TextEditingController();
   final _steamTextController = TextEditingController();
-  final _egsTextController = TextEditingController();
   bool _syncLoading = false;
+
+  late Future<UserData?> userData;
+
+  @override
+  void initState() {
+    super.initState();
+    userData = fetchUserData();
+  }
 
   @override
   void dispose() {
     _gogTextController.dispose();
     _steamTextController.dispose();
-    _egsTextController.dispose();
     super.dispose();
+  }
+
+  Future<UserData?> fetchUserData() {
+    return context.read<UserModel>().fetchUserData();
   }
 
   @override
@@ -38,41 +49,54 @@ class _SettingsState extends State<Settings> {
         children: [
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500),
-            child: ScrollConfiguration(
-              behavior:
-                  ScrollConfiguration.of(context).copyWith(scrollbars: false),
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  const SizedBox(height: 16),
-                  storefrontCodeBoxes(context),
-                  const SizedBox(height: 64),
-                  libraryStats(context),
-                  const SizedBox(height: 32),
-                  colorSelection(context),
-                  const SizedBox(height: 32),
-                  Center(
-                    child: FilledButton(
-                      child: const Text('Sign Out'),
-                      onPressed: () {
-                        context.read<UserModel>().logout();
-                        context.goNamed('home');
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-              ),
-            ),
+            child: FutureBuilder(
+                future: userData,
+                builder: (context, snapshot) {
+                  UserData? userData =
+                      (snapshot.connectionState == ConnectionState.done &&
+                              snapshot.hasData)
+                          ? snapshot.data
+                          : null;
+
+                  return userData != null
+                      ? profile(context, userData)
+                      : LoadingSpinner(message: 'Loading profile...');
+                }),
           ),
         ],
       ),
     );
   }
 
-  Widget storefrontCodeBoxes(BuildContext context) {
-    final user = context.watch<UserModel>();
+  Widget profile(BuildContext context, UserData userData) {
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          const SizedBox(height: 16),
+          storefrontCodeBoxes(context, userData),
+          const SizedBox(height: 64),
+          libraryStats(context),
+          const SizedBox(height: 32),
+          colorSelection(context),
+          const SizedBox(height: 32),
+          Center(
+            child: FilledButton(
+              child: const Text('Sign Out'),
+              onPressed: () {
+                context.read<UserModel>().logout();
+                context.goNamed('home');
+              },
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
 
+  Widget storefrontCodeBoxes(BuildContext context, UserData userData) {
     return Form(
       key: _formKey,
       child: ConstrainedBox(
@@ -83,14 +107,14 @@ class _SettingsState extends State<Settings> {
             storefrontTokenEditBox(
               storefrontId: 'gog',
               label: 'GOG auth code',
-              token: user.gogAuthCode,
+              token: userData.keys?.gogAuthCode ?? '',
               logoAsset: 'assets/images/gog-128.png',
               textController: _gogTextController,
             ),
             storefrontTokenEditBox(
               storefrontId: 'steam',
               label: 'Steam user id',
-              token: user.steamUserId,
+              token: userData.keys?.steamUserId ?? '',
               logoAsset: 'assets/images/steam-128.png',
               textController: _steamTextController,
             ),
@@ -156,15 +180,10 @@ class _SettingsState extends State<Settings> {
                       _syncLoading = true;
                     });
 
-                    final keys = Keys(
-                      gogAuthCode: _gogTextController.text,
-                      steamUserId: _steamTextController.text,
-                      egsAuthCode: _egsTextController.text,
+                    final response = await AuthUserApi.syncLibrary(
+                      _gogTextController.text,
+                      _steamTextController.text,
                     );
-
-                    final userModel = context.read<UserModel>();
-                    await userModel.setUserKeys(keys);
-                    final response = await AuthUserApi.syncLibrary(keys);
 
                     setState(() {
                       _syncLoading = false;

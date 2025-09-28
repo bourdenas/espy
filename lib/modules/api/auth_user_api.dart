@@ -4,20 +4,23 @@ import 'package:espy/constants/urls.dart';
 import 'package:espy/modules/api/auth_client.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/store_entry.dart';
-import 'package:espy/modules/documents/user_data.dart';
 import 'package:flutter/foundation.dart';
 
 class AuthUserApi {
   static final _authClient = AuthClient();
 
   /// Initiates the library sync process to the espy backend for the user.
-  static Future<String> syncLibrary(Keys keys) async {
+  static Future<String> syncLibrary(
+      String gogAuthCode, String steamUserId) async {
     var response = await _authClient.post(
       Uri.parse('${Urls.espyBackend}/library/sync'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode({}),
+      body: jsonEncode({
+        if (gogAuthCode.isNotEmpty) 'gog_auth_code': gogAuthCode,
+        if (steamUserId.isNotEmpty) 'steam_user_id': steamUserId,
+      }),
     );
 
     if (response.statusCode == 200) {

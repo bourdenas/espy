@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espy/modules/documents/library_entry.dart';
 import 'package:espy/modules/documents/library.dart';
-import 'package:espy/modules/documents/user_data.dart';
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 class WishlistModel extends ChangeNotifier {
@@ -23,8 +22,8 @@ class WishlistModel extends ChangeNotifier {
     super.dispose();
   }
 
-  void update(UserData? userData) async {
-    if (userData == null) {
+  void update(String? uid) async {
+    if (uid == null) {
       _userId = '';
       _wishlist = const Library();
       _subscription = null;
@@ -32,11 +31,11 @@ class WishlistModel extends ChangeNotifier {
       return;
     }
 
-    if (userData.uid.isEmpty || userData.uid == _userId) {
+    if (uid == _userId) {
       return;
     }
+    _userId = uid;
 
-    _userId = userData.uid;
     await _subscription?.cancel();
     _loadWishlist(_userId);
   }
